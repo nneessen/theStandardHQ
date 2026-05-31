@@ -93,18 +93,18 @@ export function VoiceAgentLanding({
           className={cn(
             "relative rounded-lg border p-4 transition-all",
             voiceAccessActive
-              ? "border-success bg-success/10/50 ring-1 ring-success/30 dark:bg-success/10"
+              ? "border-success bg-success/10 ring-1 ring-success/30 dark:bg-success/10"
               : "border-v2-ring dark:border-v2-ring-strong",
           )}
         >
           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
             {voiceAccessActive ? (
-              <Badge className="h-4 whitespace-nowrap bg-success px-1.5 text-[9px] text-white">
+              <Badge className="h-4 whitespace-nowrap bg-success px-1.5 text-[9px] text-success-foreground">
                 <Check className="mr-0.5 h-2.5 w-2.5" />
                 Active
               </Badge>
             ) : (
-              <Badge className="h-4 whitespace-nowrap bg-warning px-1.5 text-[9px] text-white">
+              <Badge className="h-4 whitespace-nowrap bg-warning px-1.5 text-[9px] text-warning-foreground">
                 Free Trial
               </Badge>
             )}
@@ -182,7 +182,7 @@ export function VoiceAgentLanding({
         </div>
 
         {/* Setup progress + next step */}
-        <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+        <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-v2-ink-muted dark:text-v2-ink-subtle">
@@ -203,7 +203,7 @@ export function VoiceAgentLanding({
           />
 
           {setupComplete ? (
-            <div className="mt-4 rounded-lg border border-success/30 bg-success/10/50 p-3 dark:border-success/40 dark:bg-success/10">
+            <div className="mt-4 rounded-lg border border-success/30 bg-success/10 p-3 dark:border-success/40 dark:bg-success/10">
               <div className="flex items-center gap-1.5">
                 <Check className="h-3 w-3 text-success" />
                 <p className="text-[11px] font-semibold text-success">
@@ -314,7 +314,7 @@ function OverviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-center gap-2">
         {icon ? <div className="shrink-0">{icon}</div> : null}
         <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">

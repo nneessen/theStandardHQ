@@ -168,7 +168,7 @@ export function DocumentManager({
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 flex-1 min-w-0">
                   <div className="p-1.5 rounded bg-muted">
-                    <FileText className="h-3.5 w-3.5 text-muted-foreground -subtle" />
+                    <FileText className="h-3.5 w-3.5 text-v2-ink-subtle" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
@@ -285,10 +285,10 @@ export function DocumentManager({
       ) : (
         <div className="py-6 text-center">
           <FolderOpen className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-[11px] text-muted-foreground -subtle mb-0.5">
+          <p className="text-[11px] text-v2-ink-subtle mb-0.5">
             No documents uploaded yet
           </p>
-          <p className="text-[10px] text-muted-foreground -muted">
+          <p className="text-[10px] text-v2-ink-muted">
             Click "Upload" to add documents
           </p>
         </div>

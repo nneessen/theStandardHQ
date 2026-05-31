@@ -152,7 +152,7 @@ export function VoiceAgentStatusCard({
   const setupStateCopy = getSetupStateCopy(voiceSetupState, retellConnected);
 
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

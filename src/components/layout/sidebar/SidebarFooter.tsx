@@ -8,7 +8,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SidebarNavItem } from "./SidebarNavItem";
 import type { ResolvedSidebarNavigationItem } from "./types";
 
@@ -71,33 +70,27 @@ export function SidebarFooter({
       <div className="my-1.5 mx-1 border-t border-v2-ring/60" />
 
       {isCollapsed ? (
-        <div className="flex flex-col items-center gap-1">
-          <ThemeToggle />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                className="h-9 w-9 flex items-center justify-center rounded-v2-pill text-destructive hover:bg-destructive/10 transition-colors"
-                onClick={onLogout}
-              >
-                <LogOut size={16} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>
-              Logout
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="h-9 w-9 flex items-center justify-center mx-auto rounded-[8px] text-destructive hover:bg-destructive/10 transition-colors"
+              onClick={onLogout}
+            >
+              <LogOut size={16} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            Logout
+          </TooltipContent>
+        </Tooltip>
       ) : (
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            className="flex-1 flex items-center gap-2.5 h-9 px-3 rounded-v2-pill text-sm text-destructive hover:bg-destructive/10 transition-colors"
-            onClick={onLogout}
-          >
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-        </div>
+        <button
+          className="w-full flex items-center gap-2.5 h-9 px-3 rounded-[8px] text-sm text-destructive hover:bg-destructive/10 transition-colors"
+          onClick={onLogout}
+        >
+          <LogOut size={16} />
+          <span>Logout</span>
+        </button>
       )}
     </div>
   );

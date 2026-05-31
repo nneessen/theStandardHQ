@@ -300,7 +300,7 @@ export function SequenceBuilderTab() {
   return (
     <div className="space-y-4">
       {/* "Triggers" clarification banner */}
-      <div className="flex items-start gap-2 rounded-md border border-info/30 bg-info/10/50 p-3 text-xs dark:border-info/50 dark:bg-info/10">
+      <div className="flex items-start gap-2 rounded-md border border-info/30 bg-info/10 p-3 text-xs dark:border-info/50 dark:bg-info/10">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-info" />
         <p className="text-muted-foreground">
           <span className="font-medium text-foreground">
@@ -443,7 +443,7 @@ export function SequenceBuilderTab() {
                   className="flex items-center gap-1.5 text-xs"
                 >
                   Run mode
-                  <span className="rounded bg-card-tinted px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground">
+                  <span className="rounded bg-v2-card-tinted px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground">
                     copy hint
                   </span>
                 </Label>
@@ -690,7 +690,7 @@ export function SequenceBuilderTab() {
                           {stepCounts.smsCount} SMS template
                           {stepCounts.smsCount !== 1 ? "s" : ""}, all prefixed
                           with{" "}
-                          <code className="rounded bg-muted px-1 text-[10px] dark:bg-card-tinted">
+                          <code className="rounded bg-muted px-1 text-[10px] dark:bg-v2-card-tinted">
                             [{draft.name || "workflow"}]
                           </code>
                         </span>
@@ -741,7 +741,7 @@ export function SequenceBuilderTab() {
                       href="https://app.close.com/sequences/"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between rounded-md border border-success/40 bg-success/10 px-3 py-2 text-xs font-medium text-success transition-colors hover:bg-success/20 dark:border-success/60 dark:bg-success/15 dark:text-success dark:hover:bg-success/10/50"
+                      className="flex items-center justify-between rounded-md border border-success/40 bg-success/10 px-3 py-2 text-xs font-medium text-success transition-colors hover:bg-success/20 dark:border-success/60 dark:bg-success/15 dark:text-success dark:hover:bg-success/10"
                     >
                       <span>
                         Open workflow in Close to finish Run mode setup
@@ -830,7 +830,7 @@ function StepCard({
 
       <div className="flex gap-3 p-3 pl-4">
         {/* Step number badge */}
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-card-tinted text-xs font-semibold tabular-nums text-foreground dark:bg-card-tinted dark:text-foreground">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-v2-card-tinted text-xs font-semibold tabular-nums text-foreground dark:bg-v2-card-tinted dark:text-foreground">
           {index + 1}
         </div>
 

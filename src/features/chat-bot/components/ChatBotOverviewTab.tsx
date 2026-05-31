@@ -228,12 +228,12 @@ export function ChatBotOverviewTab({
               </div>
 
               <h1
-                className="text-xl font-bold text-white tracking-tight mb-1.5"
+                className="text-xl font-bold text-foreground tracking-tight mb-1.5"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Automate Lead Engagement &amp; Appointment Booking
               </h1>
-              <p className="text-[11px] text-white/60 leading-relaxed max-w-2xl">
+              <p className="text-[11px] text-foreground/60 leading-relaxed max-w-2xl">
                 Your AI-powered SMS assistant responds to leads in seconds,
                 handles objections naturally, and books appointments on your
                 real calendar — all within compliant hours. No leads fall
@@ -242,25 +242,25 @@ export function ChatBotOverviewTab({
 
               {/* Integration logos */}
               <div className="flex items-center gap-3 mt-4">
-                <span className="text-[9px] text-white/30 uppercase tracking-widest font-medium">
+                <span className="text-[9px] text-foreground/30 uppercase tracking-widest font-medium">
                   Integrates with
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
-                    <CloseLogo className="h-3.5 w-auto text-white" />
-                    <span className="text-[9px] text-white/60 font-medium">
+                    <CloseLogo className="h-3.5 w-auto text-foreground" />
+                    <span className="text-[9px] text-foreground/60 font-medium">
                       Close CRM
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
                     <CalendlyLogo className="h-4 w-4" />
-                    <span className="text-[9px] text-white/60 font-medium">
+                    <span className="text-[9px] text-foreground/60 font-medium">
                       Calendly
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
                     <GoogleCalendarLogo className="h-4 w-4" />
-                    <span className="text-[9px] text-white/60 font-medium">
+                    <span className="text-[9px] text-foreground/60 font-medium">
                       Google Cal
                     </span>
                   </div>

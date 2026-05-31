@@ -403,7 +403,7 @@ function TeamRow({
               </AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center h-3.5 w-3.5 rounded-full bg-info border border-v2-card">
-              <Users className="h-2 w-2 text-white" />
+              <Users className="h-2 w-2 text-info-foreground" />
             </div>
           </div>
           <div className="min-w-0">

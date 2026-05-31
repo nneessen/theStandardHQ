@@ -1,7 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
-
+/* Fonts (Archivo / Hanken Grotesk / Space Mono) are loaded once via the
+   <link> in index.html — the single source of truth. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,9 +7,9 @@
 @layer base {
   :root {
     /* ==================== SHADCN SEMANTIC COLORS - LIGHT MODE ==================== */
-    /* Slate + Indigo — cool fintech palette. Slate-900 ink on icy off-white,
-       indigo-500 as the single signature accent. Replaces the legacy
-       deep-green/adventure-yellow scheme. */
+    /* Slate + Indigo — the ORIGINAL app/public palette. "The Board" warm-dark
+       theme does NOT live here; it is scoped to `.theme-v2` (the authenticated
+       app shell) so public pages (landing, auth, join, legal) are unaffected. */
     --background: #f8f9fb;
     --foreground: #0f172a;
     --card: #ffffff;
@@ -28,7 +26,7 @@
     --accent-foreground: #ffffff;
     --destructive: #ef4444;
     --destructive-foreground: #f1f5f9;
-    --border: rgba(15, 23, 42, 0.10);
+    --border: rgba(15, 23, 42, 0.1);
     --input: #e2e8f0;
     --ring: #6366f1;
     /* Soft variant for table rows / nested borders that stack visually. */
@@ -90,11 +88,10 @@
     --rec-error: #b91c1c;
     --rec-error-soft: #fee2e2;
 
-    /* ==================== DESIGN SYSTEM V2 — SLATE + INDIGO ==================== */
-    /* Token names preserved (.theme-v2 wrapper at App.tsx:213 + 8,900+ v2-*
-       class usages). Values point at the Slate+Indigo palette: icy off-white
-       canvas, slate-900 ink, indigo-500 accent. Sharp 1/2/4px radii and
-       near-flat shadows preserved. */
+    /* ==================== DESIGN SYSTEM V2 — SLATE + INDIGO (original) ==================== */
+    /* Original light v2 tokens. The board override lives in the `.theme-v2`
+       scoped block further down, so these defaults only ever apply if a
+       v2 surface renders OUTSIDE the authenticated shell (it shouldn't). */
     --v2-bg-canvas: #f8f9fb;
     --v2-bg-card: #ffffff;
     --v2-bg-card-tinted: #f1f3f7;
@@ -105,7 +102,7 @@
     --v2-ink: #0f172a;
     --v2-ink-muted: #64748b;
     --v2-ink-subtle: #94a3b8;
-    --v2-ring: rgba(15, 23, 42, 0.10);
+    --v2-ring: rgba(15, 23, 42, 0.1);
     --v2-ring-strong: rgba(15, 23, 42, 0.18);
     --v2-radius-sm: 1px;
     --v2-radius-md: 2px;
@@ -120,9 +117,9 @@
   }
 
   .dark {
-    /* ==================== SHADCN SEMANTIC COLORS - DARK MODE ==================== */
-    /* Slate + Indigo dark — deep slate-blue canvas, navy cards, indigo-400
-       primary accent. Cool fintech aesthetic with strong elevation contrast. */
+    /* ==================== SHADCN SEMANTIC COLORS - DARK MODE (original) ==================== */
+    /* Slate + Indigo dark — the ORIGINAL dark palette for public surfaces that
+       follow the global theme. The board theme is separate (`.theme-v2` below). */
     --background: #0a0f1c;
     --foreground: #f1f5f9;
     --card: #141a2a;
@@ -139,7 +136,7 @@
     --accent-foreground: #0a0f1c;
     --destructive: #f87171;
     --destructive-foreground: #f1f5f9;
-    --border: rgba(241, 245, 249, 0.10);
+    --border: rgba(241, 245, 249, 0.1);
     --input: rgba(241, 245, 249, 0.14);
     --ring: #818cf8;
     /* Soft variant for table rows / nested borders that stack visually. */
@@ -161,21 +158,102 @@
     --surface-deep-foreground: #f1f5f9;
   }
 
-  /* ==================== DESIGN SYSTEM V2 — DARK MODE (SLATE + INDIGO) ==================== */
+  /* ════════════════════ "THE BOARD" — AUTHENTICATED APP THEME ════════════════════ */
+  /* Scoped to `.theme-v2` (the authenticated shell wrapper in App.tsx) so it
+     NEVER affects public pages (landing, auth, join, register, legal) — those
+     keep the original :root / .dark palettes above. The three selectors cover
+     the authenticated app in any global theme state, and `.dark .theme-v2`
+     (0,2,0) outranks the global `.dark` block so board always wins here.
+     Surfaces = NEUTRAL CHARCOAL (no warm/brown cast). Text = warm cream.
+     Accents: blue = primary, cyan = Jarvis only, amber/red/green = status. */
+  .theme-v2,
   .theme-v2.dark,
   .dark .theme-v2 {
-    --v2-bg-canvas: #0a0f1c;
-    --v2-bg-card: #141a2a;
-    --v2-bg-card-tinted: #1e2538;
-    --v2-bg-card-dark: #050811;
-    --v2-accent: #818cf8;
-    --v2-accent-strong: #6366f1;
-    --v2-accent-soft: rgba(129, 140, 248, 0.18);
-    --v2-ink: #f1f5f9;
-    --v2-ink-muted: #94a3b8;
-    --v2-ink-subtle: #64748b;
-    --v2-ring: rgba(241, 245, 249, 0.10);
-    --v2-ring-strong: rgba(241, 245, 249, 0.20);
+    /* shadcn semantic tokens (board) */
+    --background: #0d0d0e;
+    --foreground: #f1e9d6;
+    --card: #161617;
+    --card-foreground: #f1e9d6;
+    --popover: #1b1b1c;
+    --popover-foreground: #f1e9d6;
+    --primary: #5b9bff;
+    --primary-foreground: #08152b;
+    --secondary: #222224;
+    --secondary-foreground: #f1e9d6;
+    --muted: #222224;
+    --muted-foreground: rgba(236, 226, 205, 0.55);
+    --accent: #5b9bff;
+    --accent-foreground: #08152b;
+    --destructive: #ff6a5d;
+    --destructive-foreground: #08152b;
+    --border: rgba(236, 226, 205, 0.1);
+    --input: rgba(236, 226, 205, 0.18);
+    --ring: #5b9bff;
+    --border-soft: rgba(236, 226, 205, 0.06);
+    --success: #5fd08a;
+    --success-foreground: #08152b;
+    --warning: #f4b43a;
+    --warning-foreground: #0d0d0e;
+    --error: #ff6a5d;
+    --error-foreground: #08152b;
+    --info: #46d8f5;
+    --info-foreground: #08152b;
+    --accent-strong: #82bcff;
+    --surface-deep: #1b1b1c;
+    --surface-deep-foreground: #f1e9d6;
+
+    /* v2 tokens (board) */
+    --v2-bg-canvas: #0d0d0e;
+    --v2-bg-card: #161617;
+    --v2-bg-card-tinted: #222224;
+    --v2-bg-card-dark: #1b1b1c;
+    --v2-accent: #5b9bff;
+    --v2-accent-strong: #82bcff;
+    --v2-accent-soft: rgba(91, 155, 255, 0.12);
+    --v2-ink: #f1e9d6;
+    --v2-ink-muted: rgba(236, 226, 205, 0.55);
+    --v2-ink-subtle: rgba(236, 226, 205, 0.36);
+    --v2-ring: rgba(236, 226, 205, 0.1);
+    --v2-ring-strong: rgba(236, 226, 205, 0.18);
+    --v2-shadow-soft:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px -2px rgba(0, 0, 0, 0.4);
+    --v2-shadow-lift:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 26px rgba(0, 0, 0, 0.45);
+    --v2-font-display: "Archivo", system-ui, sans-serif;
+
+    /* board raw tokens (consumed by src/components/board/* + board-* classes) */
+    --bg: #0d0d0e;
+    --panel: #161617;
+    --panel2: #1b1b1c;
+    --tile: #222224;
+    --cream: #ece2cd;
+    --line: rgba(236, 226, 205, 0.1);
+    --line2: rgba(236, 226, 205, 0.18);
+    --ink: #f1e9d6;
+    --mut: rgba(236, 226, 205, 0.55);
+    --mut2: rgba(236, 226, 205, 0.36);
+    --blue: #5b9bff;
+    --cyan: #46d8f5;
+    --amber: #f4b43a;
+    --red: #ff6a5d;
+    --green: #5fd08a;
+    --board-brushed: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.012) 0 1px,
+      transparent 1px 3px
+    );
+    --board-panel-gradient: linear-gradient(180deg, #1b1b1c, #161617);
+    --board-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 26px rgba(0, 0, 0, 0.45);
+
+    /* board fonts */
+    --font-sans:
+      "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    --font-mono:
+      "Space Mono", ui-monospace, SFMono-Regular, Menlo, "Cascadia Code",
+      Consolas, monospace;
+    --font-display: "Archivo", system-ui, sans-serif;
   }
 
   /* Apply background and text colors to body */
@@ -228,8 +306,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(100, 116, 139, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(100, 116, 139, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(236, 226, 205, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(236, 226, 205, 0.04) 1px, transparent 1px);
   background-size: 64px 64px;
   background-position: -1px -1px;
   pointer-events: none;
@@ -253,34 +331,35 @@
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(99, 102, 241, 0.20) 0%,
+      rgba(91, 155, 255, 0.1) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse 45% 35% at 5% 95%,
-      rgba(6, 182, 212, 0.10) 0%,
+      rgba(244, 180, 58, 0.06) 0%,
       transparent 55%
     );
   pointer-events: none;
   z-index: -1;
 }
 
+/* Forced-dark renders the same warm board canvas — keep .dark in sync. */
 .dark .dashboard-canvas::before {
   background-image:
-    linear-gradient(to right, rgba(241, 245, 249, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(241, 245, 249, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(236, 226, 205, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(236, 226, 205, 0.04) 1px, transparent 1px);
 }
 
 .dark .dashboard-canvas::after {
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(129, 140, 248, 0.18) 0%,
+      rgba(91, 155, 255, 0.1) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse 45% 35% at 5% 95%,
-      rgba(34, 211, 238, 0.10) 0%,
+      rgba(244, 180, 58, 0.06) 0%,
       transparent 55%
     );
 }
@@ -299,48 +378,28 @@
 .theme-v2.v2-canvas,
 .theme-v2 .v2-canvas {
   background-color: var(--v2-bg-canvas);
-  background-image: radial-gradient(
-      circle at 78% 28%,
-      rgba(99, 102, 241, 0.18) 0%,
-      transparent 38%
-    ),
+  /* Board canvas: flat warm near-black with the faint brushed-steel texture.
+     One subtle blue glow top-right keeps the field from going dead-flat. */
+  background-image:
     radial-gradient(
-      circle at 12% 92%,
-      rgba(6, 182, 212, 0.10) 0%,
-      transparent 42%
-    );
+      circle at 84% 18%,
+      rgba(91, 155, 255, 0.06) 0%,
+      transparent 40%
+    ),
+    var(--board-brushed);
   background-attachment: fixed;
 }
 
-.theme-v2.dark.v2-canvas,
-.theme-v2.dark .v2-canvas,
-.dark .theme-v2.v2-canvas,
-.dark .theme-v2 .v2-canvas {
-  background-color: var(--v2-bg-canvas);
-  background-image: radial-gradient(
-      circle at 78% 28%,
-      rgba(129, 140, 248, 0.14) 0%,
-      transparent 38%
-    ),
-    radial-gradient(
-      circle at 12% 92%,
-      rgba(34, 211, 238, 0.08) 0%,
-      transparent 42%
-    );
-}
-
-/* Globally soften shadcn Card chrome inside the v2 theme.
-   Cards keep their layout/content but pick up v2 radius + shadow + ring border
-   so every page that uses <Card> inherits the new aesthetic for free. */
+/* Globally promote shadcn Cards to "Board" panels inside the v2 theme.
+   Cards keep their layout/content but pick up the warm panel gradient, 12px
+   radius, line2 border, and the riveted inset+drop shadow so every page that
+   uses <Card> inherits the departure-board panel for free. */
 .theme-v2 .rounded-xl.bg-card,
 .theme-v2 .rounded-lg.bg-card {
-  border-radius: var(--v2-radius-md);
-  box-shadow: var(--v2-shadow-soft);
-  border: 1px solid var(--v2-ring);
-}
-.theme-v2 .rounded-xl.bg-card:hover,
-.theme-v2 .rounded-lg.bg-card:hover {
-  box-shadow: var(--v2-shadow-lift);
+  border-radius: 12px;
+  background-image: var(--board-panel-gradient);
+  box-shadow: var(--board-panel-shadow);
+  border: 1px solid var(--v2-ring-strong);
 }
 
 /* Page-level H1/H2 inside theme-v2 use the landing display font (Big Shoulders

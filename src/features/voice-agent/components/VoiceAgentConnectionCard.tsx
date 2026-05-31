@@ -115,7 +115,7 @@ export function VoiceAgentConnectionCard({
   };
 
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -158,7 +158,7 @@ export function VoiceAgentConnectionCard({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Close CRM
                 </p>
@@ -167,7 +167,7 @@ export function VoiceAgentConnectionCard({
                 </p>
               </div>
 
-              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Outgoing number
                 </p>
@@ -178,7 +178,7 @@ export function VoiceAgentConnectionCard({
                 </p>
               </div>
 
-              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Caller ID
                 </p>
@@ -189,7 +189,7 @@ export function VoiceAgentConnectionCard({
                 </p>
               </div>
 
-              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   {isSuperAdmin ? "Runtime Agent ID" : "Voice Agent"}
                 </p>
@@ -204,7 +204,7 @@ export function VoiceAgentConnectionCard({
         ) : (
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card text-white dark:bg-v2-card-tinted dark:text-v2-ink">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card text-foreground dark:bg-v2-card-tinted dark:text-v2-ink">
                 <PhoneCall className="h-4 w-4" />
               </div>
               <div>
@@ -219,7 +219,7 @@ export function VoiceAgentConnectionCard({
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed border-v2-ring-strong bg-white px-3 py-3 text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-subtle">
+            <div className="rounded-lg border border-dashed border-v2-ring-strong bg-card px-3 py-3 text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-subtle">
               Inbound calls and lead records come from Close CRM. You can still
               review your plan, usage, and call settings now, but live voice
               drafting only becomes available after the voice agent is created
@@ -317,7 +317,7 @@ export function VoiceAgentConnectionCard({
                     onClick={() => setFromNumberSource("retell")}
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "retell"
-                        ? "border-info bg-info/10 dark:border-info dark:bg-info/20"
+                        ? "border-primary bg-primary/10 dark:border-primary dark:bg-primary/20"
                         : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     }`}
                   >
@@ -335,7 +335,7 @@ export function VoiceAgentConnectionCard({
                     disabled={!closeConnected}
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "close"
-                        ? "border-info bg-info/10 dark:border-info dark:bg-info/20"
+                        ? "border-primary bg-primary/10 dark:border-primary dark:bg-primary/20"
                         : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     } ${!closeConnected ? "cursor-not-allowed opacity-60" : ""}`}
                   >

@@ -41,10 +41,10 @@ export function AdminBillingPanel() {
 
   return (
     <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
-      <div className="bg-v2-card rounded-lg border border-warning/30/50">
+      <div className="bg-v2-card rounded-lg border border-warning/30">
         {/* Trigger */}
         <Collapsible.Trigger asChild>
-          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-warning/10/50 dark:hover:bg-warning/10 transition-colors rounded-lg">
+          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-warning/10 dark:hover:bg-warning/10 transition-colors rounded-lg">
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5 text-warning" />
               <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
@@ -62,7 +62,7 @@ export function AdminBillingPanel() {
 
         {/* Content */}
         <Collapsible.Content>
-          <div className="border-t border-warning/30/50">
+          <div className="border-t border-warning/30">
             {/* Sub-tabs */}
             <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5 mx-3 mt-3">
               {tabs.map((tab) => {

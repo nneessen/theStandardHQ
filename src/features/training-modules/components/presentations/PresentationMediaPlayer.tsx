@@ -164,7 +164,7 @@ export const PresentationMediaPlayer = forwardRef<
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 p-6 flex items-center justify-center">
+      <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-card to-muted dark:from-card dark:to-muted p-6 flex items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
@@ -182,7 +182,7 @@ export const PresentationMediaPlayer = forwardRef<
   const playbackRates = [0.75, 1, 1.25, 1.5, 2];
 
   return (
-    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-white to-zinc-50/80 dark:from-zinc-900 dark:to-zinc-950 shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-card to-muted/80 dark:from-card dark:to-muted shadow-sm overflow-hidden">
       {/* Hidden native element drives audio/video; we render our own UI */}
       {isAudio ? (
         <audio
@@ -274,7 +274,7 @@ export const PresentationMediaPlayer = forwardRef<
           {/* Hover preview tooltip */}
           {hoverTime !== null && duration > 0 && (
             <div
-              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-card text-white dark:bg-v2-card-tinted dark:text-v2-ink pointer-events-none whitespace-nowrap"
+              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-card text-card-foreground dark:bg-v2-card-tinted dark:text-v2-ink pointer-events-none whitespace-nowrap"
               style={{ left: `${(hoverTime / duration) * 100}%` }}
             >
               {formatTimestamp(hoverTime)}
@@ -360,7 +360,7 @@ export const PresentationMediaPlayer = forwardRef<
               step={0.05}
               value={muted ? 0 : volume}
               onChange={(e) => setVol(parseFloat(e.target.value))}
-              className="w-16 h-1 accent-zinc-700 dark:accent-zinc-300"
+              className="w-16 h-1 accent-primary dark:accent-primary"
             />
           </div>
         </div>

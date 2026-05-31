@@ -341,14 +341,14 @@ export function ComposeDialog({
                       </span>
                       <button
                         onClick={handleAddAllUsers}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-warning hover:bg-warning text-white transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-warning hover:bg-warning text-warning-foreground transition-colors"
                       >
                         <Check className="h-3 w-3" />
                         Yes
                       </button>
                       <button
                         onClick={() => setAddAllPending(false)}
-                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted hover:bg-muted  text-muted-foreground dark:text-muted-foreground transition-colors"
+                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted hover:bg-muted  text-muted-foreground transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -418,7 +418,7 @@ export function ComposeDialog({
               <div className="flex justify-end">
                 <Button
                   size="sm"
-                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-muted dark:hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
+                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
                   onClick={() => setShowCcBcc(!showCcBcc)}
                 >
                   {showCcBcc ? (
@@ -482,8 +482,8 @@ export function ComposeDialog({
               {/* Schedule */}
               {showSchedule && (
                 <div className="flex items-center gap-2 p-2 bg-muted rounded-sm border border-border">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
-                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[11px] text-muted-foreground">
                     Scheduled for:
                   </span>
                   <Popover>
@@ -511,7 +511,7 @@ export function ComposeDialog({
                   </Popover>
                   <Button
                     size="sm"
-                    className="h-6 px-1 bg-transparent hover:bg-destructive/20 dark:hover:bg-destructive/30 text-muted-foreground hover:text-destructive dark:hover:text-destructive border-0 shadow-none"
+                    className="h-6 px-1 bg-transparent hover:bg-destructive/20 text-muted-foreground hover:text-destructive border-0 shadow-none"
                     onClick={() => {
                       setShowSchedule(false);
                       setScheduledDate(undefined);
@@ -568,13 +568,13 @@ export function ComposeDialog({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background dark:bg-card-dark">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background">
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleSend}
                   disabled={isSending || to.length === 0}
                   size="sm"
-                  className="h-6 text-[10px] gap-1.5 bg-card-dark dark:bg-muted hover:bg-muted dark:hover:bg-muted text-white dark:text-foreground border-0 shadow-none"
+                  className="h-6 text-[10px] gap-1.5 bg-muted hover:bg-muted text-foreground border-0 shadow-none"
                 >
                   <Send className="h-3 w-3" />
                   {scheduledDate ? "Schedule" : "Send"}
@@ -582,7 +582,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground border-0 shadow-none"
+                  className="h-6 px-2 bg-muted hover:bg-muted text-muted-foreground border-0 shadow-none"
                   onClick={() => setShowSchedule(!showSchedule)}
                 >
                   <Clock className="h-3 w-3" />
@@ -594,7 +594,7 @@ export function ComposeDialog({
                     "h-6 px-2 border-0 shadow-none",
                     attachments.length > 0
                       ? "bg-info/15 hover:bg-info/30 dark:hover:bg-info/50 text-info"
-                      : "bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground",
+                      : "bg-muted hover:bg-muted text-muted-foreground",
                   )}
                   onClick={() => setShowDocumentBrowser(true)}
                 >
@@ -614,7 +614,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-transparent hover:bg-muted dark:hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
+                  className="h-6 px-2 bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
                   onClick={handleSaveDraft}
                   disabled={isSavingDraft}
                 >
@@ -623,7 +623,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-transparent hover:bg-destructive/10 dark:hover:bg-destructive/20 text-destructive hover:text-destructive dark:hover:text-destructive border-0 shadow-none"
+                  className="h-6 px-2 bg-transparent hover:bg-destructive/10 text-destructive hover:text-destructive border-0 shadow-none"
                   onClick={() => {
                     resetForm();
                     onOpenChange(false);

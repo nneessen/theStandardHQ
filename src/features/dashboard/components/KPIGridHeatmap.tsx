@@ -101,7 +101,7 @@ const SectionContent: React.FC<{
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              className="max-w-xs bg-foreground dark:bg-card-tinted border-border"
+              className="max-w-xs bg-foreground dark:bg-v2-card-tinted border-border"
             >
               <div className="space-y-1">
                 <div className="text-xs font-semibold text-background">

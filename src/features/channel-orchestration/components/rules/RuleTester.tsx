@@ -238,7 +238,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
     <div className="border border-border dark:border-border rounded-md">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-muted-foreground dark:text-muted-foreground hover:bg-background dark:hover:bg-card-tinted/50 rounded-t-md"
+        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-muted-foreground dark:text-muted-foreground hover:bg-background dark:hover:bg-v2-card-tinted/50 rounded-t-md"
       >
         {open ? (
           <ChevronDown className="h-3 w-3" />
@@ -418,7 +418,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                     className={cn(
                       "rounded border p-1.5 text-[10px]",
                       isMatched
-                        ? "border-info/40 bg-info/10/50 dark:bg-info/10/10"
+                        ? "border-info/40 bg-info/10 dark:bg-info/10"
                         : "border-border dark:border-border",
                     )}
                   >

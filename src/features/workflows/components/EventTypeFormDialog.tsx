@@ -216,7 +216,7 @@ export default function EventTypeFormDialog({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border dark:border-border bg-background dark:bg-card-tinted/50">
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border dark:border-border bg-background dark:bg-v2-card-tinted/50">
           <Button
             size="sm"
             variant="ghost"

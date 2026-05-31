@@ -131,7 +131,7 @@ export function GmailIntegrationCard() {
               ) : isExpired ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
+                  className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning"
                 >
                   <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
                   Expired
@@ -139,7 +139,7 @@ export function GmailIntegrationCard() {
               ) : hasError ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive dark:bg-destructive/50 dark:text-destructive"
+                  className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive"
                 >
                   <XCircle className="h-2.5 w-2.5 mr-0.5" />
                   Error

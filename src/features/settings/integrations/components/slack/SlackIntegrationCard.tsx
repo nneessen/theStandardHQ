@@ -331,7 +331,7 @@ function WorkspaceCard({
     <div
       className={`border rounded-lg overflow-hidden ${
         !isActive
-          ? "border-warning/40 bg-warning/10/50 dark:bg-warning/10"
+          ? "border-warning/40 bg-warning/10 dark:bg-warning/10"
           : "border-border"
       }`}
     >
@@ -492,7 +492,7 @@ function WorkspaceCard({
 
       {/* Expanded Settings */}
       {isExpanded && isConnected && (
-        <div className="p-3 bg-background dark:bg-card-tinted/30 space-y-4">
+        <div className="p-3 bg-background dark:bg-v2-card-tinted/30 space-y-4">
           {/* Channel Settings - Admin Only for Editing */}
           <div className="space-y-3">
             <h5 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
@@ -848,7 +848,7 @@ function WorkspaceCard({
 
       {/* Disconnected State */}
       {isExpanded && !isConnected && (
-        <div className="p-3 bg-background dark:bg-card-tinted/30">
+        <div className="p-3 bg-background dark:bg-v2-card-tinted/30">
           <p className="text-[10px] text-muted-foreground">
             This workspace is disconnected. Remove it or reconnect by adding it
             again.

@@ -226,7 +226,7 @@ export function CloneToTeammateDialog({
         </AlertDialogHeader>
 
         {/* Warning callout */}
-        <div className="flex items-start gap-2 rounded-md border border-warning/40/50 bg-warning/10/60 p-2.5 text-[11px] text-warning dark:border-warning/50 dark:bg-warning/15 dark:text-warning">
+        <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-2.5 text-[11px] text-warning">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             This creates an <strong>independent copy</strong> in your teammate's
@@ -396,7 +396,7 @@ function TeammateRow({
           </div>
         </div>
         {selected && (
-          <span className="shrink-0 rounded-full bg-info px-1.5 py-0.5 text-[10px] font-medium text-white">
+          <span className="shrink-0 rounded-full bg-info px-1.5 py-0.5 text-[10px] font-medium text-info-foreground">
             selected
           </span>
         )}

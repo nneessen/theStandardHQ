@@ -308,7 +308,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="w-full p-4 text-left hover:bg-info/10/60 dark:hover:bg-info/10/10 transition-colors rounded-lg"
+              className="w-full p-4 text-left hover:bg-info/10 dark:hover:bg-info/10 transition-colors rounded-lg"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
@@ -327,7 +327,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-info bg-white/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
+                <div className="flex items-center gap-1.5 text-info bg-card/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
                   {showUpgradeDetails ? "Hide" : "View"}
                   {showUpgradeDetails ? (
                     <ChevronUp className="h-3 w-3" />
@@ -347,11 +347,11 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     {TEAM_PLAN_FEATURES.map(({ icon: Icon, label, desc }) => (
                       <div
                         key={label}
-                        className="flex items-start gap-2 p-2 rounded-md bg-white/80 /60 border border-info dark:border-info/50"
+                        className="flex items-start gap-2 p-2 rounded-md bg-card/80 /60 border border-info dark:border-info/50"
                       >
                         <Icon className="h-3.5 w-3.5 text-info dark:text-info mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-[10px] font-semibold text-foreground -subtle leading-tight">
+                          <p className="text-[10px] font-semibold text-v2-ink-subtle leading-tight">
                             {label}
                           </p>
                           <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
@@ -373,7 +373,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 // Upgrade disabled: info-only panel (no /billing link / CTA).
                 if (!NEW_SUBSCRIPTIONS_ENABLED) {
                   return (
-                    <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3">
+                    <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3">
                       <div className="mb-3">{teamPlanBlurb}</div>
                       {featureGrid}
                     </div>
@@ -382,11 +382,11 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
 
                 return (
                   <Link to="/billing" className="block group">
-                    <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
+                    <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
                       {/* CTA row */}
                       <div className="flex items-start justify-between gap-3 mb-3">
                         {teamPlanBlurb}
-                        <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-white rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
+                        <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-info-foreground rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
                           Upgrade to Team
                           <ArrowRight className="h-3 w-3" />
                         </div>
@@ -429,23 +429,23 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
         {showInstructions && (
           <div className="px-3 pb-3 space-y-2">
             <div className="border-t border-border/60 pt-2" />
-            <ol className="space-y-1.5 text-[10px] text-muted-foreground -subtle list-decimal list-inside">
+            <ol className="space-y-1.5 text-[10px] text-v2-ink-subtle list-decimal list-inside">
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   Add a new recruit
                 </span>{" "}
                 — Click "Add Recruit" and enter their name, email, and phone
                 number.
               </li>
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   Recruit receives a password email
                 </span>{" "}
                 — They will be emailed a link to set their password and log in
                 to the system.
               </li>
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   Licensing status determines next steps
                 </span>{" "}
                 — If the recruit is <em>not already licensed</em>, they are
@@ -453,14 +453,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 Slack recruit channel.
               </li>
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   Recruit enters the onboarding pipeline
                 </span>{" "}
                 — They are enrolled in the standard pipeline where you can track
                 their progress through each phase.
               </li>
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   NPN received triggers a second notification
                 </span>{" "}
                 — When the recruit's NPN (National Producer Number) is entered,
@@ -468,7 +468,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 sent.
               </li>
               <li>
-                <span className="font-medium text-foreground -subtle">
+                <span className="font-medium text-v2-ink-subtle">
                   Graduate to agent
                 </span>{" "}
                 — Once onboarding is complete, use the "Graduate" button to
@@ -535,7 +535,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-muted text-muted-foreground -subtle">
+                        <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
                           {(recruit.first_name?.[0] || "").toUpperCase()}
                           {(recruit.last_name?.[0] || "").toUpperCase()}
                         </AvatarFallback>
@@ -655,7 +655,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground -subtle dark:hover:text-muted-foreground"
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-v2-ink-subtle dark:hover:text-muted-foreground"
                         onClick={() => setEditingRecruit(recruit)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -663,7 +663,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive -muted dark:hover:text-destructive"
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive dark:hover:text-destructive"
                         onClick={() => setDeletingRecruit(recruit)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -1071,7 +1071,7 @@ function BasicDeleteRecruitDialog({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="h-7 text-[10px] bg-destructive hover:bg-destructive text-white"
+            className="h-7 text-[10px] bg-destructive hover:bg-destructive text-destructive-foreground"
             onClick={handleDelete}
             disabled={deleteRecruit.isPending}
           >
@@ -1210,7 +1210,7 @@ function BasicAddRecruitDialog({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-6 text-[10px] px-2 bg-card-dark hover:bg-black text-white dark:hover:bg-muted "
+          className="h-6 text-[10px] px-2 bg-secondary hover:bg-muted text-foreground dark:hover:bg-muted "
         >
           <UserPlus className="h-3 w-3 mr-1" />
           Add Recruit

@@ -89,7 +89,7 @@ export function SendInvitationModal({
 
         {/* Team size limit status */}
         {teamLimit && teamLimit.limit !== null && teamLimit.limit > 0 && (
-          <div className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-muted-foreground border-b border-border bg-card-tinted">
+          <div className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-muted-foreground border-b border-border bg-v2-card-tinted">
             <Users className="h-3 w-3" />
             <span>
               Team: {teamLimit.current} / {teamLimit.limit}
@@ -138,7 +138,7 @@ export function SendInvitationModal({
         {/* Warning - approaching limit */}
         {showWarning && (
           <div className="mx-4 mt-3">
-            <Alert className="py-2 px-3 border-warning/30 bg-warning/10/50 dark:bg-warning/10">
+            <Alert className="py-2 px-3 border-warning/30 bg-warning/10 dark:bg-warning/10">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-warning shrink-0" />
                 <AlertDescription className="text-[10px] text-warning">
@@ -216,7 +216,7 @@ export function SendInvitationModal({
             </form.Field>
           </div>
 
-          <DialogFooter className="px-4 py-3 border-t border-border bg-card-tinted">
+          <DialogFooter className="px-4 py-3 border-t border-border bg-v2-card-tinted">
             <Button
               type="button"
               variant="ghost"

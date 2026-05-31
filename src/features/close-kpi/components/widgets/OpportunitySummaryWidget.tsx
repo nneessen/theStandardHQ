@@ -141,7 +141,7 @@ export const OpportunitySummaryWidget: React.FC<
 
       {/* Pipeline Health signals */}
       {pipelineHealth && hasHealthWarnings && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded bg-warning/10 px-1.5 py-0.5 dark:bg-warning/10">
           <span className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-warning">
             <AlertTriangle className="h-2.5 w-2.5" />
             Signals

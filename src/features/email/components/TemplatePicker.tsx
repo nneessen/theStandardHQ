@@ -213,7 +213,7 @@ export function TemplatePicker({
             )}
           </DialogHeader>
           {/* Body capped at 40vh so header + footer always stay in viewport */}
-          <div className="overflow-y-auto border rounded-md bg-white p-3 max-h-[40vh]">
+          <div className="overflow-y-auto border rounded-md bg-card p-3 max-h-[40vh]">
             <div
               className="prose prose-sm max-w-none text-sm"
               dangerouslySetInnerHTML={{

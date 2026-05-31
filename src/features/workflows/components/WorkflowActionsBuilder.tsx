@@ -75,8 +75,7 @@ const ACTION_TYPES = [
     type: "wait",
     label: "Wait/Delay",
     icon: Clock,
-    color:
-      "bg-muted/10 border-input/20 text-muted-foreground dark:text-muted-foreground",
+    color: "bg-muted/10 border-input/20 text-muted-foreground",
   },
   {
     type: "webhook",
@@ -343,7 +342,7 @@ export default function WorkflowActionsBuilder({
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                className="h-7 w-7 border-info/30 hover:border-info hover:bg-info/10/50 dark:hover:bg-info/10"
+                                className="h-7 w-7 border-info/30 hover:border-info hover:bg-info/10"
                                 onClick={() =>
                                   setPreviewTemplate(
                                     action.config.templateId || null,
@@ -649,7 +648,7 @@ export default function WorkflowActionsBuilder({
                   {action.type === "wait" && (
                     <div className="flex items-center gap-2">
                       <div className="w-24">
-                        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                        <Label className="text-[10px] text-muted-foreground">
                           Wait Duration
                         </Label>
                         <Input
@@ -665,7 +664,7 @@ export default function WorkflowActionsBuilder({
                           min={0}
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground dark:text-muted-foreground mt-4">
+                      <span className="text-xs text-muted-foreground mt-4">
                         minutes
                       </span>
                     </div>
@@ -789,23 +788,19 @@ export default function WorkflowActionsBuilder({
 
               return (
                 <div className="space-y-4">
-                  <div className="p-3 rounded-lg bg-info/10/50 dark:bg-info/10 border border-info/30">
+                  <div className="p-3 rounded-lg bg-info/10 border border-info/30">
                     <div className="space-y-2">
                       <div>
                         <Label className="text-xs font-semibold text-info">
                           Template Name
                         </Label>
-                        <p className="text-sm text-info dark:text-info">
-                          {template.name}
-                        </p>
+                        <p className="text-sm text-info">{template.name}</p>
                       </div>
                       <div>
                         <Label className="text-xs font-semibold text-info">
                           Subject
                         </Label>
-                        <p className="text-sm text-info dark:text-info">
-                          {template.subject}
-                        </p>
+                        <p className="text-sm text-info">{template.subject}</p>
                       </div>
                     </div>
                   </div>
@@ -814,13 +809,13 @@ export default function WorkflowActionsBuilder({
                     <Label className="text-xs font-semibold text-muted-foreground">
                       Preview
                     </Label>
-                    <div className="p-4 rounded-lg border bg-white dark:bg-muted">
+                    <div className="p-4 rounded-lg border bg-muted">
                       <div className="prose prose-sm dark:prose-invert max-w-none">
                         <div
                           dangerouslySetInnerHTML={{
                             __html: template.body_html.replace(
                               /{{(.*?)}}/g,
-                              '<span class="px-1 py-0.5 bg-warning/20 dark:bg-warning text-warning rounded text-xs font-mono">{{$1}}</span>',
+                              '<span class="px-1 py-0.5 bg-warning/20 text-warning rounded text-xs font-mono">{{$1}}</span>',
                             ),
                           }}
                         />
@@ -829,7 +824,7 @@ export default function WorkflowActionsBuilder({
                   </div>
 
                   {template.variables && template.variables.length > 0 && (
-                    <div className="p-3 rounded-lg bg-warning/10/50 dark:bg-warning/10 border border-warning/30">
+                    <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
                       <Label className="text-xs font-semibold text-warning mb-2 block">
                         Dynamic Variables
                       </Label>
@@ -837,7 +832,7 @@ export default function WorkflowActionsBuilder({
                         {template.variables.map((v: string, i: number) => (
                           <code
                             key={i}
-                            className="text-xs px-2 py-1 bg-warning/20 dark:bg-warning text-warning rounded"
+                            className="text-xs px-2 py-1 bg-warning/20 text-warning rounded"
                           >
                             {`{{${v}}}`}
                           </code>

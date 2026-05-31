@@ -124,7 +124,7 @@ export function SegmentRecorder({
 
       {/* Existing segment info */}
       {existingSegment && recorder.state !== "done" && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg border border-success/30 bg-success/10/50 px-3 py-2 dark:border-success/50 dark:bg-success/10">
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-success/30 bg-success/10 px-3 py-2 dark:border-success/50 dark:bg-success/10">
           <span className="text-[11px] font-medium text-success">
             Recorded ({formatDuration(existingSegment.durationSeconds)})
           </span>
@@ -254,7 +254,7 @@ function RecordingControls({
     return (
       <Button
         size="sm"
-        className="h-8 text-[11px] px-4 bg-destructive hover:bg-destructive text-white"
+        className="h-8 text-[11px] px-4 bg-destructive hover:bg-destructive text-destructive-foreground"
         onClick={onStart}
       >
         <Mic className="h-3.5 w-3.5 mr-1.5" />

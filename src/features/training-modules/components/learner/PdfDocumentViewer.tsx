@@ -50,7 +50,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
           Array.from({ length: numPages }, (_, i) => (
             <div
               key={i}
-              className="mb-2 rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-white"
+              className="mb-2 rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-card"
             >
               <Page
                 pageNumber={i + 1}

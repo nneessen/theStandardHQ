@@ -335,13 +335,13 @@ export function ChatBotPage() {
               className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
               style={{ backgroundColor: "rgba(226, 255, 204, 0.25)" }}
             >
-              <Bot className="h-4 w-4 text-white" />
+              <Bot className="h-4 w-4 text-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-tight">
+              <h1 className="text-sm font-bold text-foreground tracking-tight">
                 AI Chat Bot
               </h1>
-              <p className="text-[10px] text-white/60">
+              <p className="text-[10px] text-muted-foreground">
                 SMS appointment setter powered by AI
               </p>
             </div>
@@ -354,7 +354,7 @@ export function ChatBotPage() {
               !agent.botEnabled && (
                 <Button
                   size="sm"
-                  className="h-7 px-4 text-[11px] font-bold bg-success hover:bg-success text-white shadow-md shadow-success/30 hover:shadow-success/30 transition-all animate-pulse"
+                  className="h-7 px-4 text-[11px] font-bold bg-success hover:bg-success text-success-foreground shadow-md shadow-success/30 hover:shadow-success/30 transition-all animate-pulse"
                   disabled={updateConfig.isPending}
                   onClick={() => updateConfig.mutate({ botEnabled: true })}
                 >
@@ -463,7 +463,7 @@ export function ChatBotPage() {
                 </p>
                 <Button
                   size="sm"
-                  className="h-8 px-4 text-[11px] font-semibold bg-info hover:bg-info text-white"
+                  className="h-8 px-4 text-[11px] font-semibold bg-info hover:bg-info text-info-foreground"
                   disabled={provisionTeamBot.isPending}
                   onClick={() =>
                     provisionTeamBot.mutate(undefined, {
@@ -499,7 +499,7 @@ export function ChatBotPage() {
                 <button
                   onClick={() => refetchAgent()}
                   disabled={agentLoading}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-white hover:bg-info disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-info-foreground hover:bg-info disabled:opacity-50"
                 >
                   {agentLoading ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -525,7 +525,7 @@ export function ChatBotPage() {
                 <button
                   onClick={handleRetryProvision}
                   disabled={retrying}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-white hover:bg-info disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-info-foreground hover:bg-info disabled:opacity-50"
                 >
                   {retrying ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

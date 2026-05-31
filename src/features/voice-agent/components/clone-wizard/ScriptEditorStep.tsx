@@ -170,7 +170,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
               Review and customize the scripts you'll read aloud during
               recording.
               {isCustom && (
-                <Badge className="ml-2 bg-info/20 text-info dark:bg-info/10/40 dark:text-info">
+                <Badge className="ml-2 bg-info/20 text-info dark:bg-info/10 dark:text-info">
                   Custom
                 </Badge>
               )}
@@ -434,7 +434,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-v2-ring bg-white px-4 py-2.5 dark:border-v2-ring dark:bg-v2-card">
+      <div className="border-t border-v2-ring bg-card px-4 py-2.5 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center justify-between">
           <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {scripts.length} scripts ·{" "}

@@ -126,13 +126,13 @@ export function ChannelOrchestrationPage() {
               className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
               style={{ backgroundColor: "rgba(226, 255, 204, 0.25)" }}
             >
-              <Network className="h-4 w-4 text-white" />
+              <Network className="h-4 w-4 text-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-tight">
+              <h1 className="text-sm font-bold text-foreground tracking-tight">
                 Channel Orchestration
               </h1>
-              <p className="text-[10px] text-white/60">
+              <p className="text-[10px] text-muted-foreground">
                 SMS + Voice routing rules, post-call actions, voice session
                 history
               </p>
@@ -154,7 +154,7 @@ export function ChannelOrchestrationPage() {
 
       {/* Per-tab status banners */}
       {activeTab === "rules" && (
-        <div className="flex items-center gap-3 rounded-lg border border-info/30 bg-info/10/50 px-4 py-2 dark:border-info dark:bg-info/10">
+        <div className="flex items-center gap-3 rounded-lg border border-info/30 bg-info/10 px-4 py-2 dark:border-info dark:bg-info/10">
           <ListChecks className="h-3.5 w-3.5 shrink-0 text-info" />
           <p className="text-[10px] text-info">
             Rules are evaluated in real-time for SMS and voice channels.

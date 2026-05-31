@@ -109,7 +109,7 @@ function TemplateRow({
   canEdit: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50">
+    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
       <TableCell className="py-1.5">
         <span className="font-medium text-foreground dark:text-foreground">
           {template.name}
@@ -129,7 +129,7 @@ function TemplateRow({
       <TableCell className="py-1.5">
         <Badge
           variant="secondary"
-          className={`text-[9px] px-1 py-0 ${template.is_active ? "bg-success/20 text-success dark:bg-success/30 dark:text-success" : "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground"}`}
+          className={`text-[9px] px-1 py-0 ${template.is_active ? "bg-success/20 text-success dark:bg-success/30 dark:text-success" : "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground"}`}
         >
           {template.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -227,7 +227,7 @@ function TemplateTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="h-6 bg-background dark:bg-card-tinted/50 hover:bg-background dark:hover:bg-card-tinted/50">
+        <TableRow className="h-6 bg-background dark:bg-v2-card-tinted/50 hover:bg-background dark:hover:bg-v2-card-tinted/50">
           <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Name
           </TableHead>
@@ -610,7 +610,7 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
           <Collapsible open={globalOpen} onOpenChange={setGlobalOpen}>
             <div className="rounded-lg border border-border dark:border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-background dark:bg-card-tinted/50 hover:bg-card-tinted dark:hover:bg-card-tinted transition-colors">
+                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-background dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors">
                   <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground dark:text-foreground">
                     <Globe className="h-3 w-3 text-info" />
                     Global Templates
@@ -652,7 +652,7 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
           <Collapsible open={personalOpen} onOpenChange={setPersonalOpen}>
             <div className="rounded-lg border border-border dark:border-border overflow-hidden">
               <CollapsibleTrigger asChild>
-                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-background dark:bg-card-tinted/50 hover:bg-card-tinted dark:hover:bg-card-tinted transition-colors">
+                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-background dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors">
                   <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground dark:text-foreground">
                     <User className="h-3 w-3 text-info" />
                     My Templates

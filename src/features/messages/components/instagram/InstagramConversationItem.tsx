@@ -90,12 +90,12 @@ export function InstagramConversationItem({
 
           {/* Priority star */}
           {conversation.is_priority && (
-            <Star className="h-3 w-3 flex-shrink-0 text-warning fill-amber-500" />
+            <Star className="h-3 w-3 flex-shrink-0 text-warning fill-warning" />
           )}
 
           {/* Linked lead badge */}
           {conversation.hasLinkedLead && (
-            <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-success/20 dark:bg-success/30 flex items-center justify-center">
+            <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-success/20 flex items-center justify-center">
               <User className="h-2 w-2 text-success" />
             </div>
           )}
@@ -122,7 +122,7 @@ export function InstagramConversationItem({
             </span>
           )}
           {hasUnread && (
-            <span className="ml-auto flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-white text-[9px] font-medium flex items-center justify-center">
+            <span className="ml-auto flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-info-foreground text-[9px] font-medium flex items-center justify-center">
               {conversation.unread_count > 99
                 ? "99+"
                 : conversation.unread_count}

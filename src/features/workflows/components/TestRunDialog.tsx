@@ -247,7 +247,7 @@ export default function TestRunDialog({
                               ? "bg-success/20 dark:bg-success/30 text-success"
                               : action.status === "failed"
                                 ? "bg-destructive/20 dark:bg-destructive/30 text-destructive"
-                                : "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground"
+                                : "bg-v2-card-tinted dark:bg-v2-card-tinted text-muted-foreground dark:text-muted-foreground"
                           }`}
                         >
                           {action.status}
@@ -281,7 +281,7 @@ export default function TestRunDialog({
         )}
 
         {/* Summary stats */}
-        <div className="rounded-md bg-background dark:bg-card-tinted/50 p-2 grid grid-cols-3 gap-2">
+        <div className="rounded-md bg-background dark:bg-v2-card-tinted/50 p-2 grid grid-cols-3 gap-2">
           <div className="text-center">
             <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Completed
@@ -360,7 +360,7 @@ export default function TestRunDialog({
               </div>
 
               {/* Workflow Info */}
-              <div className="rounded-md bg-background dark:bg-card-tinted/50 p-2 space-y-0.5">
+              <div className="rounded-md bg-background dark:bg-v2-card-tinted/50 p-2 space-y-0.5">
                 <div className="flex justify-between text-[10px]">
                   <span className="text-muted-foreground dark:text-muted-foreground">
                     Trigger

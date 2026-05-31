@@ -146,7 +146,7 @@ export function ChatBotLanding({
   return (
     <div className="space-y-6">
       {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-v2-ring-strong/50">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-card via-secondary to-card border border-v2-ring-strong/50">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(226, 255, 204, 0.18),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(132, 144, 127, 0.18),transparent_50%)]" />
         <div className="relative px-6 py-5">
@@ -157,7 +157,7 @@ export function ChatBotLanding({
                 <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white tracking-tight">
+                <h1 className="text-lg font-bold text-foreground tracking-tight">
                   AI-Powered SMS Appointment Setter
                 </h1>
                 <p className="text-[11px] text-v2-ink-subtle mt-1 leading-relaxed max-w-lg">
@@ -172,7 +172,7 @@ export function ChatBotLanding({
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-1.5">
                 <div className="w-14 h-14 rounded-lg bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
-                  <CloseLogo className="h-5 w-auto text-white" />
+                  <CloseLogo className="h-5 w-auto text-foreground" />
                 </div>
                 <span className="text-[9px] text-v2-ink-subtle font-medium">
                   Close CRM
@@ -235,7 +235,7 @@ export function ChatBotLanding({
                 ) : (
                   <Button
                     size="sm"
-                    className="h-7 text-[10px] px-4 bg-info hover:bg-info text-white"
+                    className="h-7 text-[10px] px-4 bg-info hover:bg-info text-info-foreground"
                     disabled={provisionTeamBot.isPending}
                     onClick={() =>
                       provisionTeamBot.mutate(undefined, {
@@ -293,7 +293,7 @@ export function ChatBotLanding({
                           className={cn(
                             "relative flex flex-col rounded-lg border p-3 text-left transition-all",
                             isSelected
-                              ? "border-success bg-success/10/50 dark:bg-success/10 ring-1 ring-success/30"
+                              ? "border-success bg-success/10 dark:bg-success/10 ring-1 ring-success/30"
                               : isPopular
                                 ? "border-v2-ink dark:border-v2-ring"
                                 : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
@@ -302,7 +302,7 @@ export function ChatBotLanding({
                           {/* Current plan badge — takes priority */}
                           {isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-info text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-info text-info-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Check className="h-2.5 w-2.5" />
                                 Current
                               </span>
@@ -312,7 +312,7 @@ export function ChatBotLanding({
                           {/* Popular badge */}
                           {isPopular && !isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-foreground dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Zap className="h-2.5 w-2.5" />
                                 Popular
                               </span>
@@ -322,7 +322,7 @@ export function ChatBotLanding({
                           {/* Selected badge */}
                           {isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-success text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-success text-success-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Check className="h-2.5 w-2.5" />
                                 Selected
                               </span>
@@ -332,7 +332,7 @@ export function ChatBotLanding({
                           {/* Free test badge */}
                           {isFree && !isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-warning text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-warning text-warning-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 Test
                               </span>
                             </div>
@@ -436,7 +436,7 @@ export function ChatBotLanding({
                           size="sm"
                           className={cn(
                             "h-7 text-[10px] px-4 flex-shrink-0",
-                            "bg-card hover:bg-v2-ink-muted dark:bg-v2-card-tinted dark:hover:bg-v2-ring dark:text-v2-ink text-white",
+                            "bg-card hover:bg-v2-ink-muted dark:bg-v2-card-tinted dark:hover:bg-v2-ring dark:text-v2-ink text-foreground",
                           )}
                           disabled={purchaseLoading || !canPurchase}
                           onClick={handlePurchase}
@@ -498,7 +498,7 @@ export function ChatBotLanding({
                       >
                         {tier.popular && (
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-foreground dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                               <Zap className="h-2.5 w-2.5" />
                               Popular
                             </span>
@@ -670,7 +670,7 @@ export function ChatBotLanding({
           <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
 
-        <div className="rounded-lg border border-warning/30/50 bg-warning/10/30 dark:bg-warning/10/10 p-4">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 dark:bg-warning/10 p-4">
           <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
             This bot currently works exclusively with{" "}
             <span className="font-semibold text-v2-ink dark:text-v2-ink">

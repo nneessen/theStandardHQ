@@ -463,7 +463,7 @@ export function LeadIntelligenceDashboard() {
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "vendor"
-              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
               : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >
@@ -474,7 +474,7 @@ export function LeadIntelligenceDashboard() {
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "purchases"
-              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
               : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >
@@ -485,7 +485,7 @@ export function LeadIntelligenceDashboard() {
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "policies"
-              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
               : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >

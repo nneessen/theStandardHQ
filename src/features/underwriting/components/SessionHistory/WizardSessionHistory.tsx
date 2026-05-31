@@ -399,7 +399,7 @@ function SessionDetailView({
         </div>
         <Button
           size="sm"
-          className="h-7 px-3 text-[10px] bg-warning hover:bg-warning text-white"
+          className="h-7 px-3 text-[10px] bg-warning hover:bg-warning text-warning-foreground"
           onClick={onLoad}
         >
           <Upload className="h-3 w-3 mr-1.5" />

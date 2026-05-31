@@ -128,7 +128,7 @@ export function ConversationThread({
                     : conversation.status === "scheduling" ||
                         conversation.status === "scheduled"
                       ? "bg-info/20 text-info dark:bg-info dark:text-info"
-                      : "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
+                      : "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
                 )}
               >
                 {conversation.status}
@@ -182,8 +182,8 @@ export function ConversationThread({
                     className={cn(
                       "max-w-[75%] rounded-lg px-2.5 py-1.5",
                       msg.direction === "outbound"
-                        ? "bg-info text-white"
-                        : "bg-card-tinted dark:bg-card-tinted text-foreground dark:text-foreground",
+                        ? "bg-info text-info-foreground"
+                        : "bg-v2-card-tinted dark:bg-v2-card-tinted text-foreground dark:text-foreground",
                     )}
                   >
                     <p className="text-[11px] whitespace-pre-wrap">
@@ -216,9 +216,9 @@ export function ConversationThread({
                       )}
                     >
                       {msg.senderType === "human" ? (
-                        <User className="h-2.5 w-2.5 text-white" />
+                        <User className="h-2.5 w-2.5 text-foreground" />
                       ) : (
-                        <Bot className="h-2.5 w-2.5 text-white" />
+                        <Bot className="h-2.5 w-2.5 text-info-foreground" />
                       )}
                     </div>
                   )}

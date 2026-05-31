@@ -14,16 +14,19 @@ interface SoftCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<SoftCardVariant, string> = {
-  default: "bg-v2-card text-v2-ink border border-v2-ring",
-  tinted: "bg-v2-card-tinted text-v2-ink border border-v2-ring",
+  // The board panel: warm gradient + stronger line border (riveted shadow added below).
+  default:
+    "bg-v2-card bg-panel-gradient text-v2-ink border border-v2-ring-strong",
+  tinted: "bg-v2-card-tinted text-v2-ink border border-v2-ring-strong",
   dark: "bg-v2-card-dark text-white border border-white/5",
-  accent: "bg-v2-accent text-v2-ink border border-v2-accent-strong",
+  accent: "bg-v2-accent text-board-bg border border-v2-accent-strong",
   ghost: "bg-transparent text-v2-ink border border-v2-ring",
 };
 
 const radiusStyles: Record<SoftCardRadius, string> = {
-  md: "rounded-v2-md",
-  lg: "rounded-v2-lg",
+  // Board geometry: small panels 8px, large panels 12px.
+  md: "rounded-[8px]",
+  lg: "rounded-[12px]",
 };
 
 const paddingStyles: Record<SoftCardPadding, string> = {
@@ -60,7 +63,7 @@ export const SoftCard = React.forwardRef<HTMLDivElement, SoftCardProps>(
           variantStyles[variant],
           radiusStyles[radius],
           paddingStyles[padding],
-          lift ? "shadow-v2-lift" : "shadow-v2-soft",
+          lift ? "shadow-board-panel" : "shadow-v2-soft",
           "transition-shadow duration-200",
           className,
         )}

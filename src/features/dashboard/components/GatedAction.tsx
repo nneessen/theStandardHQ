@@ -65,7 +65,7 @@ export const GatedAction: React.FC<GatedActionProps> = ({
         variant="outline"
         size="sm"
         className={cn(
-          "h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted",
+          "h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted",
           isLoading && "opacity-60 cursor-not-allowed",
           className,
         )}
@@ -90,7 +90,7 @@ export const GatedAction: React.FC<GatedActionProps> = ({
             className={cn(
               "h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border",
               "text-muted-foreground dark:text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground",
-              "hover:bg-background dark:hover:bg-card-tinted",
+              "hover:bg-background dark:hover:bg-v2-card-tinted",
               className,
             )}
           >

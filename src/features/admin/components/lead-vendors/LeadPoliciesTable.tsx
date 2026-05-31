@@ -476,8 +476,8 @@ export function LeadPoliciesTable({
                   className={cn(
                     "px-1.5 py-0.5 text-[10px] transition-colors",
                     pageSize === size
-                      ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                      : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                      ? "bg-v2-ring text-foreground"
+                      : "text-v2-ink-muted hover:bg-v2-ring",
                   )}
                 >
                   {size}
@@ -525,8 +525,8 @@ export function LeadPoliciesTable({
                       className={cn(
                         "px-1.5 py-0.5 text-[10px] rounded transition-colors",
                         page === item
-                          ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                          : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                          ? "bg-v2-ring text-foreground"
+                          : "text-v2-ink-muted hover:bg-v2-ring",
                       )}
                     >
                       {item}

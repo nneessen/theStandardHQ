@@ -401,7 +401,7 @@ export function RecruitListTable({
               >
                 <Avatar className="h-9 w-9 flex-shrink-0">
                   <AvatarImage src={recruit.profile_photo_url || undefined} />
-                  <AvatarFallback className="text-[10px] bg-muted text-muted-foreground -subtle">
+                  <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
                     {recruitInitials(recruit)}
                   </AvatarFallback>
                 </Avatar>
@@ -624,7 +624,7 @@ export function RecruitListTable({
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-muted text-muted-foreground -subtle">
+                        <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
                           {recruitInitials(recruit)}
                         </AvatarFallback>
                       </Avatar>
@@ -634,10 +634,10 @@ export function RecruitListTable({
                         ? `${recruit.first_name} ${recruit.last_name}`
                         : recruit.email?.split("@")[0] || "Unknown"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] text-muted-foreground -subtle truncate max-w-[200px]">
+                    <TableCell className="py-2 text-[12px] text-v2-ink-subtle truncate max-w-[200px]">
                       {recruit.email || "—"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-muted-foreground -subtle">
+                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-v2-ink-subtle">
                       {recruit.phone || "—"}
                     </TableCell>
                     <TableCell className="py-2.5">
@@ -649,7 +649,7 @@ export function RecruitListTable({
                               ? "bg-success/10 dark:bg-success/20 text-success ring-success/30 dark:ring-success"
                               : recruit.onboarding_status === "dropped"
                                 ? "bg-destructive/10 dark:bg-destructive/20 text-destructive ring-destructive/30 dark:ring-destructive"
-                                : "bg-muted dark:bg-muted text-foreground -subtle ring-border ",
+                                : "bg-muted dark:bg-muted text-v2-ink-subtle ring-border ",
                           )}
                         >
                           {recruit.onboarding_status?.replace(/_/g, " ")}
@@ -657,7 +657,7 @@ export function RecruitListTable({
                       ) : (
                         <div className="flex items-center gap-2">
                           <div className="flex-1 min-w-0">
-                            <div className="text-[12px] font-semibold text-foreground -subtle truncate">
+                            <div className="text-[12px] font-semibold text-v2-ink-subtle truncate">
                               {phaseName}
                             </div>
                             {summary && summary.totalItems > 0 && (
@@ -668,7 +668,7 @@ export function RecruitListTable({
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
-                                <span className="text-[10px] font-mono tabular-nums text-muted-foreground -subtle">
+                                <span className="text-[10px] font-mono tabular-nums text-v2-ink-subtle">
                                   {summary.completedItems}/{summary.totalItems}
                                 </span>
                               </div>
@@ -677,7 +677,7 @@ export function RecruitListTable({
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] text-muted-foreground -subtle">
+                    <TableCell className="py-2 text-[12px] text-v2-ink-subtle">
                       {recruitWithRelations.recruiter?.first_name
                         ? `${recruitWithRelations.recruiter.first_name[0]}. ${
                             recruitWithRelations.recruiter.last_name || ""
@@ -686,7 +686,7 @@ export function RecruitListTable({
                             "@",
                           )[0] || "—"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-muted-foreground -subtle">
+                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-v2-ink-subtle">
                       {daysInPipeline}
                     </TableCell>
                     <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">

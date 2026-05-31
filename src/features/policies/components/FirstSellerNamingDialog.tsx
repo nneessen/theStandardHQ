@@ -214,7 +214,7 @@ export function FirstSellerNamingDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="theme-v2 font-display sm:max-w-lg w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 overflow-hidden bg-card text-foreground border border-border rounded-v2-lg shadow-v2-lift flex flex-col">
         {/* Hero header — dark v2 card with subtle yellow glow */}
-        <div className="relative bg-foreground text-white px-6 py-6 overflow-hidden flex-shrink-0">
+        <div className="relative bg-secondary text-foreground px-6 py-6 overflow-hidden flex-shrink-0">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
 
@@ -223,7 +223,7 @@ export function FirstSellerNamingDialog({
               <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-accent text-foreground">
                 <Trophy className="h-5 w-5" />
               </span>
-              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-white/10 text-warning">
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-foreground/10 text-warning">
                 <Sparkles className="h-5 w-5" />
               </span>
             </div>
@@ -232,10 +232,10 @@ export function FirstSellerNamingDialog({
               <div className="text-[10px] font-semibold text-warning uppercase tracking-[0.18em]">
                 First sale today
               </div>
-              <DialogTitle className="text-2xl font-semibold tracking-tight text-white">
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-foreground">
                 Name today&apos;s leaderboard
               </DialogTitle>
-              <DialogDescription className="text-white/75 text-sm leading-relaxed">
+              <DialogDescription className="text-foreground/75 text-sm leading-relaxed">
                 You&apos;re the first to close a deal
                 {agencyName !== "IMO-Level" &&
                 agencyName !== "Self Made Financial"
@@ -249,15 +249,15 @@ export function FirstSellerNamingDialog({
 
             {/* Show channels that will receive the leaderboard */}
             {hasMultipleChannels && channelNames.length > 0 && (
-              <div className="mt-3 rounded-v2-md bg-white/5 px-3 py-2">
-                <span className="text-[10px] font-semibold text-white/60 uppercase tracking-[0.18em] block mb-1.5">
+              <div className="mt-3 rounded-v2-md bg-foreground/5 px-3 py-2">
+                <span className="text-[10px] font-semibold text-foreground/60 uppercase tracking-[0.18em] block mb-1.5">
                   Posting to {totalChannels} channels
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {channelNames.map((name) => (
                     <span
                       key={name}
-                      className="text-[11px] px-2 py-0.5 rounded-v2-pill bg-white/10 text-white/80"
+                      className="text-[11px] px-2 py-0.5 rounded-v2-pill bg-foreground/10 text-foreground/80"
                     >
                       #{name}
                     </span>
@@ -318,7 +318,7 @@ export function FirstSellerNamingDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-5 py-3 bg-card-tinted border-t border-border flex gap-2 flex-shrink-0">
+        <DialogFooter className="px-5 py-3 bg-v2-card-tinted border-t border-border flex gap-2 flex-shrink-0">
           <PillButton
             type="button"
             tone="ghost"

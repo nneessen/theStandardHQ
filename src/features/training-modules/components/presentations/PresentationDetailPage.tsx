@@ -110,7 +110,7 @@ export default function PresentationDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div
-            className={`p-1.5 rounded-md bg-card-tinted dark:bg-card-tinted/80 ${fileIconColor}`}
+            className={`p-1.5 rounded-md bg-v2-card-tinted dark:bg-v2-card-tinted/80 ${fileIconColor}`}
           >
             <FileIcon className="h-3.5 w-3.5" />
           </div>

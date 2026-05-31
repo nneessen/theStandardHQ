@@ -112,7 +112,7 @@ export function RuleRow({
         className={cn(
           "flex items-center gap-1.5 px-1.5 py-1 rounded border transition-colors",
           isExpanded
-            ? "border-info/30 bg-info/10/20 dark:bg-info/10/10"
+            ? "border-info/30 bg-info/10 dark:bg-info/10"
             : "border-v2-ring dark:border-v2-ring-strong bg-v2-card",
           !rule.enabled && "opacity-50",
         )}

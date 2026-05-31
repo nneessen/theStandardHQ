@@ -117,7 +117,7 @@ export function RecordingStep({
 
         {/* Submit bar */}
         {session && (
-          <div className="border-t border-v2-ring bg-white px-4 py-2.5 dark:border-v2-ring dark:bg-v2-card">
+          <div className="border-t border-v2-ring bg-card px-4 py-2.5">
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {session.canSubmit ? (

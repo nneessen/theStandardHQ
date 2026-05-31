@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 
 export function NotConnectedPrompt() {
   return (
-    <Card className="mx-auto max-w-xl border-warning/30 bg-warning/10/40 dark:border-warning/50 dark:bg-warning/10">
+    <Card className="mx-auto max-w-xl border-warning/30 bg-warning/10 dark:border-warning/50 dark:bg-warning/10">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
         <div className="rounded-full bg-warning/20 p-3 dark:bg-warning/40">
           <AlertTriangle className="h-6 w-6 text-warning" />

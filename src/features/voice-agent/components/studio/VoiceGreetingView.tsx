@@ -251,8 +251,8 @@ export function VoiceGreetingView({
               className={cn(
                 "flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5",
                 selectedVoice
-                  ? "border-success/30 bg-success/10/80 dark:border-success/40 dark:bg-success/10"
-                  : "border-warning/30 bg-warning/10/80 dark:border-warning/40 dark:bg-warning/10",
+                  ? "border-success/30 bg-success/10 dark:border-success/40 dark:bg-success/10"
+                  : "border-warning/30 bg-warning/10 dark:border-warning/40 dark:bg-warning/10",
               )}
             >
               <div className="min-w-0">
@@ -403,7 +403,7 @@ export function VoiceGreetingView({
                           .value as (typeof RETELL_VOICE_PROVIDERS)[number],
                       )
                     }
-                    className="flex h-8 w-full rounded-md border border-v2-ring bg-white px-2 py-1 text-xs dark:border-v2-ring-strong dark:bg-v2-card"
+                    className="flex h-8 w-full rounded-md border border-v2-ring bg-card px-2 py-1 text-xs dark:border-v2-ring-strong dark:bg-v2-card"
                   >
                     {RETELL_VOICE_PROVIDERS.map((provider) => (
                       <option key={provider} value={provider}>
@@ -532,7 +532,7 @@ export function VoiceGreetingView({
                         isSelected
                           ? "bg-foreground/5 dark:bg-foreground/5"
                           : isClone
-                            ? "bg-success/10/50 dark:bg-success/10/10"
+                            ? "bg-success/10 dark:bg-success/10"
                             : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40",
                       )}
                     >

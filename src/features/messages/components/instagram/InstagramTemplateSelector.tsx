@@ -308,7 +308,7 @@ export function InstagramTemplateSelector({
               </ScrollArea>
 
               {/* Footer with count */}
-              <div className="px-3 py-2 border-t border-border bg-background dark:bg-card-dark/50">
+              <div className="px-3 py-2 border-t border-border bg-card">
                 <p className="text-[10px] text-muted-foreground">
                   {filteredTemplates.length} of {templates.length} templates
                   {search && ` matching "${search}"`}
@@ -337,7 +337,7 @@ function ConversationContextPanel({
 }: ConversationContextPanelProps): ReactNode {
   if (!conversation) {
     return (
-      <div className="w-[280px] bg-background dark:bg-card-dark/50 p-4 flex items-center justify-center">
+      <div className="w-[280px] bg-card p-4 flex items-center justify-center">
         <div className="text-center">
           <User className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
           <p className="text-[11px] text-muted-foreground">
@@ -358,7 +358,7 @@ function ConversationContextPanel({
   const contextMessages = recentMessages.slice(0, 5);
 
   return (
-    <div className="w-[280px] bg-background dark:bg-card-dark/50 flex flex-col">
+    <div className="w-[280px] bg-card flex flex-col">
       {/* Contact header */}
       <div className="p-3 border-b border-border">
         <div className="flex items-center gap-2">
@@ -461,8 +461,8 @@ function FilterChip({
       className={cn(
         "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
         active
-          ? "bg-card-dark text-white dark:bg-muted dark:text-foreground"
-          : "bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-card-dark",
+          ? "bg-secondary text-secondary-foreground"
+          : "bg-muted text-muted-foreground hover:bg-muted",
       )}
     >
       {children}
@@ -504,8 +504,8 @@ function StageChip({
         active
           ? stage
             ? stageColors[stage]
-            : "bg-card-dark text-white dark:bg-muted dark:text-foreground"
-          : "bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-card-dark",
+            : "bg-secondary text-secondary-foreground"
+          : "bg-muted text-muted-foreground hover:bg-muted",
       )}
     >
       {children}
@@ -577,7 +577,7 @@ function TemplateCard({
             </span>
           )}
           {categoryLabel && (
-            <span className="text-[9px] px-1.5 py-0.5 bg-muted dark:bg-card-dark text-muted-foreground rounded">
+            <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
               {categoryLabel}
             </span>
           )}
@@ -587,7 +587,7 @@ function TemplateCard({
       {/* Content preview - show full content */}
       <p
         className={cn(
-          "text-[11px] text-muted-foreground dark:text-muted-foreground whitespace-pre-wrap break-words",
+          "text-[11px] text-muted-foreground whitespace-pre-wrap break-words",
           variant === "compact" ? "line-clamp-2" : "line-clamp-4",
         )}
       >
@@ -632,10 +632,10 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
         <MessageSquare className="h-10 w-10 text-muted-foreground mb-3" />
-        <p className="text-[12px] font-medium text-muted-foreground dark:text-muted-foreground mb-1">
+        <p className="text-[12px] font-medium text-muted-foreground mb-1">
           No templates yet
         </p>
-        <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground">
           Create templates in Settings → Instagram Templates
         </p>
       </div>
@@ -645,10 +645,10 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
       <Search className="h-10 w-10 text-muted-foreground mb-3" />
-      <p className="text-[12px] font-medium text-muted-foreground dark:text-muted-foreground mb-1">
+      <p className="text-[12px] font-medium text-muted-foreground mb-1">
         No templates found
       </p>
-      <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+      <p className="text-[11px] text-muted-foreground">
         {search
           ? `No templates match "${search}"`
           : "Try adjusting your filters"}

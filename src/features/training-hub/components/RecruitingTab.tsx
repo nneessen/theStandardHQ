@@ -192,12 +192,12 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
   const getPhaseColor = (status: string | null | undefined): string => {
     if (!status)
-      return "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground";
+      return "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground";
     // Use terminal status colors for completed/dropped, else default to blue for pipeline phases
     const colorClass = TERMINAL_STATUS_COLORS[status] || "bg-info/20 text-info";
     return (
       colorClass ||
-      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground"
+      "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground"
     );
   };
 
@@ -322,7 +322,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
         ) : (
           <Table>
             <TableHeader className="sticky top-0 z-10">
-              <TableRow className="h-7 bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+              <TableRow className="h-7 bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
                 <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[200px]">
                   Recruit
                 </TableHead>
@@ -367,7 +367,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                     className={`h-9 border-b border-border dark:border-border cursor-pointer transition-colors ${
                       isSelected
                         ? "bg-info/10"
-                        : "hover:bg-background dark:hover:bg-card-tinted/50"
+                        : "hover:bg-background dark:hover:bg-v2-card-tinted/50"
                     }`}
                   >
                     <TableCell className="py-1.5">

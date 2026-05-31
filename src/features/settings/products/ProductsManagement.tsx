@@ -396,7 +396,7 @@ export function ProductsManagement() {
                 handleDeleteConfirm();
               }}
               disabled={deleteProduct.isPending}
-              className="h-7 px-2 text-[10px] bg-destructive text-white hover:bg-destructive"
+              className="h-7 px-2 text-[10px] bg-destructive text-destructive-foreground hover:bg-destructive"
             >
               {deleteProduct.isPending ? "Deleting..." : "Delete Product"}
             </AlertDialogAction>

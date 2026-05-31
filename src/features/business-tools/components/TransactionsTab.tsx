@@ -417,7 +417,7 @@ export function TransactionsTab() {
                 });
                 setSelected(new Set());
               }}
-              className="px-2 py-0.5 text-[10px] rounded-full bg-white dark:bg-v2-ring border border-v2-ring  text-v2-ink-muted hover:bg-v2-canvas dark:hover:bg-v2-card-dark transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-full bg-card border border-v2-ring  text-v2-ink-muted hover:bg-v2-canvas dark:hover:bg-v2-card-dark transition-colors"
             >
               {preset.label}
             </button>

@@ -76,7 +76,7 @@ export const CloseSettings: React.FC = () => {
 
       {/* Missing close_config warning */}
       {botConnectedButMissingConfig && (
-        <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10/60 dark:bg-warning/10 px-3 py-2.5">
+        <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 dark:bg-warning/10 px-3 py-2.5">
           <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
           <div>
             <p className="text-[11px] font-medium text-warning">

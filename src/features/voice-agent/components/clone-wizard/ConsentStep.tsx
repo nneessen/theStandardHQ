@@ -34,7 +34,7 @@ export function ConsentStep({
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <div className="rounded-lg border border-v2-ring bg-white p-6 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Mic className="h-5 w-5 text-v2-ink-muted dark:text-v2-ink-subtle" />
           <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">

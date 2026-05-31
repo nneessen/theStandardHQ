@@ -93,7 +93,7 @@ export function CallBehaviorSection({
               onChange={(event) =>
                 onAgentFormChange("ambientSound", event.target.value)
               }
-              className="flex h-9 w-full rounded-md border border-v2-ring bg-white px-3 py-2 text-xs dark:border-v2-ring dark:bg-v2-card"
+              className="flex h-9 w-full rounded-md border border-v2-ring bg-card px-3 py-2 text-xs"
             >
               {AMBIENT_SOUND_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>

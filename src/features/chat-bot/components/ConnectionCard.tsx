@@ -69,9 +69,9 @@ export function ConnectionCard({
       className={cn(
         "p-3 border rounded-lg",
         visualState === "connected"
-          ? "border-success/30 bg-success/10/50 dark:bg-success/10"
+          ? "border-success/30 bg-success/10 dark:bg-success/10"
           : visualState === "unavailable"
-            ? "border-warning/30 bg-warning/10/60 dark:bg-warning/10"
+            ? "border-warning/30 bg-warning/10 dark:bg-warning/10"
             : "border-v2-ring dark:border-v2-ring bg-v2-card",
       )}
     >

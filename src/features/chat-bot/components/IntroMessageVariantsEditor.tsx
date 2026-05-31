@@ -46,7 +46,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="mb-3 flex items-start gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
@@ -218,7 +218,7 @@ function VariantRow({
             </div>
 
             {/* Active + Winner toggles */}
-            <div className="flex items-center justify-between gap-4 rounded-md border border-v2-ring bg-white px-2.5 py-1.5 dark:border-v2-ring-strong dark:bg-v2-card">
+            <div className="flex items-center justify-between gap-4 rounded-md border border-v2-ring bg-card px-2.5 py-1.5 dark:border-v2-ring-strong dark:bg-v2-card">
               <div className="flex items-center gap-2">
                 <Switch
                   variant="success"
@@ -238,13 +238,13 @@ function VariantRow({
                   checked={variant.isWinner}
                   onChange={(e) => onSelectWinner(e.target.checked)}
                   disabled={disabled}
-                  className="h-3 w-3 accent-amber-500"
+                  className="h-3 w-3 accent-warning"
                 />
                 <Star
                   className={cn(
                     "h-3 w-3",
                     variant.isWinner
-                      ? "fill-amber-500 text-warning"
+                      ? "fill-warning text-warning"
                       : "text-v2-ink-subtle",
                   )}
                 />

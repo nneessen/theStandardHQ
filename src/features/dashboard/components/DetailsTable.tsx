@@ -88,7 +88,7 @@ const DetailsColumn: React.FC<{ section: KPISection }> = ({ section }) => (
               </TooltipTrigger>
               <TooltipContent
                 side="top"
-                className="bg-card-dark border-border max-w-xs"
+                className="bg-v2-card-dark border-border max-w-xs"
               >
                 <div className="space-y-0.5">
                   <div className="text-xs font-semibold text-background">

@@ -225,7 +225,7 @@ export function AddCarrierDialog({
                       <span
                         className={`text-sm font-medium block truncate ${
                           isBlocked
-                            ? "text-muted-foreground -muted"
+                            ? "text-v2-ink-muted"
                             : isSelected
                               ? "text-success dark:text-success"
                               : "text-foreground"
@@ -274,7 +274,7 @@ export function AddCarrierDialog({
                   <button
                     onClick={() => setSelectedCarrierIds([])}
                     disabled={isAdding}
-                    className="text-xs text-muted-foreground hover:text-foreground -subtle dark:hover:text-muted-foreground underline"
+                    className="text-xs text-muted-foreground hover:text-v2-ink-subtle dark:hover:text-muted-foreground underline"
                   >
                     Clear
                   </button>

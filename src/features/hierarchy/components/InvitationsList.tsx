@@ -145,7 +145,7 @@ export function InvitationsList() {
                   key={invitation.id}
                   className={`flex items-center justify-between py-1.5 px-2 rounded transition-colors ${
                     isInvalid
-                      ? "bg-warning/10/50 dark:bg-warning/10 border border-warning/30"
+                      ? "bg-warning/10 dark:bg-warning/10 border border-warning/30"
                       : "hover:bg-v2-canvas"
                   }`}
                 >

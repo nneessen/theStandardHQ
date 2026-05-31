@@ -30,21 +30,19 @@ export function SidebarNavSection({
 }: SidebarNavSectionProps) {
   return (
     <div>
-      {!isCollapsed && groupIdx > 0 && (
-        <div className="my-1.5 mx-3 border-t border-v2-ring" />
-      )}
-
       {!isCollapsed && (
         <div
           className={cn(
-            "mb-1 px-3 flex items-center justify-between cursor-pointer group",
-            groupIdx > 0 ? "mt-2" : "mt-1",
+            "mb-1 px-3 flex items-center gap-2.5 cursor-pointer group",
+            groupIdx > 0 ? "mt-3" : "mt-1",
           )}
           onClick={() => onToggleSection(group.id)}
         >
-          <span className="text-[10px] font-semibold uppercase text-v2-ink-subtle tracking-[0.14em] select-none">
+          <span className="font-mono text-[11px] font-bold uppercase text-v2-ink-muted tracking-[0.16em] select-none whitespace-nowrap">
             {group.label}
           </span>
+          {/* hairline track running off to the right — departure-board look */}
+          <div className="flex-1 h-px bg-board-line" />
           <ChevronDown
             size={12}
             className={cn(

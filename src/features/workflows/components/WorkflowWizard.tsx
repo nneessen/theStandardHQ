@@ -425,7 +425,7 @@ export default function WorkflowWizard({
         hideCloseButton
       >
         {/* Header - compact but readable */}
-        <div className="shrink-0 pb-2 border-b border-border dark:border-border bg-background dark:bg-card-tinted/50 -m-3 mb-2 p-3 rounded-t-lg">
+        <div className="shrink-0 pb-2 border-b border-border dark:border-border bg-background dark:bg-v2-card-tinted/50 -m-3 mb-2 p-3 rounded-t-lg">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-sm font-semibold text-foreground dark:text-foreground">
               {workflow ? "Edit" : "Create"} Workflow
@@ -465,7 +465,7 @@ export default function WorkflowWizard({
                     className={cn(
                       "flex items-center justify-center w-5 h-5 rounded-full text-[10px]",
                       isActive &&
-                        "bg-foreground dark:bg-card-tinted text-white dark:text-foreground",
+                        "bg-foreground dark:bg-v2-card-tinted text-background dark:text-foreground",
                       isCompleted &&
                         !isActive &&
                         "bg-success/20 dark:bg-success/30 text-success",
@@ -507,7 +507,7 @@ export default function WorkflowWizard({
         </div>
 
         {/* Footer - fixed at bottom, compact */}
-        <div className="shrink-0 pt-2 mt-2 border-t border-border dark:border-border bg-background dark:bg-card-tinted/30 -m-3 p-3 rounded-b-lg">
+        <div className="shrink-0 pt-2 mt-2 border-t border-border dark:border-border bg-background dark:bg-v2-card-tinted/30 -m-3 p-3 rounded-b-lg">
           <div className="flex items-center justify-end gap-1.5">
             <Button
               variant="outline"
@@ -546,7 +546,7 @@ export default function WorkflowWizard({
                   onClick={handleSave}
                   disabled={isSubmitting}
                   size="sm"
-                  className="h-6 text-[10px] px-2 bg-success hover:bg-success text-white"
+                  className="h-6 text-[10px] px-2 bg-success hover:bg-success text-success-foreground"
                 >
                   <Save className="h-3 w-3 mr-1" />
                   {isSubmitting ? "Saving..." : workflow ? "Update" : "Create"}

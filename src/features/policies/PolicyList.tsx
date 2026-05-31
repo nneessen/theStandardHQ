@@ -561,7 +561,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
       {/* Table card */}
       <SoftCard padding="none" className="overflow-hidden flex flex-col">
         {/* Search + filter toggle (compact, single row) */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border bg-card-tinted">
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border bg-v2-card-tinted">
           <div className="flex-1 relative flex items-center min-w-0">
             <Search
               size={12}
@@ -603,7 +603,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
 
         {/* Collapsible Filter Panel */}
         {showFilters && (
-          <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+          <div className="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
             <Select
               value={filters.status || "all"}
               onValueChange={(value) =>
@@ -793,7 +793,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                 <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-1.5 py-0.5 -ml-1.5 rounded hover:bg-card-tinted dark:hover:bg-card-tinted transition-colors group">
+                      <button className="flex items-center gap-1 px-1.5 py-0.5 -ml-1.5 rounded hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors group">
                         <span className="group-hover:text-foreground dark:group-hover:text-background">
                           {dateColumnType === "effective"
                             ? "Effective"
@@ -915,7 +915,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   return (
                     <TableRow
                       key={policy.id}
-                      className="h-9 border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-card-tinted/50 transition-colors"
+                      className="h-9 border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
                     >
                       <TableCell className="text-[11px] text-foreground dark:text-foreground py-1.5 px-2 font-medium">
                         <div className="flex items-center gap-1.5">

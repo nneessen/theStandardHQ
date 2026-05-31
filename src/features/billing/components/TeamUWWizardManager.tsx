@@ -106,7 +106,7 @@ export function TeamUWWizardManager() {
 
       {/* Owner Usage Row */}
       {ownerUsage && (
-        <div className="p-2 bg-info/10/50 dark:bg-info/10 rounded border border-info/30">
+        <div className="p-2 bg-info/10 dark:bg-info/10 rounded border border-info/30">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-medium text-v2-ink-muted">
               Your Usage (Owner)
@@ -207,7 +207,7 @@ export function TeamUWWizardManager() {
           <select
             value={selectedAgentId}
             onChange={(e) => setSelectedAgentId(e.target.value)}
-            className="flex-1 h-7 text-[10px] rounded border border-v2-ring bg-white dark:bg-v2-ring px-2 text-v2-ink"
+            className="flex-1 h-7 text-[10px] rounded border border-v2-ring bg-input px-2 text-v2-ink"
           >
             <option value="">Select agent...</option>
             {eligibleAgents.map((agent) => (

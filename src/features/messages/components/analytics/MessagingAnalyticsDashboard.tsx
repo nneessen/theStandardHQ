@@ -59,9 +59,7 @@ export function MessagingAnalyticsDashboard() {
               variant={period === p.value ? "default" : "ghost"}
               size="sm"
               className={`h-6 px-2 text-[10px] ${
-                period === p.value
-                  ? "bg-white dark:bg-v2-card-dark shadow-sm"
-                  : "hover:bg-v2-ring/50 dark:hover:bg-v2-card-dark/50"
+                period === p.value ? "bg-card shadow-sm" : "hover:bg-v2-ring/50"
               }`}
               onClick={() => setPeriod(p.value)}
               disabled={isFetching}

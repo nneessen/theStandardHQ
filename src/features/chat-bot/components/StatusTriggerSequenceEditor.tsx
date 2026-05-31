@@ -65,9 +65,9 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
+    <div className="rounded-lg border border-border bg-card p-4 dark:border-border dark:bg-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-foreground dark:bg-v2-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
@@ -171,26 +171,26 @@ function DelayPicker({
 const STEP_COLORS = [
   {
     bg: "bg-info/10 dark:bg-info/20",
-    border: "border-l-blue-400 dark:border-l-blue-500",
-    hoverBorder: "hover:border-l-blue-500 dark:hover:border-l-blue-400",
+    border: "border-primary",
+    hoverBorder: "hover:border-primary",
     circle: "bg-info/20 text-info dark:bg-info/60 dark:text-info",
-    editCircle: "bg-info text-white",
+    editCircle: "bg-info text-info-foreground",
     badge: "bg-info/20 text-info dark:bg-info/50 dark:text-info",
   },
   {
     bg: "bg-warning/10 dark:bg-warning/20",
-    border: "border-l-amber-400 dark:border-l-amber-500",
-    hoverBorder: "hover:border-l-amber-500 dark:hover:border-l-amber-400",
+    border: "border-warning",
+    hoverBorder: "hover:border-warning",
     circle: "bg-warning/20 text-warning dark:bg-warning/60 dark:text-warning",
-    editCircle: "bg-warning text-white",
+    editCircle: "bg-warning text-warning-foreground",
     badge: "bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning",
   },
   {
     bg: "bg-success/10 dark:bg-success/20",
-    border: "border-l-emerald-400 dark:border-l-emerald-500",
-    hoverBorder: "hover:border-l-emerald-500 dark:hover:border-l-emerald-400",
+    border: "border-success",
+    hoverBorder: "hover:border-success",
     circle: "bg-success/20 text-success dark:bg-success/60 dark:text-success",
-    editCircle: "bg-success text-white",
+    editCircle: "bg-success text-success-foreground",
     badge: "bg-success/20 text-success dark:bg-success/50 dark:text-success",
   },
 ] as const;
@@ -441,7 +441,7 @@ function SequenceRow({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-border bg-white dark:border-border dark:bg-card">
+      <div className="rounded-lg border border-border bg-card dark:border-border dark:bg-card">
         {/* Header row */}
         <div className="flex items-center gap-1.5 px-2 py-1.5">
           <CollapsibleTrigger asChild>
@@ -528,7 +528,7 @@ function SequenceRow({
 
         {/* Collapsible steps area */}
         <CollapsibleContent>
-          <div className="border-t border-border bg-background/50 px-2 pb-2 pt-1.5 dark:border-border dark:bg-card-tinted/30">
+          <div className="border-t border-border bg-background/50 px-2 pb-2 pt-1.5 dark:border-border dark:bg-v2-card-tinted/30">
             <div className="space-y-0.5">
               {sequence.steps.map((step, stepIdx) =>
                 editingStepIndex === stepIdx ? (

@@ -105,7 +105,7 @@ export function UWLimitReachedDialog({
                 {upgradeTiers.map((tier) => (
                   <div
                     key={tier.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-warning/30 bg-warning/10/50 dark:bg-warning/10"
+                    className="flex items-center justify-between p-3 rounded-lg border border-warning/30 bg-warning/10 dark:bg-warning/10"
                   >
                     <div>
                       <p className="text-sm font-medium">{tier.name}</p>

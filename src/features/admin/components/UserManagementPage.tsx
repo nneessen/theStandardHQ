@@ -415,7 +415,7 @@ export function UserManagementPage() {
                 return (
                   <div
                     key={role.id}
-                    className={`border rounded p-2 ${isSelected ? "border-info/40 bg-info/10/50 dark:bg-info/10" : "border-border"}`}
+                    className={`border rounded p-2 ${isSelected ? "border-info/40 bg-info/10 dark:bg-info/10" : "border-border"}`}
                   >
                     <div className="flex items-start space-x-2">
                       <Checkbox

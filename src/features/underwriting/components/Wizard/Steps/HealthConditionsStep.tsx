@@ -245,7 +245,7 @@ export default function HealthConditionsStep({
             <Collapsible key={category} open={isCategoryExpanded(category)}>
               <CollapsibleTrigger
                 onClick={() => toggleCategory(category)}
-                className="w-full flex items-center justify-between px-4 py-2.5 bg-background dark:bg-card-tinted/50 hover:bg-card-tinted dark:hover:bg-card-tinted transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-background dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
               >
                 <span className="text-sm font-medium text-foreground dark:text-muted-foreground">
                   {CONDITION_CATEGORY_LABELS[category as ConditionCategory] ||
@@ -299,7 +299,7 @@ export default function HealthConditionsStep({
                           "flex items-center gap-2 py-2 px-2.5 rounded-md cursor-pointer transition-all border",
                           isSelected
                             ? "bg-info/10 border-info/30"
-                            : "bg-background dark:bg-card-tinted/50 border-border dark:border-border hover:bg-card-tinted dark:hover:bg-card-tinted hover:border-border dark:hover:border-border",
+                            : "bg-background dark:bg-v2-card-tinted/50 border-border dark:border-border hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted hover:border-border dark:hover:border-border",
                           activeConditionCode === condition.code &&
                             "ring-2 ring-warning ring-offset-1",
                         )}
@@ -324,7 +324,7 @@ export default function HealthConditionsStep({
                           }}
                         >
                           {isSelected && (
-                            <Check className="h-3 w-3 text-white" />
+                            <Check className="h-3 w-3 text-info-foreground" />
                           )}
                         </div>
                         <span
@@ -360,7 +360,7 @@ export default function HealthConditionsStep({
                 <span
                   key={c.conditionCode}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-2 py-1 bg-card-tinted border rounded-md text-xs cursor-pointer transition-colors",
+                    "inline-flex items-center gap-1.5 px-2 py-1 bg-v2-card-tinted border rounded-md text-xs cursor-pointer transition-colors",
                     activeConditionCode === c.conditionCode
                       ? "border-warning/70 text-warning ring-1 ring-warning"
                       : "border-info/30 dark:border-info text-foreground dark:text-muted-foreground hover:border-info/40",
@@ -477,7 +477,7 @@ export default function HealthConditionsStep({
                 </div>
                 <button
                   onClick={() => setActiveConditionCode(null)}
-                  className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground p-1 rounded hover:bg-card-tinted dark:hover:bg-card-tinted"
+                  className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground p-1 rounded hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -579,7 +579,7 @@ function FollowUpQuestionField({
       case "multiselect": {
         const selectedValues = (value as string[]) || [];
         return (
-          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-background dark:bg-card-tinted/50 rounded-md border border-border dark:border-border">
+          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-background dark:bg-v2-card-tinted/50 rounded-md border border-border dark:border-border">
             {sortedOptions.map((option) => (
               <div key={option} className="flex items-center gap-2">
                 <Checkbox

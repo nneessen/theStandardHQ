@@ -126,7 +126,7 @@ export function RoadmapItemCard({
     <div
       className={`rounded-lg border transition-all ${
         isCompleted
-          ? "border-success/30 bg-success/10/50 dark:bg-success/10"
+          ? "border-success/30 bg-success/10 dark:bg-success/10"
           : isSkipped
             ? "border-v2-ring dark:border-v2-ring bg-v2-card-tinted/50 dark:bg-v2-card-tinted/30 opacity-75"
             : "border-v2-ring dark:border-v2-ring bg-v2-card hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
@@ -140,7 +140,7 @@ export function RoadmapItemCard({
           disabled={upsertProgress.isPending}
           className={`mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center border-2 transition-all ${
             isCompleted
-              ? "bg-success border-success text-white hover:bg-success active:scale-95"
+              ? "bg-success border-success text-success-foreground hover:bg-success active:scale-95"
               : "border-v2-ring-strong dark:border-v2-ring-strong bg-v2-card hover:border-success active:scale-95"
           }`}
           aria-label={isCompleted ? "Mark as not complete" : "Mark as complete"}

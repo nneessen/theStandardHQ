@@ -58,7 +58,7 @@ export function InstructionsView({
           onClick={() => setMode("guided")}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "guided"
-              ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+              ? "bg-card text-v2-ink shadow-sm"
               : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle"
           }`}
         >
@@ -70,7 +70,7 @@ export function InstructionsView({
           onClick={() => setMode("advanced")}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "advanced"
-              ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+              ? "bg-card text-v2-ink shadow-sm"
               : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle"
           }`}
         >

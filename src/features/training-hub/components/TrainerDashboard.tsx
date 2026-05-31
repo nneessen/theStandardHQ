@@ -340,7 +340,7 @@ export function TrainerDashboard() {
   // Status badge helper
   const getStatusBadgeClass = (status: string | null): string => {
     if (!status)
-      return "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground";
+      return "bg-v2-card-tinted dark:bg-v2-card-tinted text-muted-foreground dark:text-muted-foreground";
     switch (status.toLowerCase()) {
       case "completed":
       case "approved":
@@ -354,7 +354,7 @@ export function TrainerDashboard() {
       case "pending":
         return "bg-warning/20 dark:bg-warning/30 text-warning";
       default:
-        return "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground";
+        return "bg-v2-card-tinted dark:bg-v2-card-tinted text-muted-foreground dark:text-muted-foreground";
     }
   };
 
@@ -401,7 +401,7 @@ export function TrainerDashboard() {
         </div>
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           {/* Time Period Switcher */}
-          <div className="flex items-center bg-card-tinted dark:bg-card-tinted rounded-md p-0.5">
+          <div className="flex items-center bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md p-0.5">
             {(["week", "month", "quarter"] as TimePeriod[]).map((period) => (
               <button
                 key={period}
@@ -412,7 +412,7 @@ export function TrainerDashboard() {
                 className={cn(
                   "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                   timePeriod === period
-                    ? "bg-white dark:bg-muted text-foreground dark:text-foreground shadow-sm"
+                    ? "bg-muted text-foreground shadow-sm"
                     : "text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
                 )}
               >
@@ -431,7 +431,7 @@ export function TrainerDashboard() {
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-card-tinted dark:bg-card-tinted rounded text-[10px] text-muted-foreground dark:text-muted-foreground">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[10px] text-muted-foreground dark:text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>
                 {format(dateRange.start, "MMM d")} -{" "}
@@ -689,7 +689,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/recruiting" })}
                   >
                     <UserPlus className="h-3 w-3 mr-1.5" />
@@ -698,7 +698,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/contracting" })}
                   >
                     <FileCheck className="h-3 w-3 mr-1.5" />
@@ -707,13 +707,13 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/messages" })}
                   >
                     <Mail className="h-3 w-3 mr-1.5" />
                     Messages
                     {messageStats?.unread ? (
-                      <Badge className="ml-auto h-4 px-1 text-[9px] bg-destructive text-white">
+                      <Badge className="ml-auto h-4 px-1 text-[9px] bg-destructive text-destructive-foreground">
                         {messageStats.unread}
                       </Badge>
                     ) : null}
@@ -721,7 +721,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/training-hub" })}
                   >
                     <GraduationCap className="h-3 w-3 mr-1.5" />
@@ -734,10 +734,10 @@ export function TrainerDashboard() {
               {recruitStats && recruitStats.total > 0 && (
                 <div
                   className={cn(
-                    "rounded-lg p-3 text-white",
+                    "rounded-lg p-3",
                     conversionRate >= 60
-                      ? "bg-success dark:bg-success"
-                      : "bg-warning dark:bg-warning",
+                      ? "bg-success text-success-foreground"
+                      : "bg-warning text-warning-foreground",
                   )}
                 >
                   <p className="text-[10px] font-medium opacity-80 uppercase tracking-wide">
@@ -929,10 +929,10 @@ export function TrainerDashboard() {
                             search: { recruitId: recruit.id },
                           })
                         }
-                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-card-tinted/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-card-tinted dark:bg-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                             {name.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -1020,10 +1020,10 @@ export function TrainerDashboard() {
                       <Link
                         key={contract.id}
                         to="/contracting"
-                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-card-tinted/50 transition-colors"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-card-tinted dark:bg-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                             {agentName.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -1086,7 +1086,7 @@ interface StatRowProps {
 
 function StatRow({ label, value, loading, icon, color }: StatRowProps) {
   return (
-    <div className="flex justify-between items-center text-[11px] hover:bg-background dark:hover:bg-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+    <div className="flex justify-between items-center text-[11px] hover:bg-background dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
       <div className="flex items-center gap-1.5 text-muted-foreground dark:text-muted-foreground">
         {icon}
         <span>{label}</span>
@@ -1131,7 +1131,7 @@ function PerformanceRow({
   }[status];
 
   return (
-    <tr className="hover:bg-background dark:hover:bg-card-tinted/50">
+    <tr className="hover:bg-background dark:hover:bg-v2-card-tinted/50">
       <td className="py-1.5 text-[11px] text-foreground dark:text-foreground">
         {metric}
       </td>
@@ -1163,7 +1163,7 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-background dark:hover:bg-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-background dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
           <span className="text-muted-foreground dark:text-muted-foreground">
             {label}
           </span>
@@ -1178,7 +1178,7 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
       </TooltipTrigger>
       <TooltipContent
         side="top"
-        className="max-w-xs bg-card dark:bg-card-tinted border-border"
+        className="max-w-xs bg-card dark:bg-v2-card-tinted border-border"
       >
         <div className="space-y-1">
           <div className="text-xs font-semibold text-background">{label}</div>

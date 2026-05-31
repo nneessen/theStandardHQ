@@ -70,7 +70,7 @@ export function CarrierDeleteDialog({
               onConfirm();
             }}
             disabled={isDeleting}
-            className="h-7 px-2 text-[10px] bg-destructive text-white hover:bg-destructive"
+            className="h-7 px-2 text-[10px] bg-destructive text-destructive-foreground hover:bg-destructive"
           >
             {isDeleting ? "Deleting..." : "Delete Carrier"}
           </AlertDialogAction>

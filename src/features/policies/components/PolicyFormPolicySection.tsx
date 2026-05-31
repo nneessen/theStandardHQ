@@ -50,7 +50,7 @@ export const PolicyFormPolicySection: React.FC<
   const { hasAccess: canViewCommissions } = useFeatureAccess("dashboard");
 
   return (
-    <div className="bg-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
+    <div className="bg-v2-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
       {/* Section header strip */}
       <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-border/60 dark:border-border/40">
         <FileText className="h-3 w-3 text-warning" />
@@ -80,7 +80,7 @@ export const PolicyFormPolicySection: React.FC<
               name="policyNumber"
               value={formData.policyNumber}
               onChange={onInputChange}
-              className={`h-8 text-[11px] bg-card-tinted ${displayErrors.policyNumber ? "border-destructive" : "border-input"}`}
+              className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.policyNumber ? "border-destructive" : "border-input"}`}
               placeholder="POL-123456"
             />
             <span className="text-[10px] text-muted-foreground">
@@ -108,7 +108,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="submitDate"
                 value={formData.submitDate}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.submitDate ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.submitDate ? "border-destructive" : "border-input"}`}
               />
               {displayErrors.submitDate && (
                 <span className="text-[10px] text-destructive">
@@ -137,7 +137,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="effectiveDate"
                 value={formData.effectiveDate}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.effectiveDate ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.effectiveDate ? "border-destructive" : "border-input"}`}
               />
               {displayErrors.effectiveDate && (
                 <span className="text-[10px] text-destructive">
@@ -169,7 +169,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="premium"
                 value={formData.premium || ""}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.premium ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.premium ? "border-destructive" : "border-input"}`}
                 placeholder="250.00"
                 step="0.01"
                 min="0"
@@ -360,7 +360,7 @@ export const PolicyFormPolicySection: React.FC<
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-border/60 dark:border-border/60 border-l-[3px] border-l-zinc-300 dark:border-l-zinc-600 bg-background/50 dark:bg-card-tinted/50 shadow-sm overflow-hidden">
+          <div className="rounded-lg border border-border/60 dark:border-border/60 border-l-[3px] border-l-zinc-300 dark:border-l-zinc-600 bg-background/50 dark:bg-v2-card-tinted/50 shadow-sm overflow-hidden">
             <div className="px-3 py-1.5 border-b border-border dark:border-border/40">
               <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
                 Financial Summary

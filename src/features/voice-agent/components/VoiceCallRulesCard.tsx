@@ -69,7 +69,7 @@ function Section({
   return (
     <section className="rounded-lg border border-border p-4 dark:border-border">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-foreground dark:bg-v2-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
@@ -229,7 +229,7 @@ export function VoiceCallRulesCard({
   );
 
   return (
-    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
+    <div className="rounded-lg border border-border bg-card p-4">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground dark:text-foreground">
         Call Rules
       </p>

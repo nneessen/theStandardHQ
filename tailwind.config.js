@@ -67,7 +67,7 @@ export default {
           pending: "var(--warning)",
           lapsed: "var(--error)",
         },
-        // Design System V2 — Crextio-inspired soft yellow/cream
+        // Design System V2 — repointed to "The Board" warm near-black palette
         v2: {
           canvas: "var(--v2-bg-canvas)",
           card: "var(--v2-bg-card)",
@@ -82,6 +82,29 @@ export default {
           ring: "var(--v2-ring)",
           "ring-strong": "var(--v2-ring-strong)",
         },
+        // "The Board" raw tokens — for the src/components/board/* layer.
+        // Usage: bg-board-panel, text-board-cyan, border-board-line2, etc.
+        board: {
+          bg: "var(--bg)",
+          panel: "var(--panel)",
+          panel2: "var(--panel2)",
+          tile: "var(--tile)",
+          cream: "var(--cream)",
+          ink: "var(--ink)",
+          mut: "var(--mut)",
+          mut2: "var(--mut2)",
+          line: "var(--line)",
+          line2: "var(--line2)",
+          blue: "var(--blue)",
+          cyan: "var(--cyan)",
+          amber: "var(--amber)",
+          red: "var(--red)",
+          green: "var(--green)",
+        },
+      },
+      backgroundImage: {
+        brushed: "var(--board-brushed)",
+        "panel-gradient": "var(--board-panel-gradient)",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -96,14 +119,14 @@ export default {
       boxShadow: {
         "v2-soft": "var(--v2-shadow-soft)",
         "v2-lift": "var(--v2-shadow-lift)",
+        "board-panel": "var(--board-panel-shadow)",
       },
       fontFamily: {
+        // Board type system: Hanken Grotesk (body), Space Mono (labels/numbers
+        // mono), Archivo (display/headings/big numbers). All via CSS vars.
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"],
-        // `display` keeps the v2 Plus Jakarta value so existing v2 surfaces
-        // are unchanged. App surfaces use `.text-page-title` (Big Shoulders
-        // Display via --font-display) for landing-style headlines.
-        display: "var(--v2-font-display)",
+        display: ["var(--v2-font-display)"],
       },
       animation: {
         fadeIn: "fadeIn 0.3s ease-in-out",

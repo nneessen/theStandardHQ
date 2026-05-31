@@ -120,7 +120,7 @@ function ThresholdInput({
             const parsed = parseFloat(e.target.value);
             if (!isNaN(parsed)) onChange(parsed);
           }}
-          className="w-14 px-1 py-0.5 text-[10px] text-right tabular-nums border border-border rounded bg-white dark:bg-muted text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-14 px-1 py-0.5 text-[10px] text-right tabular-nums border border-border rounded bg-muted text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
         />
         {suffix && (
           <span className="text-[9px] text-muted-foreground">{suffix}</span>
@@ -157,8 +157,8 @@ function SegmentedToggle<T extends string>({
             className={cn(
               "px-1.5 py-0.5 text-[10px] font-medium transition-colors",
               value === opt.value
-                ? "bg-muted text-white dark:bg-muted dark:text-foreground"
-                : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted",
             )}
           >
             {opt.label}
@@ -422,8 +422,8 @@ export function PackPurchaseTable({
               className={cn(
                 "px-1.5 py-0.5 text-[10px] font-medium rounded border transition-colors",
                 filters.quickSale
-                  ? "bg-muted text-white border-border dark:bg-muted dark:text-foreground dark:border-border"
-                  : "text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted",
+                  ? "bg-muted text-foreground border-border"
+                  : "text-muted-foreground border-border hover:bg-muted",
               )}
             >
               {`\u2264${thresholds.quickSaleMaxDays}d`}
@@ -709,8 +709,8 @@ export function PackPurchaseTable({
                   className={cn(
                     "px-1.5 py-0.5 text-[10px] transition-colors",
                     pageSize === size
-                      ? "bg-muted text-white dark:bg-muted dark:text-foreground"
-                      : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:bg-muted",
                   )}
                 >
                   {size}
@@ -758,8 +758,8 @@ export function PackPurchaseTable({
                       className={cn(
                         "px-1.5 py-0.5 text-[10px] rounded transition-colors",
                         page === item
-                          ? "bg-muted text-white dark:bg-muted dark:text-foreground"
-                          : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:bg-muted",
                       )}
                     >
                       {item}

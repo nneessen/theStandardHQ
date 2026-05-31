@@ -115,7 +115,7 @@ export function ConfirmStep({
           size="sm"
           onClick={onConfirm}
           disabled={isDropping}
-          className="gap-1.5 text-xs bg-success hover:bg-success text-white"
+          className="gap-1.5 text-xs bg-success hover:bg-success text-success-foreground"
         >
           {isDropping
             ? "Starting…"

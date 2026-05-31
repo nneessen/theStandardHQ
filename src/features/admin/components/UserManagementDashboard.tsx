@@ -558,7 +558,7 @@ export const UserManagementDashboard: React.FC = () => {
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white dark:!bg-muted border-2">
+                        <SelectContent className="!bg-popover border-2">
                           <SelectItem value="approved">Approved</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="denied">Denied</SelectItem>

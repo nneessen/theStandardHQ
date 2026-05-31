@@ -599,7 +599,7 @@ export function CampaignWizard({
           <div className="rounded-md border border-border bg-background dark:bg-card max-h-[140px] overflow-y-auto">
             <table className="w-full text-[10px]">
               <thead>
-                <tr className="border-b border-border/60 bg-card-tinted dark:bg-card-tinted">
+                <tr className="border-b border-border/60 bg-v2-card-tinted dark:bg-v2-card-tinted">
                   <th className="text-left font-medium text-muted-foreground px-2 py-1">
                     Email
                   </th>
@@ -756,7 +756,7 @@ export function CampaignWizard({
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium px-0.5">
             Email Preview
           </p>
-          <div className="rounded-md border border-border overflow-hidden bg-white">
+          <div className="rounded-md border border-border overflow-hidden bg-card">
             <iframe
               srcDoc={previewHtml}
               title="Email Preview"
@@ -874,7 +874,7 @@ export function CampaignWizard({
             ) : (
               <Button
                 size="sm"
-                className="h-7 text-[11px] px-3 gap-1 bg-success hover:bg-success text-white"
+                className="h-7 text-[11px] px-3 gap-1 bg-success hover:bg-success text-success-foreground"
                 onClick={() => setConfirmSend(true)}
                 disabled={state.sending}
               >
@@ -908,7 +908,7 @@ export function CampaignWizard({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-success hover:bg-success text-white"
+              className="h-7 text-[11px] bg-success hover:bg-success text-success-foreground"
               onClick={handleSend}
               disabled={state.sending}
             >

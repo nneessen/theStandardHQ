@@ -304,7 +304,7 @@ function RecruitingDashboardContent() {
             )}
             <span className="text-v2-ink-muted">·</span>
             <span>
-              <span className="font-mono font-semibold text-emerald-600 tabular-nums">
+              <span className="font-mono font-semibold text-success tabular-nums">
                 {stats.completed}
               </span>{" "}
               complete
@@ -617,7 +617,7 @@ function FreeUplineRecruitingView() {
             </span>
             <span className="text-v2-ink-muted">·</span>
             <span>
-              <span className="font-mono font-semibold text-emerald-600 tabular-nums">
+              <span className="font-mono font-semibold text-success tabular-nums">
                 {stats.completed}
               </span>{" "}
               complete

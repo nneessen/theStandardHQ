@@ -168,7 +168,7 @@ export function ResponseScheduleSection() {
                         : "Replies deferred"}
                     </p>
                   </div>
-                  <div className="rounded-full border border-v2-ring bg-white px-2 py-0.5 text-[9px] font-medium text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-muted xl:hidden">
+                  <div className="rounded-full border border-v2-ring bg-card px-2 py-0.5 text-[9px] font-medium text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-muted xl:hidden">
                     {day.sameDayBookingEnabled
                       ? `Same-day ${usesResponseEndForCutoff ? "until end" : `until ${day.sameDayBookingCutoffTime}`}`
                       : "No same-day"}
@@ -209,7 +209,7 @@ export function ResponseScheduleSection() {
                       }
                       disabled={!day.responsesEnabled || updateConfig.isPending}
                       className={cn(
-                        "h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
+                        "h-8 w-full rounded-md border border-v2-ring-strong bg-input px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         !day.responsesEnabled &&
                           "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                       )}
@@ -234,7 +234,7 @@ export function ResponseScheduleSection() {
                       }
                       disabled={!day.responsesEnabled || updateConfig.isPending}
                       className={cn(
-                        "h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
+                        "h-8 w-full rounded-md border border-v2-ring-strong bg-input px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         !day.responsesEnabled &&
                           "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                       )}
@@ -281,7 +281,7 @@ export function ResponseScheduleSection() {
                         updateConfig.isPending
                       }
                       className={cn(
-                        "h-8 min-w-0 flex-1 rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
+                        "h-8 min-w-0 flex-1 rounded-md border border-v2-ring-strong bg-input px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         (!day.sameDayBookingEnabled ||
                           usesResponseEndForCutoff) &&
                           "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",

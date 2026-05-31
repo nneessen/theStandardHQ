@@ -47,7 +47,7 @@ export function HowItWorksTab() {
         <div className="grid grid-cols-3 gap-4">
           {steps.map((item, i) => (
             <div key={item.step} className="flex items-start gap-2.5">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-white text-[10px] font-bold flex-shrink-0 mt-0.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-[10px] font-bold flex-shrink-0 mt-0.5">
                 {item.step}
               </div>
               <div className="flex-1 min-w-0">

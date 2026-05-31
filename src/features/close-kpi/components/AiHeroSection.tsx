@@ -134,7 +134,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           : "text-info";
 
   return (
-    <div className="rounded-lg border border-info/80 dark:border-info/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30  dark:to-indigo-950/20 shadow-sm shadow-info/30 dark:shadow-info/30 overflow-hidden ring-1 ring-info/50 dark:ring-info/20">
+    <div className="rounded-lg border border-info/80 dark:border-info/20 bg-gradient-to-br from-violet-50/60 via-card to-indigo-50/40 dark:from-violet-950/30  dark:to-indigo-950/20 shadow-sm shadow-info/30 dark:shadow-info/30 overflow-hidden ring-1 ring-info/50 dark:ring-info/20">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-info/40 dark:border-info/30">
         <div className="flex items-center gap-2">
@@ -341,7 +341,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Action callout — slim single-line */}
             {actionableCount > 0 ? (
-              <div className="w-full flex items-center gap-2 rounded-lg bg-destructive/10/60 dark:bg-destructive/10/25 border border-destructive/30/50 dark:border-destructive/40 px-3 py-2">
+              <div className="w-full flex items-center gap-2 rounded-lg bg-destructive/10 dark:bg-destructive/10 border border-destructive/30 dark:border-destructive/40 px-3 py-2">
                 <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-destructive/15 shrink-0">
                   <Flame className="h-3.5 w-3.5 text-destructive" />
                 </div>
@@ -355,7 +355,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="w-full rounded-lg bg-info/10/60 dark:bg-info/10/25 border border-info/50 dark:border-info/40 px-3 py-2 text-center">
+              <div className="w-full rounded-lg bg-info/10 dark:bg-info/10 border border-info/50 dark:border-info/40 px-3 py-2 text-center">
                 <span className="text-[10px] font-medium text-info">
                   No urgent leads — pipeline is stable
                 </span>
@@ -498,7 +498,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Overall assessment — prominent quote block */}
             {insightsData?.overallAssessment && (
-              <div className="rounded-md border-l-2 border-info dark:border-info bg-info/10/40 dark:bg-info/10/15 pl-3 pr-2.5 py-2">
+              <div className="rounded-md border-l-2 border-info dark:border-info bg-info/10 dark:bg-info/10 pl-3 pr-2.5 py-2">
                 <p className="text-[11px] text-foreground leading-relaxed italic">
                   {insightsData.overallAssessment}
                 </p>
@@ -511,7 +511,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             >
               {/* Top recommendation */}
               {topRecommendation && (
-                <div className="rounded-md border border-info/60 dark:border-info/40 bg-info/10/30 dark:bg-info/10/10 px-2.5 py-2">
+                <div className="rounded-md border border-info/60 dark:border-info/40 bg-info/10 dark:bg-info/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
                     <Target className="h-2.5 w-2.5 text-info" />
                     <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-info">
@@ -526,7 +526,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
               {/* Top anomaly */}
               {topAnomaly && (
-                <div className="rounded-md border border-warning/30/60 dark:border-warning/40 bg-warning/10/30 dark:bg-warning/10/10 px-2.5 py-2">
+                <div className="rounded-md border border-warning/30 dark:border-warning/40 bg-warning/10 dark:bg-warning/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
                     <AlertTriangle className="h-2.5 w-2.5 text-warning" />
                     <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-warning">

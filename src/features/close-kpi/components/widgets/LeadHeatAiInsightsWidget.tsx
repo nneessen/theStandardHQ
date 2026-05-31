@@ -22,9 +22,9 @@ interface LeadHeatAiInsightsWidgetProps {
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  high: "border-destructive/30 bg-destructive/10/50 dark:border-destructive dark:bg-destructive/10",
+  high: "border-destructive/30 bg-destructive/10 dark:border-destructive dark:bg-destructive/10",
   medium:
-    "border-warning/30 bg-warning/10/50 dark:border-warning dark:bg-warning/10",
+    "border-warning/30 bg-warning/10 dark:border-warning dark:bg-warning/10",
   low: "border-v2-ring bg-v2-canvas/50  dark:bg-v2-ring/20",
 };
 

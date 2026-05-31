@@ -37,7 +37,7 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
       <table className="border-collapse">
         <thead>
           <tr>
-            <th className="sticky left-0 bg-white z-[2] p-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border">
+            <th className="sticky left-0 bg-card z-[2] p-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border">
               Cohort
             </th>
             <th className="p-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border">
@@ -59,7 +59,7 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
               key={cohort.cohortMonth}
               className={idx < data.length - 1 ? "border-b border-muted" : ""}
             >
-              <td className="sticky left-0 bg-white z-[1] py-2.5 px-2 font-semibold text-xs text-foreground whitespace-nowrap">
+              <td className="sticky left-0 bg-card z-[1] py-2.5 px-2 font-semibold text-xs text-foreground whitespace-nowrap">
                 {cohort.cohortLabel}
               </td>
               <td className="py-2.5 px-2 text-center font-medium text-xs text-muted-foreground">

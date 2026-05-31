@@ -231,7 +231,10 @@ function AuthenticatedApp() {
       <CookieConsentBanner />
       <ImoProvider>
         <SunsetGate>
-          <div className="theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
+          {/* `dark` is scoped here (not on <html>) so "The Board" dark theme +
+              dark: variants apply ONLY inside the authenticated shell — public
+              pages follow the global theme untouched. */}
+          <div className="dark theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
             {shouldHideSidebar ? (
               <>
                 <FreeUserHeader

@@ -211,7 +211,7 @@ export function ManageLeadPurchaseDialog({
           hideCloseButton
         >
           {/* Header */}
-          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight">
@@ -414,7 +414,7 @@ export function ManageLeadPurchaseDialog({
                       <Label className="text-[11px] text-muted-foreground">
                         Cost/lead
                       </Label>
-                      <div className="h-7 flex items-center px-2 bg-card-tinted border border-border rounded-md text-xs font-mono text-muted-foreground tabular-nums">
+                      <div className="h-7 flex items-center px-2 bg-v2-card-tinted border border-border rounded-md text-xs font-mono text-muted-foreground tabular-nums">
                         ${costPerLead.toFixed(2)}
                       </div>
                     </div>
@@ -473,7 +473,7 @@ export function ManageLeadPurchaseDialog({
                       <div className="h-px flex-1 bg-border" />
                     </div>
 
-                    <div className="border border-border rounded-md overflow-hidden bg-card-tinted">
+                    <div className="border border-border rounded-md overflow-hidden bg-v2-card-tinted">
                       {isLoadingPolicies ? (
                         <div className="p-2.5 space-y-1.5">
                           {[1, 2].map((i) => (
@@ -575,7 +575,7 @@ export function ManageLeadPurchaseDialog({
             </div>
 
             {/* Footer — fixed, no scroll */}
-            <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+            <DialogFooter className="px-5 py-3 border-t border-border bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
               <PillButton
                 type="button"
                 tone="ghost"

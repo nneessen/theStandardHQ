@@ -155,7 +155,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
             <>
               <button
                 onClick={() => onConfigure(widget)}
-                className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted/60 dark:hover:bg-card-dark/60 transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted/60 dark:hover:bg-v2-card-dark/60 transition-colors"
                 title="Configure"
               >
                 <Settings className="h-3 w-3 text-muted-foreground" />
@@ -163,7 +163,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
               <button
                 onClick={() => onDelete(widget.id)}
                 disabled={isDeleting}
-                className="flex h-5 w-5 items-center justify-center rounded hover:bg-destructive/20/60 dark:hover:bg-destructive/15 transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-destructive/20 dark:hover:bg-destructive/15 transition-colors"
                 title="Remove widget"
               >
                 {isDeleting ? (
@@ -265,7 +265,7 @@ export const CustomDashboard: React.FC = () => {
           <h2 className="text-xs font-bold text-foreground">My Dashboard</h2>
         </div>
 
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border  bg-background/50 dark:bg-card-dark/50 py-12">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border  bg-background/50 dark:bg-v2-card-dark/50 py-12">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted mb-3">
             <Plus className="h-5 w-5 text-muted-foreground" />
           </div>

@@ -148,11 +148,11 @@ export default function WorkflowManager() {
 
   const statusColors = {
     draft:
-      "bg-card-tinted text-foreground dark:bg-card-tinted dark:text-muted-foreground",
+      "bg-v2-card-tinted text-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
     active: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
     paused: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
     archived:
-      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
+      "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
   };
 
   const triggerIcons = {
@@ -179,10 +179,10 @@ export default function WorkflowManager() {
         className="h-full flex flex-col"
       >
         <div className="flex items-center justify-between mb-2">
-          <TabsList className="h-7 bg-card-tinted dark:bg-card-tinted">
+          <TabsList className="h-7 bg-v2-card-tinted dark:bg-v2-card-tinted">
             <TabsTrigger
               value="workflows"
-              className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+              className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
             >
               Workflows
             </TabsTrigger>
@@ -190,14 +190,14 @@ export default function WorkflowManager() {
               <>
                 <TabsTrigger
                   value="templates"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+                  className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
                 >
                   <Mail className="h-3 w-3 mr-1" />
                   Email Templates
                 </TabsTrigger>
                 <TabsTrigger
                   value="events"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+                  className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
                 >
                   <Shield className="h-3 w-3 mr-1" />
                   Event Types
@@ -256,7 +256,7 @@ export default function WorkflowManager() {
 
             {/* Recent Runs - Collapsible inline view */}
             {showRecentRuns && runs.length > 0 && (
-              <div className="mb-2 rounded-lg border border-border dark:border-border px-2.5 py-2 bg-background dark:bg-card-tinted/50">
+              <div className="mb-2 rounded-lg border border-border dark:border-border px-2.5 py-2 bg-background dark:bg-v2-card-tinted/50">
                 <div className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground uppercase mb-1">
                   Recent Activity
                 </div>
@@ -329,7 +329,7 @@ export default function WorkflowManager() {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="h-7 bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+                    <TableRow className="h-7 bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
                       <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Name
                       </TableHead>
@@ -356,7 +356,7 @@ export default function WorkflowManager() {
                       return (
                         <TableRow
                           key={workflow.id}
-                          className="h-8 border-b border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50"
+                          className="h-8 border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50"
                         >
                           <TableCell className="py-1">
                             <div className="flex items-center gap-1.5">

@@ -29,15 +29,41 @@ import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency, formatCompactCurrency } from "@/lib/format";
 
-import { PaceLines, type PaceLine } from "./components/PaceLines";
-import { EditorialAlerts } from "./components/EditorialAlerts";
-import { DashboardHeader } from "./components/DashboardHeader";
-import { HeroStatStrip, type HeroStat } from "./components/HeroStatStrip";
 import { DetailsTable } from "./components/DetailsTable";
 import { OrgMetricsSection } from "./components/OrgMetricsSection";
 import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
 
+// "The Board" departure-board composition.
+import { useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BoardPageHeader, Ticker, T } from "@/components/board";
+import {
+  BoardHero,
+  QuickActions,
+  BoardStatRow,
+  BoardFlags,
+  type BoardFlag,
+} from "./components/board";
+import { useMyRank } from "./hooks/useMyRank";
+
 import { SectionShell, SoftCard } from "@/components/v2";
+
+// Board period control ↔ app TimePeriod.
+const BOARD_PERIODS = ["DAY", "WK", "MTD", "MO", "YR"] as const;
+const LABEL_TO_PERIOD: Record<string, TimePeriod> = {
+  DAY: "daily",
+  WK: "weekly",
+  MTD: "MTD",
+  MO: "monthly",
+  YR: "yearly",
+};
+const PERIOD_TO_LABEL: Record<TimePeriod, string> = {
+  daily: "DAY",
+  weekly: "WK",
+  MTD: "MTD",
+  monthly: "MO",
+  yearly: "YR",
+};
 
 import { ExpenseDialogCompact as ExpenseDialog } from "../expenses/components/ExpenseDialogCompact";
 import { PolicyDialog } from "../policies/components/PolicyDialog";
@@ -198,6 +224,10 @@ export const DashboardHome: React.FC = () => {
   const { data: unreadNotifications } = useUnreadCount();
   const { data: unreadMessages } = useUnreadMessageCount();
 
+  const navigate = useNavigate();
+  // Current user's REAL leaderboard rank for the Season Rank hero panel.
+  const myRank = useMyRank();
+
   // Realistic target plan — same source the Targets page tunes via Realism
   // Settings. Falls back to breakeven-based pace if no target set yet.
   const { calculated: calculatedTargets } = useCalculatedTargets();
@@ -217,10 +247,8 @@ export const DashboardHome: React.FC = () => {
     timePeriod,
   );
   const periodSuffix = getPeriodSuffix(timePeriod);
-  const isCreating = createPolicy.isPending || createExpense.isPending;
 
   const elapsed = periodElapsed(timePeriod, dateRange, periodOffset);
-  const expectedPct = elapsed.pct;
   const title = periodTitle(timePeriod, dateRange);
   const showDaysSubtitle = elapsed.daysTotal > 1;
 
@@ -250,38 +278,13 @@ export const DashboardHome: React.FC = () => {
     periodSuffix,
   });
 
-  // Pace targets pull from the realistic plan when set: gross commission
-  // needed monthly (i.e. what you must earn pre-tax/pre-expense to take home
-  // the goal) and apps to write monthly. When no target is set, fall back to
-  // the legacy breakeven-derived pace so the dashboard still has SOMETHING to
-  // pace against.
-  const realisticMonthlyCommission =
-    calculatedTargets && calculatedTargets.realisticGrossCommissionNeeded > 0
-      ? calculatedTargets.realisticGrossCommissionNeeded / 12
-      : null;
-  const commissionTarget =
-    realisticMonthlyCommission ??
-    periodAnalytics.paceMetrics.monthlyTarget ??
-    null;
+  // Policy target pulls from the realistic plan when set (apps to write
+  // monthly); otherwise falls back to the breakeven-derived pace so the board
+  // still has SOMETHING to pace against.
   const policyTarget =
     calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
       ? calculatedTargets.realisticMonthlyAppsToWrite
       : periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
-
-  const paceLines: PaceLine[] = [
-    {
-      label: "Commissions",
-      current: (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0),
-      target: commissionTarget,
-      unit: "$",
-    },
-    {
-      label: "Policies",
-      current: periodPolicies.newCount,
-      target: policyTarget > 0 ? policyTarget : null,
-      unit: "#",
-    },
-  ];
 
   const handleSaveExpense = async (data: CreateExpenseData) => {
     try {
@@ -409,90 +412,132 @@ export const DashboardHome: React.FC = () => {
   const safePct = (current: number, target: number): number =>
     target > 0 ? Math.min(1, current / target) : current > 0 ? 1 : 0;
 
-  const heroStats: HeroStat[] = [
-    {
-      label: "Premium",
-      value: formatCompactCurrency(periodPolicies.premiumWritten),
-      pct: safePct(periodPolicies.premiumWritten, premiumTarget),
-      expectedPct: periodOffset === 0 ? expectedPct : undefined,
-      hint:
-        premiumTarget > 0
-          ? `${Math.round(safePct(periodPolicies.premiumWritten, premiumTarget) * 100)}% of ${formatCompactCurrency(premiumTarget)} target`
-          : `${formatCompactCurrency(periodPolicies.premiumWritten)} written`,
-      tone: "ink",
-    },
+  // ── Board display values (all real, derived from the hooks above) ────────
+  const premiumWritten = periodPolicies.premiumWritten;
+  const premiumPct = safePct(premiumWritten, premiumTarget);
+  const premiumValueStr = `$${Math.round(premiumWritten).toLocaleString()}`;
+  const premiumBarLabel =
+    premiumTarget > 0
+      ? `${Math.round(premiumPct * 100)}% OF ${formatCompactCurrency(premiumTarget)}`
+      : `${formatCompactCurrency(premiumWritten)} WRITTEN`;
+  const premiumRemaining = Math.max(0, premiumTarget - premiumWritten);
+  const premiumCaption =
+    premiumTarget > 0 && premiumRemaining > 0 ? (
+      <>
+        Behind the board&apos;s pace —{" "}
+        <b style={{ color: T.red }}>
+          {formatCompactCurrency(premiumRemaining)}
+        </b>{" "}
+        to clear the target before close.
+      </>
+    ) : premiumTarget > 0 ? (
+      <>
+        On pace — target of{" "}
+        <b style={{ color: T.green }}>{formatCompactCurrency(premiumTarget)}</b>{" "}
+        cleared.
+      </>
+    ) : (
+      "No premium target set for this period yet."
+    );
+
+  const periodCommPct = safePct(periodCommTotal, periodCommTarget);
+  const statCells = [
     {
       label: "Commissions",
       value: formatCompactCurrency(periodCommTotal),
-      pct: safePct(periodCommTotal, periodCommTarget),
-      expectedPct: periodOffset === 0 ? expectedPct : undefined,
-      hint:
-        periodCommTarget > 0
-          ? `${Math.round(safePct(periodCommTotal, periodCommTarget) * 100)}% of ${formatCompactCurrency(periodCommTarget)} target`
-          : "no target set",
-      tone: "accent",
+      note: periodCommTarget > 0 ? `${Math.round(periodCommPct * 100)}%` : "—",
     },
     {
       label: "Policies",
       value: periodPolicies.newCount.toLocaleString(),
-      pct: safePct(periodPolicies.newCount, policyTarget),
-      expectedPct: periodOffset === 0 ? expectedPct : undefined,
-      hint:
+      note:
         policyTarget > 0
-          ? `${periodPolicies.newCount} of ${policyTarget} target`
-          : `${periodPolicies.newCount} written`,
-      tone: "ink",
+          ? `${Math.round(safePct(periodPolicies.newCount, policyTarget) * 100)}%`
+          : "—",
     },
     {
       label: "Pipeline",
       value: formatCompactCurrency(currentState.pendingPipeline),
-      // pct omitted — pipeline is a current snapshot, not pace toward a target.
-      hint: "current pending",
-      tone: "muted",
-      secondary: true,
+      note: "—",
     },
+  ];
+
+  const flags: BoardFlag[] = augmentedAlerts
+    .filter((a) => a.condition)
+    .map((a) => ({ type: a.type, title: a.title, message: a.message }));
+
+  const tickerItems: Array<[string, string]> = [
+    ["PREMIUM", premiumValueStr],
+    ["COMMISSIONS", formatCompactCurrency(periodCommTotal)],
+    ["POLICIES", periodPolicies.newCount.toLocaleString()],
+    ["PIPELINE", formatCompactCurrency(currentState.pendingPipeline)],
+    ["ACTIVE", String(currentState.activePolicies)],
+    ["NEW CLIENTS", String(periodClients.newCount)],
   ];
 
   return (
     <>
       <SectionShell className="dashboard-canvas">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-4 sm:py-6">
-          <DashboardHeader
-            periodTitle={title}
-            daysSubtitle={
+          <BoardPageHeader
+            title={title.toUpperCase()}
+            meta={
               showDaysSubtitle
-                ? `Day ${elapsed.daysElapsed} of ${elapsed.daysTotal}`
+                ? `${elapsed.daysElapsed}/${elapsed.daysTotal}`
                 : undefined
             }
-            timePeriod={timePeriod}
-            onTimePeriodChange={handleTimePeriodChange}
-            periodOffset={periodOffset}
-            onOffsetChange={setPeriodOffset}
-            onAddPolicy={() => setActiveDialog("policy")}
-            onAddExpense={() => setActiveDialog("expense")}
-            canAddExpense={dashboardFeatures.canAddExpense}
-            isCreating={isCreating}
+            periods={[...BOARD_PERIODS]}
+            period={PERIOD_TO_LABEL[timePeriod]}
+            onPeriodChange={(label) =>
+              handleTimePeriodChange(LABEL_TO_PERIOD[label])
+            }
+            actions={
+              <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={() => setPeriodOffset(periodOffset - 1)}
+                  aria-label="Previous period"
+                  className="grid h-9 w-9 place-items-center rounded-[8px] border border-board-line2 text-board-mut transition-colors hover:text-board-ink"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    periodOffset < 0 && setPeriodOffset(periodOffset + 1)
+                  }
+                  disabled={periodOffset >= 0}
+                  aria-label="Next period"
+                  className="grid h-9 w-9 place-items-center rounded-[8px] border border-board-line2 text-board-mut transition-colors enabled:hover:text-board-ink disabled:opacity-40"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            }
           />
 
-          <HeroStatStrip stats={heroStats} />
+          <BoardHero
+            premiumEyebrow={`Premium Written · ${PERIOD_TO_LABEL[timePeriod]}`}
+            premiumValue={premiumValueStr}
+            premiumPct={premiumPct}
+            premiumBarLabel={premiumBarLabel}
+            premiumCaption={premiumCaption}
+            rank={myRank.rank}
+            rankName={myRank.name}
+            rankTotal={myRank.total}
+          />
 
-          <SoftCard padding="lg" className="mb-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 lg:gap-x-8 lg:divide-x lg:divide-v2-ring">
-              <div className="lg:pr-8">
-                <PaceLines
-                  lines={paceLines}
-                  daysElapsed={
-                    showDaysSubtitle ? elapsed.daysElapsed : undefined
-                  }
-                  daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
-                  expectedPct={expectedPct}
-                />
-              </div>
-              <div className="lg:pl-8">
-                <EditorialAlerts alerts={augmentedAlerts} />
-              </div>
-            </div>
-          </SoftCard>
+          <QuickActions
+            onJarvis={() => navigate({ to: "/command-center" })}
+            onAddPolicy={() => setActiveDialog("policy")}
+            onAddRecruit={() => navigate({ to: "/recruiting" })}
+            onSendEmail={() => navigate({ to: "/messages" })}
+            onLogExpense={() => setActiveDialog("expense")}
+          />
+
+          <BoardStatRow cells={statCells} />
+
+          <BoardFlags alerts={flags} />
 
           <SoftCard padding="lg" className="mb-4">
             <DetailsTable sections={kpiConfig} />
@@ -525,6 +570,9 @@ export const DashboardHome: React.FC = () => {
               hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
             />
           </SoftCard>
+
+          {/* Bottom broadcast ticker — real period rollup. */}
+          <Ticker items={tickerItems} />
         </div>
       </SectionShell>
 

@@ -48,7 +48,7 @@ function ChatBubble({
           "max-w-[80%] px-3 py-2 rounded-lg text-[11px] leading-relaxed",
           isBot
             ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink rounded-bl-sm"
-            : "bg-info text-white rounded-br-sm",
+            : "bg-primary text-primary-foreground rounded-br-sm",
         )}
       >
         {message.text}
@@ -165,7 +165,7 @@ export function ConversationDemo() {
             className={cn(
               "px-3 py-2 text-[10px] font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
               activeScriptId === script.id
-                ? "border-info text-info dark:border-info/70"
+                ? "border-primary text-primary dark:border-primary/70"
                 : "border-transparent text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
@@ -189,13 +189,13 @@ export function ConversationDemo() {
         {/* Messages area */}
         <div
           ref={messagesContainerRef}
-          className="h-[260px] overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded-b-lg bg-white dark:bg-v2-canvas px-3 py-3 space-y-2"
+          className="h-[260px] overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded-b-lg bg-card px-3 py-3 space-y-2"
         >
           {!hasPlayed && !isPlaying ? (
             <div className="h-full flex flex-col items-center justify-center gap-2">
               <button
                 onClick={playConversation}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-info hover:bg-info text-white text-[11px] font-medium transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary text-primary-foreground text-[11px] font-medium transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Watch Demo
@@ -226,7 +226,7 @@ export function ConversationDemo() {
                       "rounded-lg",
                       typingSide === "bot"
                         ? "bg-v2-card-tinted dark:bg-v2-card-tinted rounded-bl-sm"
-                        : "bg-info/80 rounded-br-sm",
+                        : "bg-primary/80 rounded-br-sm",
                     )}
                   >
                     <TypingIndicator />

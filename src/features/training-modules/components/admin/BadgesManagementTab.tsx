@@ -259,7 +259,7 @@ export function BadgesManagementTab() {
         <div className="border border-border dark:border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+              <tr className="bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
                 <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                   Badge
                 </th>
@@ -282,7 +282,7 @@ export function BadgesManagementTab() {
               {filteredBadges.map((badge) => (
                 <tr
                   key={badge.id}
-                  className="hover:bg-background dark:hover:bg-card-tinted/30"
+                  className="hover:bg-background dark:hover:bg-v2-card-tinted/30"
                 >
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">

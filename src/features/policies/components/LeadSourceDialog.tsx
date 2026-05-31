@@ -135,7 +135,7 @@ export function LeadSourceDialog({
     <>
       <Dialog open={open} onOpenChange={handleDismiss}>
         <DialogContent className="theme-v2 font-display max-w-sm w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 gap-0 overflow-hidden bg-card text-foreground border border-border rounded-v2-lg shadow-v2-lift flex flex-col">
-          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight">
@@ -204,7 +204,7 @@ export function LeadSourceDialog({
             />
           </div>
 
-          <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-row justify-between sm:justify-between flex-shrink-0">
+          <DialogFooter className="px-5 py-3 border-t border-border bg-v2-card-tinted flex-row justify-between sm:justify-between flex-shrink-0">
             <PillButton
               type="button"
               tone="ghost"
@@ -280,7 +280,7 @@ function OptionButton({
         className={cn(
           "flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
           selected
-            ? "bg-foreground border-foreground text-white"
+            ? "bg-foreground border-foreground text-background"
             : "bg-transparent border-border",
         )}
       >

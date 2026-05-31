@@ -963,7 +963,7 @@ export default function ActionConfigPanel({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">Branch Actions</Label>
-              <div className="p-2 rounded-md bg-success/10 dark:bg-success/10 border border-success/30">
+              <div className="p-2 rounded-md bg-success/10 border border-success/30">
                 <p className="text-xs font-medium text-success mb-1">If True</p>
                 <p className="text-xs text-muted-foreground">
                   Continue to next action
@@ -1381,7 +1381,7 @@ export default function ActionConfigPanel({
                       // Show a toast feedback
                       const toast = document.createElement("div");
                       toast.className =
-                        "fixed bottom-4 right-4 bg-success text-white text-xs px-3 py-1.5 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2";
+                        "fixed bottom-4 right-4 bg-success text-success-foreground text-xs px-3 py-1.5 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2";
                       toast.textContent = `Copied: ${variable}`;
                       document.body.appendChild(toast);
                       setTimeout(() => {

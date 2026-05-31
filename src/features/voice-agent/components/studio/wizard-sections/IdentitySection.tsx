@@ -38,7 +38,7 @@ export function IdentitySection({ data, onChange }: IdentitySectionProps) {
           }
           className="space-y-2"
         >
-          <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border px-3 py-2.5 dark:border-border has-[:checked]:border-foreground has-[:checked]:bg-background dark:has-[:checked]:border-border dark:has-[:checked]:bg-card-tinted">
+          <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border px-3 py-2.5 dark:border-border has-[:checked]:border-foreground has-[:checked]:bg-background dark:has-[:checked]:border-border dark:has-[:checked]:bg-v2-card-tinted">
             <RadioGroupItem
               value="cloned_voice"
               className="mt-0.5 flex-shrink-0"
@@ -54,7 +54,7 @@ export function IdentitySection({ data, onChange }: IdentitySectionProps) {
               </p>
             </div>
           </label>
-          <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border px-3 py-2.5 dark:border-border has-[:checked]:border-foreground has-[:checked]:bg-background dark:has-[:checked]:border-border dark:has-[:checked]:bg-card-tinted">
+          <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-border px-3 py-2.5 dark:border-border has-[:checked]:border-foreground has-[:checked]:bg-background dark:has-[:checked]:border-border dark:has-[:checked]:bg-v2-card-tinted">
             <RadioGroupItem
               value="assistant"
               className="mt-0.5 flex-shrink-0"

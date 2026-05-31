@@ -192,7 +192,7 @@ export function ModulesManagementTab() {
         <div className="border border-border dark:border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+              <tr className="bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
                 <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                   Title
                 </th>
@@ -218,7 +218,7 @@ export function ModulesManagementTab() {
               {modules.map((module) => (
                 <tr
                   key={module.id}
-                  className="hover:bg-background dark:hover:bg-card-tinted/30 cursor-pointer"
+                  className="hover:bg-background dark:hover:bg-v2-card-tinted/30 cursor-pointer"
                   onClick={() =>
                     navigate({
                       to: "/my-training/builder/$moduleId" as string,

@@ -180,7 +180,7 @@ export function VoiceCloneWizardPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-white dark:bg-v2-canvas">
+    <div className="flex h-[calc(100vh-4rem)] flex-col bg-background dark:bg-v2-canvas">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-v2-ring px-4 py-2.5 dark:border-v2-ring">
         <Button
@@ -224,7 +224,7 @@ export function VoiceCloneWizardPage() {
                   i < currentStepIndex
                     ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
                     : i === currentStepIndex
-                      ? "bg-info/20 text-info dark:bg-info/10/40 dark:text-info"
+                      ? "bg-info/20 text-info dark:bg-info/10 dark:text-info"
                       : "bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                 )}
               >

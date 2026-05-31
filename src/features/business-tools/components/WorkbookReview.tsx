@@ -58,7 +58,7 @@ export function WorkbookReview() {
         className={cn(
           "border border-dashed rounded p-3 text-center cursor-pointer transition-colors",
           dragOver
-            ? "border-success bg-success/10/50 dark:bg-success/20"
+            ? "border-success bg-success/10 dark:bg-success/20"
             : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
           reviewWorkbook.isPending && "opacity-50 pointer-events-none",
         )}

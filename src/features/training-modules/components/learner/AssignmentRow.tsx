@@ -49,7 +49,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
     >
       <div
         className={`flex items-center gap-3 px-2.5 py-1.5 rounded hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer text-[11px] ${
-          isOverdue ? "bg-destructive/10/50 dark:bg-destructive/10" : ""
+          isOverdue ? "bg-destructive/10 dark:bg-destructive/10" : ""
         }`}
       >
         {/* Priority dot */}

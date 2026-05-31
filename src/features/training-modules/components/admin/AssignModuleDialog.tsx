@@ -301,7 +301,7 @@ export function AssignModuleDialog({
 
           {/* Downline summary — shown when "My Team" is selected */}
           {assignMode === "downline" && !activeAgencyAssignment && (
-            <div className="rounded-md border border-border bg-background px-3 py-2.5 text-[11px] dark:border-border dark:bg-card-tinted/50">
+            <div className="rounded-md border border-border bg-background px-3 py-2.5 text-[11px] dark:border-border dark:bg-v2-card-tinted/50">
               {downlinesLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -359,7 +359,7 @@ export function AssignModuleDialog({
 
               {/* Selected user chips */}
               {selectedUsers.length > 0 && (
-                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-border dark:border-border rounded-md bg-background dark:bg-card-tinted/50">
+                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-border dark:border-border rounded-md bg-background dark:bg-v2-card-tinted/50">
                   {selectedUsers.map((user) => (
                     <Badge
                       key={user.id}
@@ -422,7 +422,7 @@ export function AssignModuleDialog({
                           className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
                             selected
                               ? "bg-info/10 hover:bg-info/10 dark:hover:bg-info/15"
-                              : "hover:bg-background dark:hover:bg-card-tinted"
+                              : "hover:bg-background dark:hover:bg-v2-card-tinted"
                           }`}
                         >
                           <div
@@ -433,7 +433,7 @@ export function AssignModuleDialog({
                             }`}
                           >
                             {selected && (
-                              <Check className="h-2.5 w-2.5 text-white" />
+                              <Check className="h-2.5 w-2.5 text-info-foreground" />
                             )}
                           </div>
                           <div className="min-w-0">

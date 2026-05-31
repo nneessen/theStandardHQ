@@ -239,7 +239,7 @@ export function DocumentBrowserSheet({
                         ? "bg-info/10"
                         : disabled
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-background dark:hover:bg-card-tinted/50"
+                          : "hover:bg-background dark:hover:bg-v2-card-tinted/50"
                     }`}
                   >
                     <Checkbox

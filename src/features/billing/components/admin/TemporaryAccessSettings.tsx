@@ -205,7 +205,7 @@ export function TemporaryAccessSettings() {
         className={cn(
           "border-2",
           enabled && !isExpired
-            ? "border-success/50 bg-success/10/50 dark:bg-success/10"
+            ? "border-success/50 bg-success/10 dark:bg-success/10"
             : "border-border",
         )}
       >
@@ -404,7 +404,7 @@ export function TemporaryAccessSettings() {
 
       {/* Action Buttons */}
       {hasChanges && (
-        <Card className="border-warning/50 bg-warning/10/50 dark:bg-warning/10">
+        <Card className="border-warning/50 bg-warning/10 dark:bg-warning/10">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-warning">

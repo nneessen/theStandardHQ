@@ -81,7 +81,7 @@ export function PolicyDialog({
         </DialogTitle>
 
         {/* Header — fixed, no scroll */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">

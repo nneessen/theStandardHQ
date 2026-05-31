@@ -394,7 +394,7 @@ function SetupStepButton({
       className={`rounded-lg border px-3 py-2.5 text-left transition-all shadow-sm ${
         active
           ? "border-foreground bg-foreground text-background shadow-md"
-          : "border-v2-ring bg-white hover:border-v2-ring-strong hover:shadow-md dark:border-v2-ring dark:bg-v2-card dark:hover:border-v2-ring-strong"
+          : "border-v2-ring bg-card hover:border-v2-ring-strong hover:shadow-md dark:border-v2-ring dark:bg-v2-card dark:hover:border-v2-ring-strong"
       }`}
     >
       <p className="text-[11px] font-bold">{label}</p>
@@ -435,7 +435,7 @@ function CreateVoiceAgentCard({
   isSuperAdmin?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="max-w-3xl">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -1026,10 +1026,10 @@ export function VoiceAgentPage() {
               <PhoneCall className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-tight">
+              <h1 className="text-sm font-bold text-foreground tracking-tight">
                 AI Voice Agent
               </h1>
-              <p className="text-[10px] text-white/60">
+              <p className="text-[10px] text-foreground/60">
                 Automated AI phone calls for follow-ups and inbound
               </p>
             </div>
@@ -1065,7 +1065,7 @@ export function VoiceAgentPage() {
               tab.locked
                 ? "cursor-not-allowed text-v2-ink-subtle dark:text-v2-ink-muted"
                 : activeTab === tab.id
-                  ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+                  ? "bg-card text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
                   : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle",
             )}
             title={tab.locked ? "Create voice agent first" : undefined}
@@ -1157,7 +1157,7 @@ export function VoiceAgentPage() {
             {/* Create flow — shown when voice active but agent not yet created */}
             {voiceAccessActive && !voiceAgentCreated && (
               <>
-                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div className="max-w-3xl">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -1244,7 +1244,7 @@ export function VoiceAgentPage() {
         {activeTab === "setup" && (
           <div className="space-y-3">
             {!canOpenSetup ? (
-              <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   Create your voice agent first
                 </p>
@@ -1270,7 +1270,7 @@ export function VoiceAgentPage() {
               </div>
             ) : (
               <>
-                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -1398,7 +1398,7 @@ export function VoiceAgentPage() {
                     <VoiceAgentRuntimeCard agent={agent} />
 
                     {/* Blocked Lead Statuses — who the voice agent should NOT call */}
-                    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                    <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                       <div className="flex items-start gap-3">
                         <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-muted dark:text-v2-ink-subtle" />
                         <div className="flex-1 space-y-1">
@@ -1474,7 +1474,7 @@ export function VoiceAgentPage() {
 
         {activeTab === "stats" && (
           <div className="space-y-3">
-            <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+            <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                 Voice Stats
               </p>
@@ -1513,14 +1513,14 @@ export function VoiceAgentPage() {
         {activeTab === "admin" && isSuperAdmin && (
           <div className="space-y-3">
             {!agent ? (
-              <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   No workspace is available for admin voice controls yet
                 </p>
               </div>
             ) : (
               <>
-                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-card p-4 dark:border-v2-ring dark:bg-v2-card">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                     Super-Admin Controls
                   </p>

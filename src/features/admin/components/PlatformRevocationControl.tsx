@@ -83,15 +83,15 @@ export function PlatformRevocationControl() {
   };
 
   return (
-    <div className="rounded-md border border-red-300 bg-red-50/60">
-      <div className="border-b border-red-200 px-4 py-3">
+    <div className="rounded-md border border-destructive/30 bg-destructive/10">
+      <div className="border-b border-destructive/30 px-4 py-3">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="h-4 w-4 text-red-600" />
-          <h3 className="text-sm font-semibold text-red-800">
+          <ShieldAlert className="h-4 w-4 text-destructive" />
+          <h3 className="text-sm font-semibold text-destructive">
             Platform Access — {status.imoName}
           </h3>
         </div>
-        <p className="mt-1 text-[11px] text-red-700/80">
+        <p className="mt-1 text-[11px] text-destructive/80">
           Revoking locks every non-super-admin user in this organization out of
           the platform and routes them to the data-export &amp; account-closure
           page. You are never locked out. After revoking, cancel any
@@ -104,17 +104,19 @@ export function PlatformRevocationControl() {
           <>
             <div className="grid grid-cols-3 gap-3 text-xs">
               <Stat
-                icon={<Power className="h-3.5 w-3.5 text-red-600" />}
+                icon={<Power className="h-3.5 w-3.5 text-destructive" />}
                 label="Revoked since"
                 value={fmt(status.revokedAt)}
               />
               <Stat
-                icon={<Users className="h-3.5 w-3.5 text-red-600" />}
+                icon={<Users className="h-3.5 w-3.5 text-destructive" />}
                 label="Users remaining"
                 value={String(status.usersRemaining)}
               />
               <Stat
-                icon={<CalendarClock className="h-3.5 w-3.5 text-red-600" />}
+                icon={
+                  <CalendarClock className="h-3.5 w-3.5 text-destructive" />
+                }
                 label="Auto-purge by"
                 value={fmt(status.purgeDeadline)}
               />
@@ -123,13 +125,13 @@ export function PlatformRevocationControl() {
             {!showRestore ? (
               <button
                 onClick={() => setShowRestore(true)}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Restore access…
               </button>
             ) : (
-              <div className="mt-4 rounded-md border border-slate-300 bg-white p-3">
-                <p className="text-xs text-slate-700">
+              <div className="mt-4 rounded-md border border-border bg-card p-3">
+                <p className="text-xs text-muted-foreground">
                   Restore platform access for <strong>{status.imoName}</strong>?
                   Users who have already deleted their accounts are not
                   affected.
@@ -138,7 +140,7 @@ export function PlatformRevocationControl() {
                   <button
                     onClick={handleRestore}
                     disabled={deactivate.isPending}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:bg-foreground/90 disabled:opacity-60"
                   >
                     {deactivate.isPending && (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -148,7 +150,7 @@ export function PlatformRevocationControl() {
                   <button
                     onClick={() => setShowRestore(false)}
                     disabled={deactivate.isPending}
-                    className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
                   >
                     Cancel
                   </button>
@@ -158,15 +160,15 @@ export function PlatformRevocationControl() {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-2 text-xs text-slate-700">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block h-2 w-2 rounded-full bg-success" />
               Access is <strong>active</strong>. {status.usersRemaining} user
               {status.usersRemaining === 1 ? "" : "s"} in this organization.
             </div>
 
-            <label className="mt-3 block text-xs font-medium text-red-800">
+            <label className="mt-3 block text-xs font-medium text-destructive">
               To revoke, type{" "}
-              <code className="rounded bg-red-100 px-1 py-0.5 text-red-900">
+              <code className="rounded bg-destructive/10 px-1 py-0.5 text-destructive">
                 {expectedConfirm}
               </code>
             </label>
@@ -176,13 +178,13 @@ export function PlatformRevocationControl() {
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder={expectedConfirm}
               autoComplete="off"
-              className="mt-1.5 w-full max-w-sm rounded-md border border-red-300 px-2.5 py-1.5 text-xs focus:border-red-500 focus:outline-none"
+              className="mt-1.5 w-full max-w-sm rounded-md border border-destructive/30 px-2.5 py-1.5 text-xs focus:border-destructive focus:outline-none"
             />
             <div className="mt-3">
               <button
                 onClick={handleRevoke}
                 disabled={!canRevoke}
-                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white enabled:hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground enabled:hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {activate.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -204,11 +206,11 @@ const Stat: React.FC<{
   label: string;
   value: string;
 }> = ({ icon, label, value }) => (
-  <div className="rounded-md border border-red-200 bg-white px-2.5 py-2">
-    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-slate-500">
+  <div className="rounded-md border border-destructive/30 bg-card px-2.5 py-2">
+    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
       {icon}
       {label}
     </div>
-    <div className="mt-0.5 text-xs font-semibold text-slate-800">{value}</div>
+    <div className="mt-0.5 text-xs font-semibold text-foreground">{value}</div>
   </div>
 );

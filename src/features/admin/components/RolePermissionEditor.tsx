@@ -253,7 +253,7 @@ export function RolePermissionEditor({
         </SheetHeader>
 
         {/* Search and controls */}
-        <div className="px-6 py-3 border-b border-border bg-background dark:bg-card-dark/50">
+        <div className="px-6 py-3 border-b border-border bg-background dark:bg-v2-card-dark/50">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -440,7 +440,7 @@ export function RolePermissionEditor({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-border bg-background dark:bg-card-dark/50">
+        <div className="px-6 py-4 border-t border-border bg-background dark:bg-v2-card-dark/50">
           <div className="flex items-center justify-between">
             <div className="text-[11px] text-muted-foreground">
               {pendingPermissions.size > 0 ? (

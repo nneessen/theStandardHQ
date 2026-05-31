@@ -84,7 +84,7 @@ export function SentInvitationsCard() {
                 key={invitation.id}
                 className={`flex items-center justify-between p-3 rounded-md transition-colors border ${
                   isInvalid
-                    ? "bg-warning/10/50 border-warning/30 dark:bg-warning/10 dark:border-warning"
+                    ? "bg-warning/10 border-warning/30 dark:bg-warning/10 dark:border-warning"
                     : "bg-muted/30 hover:bg-muted/50 border-transparent hover:border-border"
                 }`}
               >

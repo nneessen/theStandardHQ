@@ -64,7 +64,7 @@ function StepDot({ state }: { state: StepState }) {
   if (state === "completed") {
     return (
       <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-success">
-        <Check className="h-2 w-2 text-white" strokeWidth={3} />
+        <Check className="h-2 w-2 text-success-foreground" strokeWidth={3} />
       </div>
     );
   }

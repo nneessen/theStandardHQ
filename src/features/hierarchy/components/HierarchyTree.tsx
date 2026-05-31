@@ -68,9 +68,7 @@ function TreeNode({
       <div
         className={cn(
           "flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-all",
-          matchesSearch && searchTerm
-            ? "bg-warning/10/50"
-            : "hover:bg-muted/50",
+          matchesSearch && searchTerm ? "bg-warning/10" : "hover:bg-muted/50",
         )}
         style={{ paddingLeft: `${indentation + 8}px` }}
         onClick={() => onNodeClick?.(node)}

@@ -189,7 +189,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                 {users.map((user) => (
                   <div
                     key={user.userId}
-                    className="rounded border border-border bg-background px-2.5 py-2 text-[10px]  dark:bg-card-dark"
+                    className="rounded border border-border bg-background px-2.5 py-2 text-[10px]  dark:bg-v2-card-dark"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">

@@ -125,7 +125,7 @@ export function InstagramSidebar({
               @{integration.instagram_username}
             </span>
             {unreadCount > 0 && (
-              <span className="flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-white text-[9px] font-medium flex items-center justify-center">
+              <span className="flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-info-foreground text-[9px] font-medium flex items-center justify-center">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}

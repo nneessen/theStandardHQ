@@ -51,13 +51,13 @@ export function IntelligenceCommandBar({
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-card/95 dark:bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm px-3 py-2">
+    <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm px-3 py-2">
       <div className="flex items-center gap-2 flex-wrap">
         {/* Filter icon + count badge */}
         <div className="flex items-center gap-1 mr-1">
           <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
           {activeFilterCount > 0 && (
-            <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-info text-white">
+            <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-info text-info-foreground">
               {activeFilterCount}
             </Badge>
           )}
@@ -123,8 +123,8 @@ export function IntelligenceCommandBar({
               className={cn(
                 "px-1.5 py-1 text-[10px] font-medium transition-colors flex items-center gap-0.5",
                 filters.heatLevels.includes(h.key)
-                  ? "bg-muted text-white dark:bg-muted dark:text-foreground"
-                  : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               <span className={cn("h-1.5 w-1.5 rounded-full", h.color)} />

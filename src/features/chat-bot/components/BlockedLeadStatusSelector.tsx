@@ -189,7 +189,7 @@ export function BlockedLeadStatusSelector({
         </Button>
 
         {open && (
-          <div className="absolute z-50 mt-1 w-full rounded-lg border border-v2-ring bg-white shadow-lg dark:border-v2-ring-strong dark:bg-v2-card">
+          <div className="absolute z-50 mt-1 w-full rounded-lg border border-v2-ring bg-popover shadow-lg dark:border-v2-ring-strong dark:bg-v2-card">
             <div className="border-b border-v2-ring p-1.5 dark:border-v2-ring">
               <input
                 ref={inputRef}

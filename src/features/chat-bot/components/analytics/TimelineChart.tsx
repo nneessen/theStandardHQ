@@ -62,7 +62,7 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
             >
               <div className="flex items-end gap-px w-full h-16">
                 <div
-                  className="flex-1 bg-info/70/70 rounded-t-sm transition-all"
+                  className="flex-1 bg-info/70 rounded-t-sm transition-all"
                   style={{ height: `${Math.max(convoH, 2)}%` }}
                 />
                 <div
@@ -70,7 +70,7 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
                   style={{ height: `${Math.max(apptH, 0)}%` }}
                 />
                 <div
-                  className="flex-1 bg-success/70/70 rounded-t-sm transition-all"
+                  className="flex-1 bg-success/70 rounded-t-sm transition-all"
                   style={{ height: `${Math.max(convH, 0)}%` }}
                 />
               </div>

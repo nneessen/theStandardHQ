@@ -181,7 +181,7 @@ export function ConversationsTab() {
         );
       case "closed":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground">
+          <Badge className="text-[9px] h-3.5 px-1 bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground">
             Closed
           </Badge>
         );
@@ -195,7 +195,7 @@ export function ConversationsTab() {
         return (
           <Badge
             variant="secondary"
-            className="text-[9px] h-3.5 px-1 bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground"
+            className="text-[9px] h-3.5 px-1 bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground"
           >
             {s}
           </Badge>
@@ -266,7 +266,7 @@ export function ConversationsTab() {
       <div className="overflow-hidden bg-card rounded-lg border border-border dark:border-border">
         <div className="overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 bg-background dark:bg-card-tinted/50 z-10">
+            <TableHeader className="sticky top-0 bg-background dark:bg-v2-card-tinted/50 z-10">
               <TableRow className="border-b border-border dark:border-border hover:bg-transparent">
                 <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
                   Lead
@@ -309,7 +309,7 @@ export function ConversationsTab() {
                 conversations.map((conv) => (
                   <TableRow
                     key={conv.id}
-                    className="hover:bg-background dark:hover:bg-card-tinted/50 border-b border-border dark:border-border/50 cursor-pointer"
+                    className="hover:bg-background dark:hover:bg-v2-card-tinted/50 border-b border-border dark:border-border/50 cursor-pointer"
                     onClick={() => setSelectedConv(conv)}
                   >
                     <TableCell className="py-1.5">

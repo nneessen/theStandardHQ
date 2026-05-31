@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Standard HQ — Color System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#120f08; --panel:#19140b; --panel2:#1d1810; --tile:#221b10;
+    --line:rgba(236,226,205,0.10); --line2:rgba(236,226,205,0.18);
+    --ink:#f1e9d6; --mut:rgba(236,226,205,0.55); --mut2:rgba(236,226,205,0.36); --cream:#ece2cd;
+    --blue:#5b9bff; --cyan:#46d8f5; --amber:#f4b43a; --red:#ff6a5d; --green:#5fd08a;
+    --disp:"Archivo",system-ui,sans-serif; --body:"Hanken Grotesk",system-ui,sans-serif; --mono:"Space Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+    background-image:repeating-linear-gradient(90deg,rgba(255,255,255,0.012) 0 1px,transparent 1px 3px);}
+  .wrap{max-width:1100px;margin:0 auto;padding:54px 40px 90px}
+  .ey{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--amber);text-transform:uppercase;margin-bottom:14px}
+  h1{font-family:var(--disp);font-size:46px;font-weight:800;letter-spacing:.01em;margin:0}
+  .sub{color:var(--mut);font-size:15px;line-height:1.55;max-width:620px;margin:14px 0 0}
+  h2{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+     color:var(--mut);margin:54px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .chip{height:96px;position:relative}
+  .chip .check{position:absolute;inset:0;background-image:linear-gradient(45deg,#222 25%,transparent 25%),linear-gradient(-45deg,#222 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#222 75%),linear-gradient(-45deg,transparent 75%,#222 75%);background-size:14px 14px;background-position:0 0,0 7px,7px -7px,-7px 0;opacity:.5;z-index:-1}
+  .meta{padding:13px 15px 15px}
+  .nm{font-weight:700;font-size:14px}
+  .hex{font-family:var(--mono);font-size:12px;color:var(--mut);margin-top:4px;text-transform:uppercase}
+  .use{font-size:12px;color:var(--mut2);margin-top:8px;line-height:1.4}
+  .tok{font-family:var(--mono);font-size:10.5px;color:var(--mut);background:rgba(0,0,0,.3);border:1px solid var(--line);
+       border-radius:5px;padding:2px 6px;display:inline-block;margin-top:9px}
+  /* semantic demo row */
+  .demo{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:12.5px;padding:7px 13px;border-radius:999px}
+  .dot{width:8px;height:8px;border-radius:5px}
+  .type-row{display:flex;align-items:baseline;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .type-row .lbl{font-family:var(--mono);font-size:11px;color:var(--mut2);width:130px;flex-shrink:0;letter-spacing:.08em}
+  .num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ey">The Standard HQ · Foundations</div>
+  <h1>Color System</h1>
+  <p class="sub">The palette behind the dashboard redesign, organized for reuse across the whole product. Warm near-black surfaces, cream text, and a tight set of semantic accents — electric blue as the primary, cyan reserved for Jarvis/AI, and amber / red / green for status. CSS variables are listed under each swatch.</p>
+
+  <h2>Surfaces</h2>
+  <div class="grid" id="surfaces"></div>
+
+  <h2>Lines &amp; Strokes</h2>
+  <div class="grid" id="lines"></div>
+
+  <h2>Text</h2>
+  <div class="grid" id="text"></div>
+
+  <h2>Accents — Semantic</h2>
+  <div class="grid" id="accents"></div>
+
+  <h2>Status — in context</h2>
+  <div class="demo">
+    <span class="pill" style="background:rgba(91,155,255,.14);color:#5b9bff"><span class="dot" style="background:#5b9bff"></span>Primary / Selected</span>
+    <span class="pill" style="background:rgba(70,216,245,.14);color:#46d8f5"><span class="dot" style="background:#46d8f5;box-shadow:0 0 8px #46d8f5"></span>Jarvis / AI</span>
+    <span class="pill" style="background:rgba(244,180,58,.14);color:#f4b43a"><span class="dot" style="background:#f4b43a"></span>Live / Delayed</span>
+    <span class="pill" style="background:rgba(255,106,93,.14);color:#ff6a5d"><span class="dot" style="background:#ff6a5d"></span>Critical / Halted</span>
+    <span class="pill" style="background:rgba(95,208,138,.14);color:#5fd08a"><span class="dot" style="background:#5fd08a"></span>Healthy / Up</span>
+  </div>
+
+  <h2>Typography</h2>
+  <div style="border:1px solid var(--line);border-radius:12px;padding:6px 20px 18px;background:var(--panel)">
+    <div class="type-row"><span class="lbl">DISPLAY · NUMBERS</span><span style="font-family:var(--disp);font-weight:800;font-size:40px" class="num">$2,040</span><span style="color:var(--mut);font-size:13px">Archivo 800 · tabular-nums</span></div>
+    <div class="type-row"><span class="lbl">HEADING</span><span style="font-family:var(--disp);font-weight:800;font-size:24px">Premium Written</span><span style="color:var(--mut);font-size:13px">Archivo 700–800</span></div>
+    <div class="type-row"><span class="lbl">BODY</span><span style="font-family:var(--body);font-size:16px">Behind the board's pace today.</span><span style="color:var(--mut);font-size:13px">Hanken Grotesk 400–600</span></div>
+    <div class="type-row"><span class="lbl">LABEL · EYEBROW</span><span style="font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--mut)">SEASON RANK</span><span style="color:var(--mut);font-size:13px">Space Mono 700 · .16em</span></div>
+  </div>
+
+  <p class="sub" style="margin-top:34px">Usage rule of thumb: <b style="color:var(--ink)">one accent per surface</b>. Blue carries primary actions and selection; cyan belongs to Jarvis only; amber/red/green are status-only (never decorative). Keep saturated color to small areas against the warm-black field.</p>
+</div>
+
+<script>
+  const sets = {
+    surfaces: [
+      ['Background','#120f08','--bg','App canvas / deepest layer'],
+      ['Panel','#19140b','--panel','Cards & panels (top of gradient)'],
+      ['Panel 2','#1d1810','--panel2','Panel gradient base / raised'],
+      ['Tile','#221b10','--tile','Insets, chips, number tiles'],
+    ],
+    lines: [
+      ['Line','rgba(236,226,205,0.10)','--line','Hairline dividers, card borders'],
+      ['Line 2','rgba(236,226,205,0.18)','--line2','Stronger borders, separators'],
+    ],
+    text: [
+      ['Ink','#f1e9d6','--ink','Primary text & headings'],
+      ['Cream','#ece2cd','--cream','Numbers / values on dark'],
+      ['Muted','rgba(236,226,205,0.55)','--mut','Secondary text, labels'],
+      ['Muted 2','rgba(236,226,205,0.36)','--mut2','Tertiary / eyebrow text'],
+    ],
+    accents: [
+      ['Blue — Primary','#5b9bff','--blue','Primary actions, selection, links'],
+      ['Cyan — Jarvis','#46d8f5','--cyan','AI / Jarvis only'],
+      ['Amber','#f4b43a','--amber','Live, warnings, "delayed"'],
+      ['Red','#ff6a5d','--red','Critical, errors, "halted"'],
+      ['Green','#5fd08a','--green','Positive, growth, "up"'],
+    ],
+  };
+  const trans = v => v.startsWith('rgba');
+  for (const [id, arr] of Object.entries(sets)) {
+    const host = document.getElementById(id);
+    host.innerHTML = arr.map(([nm,hex,tok,use]) => `
+      <div class="sw">
+        <div class="chip" style="background:${hex}">${trans(hex)?'<div class="check"></div>':''}</div>
+        <div class="meta">
+          <div class="nm">${nm}</div>
+          <div class="hex">${hex}</div>
+          <div class="use">${use}</div>
+          <span class="tok">${tok}</span>
+        </div>
+      </div>`).join('');
+  }
+</script>
+</body>
+</html>

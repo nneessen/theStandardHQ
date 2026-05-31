@@ -215,7 +215,7 @@ function EmailLibrary({
                     {t.is_archived && (
                       <Badge
                         variant="outline"
-                        className="border-warning/70/50 text-[10px] text-warning"
+                        className="border-warning/70 text-[10px] text-warning"
                       >
                         <Archive className="mr-1 h-2.5 w-2.5" />
                         archived
@@ -531,7 +531,7 @@ function ListHeader({
         )}
       </div>
       {truncated && (
-        <div className="flex items-start gap-2 rounded-md border border-warning/40/50 bg-warning/10/50 p-2 text-[11px] text-warning dark:border-warning/50 dark:bg-warning/15 dark:text-warning">
+        <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-2 text-[11px] text-warning dark:border-warning/50 dark:bg-warning/15 dark:text-warning">
           <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
           <span>
             Your library has more than 2000 items. Showing the first 2000 — use
@@ -567,7 +567,7 @@ function EmptyRow({ text }: { text: string }) {
 
 function ErrorCard({ message }: { message: string }) {
   return (
-    <div className="rounded-md border border-destructive/30 bg-destructive/10/50 p-4 text-sm text-destructive dark:border-destructive/50 dark:bg-destructive/10 dark:text-destructive">
+    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive dark:border-destructive/50 dark:bg-destructive/10 dark:text-destructive">
       {message}
     </div>
   );

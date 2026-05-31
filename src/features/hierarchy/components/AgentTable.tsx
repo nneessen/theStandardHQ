@@ -951,7 +951,7 @@ export function AgentTable({
             <AlertDialogAction
               onClick={handleDeleteAgent}
               disabled={deleteUser.isPending}
-              className="bg-destructive hover:bg-destructive text-white"
+              className="bg-destructive hover:bg-destructive text-destructive-foreground"
             >
               {deleteUser.isPending ? "Deleting..." : "Delete Permanently"}
             </AlertDialogAction>

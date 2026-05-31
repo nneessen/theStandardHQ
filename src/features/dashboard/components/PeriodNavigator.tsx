@@ -89,7 +89,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] font-medium text-foreground dark:text-foreground hover:bg-card-tinted dark:hover:bg-card-tinted"
+            className="h-6 px-2 text-[10px] font-medium text-foreground dark:text-foreground hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
             title="Select period"
           >
             {currentPeriodLabel}
@@ -106,7 +106,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
               className={cn(
                 "cursor-pointer text-[10px] text-foreground dark:text-muted-foreground",
                 option.offset === periodOffset &&
-                  "bg-card-tinted dark:bg-card-tinted font-semibold text-foreground dark:text-foreground",
+                  "bg-v2-card-tinted dark:bg-v2-card-tinted font-semibold text-foreground dark:text-foreground",
               )}
             >
               {option.label}

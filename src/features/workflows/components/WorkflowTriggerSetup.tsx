@@ -143,16 +143,16 @@ export default function WorkflowTriggerSetup({
             const colorTheme = {
               manual: isSelected
                 ? "bg-info/10 text-info border-info/50 dark:text-info"
-                : "bg-background border-input hover:border-info/70 hover:bg-info/10/50 dark:hover:bg-info/10",
+                : "bg-background border-input hover:border-info/70 hover:bg-info/10 dark:hover:bg-info/10",
               schedule: isSelected
                 ? "bg-success/10 text-success border-success/50 dark:text-success"
-                : "bg-background border-input hover:border-success/70 hover:bg-success/10/50 dark:hover:bg-success/10",
+                : "bg-background border-input hover:border-success/70 hover:bg-success/10 dark:hover:bg-success/10",
               event: isSelected
                 ? "bg-warning/10 text-warning border-warning/50 dark:text-warning"
-                : "bg-background border-input hover:border-warning/70 hover:bg-warning/10/50 dark:hover:bg-warning/10",
+                : "bg-background border-input hover:border-warning/70 hover:bg-warning/10 dark:hover:bg-warning/10",
               webhook: isSelected
                 ? "bg-info/10 text-info border-info/50 dark:text-info"
-                : "bg-background border-input hover:border-info hover:bg-info/10/50 dark:hover:bg-info/10",
+                : "bg-background border-input hover:border-info hover:bg-info/10 dark:hover:bg-info/10",
             }[trigger.value];
 
             return (

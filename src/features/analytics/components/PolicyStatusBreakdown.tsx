@@ -84,7 +84,7 @@ export function PolicyStatusBreakdown() {
 
       {/* Three big stat tiles */}
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-success/10 border border-success/30/50 rounded-v2-sm p-3">
+        <div className="bg-success/10 border border-success/30 rounded-v2-sm p-3">
           <div className="text-[10px] uppercase tracking-[0.14em] text-success font-semibold">
             Active
           </div>
@@ -92,7 +92,7 @@ export function PolicyStatusBreakdown() {
             {statusSummary.active.count}
           </div>
         </div>
-        <div className="bg-warning/10 border border-warning/30/50 rounded-v2-sm p-3">
+        <div className="bg-warning/10 border border-warning/30 rounded-v2-sm p-3">
           <div className="text-[10px] uppercase tracking-[0.14em] text-warning font-semibold">
             Lapsed
           </div>
@@ -100,7 +100,7 @@ export function PolicyStatusBreakdown() {
             {statusSummary.lapsed.count}
           </div>
         </div>
-        <div className="bg-destructive/10 border border-destructive/30/50 rounded-v2-sm p-3">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-v2-sm p-3">
           <div className="text-[10px] uppercase tracking-[0.14em] text-destructive font-semibold">
             Cancelled
           </div>

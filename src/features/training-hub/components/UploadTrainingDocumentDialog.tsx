@@ -236,7 +236,7 @@ export function UploadTrainingDocumentDialog({
                 className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
                   dragActive
                     ? "border-info/70 bg-info/10"
-                    : "border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50"
+                    : "border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50"
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -261,7 +261,7 @@ export function UploadTrainingDocumentDialog({
                 />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2 bg-background dark:bg-card-tinted/50 rounded-md border border-border dark:border-border">
+              <div className="flex items-center gap-2 p-2 bg-background dark:bg-v2-card-tinted/50 rounded-md border border-border dark:border-border">
                 <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-foreground dark:text-foreground truncate">

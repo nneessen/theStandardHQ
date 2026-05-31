@@ -50,7 +50,7 @@ export const GatedKPISection: React.FC<GatedKPISectionProps> = ({
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-v2-card/80 rounded-lg">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/80 dark:bg-v2-card/80 rounded-lg">
         <div className="flex flex-col items-center gap-2 p-3">
           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted">
             <Lock className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />

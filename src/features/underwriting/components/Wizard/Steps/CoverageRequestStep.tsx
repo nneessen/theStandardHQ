@@ -206,7 +206,7 @@ export default function CoverageRequestStep({
                 className={cn(
                   "px-2 py-1 text-[10px] rounded border transition-colors",
                   faceAmounts[0] === amount
-                    ? "bg-warning text-white border-warning"
+                    ? "bg-warning text-warning-foreground border-warning"
                     : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-warning/40 dark:hover:border-warning",
                 )}
               >

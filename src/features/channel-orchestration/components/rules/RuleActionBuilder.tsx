@@ -179,7 +179,7 @@ function EscalationEditor({
   onChange: (e: EscalationConfig) => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground bg-background dark:bg-card-tinted/50 rounded p-1.5">
+    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground bg-background dark:bg-v2-card-tinted/50 rounded p-1.5">
       <span>After</span>
       <Input
         type="number"

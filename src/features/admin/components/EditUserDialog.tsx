@@ -634,7 +634,7 @@ export default function EditUserDialog({
           className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
           hideCloseButton
         >
-          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight min-w-0 flex-1">
@@ -662,31 +662,31 @@ export default function EditUserDialog({
             <TabsList className="mx-5 mt-3 grid w-[calc(100%-2.5rem)] grid-cols-5 h-7 bg-background border border-border p-0.5 rounded-v2-pill flex-shrink-0">
               <TabsTrigger
                 value="basic"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-card data-[state=active]:shadow-sm"
               >
                 Basic
               </TabsTrigger>
               <TabsTrigger
                 value="roles"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-card data-[state=active]:shadow-sm"
               >
                 Roles
               </TabsTrigger>
               <TabsTrigger
                 value="org"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-card data-[state=active]:shadow-sm"
               >
                 Organization
               </TabsTrigger>
               <TabsTrigger
                 value="details"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-card data-[state=active]:shadow-sm"
               >
                 Details
               </TabsTrigger>
               <TabsTrigger
                 value="actions"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-card data-[state=active]:shadow-sm"
               >
                 Actions
               </TabsTrigger>
@@ -1351,7 +1351,7 @@ export default function EditUserDialog({
             </div>
           </Tabs>
 
-          <DialogFooter className="px-5 py-3 gap-2 border-t border-border bg-card-tinted flex-shrink-0 sm:justify-end">
+          <DialogFooter className="px-5 py-3 gap-2 border-t border-border bg-v2-card-tinted flex-shrink-0 sm:justify-end">
             <PillButton
               type="button"
               tone="ghost"
@@ -1447,7 +1447,7 @@ export default function EditUserDialog({
                 checkingDependencies ||
                 (downlineCount > 0 && !reassignUplineId)
               }
-              className="h-7 text-[11px] px-3 bg-destructive hover:bg-destructive text-white"
+              className="h-7 text-[11px] px-3 bg-destructive hover:bg-destructive text-destructive-foreground"
             >
               {isDeleting ? (
                 <>
@@ -1516,7 +1516,7 @@ export default function EditUserDialog({
                 handleSave();
               }}
               disabled={isSaving}
-              className="h-7 text-[11px] px-3 bg-warning hover:bg-warning text-white"
+              className="h-7 text-[11px] px-3 bg-warning hover:bg-warning text-warning-foreground"
             >
               {isSaving ? (
                 <>

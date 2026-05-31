@@ -158,9 +158,9 @@ export function USMap({
                   <div
                     className={cn(
                       "flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold",
-                      index === 0 && "bg-warning text-white", // Gold
-                      index === 1 && "bg-muted text-white", // Silver
-                      index === 2 && "bg-warning text-white", // Bronze
+                      index === 0 && "bg-warning text-warning-foreground", // Gold
+                      index === 1 && "bg-muted text-muted-foreground", // Silver
+                      index === 2 && "bg-warning text-warning-foreground", // Bronze
                       index >= 3 && "bg-muted text-muted-foreground",
                     )}
                   >

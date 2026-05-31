@@ -176,7 +176,7 @@ export default function AddUserDialog({
         className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
       >
-        <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+        <DialogHeader className="px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">
@@ -443,7 +443,7 @@ export default function AddUserDialog({
 
           {/* Status Toggle Buttons - Hidden for staff roles */}
           {isStaffRoleSelected ? (
-            <div className="bg-info/10 p-2 rounded border border-info/30/50">
+            <div className="bg-info/10 p-2 rounded border border-info/30">
               <p className="text-[10px] text-info">
                 Staff roles (Trainer, Contracting Manager) are automatically
                 approved and don't require onboarding.
@@ -593,7 +593,7 @@ export default function AddUserDialog({
           )}
         </div>
 
-        <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+        <DialogFooter className="px-5 py-3 border-t border-border bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
           <PillButton
             type="button"
             tone="ghost"

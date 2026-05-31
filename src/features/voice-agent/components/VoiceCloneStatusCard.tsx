@@ -102,7 +102,7 @@ export function VoiceCloneStatusCard({
   // Show a compact loading skeleton while first fetch is in-flight
   if (isLoading && !cloneStatus) {
     return (
-      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-card p-4">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -132,7 +132,7 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-card p-4">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-success" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -181,13 +181,13 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-lg border border-info/30 bg-info/10/50 p-4 dark:border-info/50 dark:bg-info/10">
+      <div className="rounded-lg border border-info/30 bg-info/10 p-4 dark:border-info/50 dark:bg-info/10">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-info" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-info/20 text-info dark:bg-info/10/40 dark:text-info text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-info/20 text-info dark:bg-info/10 dark:text-info text-[10px] px-1.5 py-0">
             Ready to Activate
           </Badge>
         </div>
@@ -260,7 +260,7 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-lg border border-warning/30 bg-warning/10/50 p-4 dark:border-warning/50 dark:bg-warning/10">
+      <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:border-warning/50 dark:bg-warning/10">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-warning" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -391,7 +391,7 @@ export function VoiceCloneStatusCard({
     : null;
 
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4">
       <div className="flex items-center gap-2">
         <Mic className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
         <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">

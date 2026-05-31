@@ -105,7 +105,7 @@ export function VoicePhoneNumbersCard({
 
   if (!voiceAgentCreated || !voiceAccessActive) {
     return (
-      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-card p-4">
         <div className="flex items-start gap-3">
           <Phone className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-subtle" />
           <div>
@@ -124,7 +124,7 @@ export function VoicePhoneNumbersCard({
   }
 
   return (
-    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-card p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
@@ -176,7 +176,7 @@ export function VoicePhoneNumbersCard({
                     <span
                       className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-medium ${
                         num.tollFree
-                          ? "bg-info/10 text-info dark:bg-info/30 dark:text-info"
+                          ? "bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary"
                           : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
                       }`}
                     >

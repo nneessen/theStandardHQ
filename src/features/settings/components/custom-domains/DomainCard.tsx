@@ -261,7 +261,7 @@ export function DomainCard({ domain }: DomainCardProps) {
                   <button
                     onClick={handleDelete}
                     disabled={isLoading}
-                    className="mt-2 flex items-center gap-1 rounded bg-warning px-2.5 py-1 text-[10px] font-medium text-white hover:bg-warning disabled:opacity-50"
+                    className="mt-2 flex items-center gap-1 rounded bg-warning px-2.5 py-1 text-[10px] font-medium text-warning-foreground hover:bg-warning disabled:opacity-50"
                   >
                     <Trash2 className="h-3 w-3" />
                     Cancel & Delete

@@ -226,9 +226,9 @@ export function PremiumAddonsSection() {
         <div className="space-y-4">
           {/* Team plan users: show TeamUWWizardManager instead of standalone addon UI */}
           {isTeamPlan ? (
-            <div className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10">
+            <div className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10 dark:bg-info/10">
               <div className="absolute -top-2 right-3">
-                <Badge className="bg-info text-white text-[9px] px-1.5">
+                <Badge className="bg-info text-info-foreground text-[9px] px-1.5">
                   <Check className="h-2.5 w-2.5 mr-0.5" />
                   Included in Team
                 </Badge>
@@ -253,10 +253,10 @@ export function PremiumAddonsSection() {
                 return (
                   <div
                     key={addon.id}
-                    className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10"
+                    className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10 dark:bg-info/10"
                   >
                     <div className="absolute -top-2 right-3">
-                      <Badge className="bg-info text-white text-[9px] px-1.5">
+                      <Badge className="bg-info text-info-foreground text-[9px] px-1.5">
                         <Check className="h-2.5 w-2.5 mr-0.5" />
                         {accessSource === "super_admin"
                           ? "Admin Access"
@@ -282,7 +282,7 @@ export function PremiumAddonsSection() {
 
                         {/* Usage Display */}
                         {uwUsage && (
-                          <div className="mt-3 p-2 bg-white dark:bg-v2-ring rounded border border-info/30">
+                          <div className="mt-3 p-2 bg-card rounded border border-info/30">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-[10px] font-medium text-v2-ink-muted">
                                 {uwUsage.tier_name}
@@ -351,10 +351,10 @@ export function PremiumAddonsSection() {
                   return (
                     <div
                       key={addon.id}
-                      className="relative rounded-lg border border-info/40 bg-info/10/50 p-3 dark:border-info dark:bg-info/10"
+                      className="relative rounded-lg border border-info/40 bg-info/10 p-3 dark:border-info dark:bg-info/10"
                     >
                       <div className="absolute -top-2 right-3">
-                        <Badge className="bg-info px-1.5 text-[9px] text-white">
+                        <Badge className="bg-info px-1.5 text-[9px] text-info-foreground">
                           <Check className="mr-0.5 h-2.5 w-2.5" />
                           Active
                         </Badge>
@@ -401,7 +401,7 @@ export function PremiumAddonsSection() {
                     className={cn(
                       "rounded-lg border p-3",
                       comingSoon
-                        ? "border-warning/30 bg-warning/10/60 dark:border-warning/70 dark:bg-warning/10/10"
+                        ? "border-warning/30 bg-warning/10 dark:border-warning/70 dark:bg-warning/10"
                         : "border-v2-ring",
                     )}
                   >
@@ -471,7 +471,7 @@ export function PremiumAddonsSection() {
                               </div>
                               {isSelected && (
                                 <div className="mt-1">
-                                  <Badge className="bg-info text-[8px] text-white">
+                                  <Badge className="bg-info text-[8px] text-info-foreground">
                                     Selected
                                   </Badge>
                                 </div>
@@ -537,13 +537,13 @@ export function PremiumAddonsSection() {
                   className={cn(
                     "relative p-3 rounded-lg border",
                     hasAccess
-                      ? "border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10"
+                      ? "border-info/40 dark:border-info bg-info/10 dark:bg-info/10"
                       : "border-v2-ring",
                   )}
                 >
                   {hasAccess && (
                     <div className="absolute -top-2 right-3">
-                      <Badge className="bg-info text-white text-[9px] px-1.5">
+                      <Badge className="bg-info text-info-foreground text-[9px] px-1.5">
                         <Check className="h-2.5 w-2.5 mr-0.5" />
                         Active
                       </Badge>

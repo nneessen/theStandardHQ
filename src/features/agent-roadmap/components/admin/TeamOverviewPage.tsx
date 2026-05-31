@@ -234,7 +234,7 @@ export function TeamOverviewPage() {
                     return (
                       <TableRow
                         key={agent.userId}
-                        className="border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-card-tinted/30"
+                        className="border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/30"
                       >
                         <TableCell className="sticky left-0 bg-card z-10">
                           <div className="text-sm font-semibold text-foreground dark:text-foreground truncate max-w-[180px]">

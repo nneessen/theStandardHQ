@@ -41,7 +41,7 @@ export function ThreadListItem({
       className={cn(
         "w-full text-left p-2 hover:bg-v2-canvas transition-colors border-b border-v2-ring/60",
         isSelected && "bg-v2-ring border-l-2 border-l-blue-500",
-        isUnread && "bg-info/10/30 dark:bg-info/10",
+        isUnread && "bg-info/10 dark:bg-info/10",
       )}
       onClick={onClick}
     >

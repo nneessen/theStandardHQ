@@ -216,7 +216,7 @@ function AgentListView({
             />
             <Button
               size="sm"
-              className="h-6 text-[10px] bg-info hover:bg-info text-white"
+              className="h-6 text-[10px] bg-info hover:bg-info text-info-foreground"
               disabled={!grantUserId.trim() || grantAccess.isPending}
               onClick={() => {
                 grantAccess.mutate(
@@ -1347,7 +1347,7 @@ function TeamAccessPanel({
             />
             <Button
               size="sm"
-              className="h-6 text-[10px] bg-info hover:bg-info text-white"
+              className="h-6 text-[10px] bg-info hover:bg-info text-info-foreground"
               disabled={grantAccess.isPending}
               onClick={() =>
                 grantAccess.mutate(

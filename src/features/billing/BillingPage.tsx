@@ -148,7 +148,7 @@ export function BillingPage() {
           <div className="px-4 py-3 bg-gradient-to-r from-v2-card-dark to-v2-card-dark ">
             <div className="flex items-center gap-2 mb-1">
               <FlaskConical className="h-3.5 w-3.5 text-warning" />
-              <span className="text-[11px] font-bold text-white uppercase tracking-[0.18em]">
+              <span className="text-[11px] font-bold text-foreground uppercase tracking-[0.18em]">
                 What's Coming
               </span>
               <span className="text-[9px] font-medium bg-warning/70 text-v2-ink rounded-full px-2 py-0.5 ml-1">

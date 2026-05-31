@@ -176,7 +176,7 @@ export function SystemAutomationsConfig() {
                 className={`flex items-center gap-3 p-2.5 rounded-md border ${
                   automation.is_active
                     ? "bg-background border-border"
-                    : "bg-muted/50 dark:bg-card-dark border-border opacity-60"
+                    : "bg-muted/50 dark:bg-v2-card-dark border-border opacity-60"
                 }`}
               >
                 <div className="text-muted-foreground">

@@ -131,7 +131,7 @@ function DocumentRow({
   canDelete: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50">
+    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
       <TableCell className="py-1.5">
         <div className="flex items-center gap-2">
           {getFileIcon(document.fileType)}
@@ -409,7 +409,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
         <div className="border border-border dark:border-border rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+              <TableRow className="bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
                 <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Document
                 </TableHead>

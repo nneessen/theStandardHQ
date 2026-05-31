@@ -574,16 +574,16 @@ export function VoiceAgentRetellStudioCard({
             <div>
               <div className="flex items-center gap-2">
                 <p
-                  className="text-[13px] font-bold text-white tracking-tight"
+                  className="text-[13px] font-bold text-foreground tracking-tight"
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   {viewCopy.title}
                 </p>
-                <span className="text-[9px] font-medium uppercase tracking-widest text-white/50">
+                <span className="text-[9px] font-medium uppercase tracking-widest text-foreground/50">
                   {viewCopy.eyebrow}
                 </span>
               </div>
-              <p className="text-[10px] leading-4 text-white/60 max-w-xl">
+              <p className="text-[10px] leading-4 text-muted-foreground max-w-xl">
                 {viewCopy.description}
               </p>
             </div>
@@ -605,7 +605,7 @@ export function VoiceAgentRetellStudioCard({
               </Badge>
             ) : null}
             {hasUnsavedChanges && (
-              <Badge className="bg-white/10 text-white border border-white/20 dark:bg-white/15 dark:text-white dark:border-white/30 text-[9px]">
+              <Badge className="bg-foreground/10 text-foreground border border-foreground/20 text-[9px]">
                 Unsaved changes
               </Badge>
             )}

@@ -90,9 +90,9 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
+    <div className="rounded-lg border border-border bg-card p-4 dark:border-border">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-foreground dark:bg-v2-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
@@ -113,7 +113,7 @@ function SectionCard({
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-white px-3 py-2 dark:border-border dark:bg-card">
+    <div className="rounded-lg border border-border bg-card px-3 py-2 dark:border-border">
       <p className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
         {label}
       </p>
@@ -412,7 +412,7 @@ export function SetupTab() {
             </div>
             <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
               <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-success shadow-lg shadow-success/30 transition-all group-hover:scale-110 group-hover:bg-success group-hover:shadow-success/30">
-                <Power className="h-8 w-8 text-white" />
+                <Power className="h-8 w-8 text-success-foreground" />
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-success">
                 Enable
@@ -424,7 +424,7 @@ export function SetupTab() {
         <div className="rounded-lg border-2 border-success/70 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-success dark:from-emerald-950/40 dark:to-green-950/30">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-success shadow-md shadow-success/30">
-              <Power className="h-5 w-5 text-white" />
+              <Power className="h-5 w-5 text-success-foreground" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-bold text-success dark:text-success">
@@ -457,7 +457,7 @@ export function SetupTab() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-foreground shadow-sm dark:bg-card dark:text-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card text-foreground shadow-sm dark:text-foreground">
                 <Settings2 className="h-4 w-4" />
               </div>
               <div>
@@ -500,7 +500,7 @@ export function SetupTab() {
       <Tabs defaultValue="automation" className="space-y-3">
         <TabsList
           variant="segment"
-          className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-card-tinted p-1 lg:grid-cols-5 dark:bg-card-tinted/70"
+          className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-v2-card-tinted p-1 lg:grid-cols-5 dark:bg-v2-card-tinted/70"
         >
           <TabsTrigger
             value="automation"
@@ -932,8 +932,8 @@ export function SetupTab() {
               <ConnectionCard
                 title="Close CRM"
                 icon={
-                  <div className="flex h-6 w-6 items-center justify-center rounded bg-foreground dark:bg-card-tinted">
-                    <span className="text-[8px] font-bold text-white dark:text-foreground">
+                  <div className="flex h-6 w-6 items-center justify-center rounded bg-foreground dark:bg-v2-card-tinted">
+                    <span className="text-[8px] font-bold text-background dark:text-foreground">
                       CRM
                     </span>
                   </div>
@@ -960,7 +960,7 @@ export function SetupTab() {
                     title="Calendly"
                     icon={
                       <div className="flex h-6 w-6 items-center justify-center rounded bg-info">
-                        <span className="text-[8px] font-bold text-white">
+                        <span className="text-[8px] font-bold text-info-foreground">
                           CAL
                         </span>
                       </div>
@@ -980,7 +980,7 @@ export function SetupTab() {
                     title="Google Calendar"
                     icon={
                       <div className="flex h-6 w-6 items-center justify-center rounded bg-destructive">
-                        <Calendar className="h-3 w-3 text-white" />
+                        <Calendar className="h-3 w-3 text-destructive-foreground" />
                       </div>
                     }
                     connected={false}
@@ -999,7 +999,7 @@ export function SetupTab() {
                   title="Calendly"
                   icon={
                     <div className="flex h-6 w-6 items-center justify-center rounded bg-info">
-                      <span className="text-[8px] font-bold text-white">
+                      <span className="text-[8px] font-bold text-info-foreground">
                         CAL
                       </span>
                     </div>
@@ -1024,7 +1024,7 @@ export function SetupTab() {
                   title="Google Calendar"
                   icon={
                     <div className="flex h-6 w-6 items-center justify-center rounded bg-destructive">
-                      <Calendar className="h-3 w-3 text-white" />
+                      <Calendar className="h-3 w-3 text-destructive-foreground" />
                     </div>
                   }
                   connected={true}
@@ -1063,8 +1063,8 @@ export function SetupTab() {
                         className={cn(
                           "h-7 rounded-full border px-2.5 text-[10px] font-medium transition-colors",
                           bhDays.includes(index)
-                            ? "border-info bg-info text-white"
-                            : "border-border bg-white text-muted-foreground hover:border-border dark:border-border dark:bg-card dark:text-muted-foreground",
+                            ? "border-info bg-info text-info-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-border dark:border-border dark:text-muted-foreground",
                         )}
                       >
                         {label}
@@ -1084,7 +1084,7 @@ export function SetupTab() {
                           setBhStart(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-[11px] text-foreground dark:border-border dark:bg-card dark:text-foreground"
+                        className="h-8 w-full rounded-md border border-border bg-card px-2 text-[11px] text-foreground dark:border-border dark:text-foreground"
                       />
                     </label>
                     <label className="space-y-1">
@@ -1098,7 +1098,7 @@ export function SetupTab() {
                           setBhEnd(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-[11px] text-foreground dark:border-border dark:bg-card dark:text-foreground"
+                        className="h-8 w-full rounded-md border border-border bg-card px-2 text-[11px] text-foreground dark:border-border dark:text-foreground"
                       />
                     </label>
                   </div>
@@ -1140,7 +1140,7 @@ export function SetupTab() {
                   description="Map lead sources to specific Calendly event types."
                 >
                   {eventTypesLoading ? (
-                    <div className="h-8 rounded bg-card-tinted dark:bg-card-tinted" />
+                    <div className="h-8 rounded bg-v2-card-tinted dark:bg-v2-card-tinted" />
                   ) : eventTypesError ? (
                     <div className="flex items-center gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 dark:border-warning dark:bg-warning/15">
                       <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
@@ -1182,7 +1182,7 @@ export function SetupTab() {
                             }}
                             placeholder="e.g. Sitka Life"
                             disabled={updateConfig.isPending}
-                            className="h-8 rounded-md border border-border bg-white px-2 text-[11px] dark:border-border dark:bg-card"
+                            className="h-8 rounded-md border border-border bg-card px-2 text-[11px] dark:border-border"
                           />
                           <Select
                             value={mapping.eventTypeSlug || "__none__"}

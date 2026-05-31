@@ -95,7 +95,7 @@ export function GraduateToAgentDialog({
 
         <div className="space-y-3 py-2">
           {/* What will happen - compact info box */}
-          <div className="bg-warning/10 border border-warning/30/50 rounded p-2">
+          <div className="bg-warning/10 border border-warning/30 rounded p-2">
             <div className="flex items-start gap-1.5">
               <AlertCircle className="h-3 w-3 text-warning mt-0.5 shrink-0" />
               <div className="text-[10px] text-warning">
@@ -207,7 +207,7 @@ export function GraduateToAgentDialog({
             onClick={handleGraduate}
             disabled={graduateMutation.isPending}
             size="sm"
-            className="h-6 px-2 text-[10px] bg-success hover:bg-success text-white"
+            className="h-6 px-2 text-[10px] bg-success hover:bg-success text-success-foreground"
           >
             {graduateMutation.isPending ? "Graduating..." : "Graduate to Agent"}
           </Button>

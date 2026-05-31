@@ -180,13 +180,13 @@ export const CloseKpiPage: React.FC = () => {
               className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0"
               style={{ backgroundColor: `${ACCENT}30` }}
             >
-              <CloseLogo className="h-3.5 w-auto text-white" />
+              <CloseLogo className="h-3.5 w-auto text-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white tracking-tight">
+              <h1 className="text-sm font-bold text-foreground tracking-tight">
                 Close KPIs
               </h1>
-              <p className="text-[10px] text-white/60 hidden sm:block">
+              <p className="text-[10px] text-foreground/60 hidden sm:block">
                 AI-powered CRM analytics dashboard
               </p>
             </div>

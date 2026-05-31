@@ -496,7 +496,7 @@ function DeleteAgentDialog({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive hover:bg-destructive text-white"
+            className="bg-destructive hover:bg-destructive text-destructive-foreground"
             onClick={handleDelete}
             disabled={deleteUser.isPending}
           >

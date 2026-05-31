@@ -327,9 +327,9 @@ export function BotHealthPage() {
                       key={q.queue}
                       className={cn(
                         q.level === "critical" &&
-                          "bg-destructive/10/50 dark:bg-destructive/10",
+                          "bg-destructive/10 dark:bg-destructive/10",
                         q.level === "warn" &&
-                          "bg-warning/10/50 dark:bg-warning/10",
+                          "bg-warning/10 dark:bg-warning/10",
                       )}
                     >
                       <TableCell className="py-1.5 text-xs font-mono">

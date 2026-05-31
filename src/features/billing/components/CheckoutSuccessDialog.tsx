@@ -234,7 +234,7 @@ export function CheckoutSuccessDialog({
         </div>
 
         {/* Plan Details Card */}
-        <div className="mx-5 rounded-v2-md border border-border bg-background dark:bg-card-dark/50 p-3">
+        <div className="mx-5 rounded-v2-md border border-border bg-muted/50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Crown className="h-3.5 w-3.5 text-warning" />
@@ -319,7 +319,7 @@ export function CheckoutSuccessDialog({
 
         {/* Timeout fallback */}
         {activationStatus === "timeout" && (
-          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/30/50 px-3 py-2">
+          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/30 px-3 py-2">
             <RefreshCw className="h-3.5 w-3.5 text-warning flex-shrink-0" />
             <p className="text-[10px] text-warning">
               Your payment was processed successfully. If your plan doesn't
@@ -367,7 +367,7 @@ function NextStep({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-card-dark dark:bg-muted text-white dark:text-foreground text-[10px] font-bold">
+      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-muted text-foreground text-[10px] font-bold">
         {number}
       </span>
       <div className="min-w-0">

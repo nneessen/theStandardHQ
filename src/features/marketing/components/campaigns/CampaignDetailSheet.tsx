@@ -60,7 +60,7 @@ const STATUS_CONFIG: Record<
   draft: {
     label: "Draft",
     className:
-      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
+      "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
   },
   sending: {
     label: "Sending",
@@ -460,7 +460,7 @@ export function CampaignDetailSheet({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-white"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-destructive-foreground"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >

@@ -260,7 +260,7 @@ export function AuditLogDetailDialog({
                   <Separator />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {log.action !== "INSERT" && (
-                      <div className="p-3 rounded-lg bg-destructive/10/50 dark:bg-destructive/10 border border-destructive/20 dark:border-destructive">
+                      <div className="p-3 rounded-lg bg-destructive/10 dark:bg-destructive/10 border border-destructive/20 dark:border-destructive">
                         <JsonDataView
                           data={log.oldData}
                           title="Previous Values"
@@ -270,7 +270,7 @@ export function AuditLogDetailDialog({
                       </div>
                     )}
                     {log.action !== "DELETE" && (
-                      <div className="p-3 rounded-lg bg-success/10/50 dark:bg-success/10 border border-success dark:border-success">
+                      <div className="p-3 rounded-lg bg-success/10 dark:bg-success/10 border border-success dark:border-success">
                         <JsonDataView
                           data={log.newData}
                           title={

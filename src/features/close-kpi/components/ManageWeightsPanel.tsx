@@ -320,7 +320,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
         {panelOpen && (
           <div className="mt-1.5 space-y-1">
             {/* Help banner — written for non-technical users. No jargon. */}
-            <div className="rounded border border-info/40 dark:border-info/30 bg-info/10/30 dark:bg-info/10 px-2 py-1.5 text-[10px] text-foreground/80 leading-relaxed">
+            <div className="rounded border border-info/40 dark:border-info/30 bg-info/10 dark:bg-info/10 px-2 py-1.5 text-[10px] text-foreground/80 leading-relaxed">
               <span className="font-semibold text-info">How this works:</span>{" "}
               Each row below is a behavior the system uses to decide which of
               your leads are hot. <strong>Drag a slider RIGHT</strong> to make
@@ -338,7 +338,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
             <div
               className={
                 isHero
-                  ? "rounded border border-info/40 dark:border-info/30 bg-info/10/20 dark:bg-info/10/10 p-1.5 max-h-[280px] overflow-y-auto overscroll-contain"
+                  ? "rounded border border-info/40 dark:border-info/30 bg-info/10 dark:bg-info/10 p-1.5 max-h-[280px] overflow-y-auto overscroll-contain"
                   : "rounded border border-border/50 bg-muted/5 p-1.5 max-h-[260px] overflow-y-auto overscroll-contain"
               }
             >
@@ -382,7 +382,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                               return (
                                 <div className="text-[11px] leading-snug">
                                   {/* Header */}
-                                  <div className="px-3 py-2 bg-info/10 dark:bg-info/10/40 border-b border-border/50">
+                                  <div className="px-3 py-2 bg-info/10 dark:bg-info/10 border-b border-border/50">
                                     <div className="font-bold text-foreground">
                                       {SIGNAL_LABELS[signalKey] ?? signalKey}
                                     </div>
@@ -416,7 +416,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                                   </div>
                                   {/* AI suggestion if present */}
                                   {aiRec?.reason && (
-                                    <div className="px-3 py-2 bg-info/20/60 dark:bg-info/10/60 border-t border-info/30">
+                                    <div className="px-3 py-2 bg-info/20 dark:bg-info/10 border-t border-info/30">
                                       <div className="font-bold text-info text-[10px] uppercase tracking-[0.18em] mb-0.5">
                                         AI Suggestion (
                                         {aiRec.multiplier.toFixed(2)}x)
@@ -491,7 +491,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-5 px-1.5 text-[9px] font-semibold gap-0.5 border-info dark:border-info text-info hover:bg-info/10 dark:hover:bg-info/10/30"
+                        className="h-5 px-1.5 text-[9px] font-semibold gap-0.5 border-info dark:border-info text-info hover:bg-info/10 dark:hover:bg-info/10"
                         onClick={() =>
                           handleApplySingle(signalKey, aiRec.multiplier)
                         }
@@ -528,7 +528,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                   <Button
                     type="button"
                     size="sm"
-                    className="h-6 px-2 text-[10px] gap-1 bg-info hover:bg-info text-white"
+                    className="h-6 px-2 text-[10px] gap-1 bg-info hover:bg-info text-info-foreground"
                     onClick={handleSaveDraft}
                     disabled={applyWeights.isPending}
                   >

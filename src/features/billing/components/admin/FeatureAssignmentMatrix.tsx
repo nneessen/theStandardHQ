@@ -508,7 +508,7 @@ export function FeatureAssignmentMatrix({
                           key={feature.key}
                           className={`grid items-center border-l-2 ${borderColor} ml-2 pl-4 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 ${
                             idx % 2 === 0
-                              ? "bg-white dark:bg-transparent"
+                              ? "bg-card"
                               : "bg-v2-canvas dark:bg-v2-card-dark/20"
                           }`}
                           style={{ gridTemplateColumns: gridCols }}
@@ -576,7 +576,7 @@ export function FeatureAssignmentMatrix({
             >
               {/* Analytics Header Row */}
               <div
-                className="grid items-center rounded-md bg-destructive/10/50 dark:bg-destructive/20 hover:bg-destructive/10 dark:hover:bg-destructive/30"
+                className="grid items-center rounded-md bg-destructive/10 dark:bg-destructive/20 hover:bg-destructive/10 dark:hover:bg-destructive/30"
                 style={{ gridTemplateColumns: gridCols }}
               >
                 <CollapsibleTrigger asChild>
@@ -634,9 +634,9 @@ export function FeatureAssignmentMatrix({
                 {analyticsSections.map((section, idx) => (
                   <div
                     key={section.key}
-                    className={`grid items-center border-l-2 border-l-rose-500/40 ml-2 pl-4 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 ${
+                    className={`grid items-center border-l-2 border-l-destructive/40 ml-2 pl-4 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 ${
                       idx % 2 === 0
-                        ? "bg-white dark:bg-transparent"
+                        ? "bg-card"
                         : "bg-v2-canvas dark:bg-v2-card-dark/20"
                     }`}
                     style={{ gridTemplateColumns: gridCols }}

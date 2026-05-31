@@ -165,7 +165,7 @@ export function SchedulingItemConfig({
             }
           }}
         >
-          <SelectTrigger className="h-7 text-[11px] bg-white  border-border">
+          <SelectTrigger className="h-7 text-[11px] bg-input border-border">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -262,7 +262,7 @@ export function SchedulingItemConfig({
             value={customUrl}
             onChange={(e) => handleCustomUrlChange(e.target.value)}
             placeholder={`https://${schedulingType === "zoom" ? "zoom.us/j/..." : schedulingType === "calendly" ? "calendly.com/..." : "calendar.google.com/..."}`}
-            className={`h-7 text-[11px] bg-white  border-border ${
+            className={`h-7 text-[11px] bg-input border-border ${
               urlError ? "border-destructive dark:border-destructive" : ""
             }`}
           />
@@ -295,7 +295,7 @@ export function SchedulingItemConfig({
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           placeholder="e.g., Please book a 30-minute call at your earliest convenience."
-          className="text-[11px] min-h-12 bg-white  border-border"
+          className="text-[11px] min-h-12 bg-input border-border"
         />
       </div>
     </div>

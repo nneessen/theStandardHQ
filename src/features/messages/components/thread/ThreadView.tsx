@@ -430,7 +430,7 @@ function MessageCard({
       className={cn(
         "rounded-md overflow-hidden transition-all",
         isSent
-          ? "bg-info/10/50 dark:bg-info/10 border border-info/30/50 dark:border-info/30"
+          ? "bg-info/10 dark:bg-info/10 border border-info/30 dark:border-info/30"
           : "bg-background border border-border",
       )}
     >
@@ -439,7 +439,7 @@ function MessageCard({
         className={cn(
           "w-full text-left px-2.5 py-1.5 transition-colors",
           isExpanded ? "border-b border-border/50 /50" : "",
-          "hover:bg-muted/50 dark:hover:bg-card-dark/30",
+          "hover:bg-muted/50 dark:hover:bg-v2-card-dark/30",
         )}
         onClick={onToggle}
       >

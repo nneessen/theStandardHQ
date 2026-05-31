@@ -155,7 +155,7 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
 
       {/* Guardrail violations */}
       {violations.length > 0 && (
-        <div className="rounded-lg border border-warning/30 dark:border-warning bg-warning/10/50 dark:bg-warning/10 p-2.5">
+        <div className="rounded-lg border border-warning/30 dark:border-warning bg-warning/10 dark:bg-warning/10 p-2.5">
           <div className="flex items-center gap-1.5 mb-1.5">
             <AlertTriangle className="h-3.5 w-3.5 text-warning" />
             <span className="text-[10px] font-semibold text-warning">
@@ -589,7 +589,7 @@ export function PlaygroundTab() {
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="h-8 px-4 text-[11px] font-semibold bg-info hover:bg-info text-white"
+                className="h-8 px-4 text-[11px] font-semibold bg-info hover:bg-info text-info-foreground"
               >
                 {dryRun.isPending ? (
                   <>

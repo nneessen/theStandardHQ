@@ -129,7 +129,7 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
         (untouchedCount > 0 &&
           untouchedAvgAgeDays &&
           untouchedAvgAgeDays > 1)) && (
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded bg-warning/10 px-1.5 py-0.5 dark:bg-warning/10">
           <AlertTriangle className="h-2.5 w-2.5 text-warning" />
           {topMissedWindow && (
             <span className="text-[10px] text-warning">

@@ -237,12 +237,12 @@ export function VoiceAgentOverviewTab({
               </div>
 
               <h1
-                className="text-xl font-bold text-white tracking-tight mb-1.5"
+                className="text-xl font-bold text-foreground tracking-tight mb-1.5"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Automate Follow-Ups &amp; Inbound Calls
               </h1>
-              <p className="text-[11px] text-white/60 leading-relaxed max-w-2xl">
+              <p className="text-[11px] text-muted-foreground leading-relaxed max-w-2xl">
                 Your AI voice agent handles missed appointments, after-hours
                 inbound, and follow-up calls automatically — connecting with
                 leads by phone while you focus on selling. Powered by Retell.ai
@@ -252,19 +252,19 @@ export function VoiceAgentOverviewTab({
               {/* CTA + Integration logos row */}
               <div className="flex items-center justify-between gap-4 mt-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-[9px] text-white/30 uppercase tracking-widest font-medium">
+                  <span className="text-[9px] text-muted-foreground/50 uppercase tracking-widest font-medium">
                     Integrates with
                   </span>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
-                      <CloseCrmLogo className="h-3.5 w-auto text-white" />
-                      <span className="text-[9px] text-white/60 font-medium">
+                      <CloseCrmLogo className="h-3.5 w-auto text-foreground" />
+                      <span className="text-[9px] text-muted-foreground font-medium">
                         Close CRM
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
-                      <PhoneCall className="h-3.5 w-3.5 text-white/70" />
-                      <span className="text-[9px] text-white/60 font-medium">
+                      <PhoneCall className="h-3.5 w-3.5 text-foreground/70" />
+                      <span className="text-[9px] text-muted-foreground font-medium">
                         Retell.ai
                       </span>
                     </div>
@@ -315,10 +315,10 @@ export function VoiceAgentOverviewTab({
         agent &&
         onToggleVoice &&
         (agent.voiceEnabled ? (
-          <div className="rounded-lg border-2 border-success/70 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-success dark:from-emerald-950/40 dark:to-green-950/30">
+          <div className="rounded-lg border-2 border-success/70 bg-gradient-to-r from-success/5 to-success/10 p-4">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-success shadow-md shadow-success/30">
-                <Power className="h-5 w-5 text-white" />
+                <Power className="h-5 w-5 text-success-foreground" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-bold text-success dark:text-success">
@@ -350,7 +350,7 @@ export function VoiceAgentOverviewTab({
             type="button"
             disabled={voiceTogglePending}
             onClick={onToggleVoice}
-            className="group relative w-full overflow-hidden rounded-lg border-2 border-warning/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-5 text-left transition-all hover:border-warning hover:shadow-lg hover:shadow-warning/30 disabled:opacity-70 dark:border-warning dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 dark:hover:shadow-warning/30"
+            className="group relative w-full overflow-hidden rounded-lg border-2 border-warning/70 bg-gradient-to-r from-warning/5 via-warning/8 to-warning/10 p-5 text-left transition-all hover:border-warning hover:shadow-lg hover:shadow-warning/30 disabled:opacity-70"
           >
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(226, 255, 204, 0.20),transparent_60%)]" />
             <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20" />
@@ -374,7 +374,7 @@ export function VoiceAgentOverviewTab({
               </div>
               <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
                 <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-success shadow-lg shadow-success/30 transition-all group-hover:scale-110 group-hover:bg-success group-hover:shadow-success/30">
-                  <Power className="h-8 w-8 text-white" />
+                  <Power className="h-8 w-8 text-success-foreground" />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-success">
                   Activate

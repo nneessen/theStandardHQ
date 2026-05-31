@@ -319,7 +319,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   title="Calendly"
                   icon={
                     <div className="w-6 h-6 rounded bg-info flex items-center justify-center">
-                      <span className="text-[8px] font-bold text-white">
+                      <span className="text-[8px] font-bold text-info-foreground">
                         CAL
                       </span>
                     </div>
@@ -338,7 +338,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   title="Google Calendar"
                   icon={
                     <div className="w-6 h-6 rounded bg-destructive flex items-center justify-center">
-                      <Calendar className="h-3 w-3 text-white" />
+                      <Calendar className="h-3 w-3 text-destructive-foreground" />
                     </div>
                   }
                   connected={false}
@@ -357,7 +357,9 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 title="Calendly"
                 icon={
                   <div className="w-6 h-6 rounded bg-info flex items-center justify-center">
-                    <span className="text-[8px] font-bold text-white">CAL</span>
+                    <span className="text-[8px] font-bold text-info-foreground">
+                      CAL
+                    </span>
                   </div>
                 }
                 connected={true}
@@ -380,7 +382,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 title="Google Calendar"
                 icon={
                   <div className="w-6 h-6 rounded bg-destructive flex items-center justify-center">
-                    <Calendar className="h-3 w-3 text-white" />
+                    <Calendar className="h-3 w-3 text-destructive-foreground" />
                   </div>
                 }
                 connected={true}
@@ -552,7 +554,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
             </div>
 
             <Button
-              className="h-8 text-[11px] bg-success hover:bg-success text-white mt-3"
+              className="h-8 text-[11px] bg-success hover:bg-success text-success-foreground mt-3"
               disabled={updateConfig.isPending}
               onClick={handleFinish}
             >

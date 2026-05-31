@@ -12,6 +12,7 @@ import { useImo, useAllActiveImos } from "@/hooks/imo";
 import { useIsMobile, usePersistentSectionCollapse } from "@/hooks/ui";
 import { useSidebarNavigation } from "@/hooks/navigation";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
+import { SidebarJarvisDock } from "./sidebar/SidebarJarvisDock";
 import { SidebarNavSection } from "./sidebar/SidebarNavSection";
 import { SidebarFooter } from "./sidebar/SidebarFooter";
 
@@ -136,6 +137,15 @@ export default function Sidebar({
           userEmail={userEmail}
           userName={userName}
         />
+
+        {/* Jarvis launcher dock — opens the Command Center (⌘J). Hidden for recruits. */}
+        {!isRecruit && (
+          <SidebarJarvisDock
+            isCollapsed={isCollapsed}
+            isMobile={isMobile}
+            onCloseMobile={closeMobile}
+          />
+        )}
 
         {/* Navigation */}
         <TooltipProvider delayDuration={0}>

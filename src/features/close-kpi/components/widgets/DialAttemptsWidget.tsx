@@ -98,7 +98,7 @@ export const DialAttemptsWidget: React.FC<DialAttemptsWidgetProps> = ({
 
       {/* Diminishing returns signal */}
       {diminishingReturnsAttempt != null && (
-        <div className="flex items-center gap-1 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+        <div className="flex items-center gap-1 rounded bg-warning/10 px-1.5 py-0.5 dark:bg-warning/10">
           <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-warning" />
           <span className="text-[10px] text-warning">
             Diminishing returns after attempt{" "}

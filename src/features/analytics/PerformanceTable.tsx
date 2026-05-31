@@ -170,7 +170,7 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="bg-card rounded-lg shadow-sm border">
       <div className="px-6 py-4 border-b">
         <h3 className="text-lg font-medium">{title}</h3>
       </div>

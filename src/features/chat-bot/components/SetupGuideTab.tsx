@@ -107,8 +107,8 @@ function StepIndicator({
                   className={cn(
                     "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-colors",
                     isActive &&
-                      "bg-info text-white ring-2 ring-info/40 dark:ring-info",
-                    isCompleted && "bg-success text-white",
+                      "bg-info text-info-foreground ring-2 ring-info/40 dark:ring-info",
+                    isCompleted && "bg-success text-success-foreground",
                     !isActive &&
                       !isCompleted &&
                       "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
@@ -741,7 +741,7 @@ export function SetupGuideTab() {
             "flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-medium transition-colors",
             currentStep === 8
               ? "text-v2-ink-subtle dark:text-v2-ink-muted cursor-not-allowed"
-              : "bg-info text-white hover:bg-info",
+              : "bg-info text-info-foreground hover:bg-info",
           )}
         >
           Next

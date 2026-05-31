@@ -174,7 +174,7 @@ export function MonitoringTab() {
               className={cn(
                 "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                 activityPeriod === "24h"
-                  ? "bg-white dark:bg-v2-ring-strong shadow-sm text-v2-ink dark:text-v2-ink"
+                  ? "bg-card shadow-sm text-v2-ink"
                   : "text-v2-ink-muted dark:text-v2-ink-subtle",
               )}
             >
@@ -185,7 +185,7 @@ export function MonitoringTab() {
               className={cn(
                 "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                 activityPeriod === "7d"
-                  ? "bg-white dark:bg-v2-ring-strong shadow-sm text-v2-ink dark:text-v2-ink"
+                  ? "bg-card shadow-sm text-v2-ink"
                   : "text-v2-ink-muted dark:text-v2-ink-subtle",
               )}
             >

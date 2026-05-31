@@ -80,7 +80,7 @@ export function PendingInvitationBanner() {
             </div>
 
             {invitation.message && (
-              <div className="text-sm bg-white/60 rounded px-3 py-2 border border-info/20">
+              <div className="text-sm bg-muted/40 rounded px-3 py-2 border border-info/20">
                 <p className="text-muted-foreground italic">
                   "{invitation.message}"
                 </p>

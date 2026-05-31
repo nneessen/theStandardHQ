@@ -141,7 +141,7 @@ export function InstagramMessageBubble({
           className={cn(
             "px-2.5 py-1.5 rounded-2xl",
             isOutbound
-              ? "bg-info text-white rounded-br-md"
+              ? "bg-info text-info-foreground rounded-br-md"
               : "bg-v2-ring text-v2-ink rounded-bl-md",
           )}
         >

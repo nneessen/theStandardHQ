@@ -118,7 +118,7 @@ export function CreateFromPdfDialog({
               accept=".pdf"
               onChange={handleFileChange}
               disabled={isActive}
-              className="block w-full text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-card-tinted file:text-foreground dark:file:bg-muted dark:file:text-muted-foreground hover:file:bg-muted dark:hover:file:bg-muted disabled:opacity-50"
+              className="block w-full text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-v2-card-tinted file:text-foreground dark:file:bg-muted dark:file:text-muted-foreground hover:file:bg-muted dark:hover:file:bg-muted disabled:opacity-50"
             />
             {fileError && (
               <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -154,7 +154,7 @@ export function CreateFromPdfDialog({
 
           {/* Progress */}
           {isActive && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground bg-background dark:bg-card-tinted/50 rounded px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground bg-background dark:bg-v2-card-tinted/50 rounded px-3 py-2">
               <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />
               <div>
                 <p>{progress.message}</p>

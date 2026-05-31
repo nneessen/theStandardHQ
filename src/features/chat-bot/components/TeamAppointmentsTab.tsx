@@ -123,7 +123,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="text-[9px] h-4 px-1 font-mono tabular-nums border-info/30 text-info bg-info/10/50 dark:border-info dark:text-info dark:bg-info/15 flex-shrink-0"
+              className="text-[9px] h-4 px-1 font-mono tabular-nums border-info/30 text-info bg-info/10 dark:border-info dark:text-info dark:bg-info/15 flex-shrink-0"
             >
               {formatTime(nextAppt.scheduledAt)}
             </Badge>

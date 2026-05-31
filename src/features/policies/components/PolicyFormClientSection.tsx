@@ -74,7 +74,7 @@ export const PolicyFormClientSection: React.FC<
   const selectedProduct = products.find((p) => p.id === formData.productId);
 
   return (
-    <div className="bg-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
+    <div className="bg-v2-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
       {/* Section header strip */}
       <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-border/60 dark:border-border/40">
         <User className="h-3 w-3 text-warning" />
@@ -104,7 +104,7 @@ export const PolicyFormClientSection: React.FC<
               name="clientName"
               value={formData.clientName}
               onChange={onInputChange}
-              className={`h-8 text-xs bg-card-tinted border-border dark:border-border ${displayErrors.clientName ? "border-destructive" : ""}`}
+              className={`h-8 text-xs bg-v2-card-tinted border-border dark:border-border ${displayErrors.clientName ? "border-destructive" : ""}`}
               placeholder="John Smith"
             />
             {displayErrors.clientName && (
@@ -206,7 +206,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientEmail"
                     value={formData.clientEmail || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-border dark:border-border"
                     placeholder="client@email.com"
                   />
                 </div>
@@ -224,7 +224,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientPhone"
                     value={formData.clientPhone || ""}
                     onChange={(e) => onPhoneChange(e.target.value)}
-                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-border dark:border-border"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -242,7 +242,7 @@ export const PolicyFormClientSection: React.FC<
                   name="clientStreet"
                   value={formData.clientStreet || ""}
                   onChange={onInputChange}
-                  className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
+                  className="h-8 text-[11px] bg-v2-card-tinted border-border dark:border-border"
                   placeholder="123 Main St"
                 />
               </div>
@@ -260,7 +260,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientCity"
                     value={formData.clientCity || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-border dark:border-border"
                     placeholder="Anytown"
                   />
                 </div>
@@ -279,7 +279,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientZipCode"
                     value={formData.clientZipCode || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-border dark:border-border"
                     placeholder="12345"
                   />
                 </div>
@@ -437,7 +437,7 @@ export const PolicyFormClientSection: React.FC<
             onChange={onInputChange}
             rows={2}
             placeholder="Optional notes..."
-            className="text-[11px] resize-vertical min-h-[50px] bg-card-tinted border-border dark:border-border"
+            className="text-[11px] resize-vertical min-h-[50px] bg-v2-card-tinted border-border dark:border-border"
           />
         </div>
       </div>

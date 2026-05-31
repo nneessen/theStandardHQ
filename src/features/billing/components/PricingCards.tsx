@@ -151,7 +151,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
       <div className="px-5 py-4 bg-v2-card-dark">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-white tracking-tight">
+            <h2 className="text-base font-bold text-foreground tracking-tight">
               Choose Your Plan
             </h2>
             <p className="text-[11px] text-v2-ink-subtle mt-0.5">
@@ -172,7 +172,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
               className={cn(
                 "px-3 py-1.5 text-[11px] font-medium rounded transition-colors",
                 billingInterval === "monthly"
-                  ? "bg-white text-v2-ink shadow-sm"
+                  ? "bg-card text-v2-ink shadow-sm"
                   : "text-v2-ink-subtle hover:text-v2-ink-subtle",
               )}
             >
@@ -183,7 +183,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
               className={cn(
                 "px-3 py-1.5 text-[11px] font-medium rounded transition-colors",
                 billingInterval === "annual"
-                  ? "bg-white text-v2-ink shadow-sm"
+                  ? "bg-card text-v2-ink shadow-sm"
                   : "text-v2-ink-subtle hover:text-v2-ink-subtle",
               )}
             >
@@ -224,7 +224,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 className={cn(
                   "relative flex flex-col rounded-lg border p-3 transition-all",
                   isCurrent
-                    ? "border-success bg-success/10/50 dark:bg-success/10"
+                    ? "border-success bg-success/10"
                     : isPopular
                       ? "border-v2-ink"
                       : "border-v2-ring",
@@ -233,7 +233,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 {/* Popular badge */}
                 {isPopular && !isCurrent && (
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-0.5 bg-v2-card-dark dark:bg-v2-ring text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-0.5 bg-v2-card-dark dark:bg-v2-ring text-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full">
                       <Star className="h-2.5 w-2.5" />
                       Popular
                     </span>
@@ -243,7 +243,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 {/* Current badge */}
                 {isCurrent && (
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-0.5 bg-success text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-0.5 bg-success text-success-foreground text-[9px] font-semibold px-2 py-0.5 rounded-full">
                       <Check className="h-2.5 w-2.5" />
                       Current Plan
                     </span>

@@ -32,8 +32,8 @@ export function SystemSettingsTab() {
         {isSuperAdmin && (
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-md bg-red-500/10">
-                <ShieldAlert className="h-4 w-4 text-red-600" />
+              <div className="p-1.5 rounded-md bg-destructive/10">
+                <ShieldAlert className="h-4 w-4 text-destructive" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-v2-ink">

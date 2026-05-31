@@ -84,7 +84,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
             className={cn(
               "relative border-2 border-dashed rounded-lg p-6 text-center transition-colors",
               dragOver
-                ? "border-success bg-success/10/50 dark:bg-success/20"
+                ? "border-success bg-success/10 dark:bg-success/20"
                 : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
               isProcessing && "opacity-50 pointer-events-none",
             )}
@@ -165,7 +165,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
           {/* Submit */}
           <Button
             size="sm"
-            className="h-8 text-xs w-full bg-success hover:bg-success text-white"
+            className="h-8 text-xs w-full bg-success hover:bg-success text-success-foreground"
             disabled={
               files.length === 0 ||
               !filingMonth ||

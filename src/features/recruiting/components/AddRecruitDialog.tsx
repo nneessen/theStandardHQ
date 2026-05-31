@@ -262,7 +262,7 @@ export function AddRecruitDialog({
         className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-2xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
       >
-        <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+        <DialogHeader className="px-5 py-3 border-b border-border bg-v2-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">
@@ -280,7 +280,7 @@ export function AddRecruitDialog({
             initially.
           </DialogDescription>
           {actingImoName ? (
-            <div className="mt-2 px-2 py-1.5 rounded border border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+            <div className="mt-2 px-2 py-1.5 rounded border border-warning/40 bg-warning/10 text-[11px] text-warning flex items-center gap-1.5">
               <span className="font-semibold uppercase tracking-wider text-[9px]">
                 Acting as
               </span>
@@ -928,7 +928,7 @@ export function AddRecruitDialog({
             </Tabs>
           </div>
 
-          <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+          <DialogFooter className="px-5 py-3 border-t border-border bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
             <PillButton
               type="button"
               tone="ghost"

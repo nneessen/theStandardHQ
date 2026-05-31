@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<
   draft: {
     label: "Draft",
     className:
-      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground border-border dark:border-border",
+      "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground border-border dark:border-border",
   },
   sending: {
     label: "Sending",
@@ -154,7 +154,7 @@ export function CampaignListTab({
       <div className="rounded-md border border-border bg-background dark:bg-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="h-8 bg-card-tinted dark:bg-card-tinted hover:bg-card-tinted dark:hover:bg-card-tinted">
+            <TableRow className="h-8 bg-v2-card-tinted dark:bg-v2-card-tinted hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted">
               <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide py-0 pl-3 w-[220px]">
                 Name
               </TableHead>
@@ -244,7 +244,7 @@ export function CampaignListTab({
                 return (
                   <TableRow
                     key={campaign.id}
-                    className="py-1.5 hover:bg-card-tinted/60 dark:hover:bg-card-tinted/60 border-b border-border/60 last:border-0 cursor-pointer"
+                    className="py-1.5 hover:bg-v2-card-tinted/60 dark:hover:bg-v2-card-tinted/60 border-b border-border/60 last:border-0 cursor-pointer"
                     onClick={() => handleRowClick(campaign.id, campaign.status)}
                   >
                     {/* Name */}
@@ -395,7 +395,7 @@ export function CampaignListTab({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-white"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-destructive-foreground"
               onClick={handleDeleteConfirm}
               disabled={deleteMutation.isPending}
             >

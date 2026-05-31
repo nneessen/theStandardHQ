@@ -259,7 +259,7 @@ export function ContactBrowser({
                 "flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium rounded transition-colors w-full justify-center",
                 isAddingAll
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground",
+                  : "bg-muted hover:bg-muted text-muted-foreground",
               )}
             >
               {isAddingAll ? (
@@ -406,7 +406,7 @@ export function ContactBrowser({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleAddAllUsersConfirmed}
-              className="bg-warning hover:bg-warning text-white"
+              className="bg-warning hover:bg-warning text-warning-foreground"
             >
               Add All {total} Users
             </AlertDialogAction>
@@ -517,7 +517,7 @@ function ContactRow({
           e.stopPropagation();
           onClick();
         }}
-        className="p-1 rounded bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground shrink-0 transition-colors"
+        className="p-1 rounded bg-muted hover:bg-muted text-muted-foreground shrink-0 transition-colors"
       >
         <Plus className="h-3 w-3" />
       </button>

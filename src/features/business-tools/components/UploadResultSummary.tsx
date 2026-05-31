@@ -128,7 +128,7 @@ export function UploadResultSummary({
         {isComplete && needsReview > 0 && (
           <Button
             size="sm"
-            className="h-7 text-[11px] bg-success hover:bg-success text-white"
+            className="h-7 text-[11px] bg-success hover:bg-success text-success-foreground"
             onClick={() => onSwitchTab("transactions")}
           >
             Start Reviewing

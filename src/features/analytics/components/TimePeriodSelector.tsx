@@ -275,7 +275,7 @@ export function TimePeriodSelector({
             </div>
             <button
               onClick={() => setShowCustomPicker(false)}
-              className="mt-2 w-full px-3 py-1 text-[11px] font-medium text-white bg-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink rounded hover:bg-v2-ink-muted dark:hover:bg-v2-ring transition-colors"
+              className="mt-2 w-full px-3 py-1 text-[11px] font-medium text-background bg-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink rounded hover:bg-v2-ink-muted dark:hover:bg-v2-ring transition-colors"
             >
               Apply
             </button>

@@ -155,7 +155,7 @@ export function CurrentPlanCard() {
 
       {/* Grandfathered notice */}
       {isGrandfathered && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 border-t border-warning/30/50">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 border-t border-warning/30">
           <Gift className="h-3 w-3 text-warning flex-shrink-0" />
           <p className="text-[10px] text-warning">
             Grandfathered {displayTierName} access —{" "}
