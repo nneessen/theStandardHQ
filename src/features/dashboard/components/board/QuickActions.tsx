@@ -4,6 +4,7 @@ import {
   Send,
   Receipt,
   MessageSquare,
+  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
 import { Board, JarvisOrbView, T } from "@/components/board";
@@ -25,8 +26,8 @@ export interface QuickActionsProps {
 }
 
 /**
- * Quick actions bar — Jarvis launcher (36%) + 5 evenly-split icon action cells.
- * Ported from TheBoard.jsx `QuickActions`. Discord is a placeholder (SOON).
+ * Quick actions bar — Jarvis launcher (36%) + evenly-split icon action cells.
+ * Ported from TheBoard.jsx `QuickActions`. Discord and Slack are placeholders (SOON).
  */
 export function QuickActions({
   onJarvis,
@@ -46,6 +47,7 @@ export function QuickActions({
     { icon: Send, label: "Send Email", onClick: onSendEmail },
     { icon: Receipt, label: "Log Expense", onClick: onLogExpense },
     { icon: MessageSquare, label: "Discord", soon: true },
+    { icon: MessagesSquare, label: "Slack", soon: true },
   ];
 
   return (
@@ -129,7 +131,7 @@ export function QuickActions({
         style={{
           flex: 1,
           display: "grid",
-          gridTemplateColumns: "repeat(5,1fr)",
+          gridTemplateColumns: `repeat(${acts.length},1fr)`,
         }}
       >
         {acts.map((a, i) => {
