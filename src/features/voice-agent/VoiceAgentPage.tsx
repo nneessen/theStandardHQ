@@ -1026,7 +1026,7 @@ export function VoiceAgentPage() {
               <PhoneCall className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-foreground tracking-tight">
+              <h1 className="font-display text-lg font-extrabold uppercase text-foreground tracking-tight">
                 AI Voice Agent
               </h1>
               <p className="text-[10px] text-foreground/60">

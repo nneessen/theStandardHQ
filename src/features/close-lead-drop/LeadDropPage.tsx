@@ -177,7 +177,9 @@ export function LeadDropPage() {
           <Zap className="h-5 w-5 text-success" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold">Lead Drop</h1>
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
+            Lead Drop
+          </h1>
           <p className="text-xs text-muted-foreground">
             Bulk-transfer leads from your Close CRM to a teammate's — with Smart
             View auto-created on delivery

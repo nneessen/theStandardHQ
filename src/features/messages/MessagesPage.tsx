@@ -188,7 +188,7 @@ export function MessagesPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Mail className="h-4 w-4 text-v2-ink" />
-                <h1 className="text-[15px] font-semibold tracking-tight text-v2-ink">
+                <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
                   Messages
                 </h1>
               </div>

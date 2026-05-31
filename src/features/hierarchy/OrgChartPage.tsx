@@ -1,25 +1,25 @@
 // src/features/hierarchy/OrgChartPage.tsx
 // Phase 12A: Org Chart Page - Interactive organizational hierarchy visualization
 
-import React, { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useOrgChart } from '@/hooks/hierarchy';
-import { OrgChartVisualization } from './components/OrgChartVisualization';
-import { AlertCircle, RefreshCw, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useOrgChart } from "@/hooks/hierarchy";
+import { OrgChartVisualization } from "./components/OrgChartVisualization";
+import { AlertCircle, RefreshCw, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { OrgChartNode, OrgChartScope } from '@/types/hierarchy.types';
+} from "@/components/ui/select";
+import type { OrgChartNode, OrgChartScope } from "@/types/hierarchy.types";
 
 export const OrgChartPage: React.FC = () => {
   const navigate = useNavigate();
-  const [scope, setScope] = useState<OrgChartScope>('auto');
+  const [scope, setScope] = useState<OrgChartScope>("auto");
 
   const {
     data: orgChartData,
@@ -35,15 +35,18 @@ export const OrgChartPage: React.FC = () => {
   // Handle node click - show detail or navigate
   const handleNodeClick = (node: OrgChartNode) => {
     // If agent, navigate to agent detail page
-    if (node.type === 'agent') {
-      navigate({ to: '/hierarchy/agent/$agentId', params: { agentId: node.id } });
+    if (node.type === "agent") {
+      navigate({
+        to: "/hierarchy/agent/$agentId",
+        params: { agentId: node.id },
+      });
     }
   };
 
   // Handle drill-down - update focused view
   const handleDrillDown = (node: OrgChartNode) => {
     // Could update URL params for shareable links
-    console.log('Drill down to:', node.name);
+    console.log("Drill down to:", node.name);
   };
 
   // Loading state
@@ -52,7 +55,7 @@ export const OrgChartPage: React.FC = () => {
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               Organization Chart
             </h1>
@@ -81,7 +84,7 @@ export const OrgChartPage: React.FC = () => {
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               Organization Chart
             </h1>
@@ -95,9 +98,15 @@ export const OrgChartPage: React.FC = () => {
                 Failed to load org chart
               </h3>
               <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                {error instanceof Error
+                  ? error.message
+                  : "An unexpected error occurred"}
               </p>
-              <Button variant="outline" onClick={() => refetch()} className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => refetch()}
+                className="gap-2"
+              >
                 <RefreshCw className="h-4 w-4" />
                 Retry
               </Button>
@@ -114,7 +123,7 @@ export const OrgChartPage: React.FC = () => {
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
               <Building2 className="h-5 w-5" />
               Organization Chart
             </h1>
@@ -124,7 +133,9 @@ export const OrgChartPage: React.FC = () => {
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
               <Building2 className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <h3 className="font-medium text-foreground mb-1">No Organization Data</h3>
+              <h3 className="font-medium text-foreground mb-1">
+                No Organization Data
+              </h3>
               <p className="text-sm text-muted-foreground max-w-md">
                 You don't have access to any organizational hierarchy data yet.
                 This could be because you're not assigned to an IMO or agency.
@@ -141,12 +152,13 @@ export const OrgChartPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
             <Building2 className="h-5 w-5" />
             Organization Chart
           </h1>
           <p className="text-sm text-muted-foreground">
-            Interactive view of your organizational hierarchy with performance metrics
+            Interactive view of your organizational hierarchy with performance
+            metrics
           </p>
         </div>
 
@@ -166,7 +178,12 @@ export const OrgChartPage: React.FC = () => {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="gap-1"
+          >
             <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </Button>

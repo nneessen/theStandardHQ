@@ -42,7 +42,9 @@ export default function BusinessToolsPage() {
       <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-v2-ink" />
-          <h1 className="text-sm font-semibold text-v2-ink">Business Tools</h1>
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
+            Business Tools
+          </h1>
         </div>
         <ExportButton />
       </div>

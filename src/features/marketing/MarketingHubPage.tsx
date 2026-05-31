@@ -64,7 +64,9 @@ export function MarketingHubPage({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <h1 className="text-xl font-semibold">Marketing Hub</h1>
+        <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
+          Marketing Hub
+        </h1>
       </div>
 
       {/* Tab Bar */}

@@ -183,7 +183,7 @@ export const CloseKpiPage: React.FC = () => {
               <CloseLogo className="h-3.5 w-auto text-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-foreground tracking-tight">
+              <h1 className="font-display text-lg font-extrabold uppercase text-foreground tracking-tight">
                 Close KPIs
               </h1>
               <p className="text-[10px] text-foreground/60 hidden sm:block">

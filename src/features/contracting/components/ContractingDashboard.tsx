@@ -549,7 +549,9 @@ export function ContractingDashboard() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
-            <h1 className="text-sm font-semibold">Contracting Hub</h1>
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
+              Contracting Hub
+            </h1>
           </div>
 
           {/* Stats */}

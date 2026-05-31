@@ -67,7 +67,7 @@ export function TheStandardTeamRoutePage() {
             <div className="rounded-lg border border-border bg-muted/30 p-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div>
-                  <h1 className="text-sm font-semibold text-foreground">
+                  <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
                     Writing Numbers Workspace
                   </h1>
                   <p className="mt-1 text-[11px] text-muted-foreground">
@@ -215,7 +215,7 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between bg-card rounded-lg px-3 py-2 border border-border">
         <div className="flex items-center gap-2">
           <Network className="h-4 w-4 text-foreground" />
-          <h1 className="text-sm font-semibold text-foreground">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
             Writing Numbers
           </h1>
         </div>

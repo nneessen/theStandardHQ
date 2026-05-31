@@ -208,7 +208,7 @@ export function RoadmapListPage() {
       <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border dark:border-border">
         <div className="flex items-center gap-2">
           <ListChecks className="h-4 w-4 text-foreground dark:text-foreground" />
-          <h1 className="text-sm font-semibold text-foreground dark:text-foreground">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground dark:text-foreground">
             Manage Roadmaps
           </h1>
           <span className="text-[10px] text-muted-foreground dark:text-muted-foreground hidden sm:inline">
