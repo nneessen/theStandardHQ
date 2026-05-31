@@ -466,6 +466,11 @@ export const DashboardHome: React.FC = () => {
     .filter((a) => a.condition)
     .map((a) => ({ type: a.type, title: a.title, message: a.message }));
 
+  // Discord quick-action is limited to super-admins (Nick) + Epic Life users
+  // (email contains "epiclife"). Mirrors the command-center email gate.
+  const showDiscord =
+    !!user?.is_super_admin || !!user?.email?.toLowerCase().includes("epiclife");
+
   const tickerItems: Array<[string, string]> = [
     ["PREMIUM", premiumValueStr],
     ["COMMISSIONS", formatCompactCurrency(periodCommTotal)],
@@ -533,6 +538,7 @@ export const DashboardHome: React.FC = () => {
             onAddRecruit={() => navigate({ to: "/recruiting" })}
             onSendEmail={() => navigate({ to: "/messages" })}
             onLogExpense={() => setActiveDialog("expense")}
+            showDiscord={showDiscord}
           />
 
           <BoardStatRow cells={statCells} />

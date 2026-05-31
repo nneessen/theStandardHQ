@@ -23,6 +23,11 @@ export interface QuickActionsProps {
   onAddRecruit: () => void;
   onSendEmail: () => void;
   onLogExpense: () => void;
+  /**
+   * Show the Discord action. Limited to super-admins (Nick) and Epic Life
+   * users (email contains "epiclife"). Hidden for everyone else.
+   */
+  showDiscord?: boolean;
 }
 
 /**
@@ -35,6 +40,7 @@ export function QuickActions({
   onAddRecruit,
   onSendEmail,
   onLogExpense,
+  showDiscord = false,
 }: QuickActionsProps) {
   const acts: ActionCell[] = [
     {
@@ -46,7 +52,10 @@ export function QuickActions({
     { icon: UserPlus, label: "Add Recruit", onClick: onAddRecruit },
     { icon: Send, label: "Send Email", onClick: onSendEmail },
     { icon: Receipt, label: "Log Expense", onClick: onLogExpense },
-    { icon: MessageSquare, label: "Discord", soon: true },
+    // Discord is gated to super-admins (Nick) + Epic Life emails.
+    ...(showDiscord
+      ? [{ icon: MessageSquare, label: "Discord", soon: true }]
+      : []),
     { icon: MessagesSquare, label: "Slack", soon: true },
   ];
 
