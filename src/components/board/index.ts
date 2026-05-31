@@ -15,6 +15,8 @@ export { Ticker } from "./Ticker";
 export type { TickerProps } from "./Ticker";
 export { BoardPageHeader } from "./BoardPageHeader";
 export type { BoardPageHeaderProps } from "./BoardPageHeader";
+export { BoardListHeader } from "./BoardListHeader";
+export type { BoardListHeaderProps } from "./BoardListHeader";
 // Jarvis orb (lazy three.js — `three` is not pulled into the main bundle).
 export { JarvisOrbView } from "./jarvis/JarvisOrbView";
 export type { JarvisOrbViewProps } from "./jarvis/JarvisOrbView";

@@ -273,7 +273,7 @@ function RecruitingDashboardContent() {
         <div className="flex items-center gap-3 min-w-0 flex-wrap">
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Users className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
               Recruiting
             </h1>
           </div>
@@ -601,7 +601,7 @@ function FreeUplineRecruitingView() {
         <div className="flex items-center gap-3 min-w-0 flex-wrap">
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Users className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
               Your team
             </h1>
             <span className="rounded-full bg-v2-card-tinted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-v2-ink-muted">

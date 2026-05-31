@@ -309,7 +309,7 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
       <header className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Settings className="h-4 w-4 text-foreground" />
-          <h1 className="text-base font-semibold tracking-tight text-foreground">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
             Settings
           </h1>
         </div>

@@ -68,7 +68,7 @@ export default function UnderwritingGuidesPage() {
         <div className="flex items-center gap-3 min-w-0 flex-wrap">
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Library className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
               UW Guides
             </h1>
           </div>

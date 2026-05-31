@@ -21,7 +21,7 @@ export function ExpensesPage() {
           ) : (
             <Target className="h-4 w-4 text-v2-ink" />
           )}
-          <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
             {activeTab === "expenses" ? "Expenses" : "Lead Purchases"}
           </h1>
         </div>

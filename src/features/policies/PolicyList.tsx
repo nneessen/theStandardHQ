@@ -52,6 +52,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PillButton, SoftCard } from "@/components/v2";
+import { BoardListHeader } from "@/components/board";
 import {
   Tooltip,
   TooltipContent,
@@ -449,16 +450,13 @@ export const PolicyList: React.FC<PolicyListProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Compact header: title + inline metric chips + actions in ONE row */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <FileText className="h-4 w-4 text-foreground" />
-            <h1 className="text-base font-semibold tracking-tight text-foreground">
-              Policies
-            </h1>
-          </div>
-          {metrics && (
+      {/* Light board chrome: Archivo board title + the existing compact metric
+          strip (kept dense) + actions. */}
+      <BoardListHeader
+        icon={<FileText className="h-4 w-4 text-foreground" />}
+        title="Policies"
+        stats={
+          metrics ? (
             <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground flex-wrap leading-tight">
               <span>
                 <span className="text-foreground font-semibold">
@@ -515,48 +513,49 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                 YTD
               </span>
             </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <PillButton
-                tone="ghost"
-                size="sm"
-                disabled={exporting}
-                className="h-7 px-2.5 text-[11px]"
-              >
-                <Download className="h-3 w-3" />
-                {exporting ? "Exporting…" : "Export"}
-              </PillButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => handleExport("csv")}
-                className="text-[11px]"
-              >
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleExport("excel")}
-                className="text-[11px]"
-              >
-                Export as Excel
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <PillButton
-            onClick={onNewPolicy}
-            tone="black"
-            size="sm"
-            className="h-7 px-2.5 text-[11px]"
-          >
-            <Plus className="h-3 w-3" />
-            New policy
-          </PillButton>
-        </div>
-      </header>
+          ) : null
+        }
+        actions={
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <PillButton
+                  tone="ghost"
+                  size="sm"
+                  disabled={exporting}
+                  className="h-7 px-2.5 text-[11px]"
+                >
+                  <Download className="h-3 w-3" />
+                  {exporting ? "Exporting…" : "Export"}
+                </PillButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => handleExport("csv")}
+                  className="text-[11px]"
+                >
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleExport("excel")}
+                  className="text-[11px]"
+                >
+                  Export as Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <PillButton
+              onClick={onNewPolicy}
+              tone="black"
+              size="sm"
+              className="h-7 px-2.5 text-[11px]"
+            >
+              <Plus className="h-3 w-3" />
+              New policy
+            </PillButton>
+          </>
+        }
+      />
 
       {/* Table card */}
       <SoftCard padding="none" className="overflow-hidden flex flex-col">
