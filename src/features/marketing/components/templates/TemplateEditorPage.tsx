@@ -140,7 +140,7 @@ export function TemplateEditorPage({ templateId }: TemplateEditorPageProps) {
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
           </Button>
-          <h1 className="text-sm font-semibold">
+          <h1 className="font-display text-base font-extrabold uppercase tracking-tight">
             {isEditing ? "Edit Template" : "Create Template"}
           </h1>
         </div>

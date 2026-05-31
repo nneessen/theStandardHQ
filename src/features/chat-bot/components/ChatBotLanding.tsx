@@ -157,7 +157,7 @@ export function ChatBotLanding({
                 <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-foreground tracking-tight">
+                <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
                   AI-Powered SMS Appointment Setter
                 </h1>
                 <p className="text-[11px] text-v2-ink-subtle mt-1 leading-relaxed max-w-lg">

@@ -149,7 +149,9 @@ export function BotHealthPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-sm font-semibold text-v2-ink">Bot Health</h1>
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
+              Bot Health
+            </h1>
           </div>
           <span className="text-[10px] text-v2-ink-muted">
             standard-chat-bot · system-wide monitoring

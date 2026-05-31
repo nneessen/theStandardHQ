@@ -296,7 +296,7 @@ export function LeadPurchaseDashboard() {
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-4 w-4 text-foreground" />
-            <h1 className="text-sm font-semibold text-foreground">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
               Lead Purchases
             </h1>
           </div>

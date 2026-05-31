@@ -36,7 +36,9 @@ export function AuthDiagnostic() {
 
   return (
     <div className="container mx-auto p-4 max-w-6xl">
-      <h1 className="text-2xl font-bold mb-6">Auth Diagnostic Dashboard</h1>
+      <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight mb-6">
+        Auth Diagnostic Dashboard
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Auth User Card */}

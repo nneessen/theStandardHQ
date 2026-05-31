@@ -218,7 +218,7 @@ export function UserManagementPage() {
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-foreground" />
-            <h1 className="text-sm font-semibold text-foreground">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
               User Management
             </h1>
           </div>

@@ -115,7 +115,7 @@ export default function PresentationDetailPage() {
             <FileIcon className="h-3.5 w-3.5" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-foreground dark:text-foreground leading-tight">
+            <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-foreground dark:text-foreground leading-tight">
               {submission.title}
             </h1>
             <p className="text-[10px] text-muted-foreground mt-0.5">

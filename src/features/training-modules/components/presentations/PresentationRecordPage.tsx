@@ -92,7 +92,7 @@ export default function PresentationRecordPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+        <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink">
           New Presentation Submission
         </h1>
       </div>

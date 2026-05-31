@@ -774,7 +774,7 @@ export function CampaignWizard({
     <>
       <div className="flex h-full flex-col rounded-md border border-border bg-background">
         <div className="px-4 py-2.5 border-b shrink-0">
-          <h1 className="text-sm font-semibold">
+          <h1 className="font-display text-base font-extrabold uppercase tracking-tight">
             {editCampaignId ? "Edit Draft Campaign" : "Create Campaign"}
           </h1>
         </div>

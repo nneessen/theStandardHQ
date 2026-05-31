@@ -131,7 +131,7 @@ function AnalyticsDashboardContent() {
             <BarChart3 className="h-3.5 w-3.5" />
             Performance
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-v2-ink leading-tight">
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-v2-ink leading-tight">
             Analytics
           </h1>
           <p className="text-sm text-v2-ink-muted">

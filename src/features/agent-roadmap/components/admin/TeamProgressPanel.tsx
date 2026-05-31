@@ -111,7 +111,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
         </Button>
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate">
+          <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink truncate">
             {roadmap ? roadmap.title : "Team Progress"}
           </h1>
           <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hidden sm:inline">

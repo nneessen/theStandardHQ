@@ -391,7 +391,7 @@ export function TrainerDashboard() {
         <div className="flex items-center gap-2">
           <GraduationCap className="h-4 w-4 text-foreground dark:text-foreground" />
           <div>
-            <h1 className="text-sm font-semibold text-foreground dark:text-foreground">
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground dark:text-foreground">
               Welcome back, {userName}
             </h1>
             <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">

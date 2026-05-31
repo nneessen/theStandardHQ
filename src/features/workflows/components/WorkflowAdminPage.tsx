@@ -9,7 +9,7 @@ export default function WorkflowAdminPage() {
       <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-2">
           <Settings className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink">
             Workflow Administration
           </h1>
         </div>

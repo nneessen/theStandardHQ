@@ -29,7 +29,7 @@ export function RoadmapProgressHeader({
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate min-w-0">
+      <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink truncate min-w-0">
         {roadmap.title}
       </h1>
 

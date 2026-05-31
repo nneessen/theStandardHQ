@@ -88,7 +88,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
           Back
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate">
+          <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink truncate">
             {module.title}
           </h1>
           <div className="flex items-center gap-2">

@@ -30,7 +30,7 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
       {/* Title */}
       <div className="flex items-center gap-2">
         <FileText className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-        <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+        <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink">
           Policy Management
         </h1>
       </div>

@@ -175,7 +175,9 @@ export const UserManagementDashboard: React.FC = () => {
       <div className="bg-background border-b border-border/50">
         {/* Title */}
         <div className="flex items-center justify-between px-6 py-3">
-          <h1 className="text-2xl font-semibold">User Management</h1>
+          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
+            User Management
+          </h1>
         </div>
 
         {/* Data-Dense Metrics Bar */}

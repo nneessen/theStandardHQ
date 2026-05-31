@@ -29,7 +29,9 @@ export function CloseAiBuilderPage() {
             <Sparkles className="h-5 w-5 text-warning" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">AI Template Builder</h1>
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
+              AI Template Builder
+            </h1>
             <p className="text-xs text-muted-foreground">
               Generate Close CRM email templates, SMS templates, and workflows
               from a prompt

@@ -469,7 +469,7 @@ export function AgentDetailPage() {
               <User className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-foreground">
+              <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
                 {agentName}
               </h1>
               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">

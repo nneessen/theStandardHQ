@@ -191,7 +191,7 @@ export function VoiceCloneWizardPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
+        <h1 className="font-display text-base font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink">
           Voice Clone Recording
         </h1>
 
