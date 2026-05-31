@@ -17,6 +17,7 @@ import { draftCloseNote } from "./draftCloseNote.ts";
 import { draftCloseTask } from "./draftCloseTask.ts";
 import { draftEmailMessage } from "./draftEmailMessage.ts";
 import { draftSmsMessage } from "./draftSmsMessage.ts";
+import { getUnderwritingRecommendation } from "./getUnderwritingRecommendation.ts";
 
 export const TOOLS: Record<string, RegisteredTool> = {
   [getDailyBriefingData.name]: getDailyBriefingData,
@@ -33,6 +34,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [draftCloseTask.name]: draftCloseTask,
   [draftEmailMessage.name]: draftEmailMessage,
   [draftSmsMessage.name]: draftSmsMessage,
+  [getUnderwritingRecommendation.name]: getUnderwritingRecommendation,
 };
 
 export interface AnthropicToolDef {

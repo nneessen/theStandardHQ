@@ -117,7 +117,22 @@ export function classifyIntent(message: string): AgentKey | null {
     return "coaching";
   }
 
-  // 12. CRM / book of business.
+  // 12. Underwriting advisory — which carriers would approve a client, at what
+  // class. Placed BEFORE crm because "approve this client" / "insure this client"
+  // contains "client" (a crm trigger); the underwriting-specific signals win first.
+  // NOTE: "carrier" alone is intentionally NOT a trigger — "which carrier pays the
+  // best overrides" is a production question. We only match carrier + an
+  // underwriting-context word (for/would/approve/accept/take/cover/insure/...), so
+  // commission/performance "carrier" questions fall through to production (#14).
+  if (
+    /\b(underwrit(e|es|ing|er|ten)|insurab(le|ility)|uninsurable|health class|rate class|carriers?\s+(for|would|will|to|that|approv|accept|take|cover|insure|underwrit)|who (would |will |might )?approve|approv(e|es|al) (this |the |a |my |their )?(client|applicant|case|prospect)|get (this|them|him|her|the) (client|applicant|prospect)? ?approved|qualif(y|ies) for coverage)\b/.test(
+      m,
+    )
+  ) {
+    return "underwriting";
+  }
+
+  // 13. CRM / book of business.
   if (
     /\b(crm|clients?|policyholders?|customers?|book of business|my book)\b/.test(
       m,
@@ -126,7 +141,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "crm";
   }
 
-  // 13. Production performance.
+  // 14. Production performance.
   if (
     /\b(production|annualized premium|ap|submitted|placed|pending business|carrier performance|leaderboard|who('?s| is) leading|pace|written premium)\b/.test(
       m,
@@ -135,7 +150,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "production-analyst";
   }
 
-  // 14. Generic outreach copywriting (last — a domain request keeps its agent).
+  // 15. Generic outreach copywriting (last — a domain request keeps its agent).
   if (
     /\b(write|draft|compose)\s+(me\s+)?(a|an|some)?\s*(cold\s+)?(email|sms|text|message|outreach|copy|note)\b|\b(email|sms|text)\s+copy\b|\boutreach\b/.test(
       m,

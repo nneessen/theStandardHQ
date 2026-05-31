@@ -16,6 +16,7 @@ const ALL_WIRED = [
   "slack",
   "workflow",
   "data-quality",
+  "underwriting",
 ] as const;
 
 Deno.test("classifyIntent maps explicit intents", () => {
@@ -124,3 +125,39 @@ Deno.test("unmatched input goes to executive-briefing when enabled", () => {
 Deno.test("falls back to first enabled agent when default not enabled", () => {
   assertEquals(routeToAgent("hi", ["policy-risk"]), "policy-risk");
 });
+
+Deno.test(
+  "classifyIntent routes underwriting and guards the crm collision",
+  () => {
+    assertEquals(
+      classifyIntent("which carrier would approve a client with diabetes?"),
+      "underwriting",
+    );
+    assertEquals(
+      classifyIntent("who would approve this client?"),
+      "underwriting",
+    );
+    assertEquals(
+      classifyIntent("best carrier for high blood pressure"),
+      "underwriting",
+    );
+    assertEquals(classifyIntent("is this client insurable?"), "underwriting");
+    assertEquals(
+      classifyIntent("what health class can this applicant get?"),
+      "underwriting",
+    );
+    // "client" alone (no underwriting signal) still goes to crm.
+    assertEquals(classifyIntent("summarize my book of business"), "crm");
+    // A "carrier" question with NO underwriting context must NOT be hijacked by
+    // underwriting — commission/performance carrier asks belong elsewhere.
+    assertEquals(
+      classifyIntent("which carrier pays the best overrides?") ===
+        "underwriting",
+      false,
+    );
+    assertEquals(
+      classifyIntent("carrier performance this quarter"),
+      "production-analyst",
+    );
+  },
+);

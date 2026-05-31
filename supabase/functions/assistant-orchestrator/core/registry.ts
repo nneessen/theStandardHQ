@@ -145,6 +145,16 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getUnderwritingRecommendation: {
+    name: "getUnderwritingRecommendation",
+    description:
+      "Rank life-insurance carrier products for a prospect by PROBABILITY OF APPROVAL (not price) using the agency's authoritative underwriting engine and approved carrier rules. Pass the client's age, gender, state, build, tobacco use, requested face amount, and any reported health conditions with their follow-up answers (use the carrier-intake wording verbatim). Read-only, RLS-scoped to the user's IMO. Each product comes back with an `assessable` flag, a health class (or 'unknown' when there isn't enough data/rule coverage), an approval likelihood, and the reasons/concerns. When a product is NOT assessable it means the engine lacks the carrier data to judge it — say that and ask for the missing facts; NEVER invent an approval, decline, or rate class. Use for 'who would approve this client', 'best carrier for <condition>', or 'is this client insurable' questions.",
+    category: "underwriting",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
 };
 
 export function getToolMetadata(name: string): ToolMetadata | undefined {

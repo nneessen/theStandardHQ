@@ -24,7 +24,8 @@ export type ToolCategory =
   | "coaching"
   | "compliance"
   | "workflow"
-  | "data_quality";
+  | "data_quality"
+  | "underwriting";
 
 // Lifecycle for assistant_action_requests. Enforced in state-machine.ts; the DB
 // column is plain TEXT (project convention: no CHECK constraints on enums).
@@ -54,7 +55,8 @@ export type AgentKey =
   | "calendar"
   | "slack"
   | "workflow"
-  | "data-quality";
+  | "data-quality"
+  | "underwriting";
 
 export interface ToolMetadata {
   name: string;
