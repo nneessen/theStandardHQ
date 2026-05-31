@@ -56,6 +56,11 @@ function makeCtx(opts: {
     conversationId: "conv_1",
     firstName: "Nick",
     close: { getClient: () => Promise.resolve(client) },
+    underwriting: {
+      run() {
+        throw new Error("close tools must not run underwriting");
+      },
+    },
   };
   return { ctx, calls };
 }
@@ -128,6 +133,11 @@ function makeDraftCtx(opts: {
     conversationId: "conv_1",
     firstName: "Nick",
     close: { getClient: () => Promise.resolve(client) },
+    underwriting: {
+      run() {
+        throw new Error("close tools must not run underwriting");
+      },
+    },
   };
   return { ctx, inserts };
 }

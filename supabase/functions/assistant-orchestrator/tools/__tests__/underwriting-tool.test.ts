@@ -1,80 +1,97 @@
-// Offline tests for getUnderwritingRecommendation. These run through the REAL edge
-// engine (computeAuthoritativeUnderwritingRun) with a chainable fake supabase client
-// that resolves every query to empty — so the engine produces an honest "no
-// recommendations" result with NO network and NO writes. The two abstention guards
-// (no IMO, insufficient client facts) short-circuit before the engine is touched.
-//
-// NOTE: this file pulls the engine (and its src/ imports) into the type-check graph.
-// If `deno test` (with check) on the orchestrator dir starts failing on engine type
-// errors, this file should move behind a --no-check runner like the engine suite —
-// see scripts/test-assistant-edge.sh. As of writing the suite stays green.
+// Tool-level tests for getUnderwritingRecommendation. The tool no longer imports the
+// engine — it depends on the injected UnderwritingRunner (ctx.underwriting) — so this
+// file is fully TYPE-CHECKED (no --no-check) and can drive every branch by handing the
+// tool a fake runner. The engine/payload seam itself is covered in
+// underwriting-runner.test.ts (which runs --no-check because it imports the engine).
 
 import { assert, assertEquals } from "jsr:@std/assert@1";
-import type { AssistantToolContext, ToolDbClient } from "../types.ts";
-import {
-  buildPayload,
-  getUnderwritingRecommendation,
-} from "../getUnderwritingRecommendation.ts";
-import { parseHealthSnapshot } from "../../../_shared/underwriting/payload.ts";
-import { transformConditionResponses } from "../../../../../src/services/underwriting/core/conditionResponseTransformer.ts";
+import type {
+  AssistantToolContext,
+  ToolDbClient,
+  UnderwritingProductResult,
+  UnderwritingRunner,
+  UnderwritingRunResult,
+} from "../types.ts";
+import { getUnderwritingRecommendation } from "../getUnderwritingRecommendation.ts";
 
-// A db that fails loudly on any write path — the tool is read-only.
-const writeTrap = () => {
-  throw new Error("getUnderwritingRecommendation must not write");
-};
+// A db that fails loudly — the tool must never touch Postgres directly anymore.
+const noDb = {
+  rpc() {
+    throw new Error("the underwriting tool must not touch the db directly");
+  },
+  from() {
+    throw new Error("the underwriting tool must not touch the db directly");
+  },
+} as unknown as ToolDbClient;
 
-// Chainable query stub: every builder method returns `this`, and awaiting it (or
-// calling a terminal) yields { data: [], error: null }. This satisfies the arbitrary
-// .from(x).select(y).eq(...).in(...) chains the engine's fetch helpers build.
-function emptyQuery(): unknown {
-  const result = { data: [] as unknown[], error: null };
-  const handler: ProxyHandler<Record<string, unknown>> = {
-    get(_target, prop) {
-      if (prop === "then") {
-        return (resolve: (v: typeof result) => unknown) => resolve(result);
-      }
-      // Any builder method (select/eq/in/order/limit/single/maybeSingle/...) →
-      // keep chaining on the same proxy.
-      return () => proxy;
-    },
-  };
-  const proxy: unknown = new Proxy({}, handler);
-  return proxy;
-}
-
-function makeReadDb(): ToolDbClient {
+function makeCtx(
+  imoId: string | null,
+  runner: UnderwritingRunner,
+): AssistantToolContext {
   return {
-    rpc() {
-      return Promise.resolve({ data: [], error: null });
-    },
-    // The engine calls client.from(...).select(...)...; route it through the stub.
-    from() {
-      return emptyQuery() as ReturnType<ToolDbClient["from"]>;
-    },
-    insert: writeTrap,
-    update: writeTrap,
-    upsert: writeTrap,
-    delete: writeTrap,
-  } as unknown as ToolDbClient;
-}
-
-function makeCtx(imoId: string | null): AssistantToolContext {
-  return {
-    db: makeReadDb(),
+    db: noDb,
     userId: "user_1",
     imoId,
     conversationId: "conv_1",
     firstName: "Nick",
     close: { getClient: () => Promise.resolve(null) },
+    underwriting: runner,
+  };
+}
+
+/** A runner that fails the test if it is ever called. */
+const neverCalledRunner: UnderwritingRunner = {
+  run() {
+    throw new Error("runner must not be called");
+  },
+};
+
+/** A runner returning a fixed result (or null / throwing) for branch testing. */
+function fixedRunner(result: UnderwritingRunResult | null): UnderwritingRunner {
+  return { run: () => Promise.resolve(result) };
+}
+
+const assessableProduct: UnderwritingProductResult = {
+  assessable: true,
+  carrierName: "American Amicable",
+  productName: "Term Made Simple",
+  productType: "term_life",
+  healthClass: "standard",
+  approvalLikelihood: 0.92,
+  eligibilityStatus: "eligible",
+  eligibilityReasons: [],
+  concerns: [],
+  conditionDecisions: [],
+};
+
+const nonAssessableProduct: UnderwritingProductResult = {
+  assessable: false,
+  carrierName: "Some Carrier",
+  productName: "Some Product",
+  productType: "term_life",
+  eligibilityReasons: ["Insufficient data to assess this condition"],
+};
+
+function resultWith(
+  products: UnderwritingProductResult[],
+  overrides: Partial<UnderwritingRunResult> = {},
+): UnderwritingRunResult {
+  return {
+    totalProductsEvaluated: products.length,
+    ineligibleProducts: 0,
+    conditionsReported: ["high_blood_pressure"],
+    buildProvided: true,
+    products,
+    ...overrides,
   };
 }
 
 Deno.test(
-  "abstains (no engine call) when the user has no IMO scope",
+  "abstains (runner NOT called) when the user has no IMO scope",
   async () => {
     const out = (await getUnderwritingRecommendation.run(
       { age: 55, gender: "female", conditions: [] },
-      makeCtx(null),
+      makeCtx(null, neverCalledRunner),
     )) as { available: boolean; reason?: string };
     assertEquals(out.available, false);
     assertEquals(out.reason, "no_imo_scope");
@@ -82,11 +99,11 @@ Deno.test(
 );
 
 Deno.test(
-  "abstains when required client facts are missing (no age)",
+  "insufficient_client_facts when the runner returns null",
   async () => {
     const out = (await getUnderwritingRecommendation.run(
       { gender: "female", conditions: [] },
-      makeCtx("imo_1"),
+      makeCtx("imo_1", fixedRunner(null)),
     )) as { available: boolean; reason?: string };
     assertEquals(out.available, false);
     assertEquals(out.reason, "insufficient_client_facts");
@@ -94,80 +111,14 @@ Deno.test(
 );
 
 Deno.test(
-  "runs the engine and returns an honest empty result when no products are configured",
+  "evaluation_failed (not a throw) when the runner throws",
   async () => {
-    const out = (await getUnderwritingRecommendation.run(
-      {
-        age: 55,
-        gender: "female",
-        state: "TX",
-        conditions: [
-          {
-            code: "high_blood_pressure",
-            controlStatus: "Yes, consistently normal",
-            medicationCount: "1",
-            bloodPressureReading: "120/78",
-          },
-        ],
-      },
-      makeCtx("imo_1"),
-    )) as {
-      available: boolean;
-      reason?: string;
-      data?: {
-        dataWarning?: string;
-        note?: string;
-        totalProductsEvaluated?: number;
-      };
-    };
-    // Empty product set => no recommendation can be made. Honest, not fabricated.
-    assertEquals(out.available, false);
-    assertEquals(out.reason, "no_recommendations");
-    // The honest note + the real engine count must be present (guards against a
-    // field-swap, e.g. surfacing filtered.ineligible as the total).
-    assert(
-      typeof out.data?.note === "string" && out.data.note.length > 0,
-      "expected an honest note",
-    );
-    assertEquals(out.data?.totalProductsEvaluated, 0);
-    // Build (height/weight) was omitted, so the result must disclose that build
-    // was not assessed — never let a build-blind class read as final.
-    assert(
-      typeof out.data?.dataWarning === "string" &&
-        out.data.dataWarning.length > 0,
-      "expected a build dataWarning when height/weight are missing",
-    );
-  },
-);
-
-Deno.test(
-  "abstains as evaluation_failed (not a throw) when the engine errors",
-  async () => {
-    // A db whose every query throws — the engine's fetch helpers re-throw, the
-    // tool must catch and degrade to an honest available:false, never crash.
-    const throwingDb = {
-      rpc() {
-        throw new Error("DB unavailable");
-      },
-      from() {
-        throw new Error("DB unavailable");
-      },
-    } as unknown as ToolDbClient;
-    const ctx: AssistantToolContext = {
-      db: throwingDb,
-      userId: "user_1",
-      imoId: "imo_1",
-      conversationId: "conv_1",
-      firstName: "Nick",
-      close: { getClient: () => Promise.resolve(null) },
+    const throwingRunner: UnderwritingRunner = {
+      run: () => Promise.reject(new Error("engine/DB error")),
     };
     const out = (await getUnderwritingRecommendation.run(
-      {
-        age: 55,
-        gender: "female",
-        conditions: [{ code: "high_blood_pressure" }],
-      },
-      ctx,
+      { age: 55, gender: "female", conditions: [] },
+      makeCtx("imo_1", throwingRunner),
     )) as { available: boolean; reason?: string };
     assertEquals(out.available, false);
     assertEquals(out.reason, "evaluation_failed");
@@ -175,84 +126,97 @@ Deno.test(
 );
 
 Deno.test(
-  "buildPayload routes non-HBP follow-ups through `details` into the right transformer facts",
-  () => {
-    // The pass-through path every non-HBP condition uses. A regression in the
-    // details value-filtering would silently strip these and force an abstain.
-    const payload = buildPayload({
-      age: 50,
-      gender: "male",
-      conditions: [
-        {
-          code: "diabetes",
-          details: { a1c_level: 6.4, treatment: "Oral medication only" },
-        },
-      ],
-    });
-    assert(payload !== null);
-    const facts = transformConditionResponses(
-      parseHealthSnapshot(payload!.healthResponses).conditions,
-      payload!.clientAge,
+  "no_recommendations surfaces the honest note + counts, and discloses missing build",
+  async () => {
+    const out = (await getUnderwritingRecommendation.run(
+      { age: 55, gender: "female", conditions: [] },
+      makeCtx(
+        "imo_1",
+        fixedRunner(
+          resultWith([], {
+            totalProductsEvaluated: 3,
+            ineligibleProducts: 3,
+            buildProvided: false,
+          }),
+        ),
+      ),
+    )) as {
+      available: boolean;
+      reason?: string;
+      data?: {
+        note?: string;
+        totalProductsEvaluated?: number;
+        ineligibleProducts?: number;
+        dataWarning?: string;
+      };
+    };
+    assertEquals(out.available, false);
+    assertEquals(out.reason, "no_recommendations");
+    assert(typeof out.data?.note === "string" && out.data.note.length > 0);
+    assertEquals(out.data?.totalProductsEvaluated, 3);
+    assertEquals(out.data?.ineligibleProducts, 3);
+    // Build omitted => must disclose it.
+    assert(
+      typeof out.data?.dataWarning === "string" &&
+        out.data.dataWarning.length > 0,
     );
-    const diabetes = facts.diabetes as Record<string, unknown>;
-    // a1c 6.4 < 7.5 threshold => controlled; "Oral medication only" => no insulin.
-    assertEquals(diabetes.a1c_level, 6.4);
-    assertEquals(diabetes.good_control, true);
-    assertEquals(diabetes.insulin_use, false);
   },
 );
 
 Deno.test(
-  "buildPayload maps controlled-HBP model args into the EXACT transformer facts the curated Standard rule needs",
-  () => {
-    // The seam curated-rules.test.ts does not cover: flat model args -> version-2
-    // healthResponses -> parseHealthSnapshot -> transformConditionResponses. A typo
-    // here (controlStatus->controlled, bloodPressureReading->current_reading, the
-    // version:2/conditionsByCode shape) would silently abstain on prod, not error.
-    const payload = buildPayload({
-      age: 55,
-      gender: "female",
-      state: "TX",
-      heightInches: 66,
-      weightLbs: 150,
-      conditions: [
-        {
-          code: "high_blood_pressure",
-          controlStatus: "Yes, consistently normal",
-          medicationCount: "1",
-          bloodPressureReading: "120/78",
-        },
-      ],
-    });
-    assert(payload !== null);
-    // version-2 snapshot parses back to the one condition.
-    const parsed = parseHealthSnapshot(payload!.healthResponses);
-    assertEquals(parsed.conditions.length, 1);
-    assertEquals(parsed.conditions[0].conditionCode, "high_blood_pressure");
-
-    // And the transformer derives the THREE gating facts the seeded Standard rule
-    // ANDs together: well_controlled=true, is_stage2_or_higher=false, med_count<=2.
-    const facts = transformConditionResponses(
-      parsed.conditions,
-      payload!.clientAge,
-    );
-    const hbp = facts.high_blood_pressure as Record<string, unknown>;
-    assertEquals(hbp.well_controlled, true);
-    assertEquals(hbp.is_stage2_or_higher, false);
-    assertEquals(hbp.medication_count, 1);
+  "insufficient_data_to_assess when every product is non-assessable (no fabricated odds)",
+  async () => {
+    const out = (await getUnderwritingRecommendation.run(
+      { age: 55, gender: "female", conditions: [] },
+      makeCtx("imo_1", fixedRunner(resultWith([nonAssessableProduct]))),
+    )) as {
+      available: boolean;
+      reason?: string;
+      data?: {
+        summary?: { assessableCount?: number; abstainedCount?: number };
+        products?: UnderwritingProductResult[];
+      };
+    };
+    assertEquals(out.available, false);
+    assertEquals(out.reason, "insufficient_data_to_assess");
+    assertEquals(out.data?.summary?.assessableCount, 0);
+    assertEquals(out.data?.summary?.abstainedCount, 1);
+    // The non-assessable product carries NO approval signal — the discriminated
+    // union has no such field on this branch, so it can't leak.
+    const p = out.data?.products?.[0];
+    assert(p !== undefined && p.assessable === false);
+    assert(!("approvalLikelihood" in p));
+    assert(!("eligibilityStatus" in p));
   },
 );
 
 Deno.test(
-  "buildPayload: a male client with no conditions yields an empty, valid snapshot",
-  () => {
-    const payload = buildPayload({ age: 40, gender: "male", conditions: [] });
-    assert(payload !== null);
-    assertEquals(payload!.clientGender, "male");
-    assertEquals(
-      parseHealthSnapshot(payload!.healthResponses).conditions.length,
-      0,
-    );
+  "available:true when at least one product is assessable; abstainers stay field-suppressed",
+  async () => {
+    const out = (await getUnderwritingRecommendation.run(
+      { age: 55, gender: "female", conditions: [] },
+      makeCtx(
+        "imo_1",
+        fixedRunner(resultWith([assessableProduct, nonAssessableProduct])),
+      ),
+    )) as {
+      available: boolean;
+      data?: {
+        summary?: { assessableCount?: number };
+        products?: UnderwritingProductResult[];
+        dataWarning?: string;
+      };
+    };
+    assertEquals(out.available, true);
+    assertEquals(out.data?.summary?.assessableCount, 1);
+    // buildProvided true => no warning.
+    assertEquals(out.data?.dataWarning, undefined);
+    const assessable = out.data?.products?.find((p) => p.assessable);
+    const abstainer = out.data?.products?.find((p) => !p.assessable);
+    assert(assessable?.assessable === true);
+    assertEquals(assessable.approvalLikelihood, 0.92);
+    assert(abstainer?.assessable === false);
+    assert(!("approvalLikelihood" in abstainer));
   },
 );
 

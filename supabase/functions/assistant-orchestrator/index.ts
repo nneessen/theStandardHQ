@@ -24,6 +24,7 @@ import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
 import { createCloseProvider } from "./close/provider.ts";
+import { createUnderwritingRunner } from "./tools/underwritingRunner.ts";
 
 const MAX_TOOL_ITERATIONS = 10;
 const WALL_TIME_MS = 25_000;
@@ -153,6 +154,9 @@ serve(async (req) => {
       firstName,
       // Lazy: only resolves (service-role fetch + decrypt) if a Close tool runs.
       close: createCloseProvider(user.id),
+      // Authoritative engine bound to the user's RLS-scoped client. Keeps the heavy
+      // engine import out of the offline-tested tools/ layer (mirrors close).
+      underwriting: createUnderwritingRunner(db),
     };
 
     const systemPrompt = buildSystemPrompt(agent, assistantName);

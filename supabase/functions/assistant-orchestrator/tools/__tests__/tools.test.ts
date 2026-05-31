@@ -54,6 +54,12 @@ function makeCtx(
     firstName: "Nick",
     // These tools never touch Close; a not-connected provider is enough.
     close: { getClient: () => Promise.resolve(null) },
+    // These tools never run underwriting; fail loudly if one ever does.
+    underwriting: {
+      run() {
+        throw new Error("these tools must not run underwriting");
+      },
+    },
   };
   return { ctx, rpcCalls, inserts };
 }

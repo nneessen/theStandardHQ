@@ -36,6 +36,59 @@ export interface CloseProvider {
   getClient(): Promise<CloseReadClient | null>;
 }
 
+/**
+ * One product's underwriting outcome, shaped HONESTLY by construction: a
+ * non-assessable product is a distinct variant with NO healthClass /
+ * approvalLikelihood / eligibilityStatus / conditionDecisions field at all, so it
+ * is a compile error — not just a convention — to surface an approval signal the
+ * engine never produced.
+ */
+export type UnderwritingProductResult =
+  | {
+      assessable: true;
+      carrierName: string;
+      productName: string;
+      productType: string;
+      healthClass: string;
+      approvalLikelihood: number;
+      eligibilityStatus: string;
+      eligibilityReasons: string[];
+      concerns: unknown;
+      conditionDecisions: unknown;
+    }
+  | {
+      assessable: false;
+      carrierName: string;
+      productName: string;
+      productType: string;
+      /** Carries the engine's INSUFFICIENT_DATA_REASON so the agent knows what to ask. */
+      eligibilityReasons: string[];
+    };
+
+export interface UnderwritingRunResult {
+  totalProductsEvaluated: number;
+  ineligibleProducts: number;
+  conditionsReported: string[];
+  /** False when height/weight were not supplied (build/BMI not assessed). */
+  buildProvided: boolean;
+  products: UnderwritingProductResult[];
+}
+
+/**
+ * Runs the authoritative underwriting engine on behalf of a tool. The concrete
+ * implementation (createUnderwritingRunner) is built in index.ts — the esm zone —
+ * so the heavy engine + the real supabase client never enter this offline-tested,
+ * type-checked tools/ layer. Mirrors CloseProvider. Returns null when the model
+ * args lack the required client facts (e.g. no age).
+ */
+export interface UnderwritingRunner {
+  run(
+    input: Record<string, unknown>,
+    imoId: string,
+    requestId: string,
+  ): Promise<UnderwritingRunResult | null>;
+}
+
 export interface AssistantToolContext {
   db: ToolDbClient;
   userId: string;
@@ -44,6 +97,8 @@ export interface AssistantToolContext {
   firstName?: string | null;
   /** Live Close CRM access for the signed-in user (read-only v1). */
   close: CloseProvider;
+  /** Authoritative underwriting engine access (RLS-scoped, read-only). */
+  underwriting: UnderwritingRunner;
 }
 
 export interface RegisteredTool {
