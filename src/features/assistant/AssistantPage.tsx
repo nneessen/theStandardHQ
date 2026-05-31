@@ -10,6 +10,10 @@ import {
 import { useKeepWarm } from "./hooks/useKeepWarm";
 import { useSound } from "./hooks/useSound";
 import { takeSentence } from "./lib/sentences";
+import {
+  consumeVoiceLaunch,
+  subscribeVoiceLaunch,
+} from "./lib/voiceLaunchSignal";
 import { CommandCenterLayout } from "./components/CommandCenterLayout";
 import { CommandInput } from "./components/CommandInput";
 import { PendingActionsPanel } from "./components/PendingActionsPanel";
@@ -215,6 +219,27 @@ export function AssistantPage() {
     enabled: prefs?.voice_enabled ?? false,
   });
   voiceRef.current = voice;
+
+  // ⌘J (from anywhere) lands here and asks us to begin voice immediately so the
+  // user can just talk. Mirror the orb's click guard: skip if a session is
+  // already running, surface the same notice if the backend probe says voice
+  // isn't configured, otherwise start. Read live state through voiceRef since the
+  // request can arrive asynchronously. Wait out the one-time boot overlay so the
+  // mic permission prompt doesn't appear behind a full-screen animation.
+  useEffect(() => {
+    if (booting) return; // pending request is preserved until boot finishes
+    const launch = () => {
+      const v = voiceRef.current;
+      if (!v || VOICE_ACTIVE.has(v.state)) return;
+      if (v.available === false) {
+        toast.info("Voice isn't configured yet. Text chat is fully available.");
+        return;
+      }
+      void v.start();
+    };
+    if (consumeVoiceLaunch()) launch();
+    return subscribeVoiceLaunch(launch);
+  }, [booting]);
 
   const voiceActive = VOICE_ACTIVE.has(voice.state);
 

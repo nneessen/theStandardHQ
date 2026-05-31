@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { JarvisOrbView } from "@/components/board";
+import { requestVoiceLaunch } from "@/features/assistant/lib/voiceLaunchSignal";
 
 interface SidebarJarvisDockProps {
   isCollapsed: boolean;
@@ -20,14 +21,20 @@ export function SidebarJarvisDock({
 
   const open = () => {
     if (isMobile) onCloseMobile();
+    // Match ⌘J: open the Command Center and start voice immediately so the user
+    // can just talk. Consumed by AssistantPage on mount (or now, if already open).
+    requestVoiceLaunch();
     navigate({ to: "/command-center" });
   };
 
-  // Global ⌘J / Ctrl+J → Command Center.
+  // Global ⌘J / Ctrl+J → Command Center, starting voice immediately so the user
+  // can just talk. The launch request is consumed by AssistantPage on mount (or
+  // right away if it's already open).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
+        requestVoiceLaunch();
         navigate({ to: "/command-center" });
       }
     };
