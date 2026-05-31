@@ -136,12 +136,21 @@ export function buildPayload(
     });
   }
 
+  // Key by code. If the model sends the same condition twice, MERGE their
+  // responses (later keys win) rather than letting the second silently drop the
+  // first's facts — a dropped disqualifying fact would inflate the outcome.
   const conditionsByCode: Record<string, JsonValue> = {};
   for (const condition of conditions) {
+    const existing = conditionsByCode[condition.code] as
+      | { responses?: Record<string, JsonValue> }
+      | undefined;
     conditionsByCode[condition.code] = {
       conditionCode: condition.code,
       conditionName: condition.code,
-      responses: buildResponses(condition) as Record<string, JsonValue>,
+      responses: {
+        ...(existing?.responses ?? {}),
+        ...(buildResponses(condition) as Record<string, JsonValue>),
+      },
     };
   }
 
@@ -162,7 +171,7 @@ export function buildPayload(
     clientHeightInches: asNumber(input.heightInches) ?? 0,
     clientWeightLbs: asNumber(input.weightLbs) ?? 0,
     healthResponses,
-    conditionsReported: conditions.map((c) => c.code),
+    conditionsReported: [...new Set(conditions.map((c) => c.code))],
     tobaccoUse: input.tobacco === true,
     tobaccoDetails: null,
     requestedFaceAmounts: [faceAmount > 0 ? faceAmount : DEFAULT_FACE_AMOUNT],
@@ -242,22 +251,35 @@ async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
     };
   }
 
-  const products = recommendations.map((rec) => ({
-    carrierName: rec.carrierName,
-    productName: rec.productName,
-    productType: rec.productType,
-    assessable: rec.assessable,
-    // When NOT assessable the class is a suppressed placeholder (engine emits
-    // "unknown") AND approvalLikelihood is a meaningless 0.5 sentinel — null it so
-    // the model cannot read it as a real "~50% chance". eligibilityReasons carries
-    // INSUFFICIENT_DATA_REASON so the agent knows what to ask for.
-    healthClass: rec.assessable ? rec.healthClassResult : "unknown",
-    approvalLikelihood: rec.assessable ? rec.approvalLikelihood : null,
-    eligibilityStatus: rec.eligibilityStatus,
-    eligibilityReasons: rec.eligibilityReasons,
-    concerns: rec.concerns,
-    conditionDecisions: rec.conditionDecisions,
-  }));
+  const products = recommendations.map((rec) => {
+    // Fields that are ALWAYS safe to surface — they carry no approval signal.
+    const base = {
+      carrierName: rec.carrierName,
+      productName: rec.productName,
+      productType: rec.productType,
+      assessable: rec.assessable,
+      // Carries INSUFFICIENT_DATA_REASON when not assessable.
+      eligibilityReasons: rec.eligibilityReasons,
+    };
+    if (!rec.assessable) {
+      // The engine did NOT grade this product. OMIT every favorable-looking
+      // field entirely — not just healthClass/approvalLikelihood, but also
+      // eligibilityStatus (engine "eligible" only means the age/state/coverage
+      // gate passed, NOT that conditions were assessed) and conditionDecisions
+      // (which can carry a per-condition decision:"approved"/class). Surfacing
+      // any of them lets the model quote a favorable half of a contradictory
+      // record. Honest shape = "couldn't assess; here's why" + nothing else.
+      return base;
+    }
+    return {
+      ...base,
+      healthClass: rec.healthClassResult,
+      approvalLikelihood: rec.approvalLikelihood,
+      eligibilityStatus: rec.eligibilityStatus,
+      concerns: rec.concerns,
+      conditionDecisions: rec.conditionDecisions,
+    };
+  });
 
   const assessableCount = products.filter((p) => p.assessable).length;
 

@@ -125,7 +125,7 @@ export function classifyIntent(message: string): AgentKey | null {
   // underwriting-context word (for/would/approve/accept/take/cover/insure/...), so
   // commission/performance "carrier" questions fall through to production (#14).
   if (
-    /\b(underwrit(e|es|ing|er|ten)|insurab(le|ility)|uninsurable|health class|rate class|carriers?\s+(for|would|will|to|that|approv|accept|take|cover|insure|underwrit)|who (would |will |might )?approve|approv(e|es|al) (this |the |a |my |their )?(client|applicant|case|prospect)|get (this|them|him|her|the) (client|applicant|prospect)? ?approved|qualif(y|ies) for coverage)\b/.test(
+    /\b(underwrit(e|es|ing|er|ten)|insurab(le|ility)|uninsurable|health class|rate class|carriers?\s+(for|would|will|to|that|approv|accept|take|cover|insure|underwrit)|approv(e|es|al) (this |the |a |my |their )?(client|applicant|case|prospect)|get (this|them|him|her|the) (client|applicant|prospect)? ?approved|qualif(y|ies) for coverage)\b/.test(
       m,
     )
   ) {

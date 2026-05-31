@@ -114,11 +114,22 @@ Deno.test(
     )) as {
       available: boolean;
       reason?: string;
-      data?: { dataWarning?: string; note?: string };
+      data?: {
+        dataWarning?: string;
+        note?: string;
+        totalProductsEvaluated?: number;
+      };
     };
     // Empty product set => no recommendation can be made. Honest, not fabricated.
     assertEquals(out.available, false);
     assertEquals(out.reason, "no_recommendations");
+    // The honest note + the real engine count must be present (guards against a
+    // field-swap, e.g. surfacing filtered.ineligible as the total).
+    assert(
+      typeof out.data?.note === "string" && out.data.note.length > 0,
+      "expected an honest note",
+    );
+    assertEquals(out.data?.totalProductsEvaluated, 0);
     // Build (height/weight) was omitted, so the result must disclose that build
     // was not assessed — never let a build-blind class read as final.
     assert(
@@ -126,6 +137,68 @@ Deno.test(
         out.data.dataWarning.length > 0,
       "expected a build dataWarning when height/weight are missing",
     );
+  },
+);
+
+Deno.test(
+  "abstains as evaluation_failed (not a throw) when the engine errors",
+  async () => {
+    // A db whose every query throws — the engine's fetch helpers re-throw, the
+    // tool must catch and degrade to an honest available:false, never crash.
+    const throwingDb = {
+      rpc() {
+        throw new Error("DB unavailable");
+      },
+      from() {
+        throw new Error("DB unavailable");
+      },
+    } as unknown as ToolDbClient;
+    const ctx: AssistantToolContext = {
+      db: throwingDb,
+      userId: "user_1",
+      imoId: "imo_1",
+      conversationId: "conv_1",
+      firstName: "Nick",
+      close: { getClient: () => Promise.resolve(null) },
+    };
+    const out = (await getUnderwritingRecommendation.run(
+      {
+        age: 55,
+        gender: "female",
+        conditions: [{ code: "high_blood_pressure" }],
+      },
+      ctx,
+    )) as { available: boolean; reason?: string };
+    assertEquals(out.available, false);
+    assertEquals(out.reason, "evaluation_failed");
+  },
+);
+
+Deno.test(
+  "buildPayload routes non-HBP follow-ups through `details` into the right transformer facts",
+  () => {
+    // The pass-through path every non-HBP condition uses. A regression in the
+    // details value-filtering would silently strip these and force an abstain.
+    const payload = buildPayload({
+      age: 50,
+      gender: "male",
+      conditions: [
+        {
+          code: "diabetes",
+          details: { a1c_level: 6.4, treatment: "Oral medication only" },
+        },
+      ],
+    });
+    assert(payload !== null);
+    const facts = transformConditionResponses(
+      parseHealthSnapshot(payload!.healthResponses).conditions,
+      payload!.clientAge,
+    );
+    const diabetes = facts.diabetes as Record<string, unknown>;
+    // a1c 6.4 < 7.5 threshold => controlled; "Oral medication only" => no insulin.
+    assertEquals(diabetes.a1c_level, 6.4);
+    assertEquals(diabetes.good_control, true);
+    assertEquals(diabetes.insulin_use, false);
   },
 );
 

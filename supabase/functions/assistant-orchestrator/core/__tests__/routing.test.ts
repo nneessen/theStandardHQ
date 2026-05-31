@@ -146,10 +146,25 @@ Deno.test(
       classifyIntent("what health class can this applicant get?"),
       "underwriting",
     );
+    assertEquals(classifyIntent("is she uninsurable?"), "underwriting");
+    assertEquals(
+      classifyIntent("what rate class does he qualify for?"),
+      "underwriting",
+    );
     // "client" alone (no underwriting signal) still goes to crm.
     assertEquals(classifyIntent("summarize my book of business"), "crm");
-    // A "carrier" question with NO underwriting context must NOT be hijacked by
-    // underwriting — commission/performance carrier asks belong elsewhere.
+    // NON-underwriting "approve" asks must NOT be hijacked — the trigger requires
+    // an applicant/client/case/prospect object, not a bare "approve".
+    assertEquals(
+      classifyIntent("who would approve my expense report?") === "underwriting",
+      false,
+    );
+    assertEquals(
+      classifyIntent("who needs to approve this contract?") === "underwriting",
+      false,
+    );
+    // A "carrier" question with NO underwriting context must NOT be hijacked —
+    // commission/performance carrier asks belong elsewhere.
     assertEquals(
       classifyIntent("which carrier pays the best overrides?") ===
         "underwriting",
@@ -158,6 +173,18 @@ Deno.test(
     assertEquals(
       classifyIntent("carrier performance this quarter"),
       "production-analyst",
+    );
+  },
+);
+
+Deno.test(
+  "routeToAgent falls back to briefing when underwriting is matched but not enabled",
+  () => {
+    assertEquals(
+      routeToAgent("which carrier would approve a diabetic client?", [
+        "executive-briefing",
+      ]),
+      "executive-briefing",
     );
   },
 );
