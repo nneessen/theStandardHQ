@@ -254,7 +254,11 @@ gating per section, export (CSV/PDF), upgrade banner.
 - [⊘] `MyRecruitingPipeline` — intentionally NOT re-skinned (recruit's own full-bleed `.theme-landing` portal, like `/command-center`)
 - [x] Reports (`/reports`)
 - [x] Metric pages: Leaderboard, Close KPIs, Expenses, Lead Intelligence (`/lead-vendors`)
-- [ ] (remaining nav pages: Marketing, Messages, UW Wizard/Admin/Guides, Chat Bot, Voice Agent, Orchestrator, Business Tools, Close AI Builder, Lead Drop, Billing, Settings, Admin (+ auth-diagnostic/bot-health), Workflows, Comps, Contracting, Training Hub/My Training/Trainer, Agent Roadmap, The Standard Team, recruit/lead detail pages)
+- [x] Nav pages: Settings, Admin Control Center, Workflows, Comp Guide, Contracting, The Standard Team, Billing, Business Tools, Marketing (hub+templates+campaigns tabs), Orchestrator, Recruit Detail, Lead Detail, Underwriting Guides, Training Hub, Trainer Dashboard, My Training, Roadmap List (admin), Team Progress (roadmap), Close AI Builder, Lead Drop, Auth Diagnostic, Bot Health
+
+### Deliberately NOT re-skinned — full-bleed / own-surface (like `/command-center`)
+These fill the viewport (chat panes, editors, players, wizards, two-pane master-detail) and would break if centered in the padded `max-w` canvas container. They already render inside the `.theme-v2` charcoal shell; they just don't get the dashboard-canvas texture + departure header. Leave them:
+`/command-center` (Jarvis), `/recruiting/my-pipeline` (recruit portal), `/chat-bot`, `/voice-agent` + `/voice-agent/clone`, `/messages` (two-pane inbox), `/slack/name-leaderboard` (centered card flow), `/underwriting/wizard` + `/underwriting/admin` (master-detail), marketing template/campaign EDITORS, training ModulePlayer/ModuleBuilder/Presentation record+detail, agent-roadmap Runner/Editor + non-admin landing. Public/auth/legal routes are out of scope.
 
 ### Font sizing (2026-06-01)
 Modest +1px readability bump, committed `28608fb6`. Chrome primitives — `Cap` 11→12, `FlapTile` label 11→12, `Pill` 12→12.5 (propagates to all Board pages). Data tables — `text-[10px]→[11px]` then `text-[9px]→[10px]` (safe order, no double-bump) on 16 PRIMARY data-table/list components only. Deliberately NOT swept: public recruit portal (`recruiting/layouts|editorial|public`), config dialogs, widget config forms. If more readability is wanted, extend the same two-step sed to more table components — never blanket-sweep all 162 `text-[9/10px]` files (hits public + dialogs).
