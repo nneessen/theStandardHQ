@@ -33,6 +33,9 @@ checklist. The Analytics page + Targets/Policies are worked examples.
 
 - [x] **Reports** (`/reports`, `ReportsDashboard`) — dashboard-canvas shell + departure header (eyebrow + title + report-type dropdown | period + export actions). All report renderers, scheduled-reports panel, drill-down drawer, bundle/export dialogs preserved. tsc/eslint/build green; NOT seen authed.
 
+- [x] **Metric pages** (commit `00667cd9`): `LeaderboardPage` (was partly Board → added shell + responsive stat grid + Board table), `ExpensesPage` (shell + departure header, tab children kept), `LeadIntelligenceDashboard`/`/lead-vendors` (shell + header), `CloseKpiPage` (shell; custom Close hero kept). tsc/eslint/build green; NOT seen authed.
+- [x] **Font readability bump** (commit `28608fb6`, modest +1px): Board chrome primitives (Cap/FlapTile-label/Pill) + 16 primary data-table components. NOT swept: public recruit portal, dialogs, config forms. ⚠️ needs a live authed eyeball for dense-table horizontal overflow.
+
 ## REMAINING PAGES (priority order)
 3. Then the rest of the sidebar nav: Expenses (`/expenses`), Lead Vendors (`/lead-vendors`), Marketing (`/marketing`), Messages (`/messages`), Leaderboard (`/leaderboard` — already imports board), UW Wizard/Admin (`/underwriting/*`), Chat Bot (`/chat-bot`), AI Voice Agent (`/voice-agent`), Orchestrator (`/channel-orchestration`), Close KPIs (`/close-kpi`), Business Tools (`/business-tools`), Billing (`/billing`), Settings (`/settings`), Admin (`/admin`), Workflows (`/system/workflows`).
    - **Command Center (`/command-center`) is intentionally its OWN Jarvis surface — do NOT reskin it.**

@@ -253,7 +253,11 @@ gating per section, export (CSV/PDF), upgrade banner.
 - [x] Recruiting/Team leftovers: `PipelineAdminPage`, `AgentDetailPage`, `OrgChartPage`, `OverrideDashboard`, `DownlinePerformance`, `HierarchyManagement`
 - [⊘] `MyRecruitingPipeline` — intentionally NOT re-skinned (recruit's own full-bleed `.theme-landing` portal, like `/command-center`)
 - [x] Reports (`/reports`)
-- [ ] (remaining nav pages: Expenses, Lead Vendors, Marketing, Messages, Leaderboard, UW Wizard/Admin, Chat Bot, Voice Agent, Orchestrator, Close KPIs, Business Tools, Billing, Settings, Admin, Workflows)
+- [x] Metric pages: Leaderboard, Close KPIs, Expenses, Lead Intelligence (`/lead-vendors`)
+- [ ] (remaining nav pages: Marketing, Messages, UW Wizard/Admin/Guides, Chat Bot, Voice Agent, Orchestrator, Business Tools, Close AI Builder, Lead Drop, Billing, Settings, Admin (+ auth-diagnostic/bot-health), Workflows, Comps, Contracting, Training Hub/My Training/Trainer, Agent Roadmap, The Standard Team, recruit/lead detail pages)
+
+### Font sizing (2026-06-01)
+Modest +1px readability bump, committed `28608fb6`. Chrome primitives — `Cap` 11→12, `FlapTile` label 11→12, `Pill` 12→12.5 (propagates to all Board pages). Data tables — `text-[10px]→[11px]` then `text-[9px]→[10px]` (safe order, no double-bump) on 16 PRIMARY data-table/list components only. Deliberately NOT swept: public recruit portal (`recruiting/layouts|editorial|public`), config dialogs, widget config forms. If more readability is wanted, extend the same two-step sed to more table components — never blanket-sweep all 162 `text-[9/10px]` files (hits public + dialogs).
 
 Note: some pages are already partly Board (use `BoardListHeader`/`SoftCard`). Check
 first — often the only gap is the `dashboard-canvas` `SectionShell` wrapper + a
