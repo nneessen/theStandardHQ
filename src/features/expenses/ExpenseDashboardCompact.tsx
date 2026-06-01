@@ -437,12 +437,12 @@ export function ExpenseDashboardCompact() {
                 onClick={() => setSelectedMonth(new Date())}
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[11px]"
+                className="h-6 px-2 text-[12px]"
               >
                 Today
               </Button>
             </div>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               {monthlyExpenses.length} expenses
             </span>
           </div>
@@ -451,7 +451,7 @@ export function ExpenseDashboardCompact() {
               onClick={handleExportCSV}
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[11px]"
+              className="h-6 px-2 text-[12px]"
             >
               <Download className="h-3 w-3 mr-1" />
               CSV
@@ -462,7 +462,7 @@ export function ExpenseDashboardCompact() {
                 setIsAddDialogOpen(true);
               }}
               size="sm"
-              className="h-6 px-2 text-[11px]"
+              className="h-6 px-2 text-[12px]"
             >
               <Plus className="h-3 w-3 mr-1" />
               Add
@@ -474,33 +474,33 @@ export function ExpenseDashboardCompact() {
         <div className="space-y-2">
           {/* Expense Summary Card */}
           <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+            <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
               Expense Summary
             </div>
             <div className="grid grid-cols-4 gap-4">
               {/* Total Expenses */}
               <div>
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Monthly Total</span>
                     <span className="font-mono font-bold text-foreground">
                       {formatCurrency(totalAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">YTD Total</span>
                     <span className="font-mono text-foreground">
                       {formatCurrency(ytdTotal)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Avg Monthly</span>
                     <span className="font-mono text-foreground">
                       {formatCurrency(avgMonthlyExpense)}
                     </span>
                   </div>
                   <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">MoM Change</span>
                     <span
                       className={cn(
@@ -518,20 +518,20 @@ export function ExpenseDashboardCompact() {
               {/* Business vs Personal */}
               <div className="border-l border-border pl-4">
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Business</span>
                     <span className="font-mono font-semibold text-info">
                       {formatCurrency(businessAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Personal</span>
                     <span className="font-mono font-semibold text-info">
                       {formatCurrency(personalAmount)}
                     </span>
                   </div>
                   <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Business %</span>
                     <span className="font-mono font-bold text-foreground">
                       {totalAmount > 0
@@ -545,7 +545,7 @@ export function ExpenseDashboardCompact() {
               {/* Tax Deductible & Recurring */}
               <div className="border-l border-border pl-4">
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">
                       Tax Deductible
                     </span>
@@ -553,7 +553,7 @@ export function ExpenseDashboardCompact() {
                       {formatCurrency(deductibleAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Deductible %</span>
                     <span className="font-mono text-foreground">
                       {totalAmount > 0
@@ -562,13 +562,13 @@ export function ExpenseDashboardCompact() {
                     </span>
                   </div>
                   <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">Recurring</span>
                     <span className="font-mono text-foreground">
                       {formatCurrency(recurringAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">One-Time</span>
                     <span className="font-mono text-foreground">
                       {formatCurrency(oneTimeAmount)}
@@ -580,7 +580,7 @@ export function ExpenseDashboardCompact() {
               {/* Expense Ratio */}
               <div className="border-l border-border pl-4">
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">
                       Gross Commission
                     </span>
@@ -588,7 +588,7 @@ export function ExpenseDashboardCompact() {
                       {formatCurrency(grossCommission)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground">
                       Total Expenses
                     </span>
@@ -597,7 +597,7 @@ export function ExpenseDashboardCompact() {
                     </span>
                   </div>
                   <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span className="text-muted-foreground font-semibold">
                       Expense Ratio
                     </span>
@@ -614,7 +614,7 @@ export function ExpenseDashboardCompact() {
                       {formatPercent(expenseRatio)}
                     </span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-[12px] text-muted-foreground">
                     {expenseRatio > 30
                       ? "⚠️ High ratio"
                       : expenseRatio > 20
@@ -630,26 +630,26 @@ export function ExpenseDashboardCompact() {
           <div className="grid grid-cols-2 gap-2">
             {/* Top Categories */}
             <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+              <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
                 Top Categories
               </div>
               <div className="space-y-1">
                 {categoryBreakdown.length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-[12px] text-muted-foreground">
                     No expenses this month
                   </div>
                 ) : (
                   categoryBreakdown.map((cat) => (
                     <div
                       key={cat.name}
-                      className="flex items-center justify-between text-[11px]"
+                      className="flex items-center justify-between text-[12px]"
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-info" />
                         <span className="text-muted-foreground">
                           {cat.name}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-[12px] text-muted-foreground">
                           ({cat.count})
                         </span>
                       </div>
@@ -657,7 +657,7 @@ export function ExpenseDashboardCompact() {
                         <span className="font-mono font-semibold text-foreground">
                           {formatCurrency(cat.amount)}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-[12px] text-muted-foreground">
                           {formatPercent(cat.percentage)}
                         </span>
                       </div>
@@ -669,7 +669,7 @@ export function ExpenseDashboardCompact() {
 
             {/* Recent Large Expenses */}
             <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+              <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
                 Recent Large Expenses
               </div>
               <div className="space-y-1">
@@ -679,7 +679,7 @@ export function ExpenseDashboardCompact() {
                   .map((expense) => (
                     <div
                       key={expense.id}
-                      className="flex items-center justify-between text-[11px]"
+                      className="flex items-center justify-between text-[12px]"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground truncate max-w-[150px]">
@@ -687,7 +687,7 @@ export function ExpenseDashboardCompact() {
                         </span>
                         <span
                           className={cn(
-                            "text-[10px]",
+                            "text-[11px]",
                             expense.expense_type === "business"
                               ? "text-info"
                               : "text-info",
@@ -702,7 +702,7 @@ export function ExpenseDashboardCompact() {
                     </div>
                   ))}
                 {monthlyExpenses.length === 0 && (
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-[12px] text-muted-foreground">
                     No expenses this month
                   </div>
                 )}
@@ -795,22 +795,22 @@ export function ExpenseDashboardCompact() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Date
                     </th>
-                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Name
                     </th>
-                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Category
                     </th>
-                    <th className="text-center p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-center p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Type
                     </th>
-                    <th className="text-right p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-right p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Amount
                     </th>
-                    <th className="text-center p-2 text-[11px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-center p-2 text-[12px] font-semibold text-muted-foreground bg-background">
                       Actions
                     </th>
                   </tr>
@@ -819,7 +819,7 @@ export function ExpenseDashboardCompact() {
                   {isLoading ? (
                     <tr>
                       <td colSpan={6} className="text-center py-8">
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="text-[12px] text-muted-foreground">
                           Loading expenses...
                         </div>
                       </td>
@@ -829,7 +829,7 @@ export function ExpenseDashboardCompact() {
                       <td colSpan={6} className="text-center py-8">
                         <div className="flex flex-col items-center gap-1">
                           <FileText className="h-6 w-6 text-muted-foreground" />
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-[12px] text-muted-foreground">
                             {filterCount > 0
                               ? "No expenses match your filters"
                               : "No expenses found"}
@@ -849,27 +849,27 @@ export function ExpenseDashboardCompact() {
                           key={expense.id}
                           className="border-b border-border/60 hover:bg-background"
                         >
-                          <td className="p-2 text-[11px] text-muted-foreground">
+                          <td className="p-2 text-[12px] text-muted-foreground">
                             {formatDateForDisplay(expense.date, {
                               month: "short",
                               day: "numeric",
                             })}
                           </td>
-                          <td className="p-2 text-[11px] font-medium text-foreground">
+                          <td className="p-2 text-[12px] font-medium text-foreground">
                             {expense.name}
                             {expense.is_recurring && (
-                              <span className="ml-1 text-[10px] text-muted-foreground">
+                              <span className="ml-1 text-[11px] text-muted-foreground">
                                 🔁
                               </span>
                             )}
                           </td>
-                          <td className="p-2 text-[11px] text-muted-foreground">
+                          <td className="p-2 text-[12px] text-muted-foreground">
                             {expense.category}
                           </td>
                           <td className="p-2 text-center">
                             <span
                               className={cn(
-                                "inline-block px-1.5 py-0.5 rounded text-[10px] font-medium",
+                                "inline-block px-1.5 py-0.5 rounded text-[11px] font-medium",
                                 expense.expense_type === "business"
                                   ? "bg-info/10 text-info"
                                   : "bg-info/10 text-info",
@@ -878,7 +878,7 @@ export function ExpenseDashboardCompact() {
                               {expense.expense_type}
                             </span>
                           </td>
-                          <td className="p-2 text-right text-[11px] font-mono font-semibold text-foreground">
+                          <td className="p-2 text-right text-[12px] font-mono font-semibold text-foreground">
                             {formatCurrency(expense.amount)}
                           </td>
                           <td className="p-2 text-center">
@@ -929,11 +929,11 @@ export function ExpenseDashboardCompact() {
           {expenseRatio > 30 && (
             <div className="p-2 bg-accent/40 border border-warning/30 rounded-lg flex items-start gap-2">
               <DollarSign className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
-              <div className="text-[11px]">
+              <div className="text-[12px]">
                 <strong className="text-warning">
                   High expense ratio detected ({formatPercent(expenseRatio)})
                 </strong>
-                <p className="text-[11px] text-warning/80 mt-0.5">
+                <p className="text-[12px] text-warning/80 mt-0.5">
                   Your expenses are {formatPercent(expenseRatio)} of gross
                   commissions. Consider reducing non-essential expenses to
                   improve profitability. Target ratio should be below 30%.

@@ -27,10 +27,10 @@ export function TeamGeographicAnalysis({
   if (isLoading) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Premium by State
         </div>
-        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -59,31 +59,31 @@ export function TeamGeographicAnalysis({
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Premium by State
         </div>
-        <span className="text-[10px] text-v2-ink-subtle">
+        <span className="text-[11px] text-v2-ink-subtle">
           {data.length} states • Top 10
         </span>
       </div>
 
       {topStates.length > 0 ? (
-        <Table className="text-[11px]">
+        <Table className="text-[12px]">
           <TableHeader>
             <TableRow className="h-7 border-b border-v2-ring">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 State
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Total
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Avg
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 % Total
               </TableHead>
             </TableRow>
@@ -129,14 +129,14 @@ export function TeamGeographicAnalysis({
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
+        <div className="p-3 text-center text-[12px] text-v2-ink-subtle">
           No geographic data available
         </div>
       )}
 
       {/* Summary footer */}
       {topStates.length > 0 && (
-        <div className="mt-2 p-2 bg-v2-canvas rounded flex items-center justify-between text-[10px]">
+        <div className="mt-2 p-2 bg-v2-canvas rounded flex items-center justify-between text-[11px]">
           <span className="text-v2-ink-muted">
             {totalPolicies} policies across {data.length} states
           </span>

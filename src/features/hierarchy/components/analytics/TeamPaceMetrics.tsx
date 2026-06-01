@@ -22,10 +22,10 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
   if (isLoading || !data) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Pace Metrics
         </div>
-        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[12px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
       </div>
@@ -46,16 +46,16 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+          <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Team Pace Metrics
           </div>
-          <div className="text-[10px] text-v2-ink-subtle">
+          <div className="text-[11px] text-v2-ink-subtle">
             {data.timePeriod}
           </div>
         </div>
         <div
           className={cn(
-            "px-1.5 py-0.5 rounded text-[9px] font-medium",
+            "px-1.5 py-0.5 rounded text-[11px] font-medium",
             data.isProfitable
               ? "bg-success/10 text-success"
               : "bg-destructive/10 text-destructive",
@@ -68,7 +68,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
       {/* Metrics */}
       <div className="space-y-1">
         {/* Total AP Written */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted">Team AP Written</span>
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-v2-ink">
@@ -81,7 +81,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         </div>
 
         {/* Projected Total */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted">Projected AP</span>
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-warning">
@@ -94,7 +94,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         </div>
 
         {/* Average Premium */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted">Avg Premium</span>
           <span className="font-mono font-bold text-v2-ink">
             {formatCurrency(data.avgPremiumPerPolicy)}
@@ -102,7 +102,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         </div>
 
         {/* Projected Policies */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted">Projected Policies</span>
           <span className="font-mono font-bold text-v2-ink">
             {data.projectedPolicyTotal}
@@ -113,7 +113,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         <div className="h-px bg-v2-ring my-1" />
 
         {/* Surplus/Deficit */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted uppercase">
             {data.isProfitable ? "Surplus" : "Deficit"}
           </span>
@@ -128,7 +128,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         </div>
 
         {/* Time Remaining */}
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-[12px]">
           <span className="text-v2-ink-muted">Time Left</span>
           <span className="font-mono font-bold text-v2-ink">
             {data.daysRemaining} {data.daysRemaining === 1 ? "day" : "days"}

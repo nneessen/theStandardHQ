@@ -306,7 +306,7 @@ export function LeadPurchaseDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-6 text-[10px] px-2"
+                  className="h-6 text-[11px] px-2"
                 >
                   <Building2 className="h-3 w-3 mr-1" />
                   Vendors
@@ -316,7 +316,7 @@ export function LeadPurchaseDashboard() {
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
                   onClick={() => setIsVendorDialogOpen(true)}
-                  className="text-[11px]"
+                  className="text-[12px]"
                 >
                   <Plus className="mr-2 h-3.5 w-3.5" />
                   Add Vendor
@@ -326,7 +326,7 @@ export function LeadPurchaseDashboard() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => setIsVendorManagementOpen(true)}
-                      className="text-[11px]"
+                      className="text-[12px]"
                     >
                       <Settings className="mr-2 h-3.5 w-3.5" />
                       Manage Vendors
@@ -337,7 +337,7 @@ export function LeadPurchaseDashboard() {
             </DropdownMenu>
             <Button
               size="sm"
-              className="h-6 text-[10px] px-2"
+              className="h-6 text-[11px] px-2"
               onClick={() => {
                 setSelectedPurchase(null);
                 setIsDialogOpen(true);
@@ -350,7 +350,7 @@ export function LeadPurchaseDashboard() {
         </div>
 
         {/* Metrics Bar */}
-        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-[11px]">
+        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-[12px]">
           {stats ? (
             <>
               {/* Lead metrics */}
@@ -423,7 +423,7 @@ export function LeadPurchaseDashboard() {
               {filterCount > 0 && (
                 <>
                   <div className="h-3 w-px bg-muted" />
-                  <span className="text-[9px] px-1.5 py-0.5 bg-info/10 text-info rounded">
+                  <span className="text-[11px] px-1.5 py-0.5 bg-info/10 text-info rounded">
                     {filterCount} filter{filterCount > 1 ? "s" : ""}
                   </span>
                 </>
@@ -436,7 +436,7 @@ export function LeadPurchaseDashboard() {
 
         {/* Team Vendor Performance Bar */}
         {topVendors.length > 0 && (
-          <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-[10px] bg-warning/10">
+          <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border text-[11px] bg-warning/10">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
               <span className="text-warning font-semibold uppercase tracking-[0.18em]">
@@ -484,14 +484,14 @@ export function LeadPurchaseDashboard() {
               placeholder="Search by vendor or notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-6 pl-7 text-[10px] bg-card border-border"
+              className="h-6 pl-7 text-[11px] bg-card border-border"
             />
           </div>
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant={showFilters ? "default" : "ghost"}
             size="sm"
-            className="h-6 text-[10px] px-2"
+            className="h-6 text-[11px] px-2"
           >
             <Filter size={12} className="mr-1" />
             Filters
@@ -501,7 +501,7 @@ export function LeadPurchaseDashboard() {
               onClick={clearFilters}
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] px-2 text-muted-foreground"
+              className="h-6 text-[11px] px-2 text-muted-foreground"
             >
               Clear
             </Button>
@@ -520,7 +520,7 @@ export function LeadPurchaseDashboard() {
                 })
               }
             >
-              <SelectTrigger className="h-6 w-[140px] text-[10px] bg-card border-border">
+              <SelectTrigger className="h-6 w-[140px] text-[11px] bg-card border-border">
                 <SelectValue placeholder="Vendor" />
               </SelectTrigger>
               <SelectContent>
@@ -543,7 +543,7 @@ export function LeadPurchaseDashboard() {
                 })
               }
             >
-              <SelectTrigger className="h-6 w-[100px] text-[10px] bg-card border-border">
+              <SelectTrigger className="h-6 w-[100px] text-[11px] bg-card border-border">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -561,7 +561,7 @@ export function LeadPurchaseDashboard() {
             <TableHeader className="sticky top-0 bg-card z-10">
               <TableRow className="h-8 border-b border-border hover:bg-transparent">
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground px-2 cursor-pointer hover:text-foreground transition-colors"
+                  className="text-[11px] font-semibold text-muted-foreground px-2 cursor-pointer hover:text-foreground transition-colors"
                   onClick={() => toggleSort("purchaseDate")}
                 >
                   <div className="flex items-center gap-1">
@@ -575,7 +575,7 @@ export function LeadPurchaseDashboard() {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground px-2 cursor-pointer hover:text-foreground transition-colors"
+                  className="text-[11px] font-semibold text-muted-foreground px-2 cursor-pointer hover:text-foreground transition-colors"
                   onClick={() => toggleSort("vendor")}
                 >
                   <div className="flex items-center gap-1">
@@ -588,11 +588,11 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground px-2">
+                <TableHead className="text-[11px] font-semibold text-muted-foreground px-2">
                   Type
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
+                  className="text-[11px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
                   onClick={() => toggleSort("leadCount")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -606,7 +606,7 @@ export function LeadPurchaseDashboard() {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
+                  className="text-[11px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
                   onClick={() => toggleSort("totalCost")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -619,14 +619,14 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground px-2 text-right">
+                <TableHead className="text-[11px] font-semibold text-muted-foreground px-2 text-right">
                   $/Lead
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground px-2 text-right">
+                <TableHead className="text-[11px] font-semibold text-muted-foreground px-2 text-right">
                   Sold
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
+                  className="text-[11px] font-semibold text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground transition-colors"
                   onClick={() => toggleSort("roiPercentage")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -639,7 +639,7 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground px-2 text-right">
+                <TableHead className="text-[11px] font-semibold text-muted-foreground px-2 text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -657,7 +657,7 @@ export function LeadPurchaseDashboard() {
                   <TableCell colSpan={9} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
                       <AlertCircle className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-[11px] text-destructive">
+                      <span className="text-[12px] text-destructive">
                         Error:{" "}
                         {error instanceof Error ? error.message : String(error)}
                       </span>
@@ -665,7 +665,7 @@ export function LeadPurchaseDashboard() {
                         onClick={() => refetch()}
                         size="sm"
                         variant="outline"
-                        className="h-6 text-[10px] px-2"
+                        className="h-6 text-[11px] px-2"
                       >
                         Retry
                       </Button>
@@ -677,12 +677,12 @@ export function LeadPurchaseDashboard() {
                   <TableCell colSpan={9} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center p-4">
                       <ShoppingCart className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-[12px] text-muted-foreground">
                         {filterCount > 0 || searchTerm
                           ? "No purchases match your filters"
                           : "No lead purchases yet"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
+                      <p className="text-[11px] text-muted-foreground mt-1">
                         Click "Add Purchase" to get started
                       </p>
                     </div>
@@ -694,14 +694,14 @@ export function LeadPurchaseDashboard() {
                     key={purchase.id}
                     className="h-9 border-b border-border/60 hover:bg-background transition-colors"
                   >
-                    <TableCell className="text-[11px] text-muted-foreground py-1.5 px-2 font-mono">
+                    <TableCell className="text-[12px] text-muted-foreground py-1.5 px-2 font-mono">
                       {formatDateForDisplay(purchase.purchaseDate, {
                         month: "short",
                         day: "numeric",
                         year: "2-digit",
                       })}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2">
+                    <TableCell className="text-[12px] py-1.5 px-2">
                       <span className="font-medium text-foreground">
                         {purchase.vendor?.name || "Unknown"}
                       </span>
@@ -709,7 +709,7 @@ export function LeadPurchaseDashboard() {
                     <TableCell className="py-1.5 px-2">
                       <span
                         className={cn(
-                          "text-[9px] px-1.5 py-0.5 rounded font-medium",
+                          "text-[11px] px-1.5 py-0.5 rounded font-medium",
                           purchase.leadFreshness === "fresh"
                             ? "bg-info/10 text-info"
                             : "bg-accent/40 text-warning",
@@ -718,21 +718,21 @@ export function LeadPurchaseDashboard() {
                         {purchase.leadFreshness === "fresh" ? "Fresh" : "Aged"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-foreground">
+                    <TableCell className="text-[12px] py-1.5 px-2 text-right tabular-nums font-mono text-foreground">
                       {purchase.leadCount}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
+                    <TableCell className="text-[12px] py-1.5 px-2 text-right tabular-nums">
                       <span className="text-foreground">
                         {formatCurrency(purchase.totalCost)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-muted-foreground">
+                    <TableCell className="text-[12px] py-1.5 px-2 text-right tabular-nums font-mono text-muted-foreground">
                       ${purchase.costPerLead.toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-foreground">
+                    <TableCell className="text-[12px] py-1.5 px-2 text-right tabular-nums font-mono text-foreground">
                       {purchase.policiesSold}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
+                    <TableCell className="text-[12px] py-1.5 px-2 text-right tabular-nums">
                       <span
                         className={cn(
                           "font-mono font-semibold",
@@ -763,7 +763,7 @@ export function LeadPurchaseDashboard() {
                                 setSelectedPurchase(purchase);
                                 setIsDialogOpen(true);
                               }}
-                              className="text-[11px]"
+                              className="text-[12px]"
                             >
                               <Eye className="mr-2 h-3.5 w-3.5" />
                               View / Manage
@@ -773,7 +773,7 @@ export function LeadPurchaseDashboard() {
                                 setSelectedPurchase(purchase);
                                 setIsDialogOpen(true);
                               }}
-                              className="text-[11px] text-info"
+                              className="text-[12px] text-info"
                             >
                               <Link2 className="mr-2 h-3.5 w-3.5" />
                               Link Policies
@@ -781,7 +781,7 @@ export function LeadPurchaseDashboard() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDelete(purchase)}
-                              className="text-destructive text-[11px]"
+                              className="text-destructive text-[12px]"
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
                               Delete Purchase
@@ -799,7 +799,7 @@ export function LeadPurchaseDashboard() {
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between px-3 py-1.5 border-t border-border flex-shrink-0">
-          <div className="flex items-center gap-3 text-[10px]">
+          <div className="flex items-center gap-3 text-[11px]">
             <span className="text-muted-foreground">
               <span className="font-medium text-foreground">
                 {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0}
@@ -818,7 +818,7 @@ export function LeadPurchaseDashboard() {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="h-6 w-[80px] text-[10px] bg-card border-border">
+              <SelectTrigger className="h-6 w-[80px] text-[11px] bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -872,7 +872,7 @@ export function LeadPurchaseDashboard() {
                       onClick={() => goToPage(1)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-muted-foreground"
+                      className="h-6 min-w-6 px-1.5 text-[11px] text-muted-foreground"
                     >
                       1
                     </Button>,
@@ -881,7 +881,7 @@ export function LeadPurchaseDashboard() {
                     pages.push(
                       <span
                         key="dots1"
-                        className="px-0.5 text-muted-foreground text-[10px]"
+                        className="px-0.5 text-muted-foreground text-[11px]"
                       >
                         ...
                       </span>,
@@ -897,7 +897,7 @@ export function LeadPurchaseDashboard() {
                       variant={currentPage === i ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "h-6 min-w-6 px-1.5 text-[10px]",
+                        "h-6 min-w-6 px-1.5 text-[11px]",
                         currentPage !== i && "text-muted-foreground",
                       )}
                     >
@@ -911,7 +911,7 @@ export function LeadPurchaseDashboard() {
                     pages.push(
                       <span
                         key="dots2"
-                        className="px-0.5 text-muted-foreground text-[10px]"
+                        className="px-0.5 text-muted-foreground text-[11px]"
                       >
                         ...
                       </span>,
@@ -923,7 +923,7 @@ export function LeadPurchaseDashboard() {
                       onClick={() => goToPage(totalPages)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-muted-foreground"
+                      className="h-6 min-w-6 px-1.5 text-[11px] text-muted-foreground"
                     >
                       {totalPages}
                     </Button>,

@@ -29,10 +29,10 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
   if (isLoading) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Product Mix
         </div>
-        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -103,31 +103,31 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Product Mix
         </div>
-        <span className="text-[10px] text-v2-ink-subtle">
+        <span className="text-[11px] text-v2-ink-subtle">
           {products.length} products
         </span>
       </div>
 
       {products.length > 0 ? (
-        <Table className="text-[11px]">
+        <Table className="text-[12px]">
           <TableHeader>
             <TableRow className="h-7 border-b border-v2-ring">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 Product
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Total
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Avg
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Mix %
               </TableHead>
             </TableRow>
@@ -147,7 +147,7 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
                     <div className="font-medium text-v2-ink">
                       {formatProductName(product.name)}
                     </div>
-                    <div className="text-[9px] text-v2-ink-subtle truncate">
+                    <div className="text-[11px] text-v2-ink-subtle truncate">
                       {product.carriers.slice(0, 2).join(", ")}
                       {product.carriers.length > 2 &&
                         ` +${product.carriers.length - 2}`}
@@ -182,7 +182,7 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
+        <div className="p-3 text-center text-[12px] text-v2-ink-subtle">
           No product data available
         </div>
       )}

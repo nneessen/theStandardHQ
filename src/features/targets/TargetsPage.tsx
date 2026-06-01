@@ -320,7 +320,7 @@ export function TargetsPage() {
             {/* Board-style header */}
             <header style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Target style={{ width: 16, height: 16, color: T.blue }} />
-              <Cap style={{ fontSize: 11 }}>INCOME PLAN</Cap>
+              <Cap style={{ fontSize: 12 }}>INCOME PLAN</Cap>
               <h1
                 style={{
                   font: `800 24px ${T.disp}`,
@@ -420,7 +420,7 @@ export function TargetsPage() {
                 </h1>
                 <span
                   style={{
-                    font: `500 11px ${T.data}`,
+                    font: `500 12px ${T.data}`,
                     color: T.mut,
                   }}
                 >
@@ -584,7 +584,7 @@ export function TargetsPage() {
           </Board>
 
           {/* ── Realism Knobs ───────────────────────────────────────────────── */}
-          <Board pad={16}>
+          <Board pad={20}>
             <div
               style={{
                 display: "flex",
@@ -610,7 +610,7 @@ export function TargetsPage() {
                     </button>
                   </PopoverTrigger>
                   <PopoverContent align="start" className="w-[360px] p-3">
-                    <div className="text-[11px] leading-relaxed space-y-1.5">
+                    <div className="text-[12px] leading-relaxed space-y-1.5">
                       <div className="font-semibold text-foreground">
                         Why two plans?
                       </div>
@@ -649,7 +649,7 @@ export function TargetsPage() {
               <button
                 type="button"
                 style={{
-                  font: `500 10px ${T.data}`,
+                  font: `500 11px ${T.data}`,
                   color: T.mut,
                   background: "none",
                   border: "none",
@@ -672,10 +672,10 @@ export function TargetsPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <label className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   Persistency
                   {averages.hasData && averages.persistency13Month > 0 && (
-                    <span className="text-[9px] text-muted-foreground/70 ml-1">
+                    <span className="text-[11px] text-muted-foreground/70 ml-1">
                       (13-mo: {(averages.persistency13Month * 100).toFixed(0)}
                       %)
                     </span>
@@ -690,14 +690,14 @@ export function TargetsPage() {
                       setRealism((r) => ({ ...r, persistencyRate: v }))
                     }
                     aria-label="Persistency percent"
-                    className="h-7 text-[11px] font-mono px-2"
+                    className="h-7 text-[12px] font-mono px-2"
                   />
-                  <span className="text-[10px] text-muted-foreground">%</span>
+                  <span className="text-[11px] text-muted-foreground">%</span>
                 </div>
               </label>
 
               <label className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   Tax Reserve
                 </span>
                 <div className="flex items-center gap-1">
@@ -709,14 +709,14 @@ export function TargetsPage() {
                       setRealism((r) => ({ ...r, taxReserveRate: v }))
                     }
                     aria-label="Tax reserve percent"
-                    className="h-7 text-[11px] font-mono px-2"
+                    className="h-7 text-[12px] font-mono px-2"
                   />
-                  <span className="text-[10px] text-muted-foreground">%</span>
+                  <span className="text-[11px] text-muted-foreground">%</span>
                 </div>
               </label>
 
               <label className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   NTO Drag
                 </span>
                 <div className="flex items-center gap-1">
@@ -728,21 +728,21 @@ export function TargetsPage() {
                       setRealism((r) => ({ ...r, ntoBufferRate: v }))
                     }
                     aria-label="NTO drag percent"
-                    className="h-7 text-[11px] font-mono px-2"
+                    className="h-7 text-[12px] font-mono px-2"
                   />
-                  <span className="text-[10px] text-muted-foreground">%</span>
+                  <span className="text-[11px] text-muted-foreground">%</span>
                 </div>
               </label>
 
               <label className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   Premium Stat
                 </span>
                 <div className="flex h-7 rounded-v2-pill border border-border overflow-hidden">
                   <button
                     type="button"
                     className={cn(
-                      "flex-1 text-[10px] font-medium transition-colors",
+                      "flex-1 text-[11px] font-medium transition-colors",
                       realism.premiumStat === "median"
                         ? "bg-foreground text-background"
                         : "bg-card text-muted-foreground hover:text-foreground",
@@ -756,7 +756,7 @@ export function TargetsPage() {
                   <button
                     type="button"
                     className={cn(
-                      "flex-1 text-[10px] font-medium transition-colors border-l border-border",
+                      "flex-1 text-[11px] font-medium transition-colors border-l border-border",
                       realism.premiumStat === "mean"
                         ? "bg-foreground text-background"
                         : "bg-card text-muted-foreground hover:text-foreground",
@@ -777,13 +777,13 @@ export function TargetsPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
-              gap: 14,
+              gap: 18,
               alignItems: "stretch",
             }}
             className="grid-cols-1 xl:grid-cols-2"
           >
             {/* Optimistic Plan */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <div
                 style={{
                   display: "flex",
@@ -793,7 +793,7 @@ export function TargetsPage() {
                 }}
               >
                 <Cap>Optimistic Plan — Gross Math</Cap>
-                <span style={{ font: `500 9px ${T.mono}`, color: T.mut }}>
+                <span style={{ font: `500 11px ${T.mono}`, color: T.mut }}>
                   No persistency / tax / NTO haircuts
                 </span>
               </div>
@@ -801,7 +801,7 @@ export function TargetsPage() {
                 {/* Col 1 */}
                 <div>
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>
                         NET Income Target (Pre-Tax)
                       </span>
@@ -812,7 +812,7 @@ export function TargetsPage() {
                         {formatCurrency(calculatedTargets.annualIncomeTarget)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span
                         style={{ color: T.mut }}
                         className="flex items-center gap-1"
@@ -832,7 +832,7 @@ export function TargetsPage() {
                             align="start"
                             className="w-[360px] p-3"
                           >
-                            <div className="text-[11px]">
+                            <div className="text-[12px]">
                               <div className="font-semibold text-foreground mb-1.5">
                                 Annual Expenses Breakdown
                               </div>
@@ -844,7 +844,7 @@ export function TargetsPage() {
                               {averages.annualExpenseBreakdown.recurring
                                 .length > 0 && (
                                 <div className="mb-2">
-                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                                     Recurring (
                                     {formatCurrency(
                                       averages.annualExpenseBreakdown
@@ -886,7 +886,7 @@ export function TargetsPage() {
                               {averages.annualExpenseBreakdown.oneTime.length >
                                 0 && (
                                 <div className="mb-2">
-                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                                     One-time (
                                     {formatCurrency(
                                       averages.annualExpenseBreakdown
@@ -946,7 +946,7 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }} className="font-semibold">
                         = GROSS Commission Needed
                       </span>
@@ -966,7 +966,7 @@ export function TargetsPage() {
                 {/* Col 2 */}
                 <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-border">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>Gross Commission</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {formatCurrency(
@@ -975,7 +975,7 @@ export function TargetsPage() {
                         )}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span
                         style={{ color: T.mut }}
                         className="flex items-center gap-1"
@@ -995,7 +995,7 @@ export function TargetsPage() {
                             align="start"
                             className="w-[380px] p-3"
                           >
-                            <div className="text-[11px]">
+                            <div className="text-[12px]">
                               <div className="font-semibold text-foreground mb-1.5">
                                 Commission Rate Breakdown
                               </div>
@@ -1052,7 +1052,7 @@ export function TargetsPage() {
                               {commissionProfile?.productBreakdown &&
                               commissionProfile.productBreakdown.length > 0 ? (
                                 <>
-                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 mt-2">
+                                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 mt-2">
                                     Per Product (last{" "}
                                     {commissionProfile.lookbackMonths} mo)
                                   </div>
@@ -1089,7 +1089,7 @@ export function TargetsPage() {
                                   </div>
                                 </>
                               ) : (
-                                <div className="text-muted-foreground text-[10px] mt-1">
+                                <div className="text-muted-foreground text-[11px] mt-1">
                                   No per-product mix data — rate is the carrier
                                   base for your contract level.
                                 </div>
@@ -1107,7 +1107,7 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }} className="font-semibold">
                         = Premium Needed
                       </span>
@@ -1124,13 +1124,13 @@ export function TargetsPage() {
                 {/* Col 3 */}
                 <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-border">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>Premium Needed</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {formatCurrency(calculatedTargets.totalPremiumNeeded)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span
                         style={{ color: T.mut }}
                         className="flex items-center gap-1"
@@ -1150,7 +1150,7 @@ export function TargetsPage() {
                             align="start"
                             className="w-[420px] p-3"
                           >
-                            <div className="text-[11px]">
+                            <div className="text-[12px]">
                               <div className="font-semibold text-foreground mb-1.5">
                                 Avg Premium Breakdown
                               </div>
@@ -1158,10 +1158,10 @@ export function TargetsPage() {
                               {/* Agency cohort — used for the calc */}
                               <div className="rounded border border-border p-2 mb-2">
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
+                                  <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
                                     Agency-wide (used)
                                   </span>
-                                  <span className="text-[9px] text-muted-foreground">
+                                  <span className="text-[11px] text-muted-foreground">
                                     {(() => {
                                       const b =
                                         averages.agencyAvgPolicyPremiumBreakdown;
@@ -1209,10 +1209,10 @@ export function TargetsPage() {
                                 0 && (
                                 <div className="rounded border border-border/50 p-2 mb-2 bg-muted/20">
                                   <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                       Your book (comparison)
                                     </span>
-                                    <span className="text-[9px] text-muted-foreground">
+                                    <span className="text-[11px] text-muted-foreground">
                                       {
                                         averages.avgPolicyPremiumBreakdown
                                           .policyCount
@@ -1261,7 +1261,7 @@ export function TargetsPage() {
                                     if (Math.abs(diffPct) < 5) return null;
                                     const sign = diffPct > 0 ? "+" : "";
                                     return (
-                                      <div className="text-[10px] text-muted-foreground">
+                                      <div className="text-[11px] text-muted-foreground">
                                         Your mean is{" "}
                                         <span
                                           style={{
@@ -1280,7 +1280,7 @@ export function TargetsPage() {
                                 </div>
                               )}
 
-                              <div className="text-[10px] text-muted-foreground">
+                              <div className="text-[11px] text-muted-foreground">
                                 Realistic plan uses the agency cohort so new
                                 agents and skewed personal books get a stable
                                 baseline. Toggle Mean/Median in Realism
@@ -1298,7 +1298,7 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }} className="font-semibold">
                         = Policies Needed
                       </span>
@@ -1333,7 +1333,7 @@ export function TargetsPage() {
                 <Cap style={{ color: T.amber }}>
                   Realistic Plan — Take-Home Math
                 </Cap>
-                <span style={{ font: `500 9px ${T.mono}`, color: T.mut }}>
+                <span style={{ font: `500 11px ${T.mono}`, color: T.mut }}>
                   Persistency × tax × NTO applied
                 </span>
               </div>
@@ -1341,7 +1341,7 @@ export function TargetsPage() {
                 {/* Step 1 */}
                 <div>
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>
                         Actual Take-Home Goal
                       </span>
@@ -1352,7 +1352,7 @@ export function TargetsPage() {
                         {formatCurrency(calculatedTargets.annualIncomeTarget)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>
                         + Tax Reserve (
                         {(realism.taxReserveRate * 100).toFixed(0)}%)
@@ -1361,14 +1361,14 @@ export function TargetsPage() {
                         {formatCurrency(calculatedTargets.taxReserveAmount)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>+ Annual Expenses</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {formatCurrency(calculatedTargets.annualExpenses)}
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }} className="font-semibold">
                         = Realistic Gross Needed
                       </span>
@@ -1387,7 +1387,7 @@ export function TargetsPage() {
                 {/* Step 2 */}
                 <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-border">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>Realistic Gross</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {formatCurrency(
@@ -1395,7 +1395,7 @@ export function TargetsPage() {
                         )}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span
                         style={{ color: T.mut }}
                         className="flex items-center gap-1"
@@ -1415,7 +1415,7 @@ export function TargetsPage() {
                             align="start"
                             className="w-[320px] p-3"
                           >
-                            <div className="text-[11px] space-y-1">
+                            <div className="text-[12px] space-y-1">
                               <div className="font-semibold text-foreground">
                                 Effective Commission Rate
                               </div>
@@ -1458,7 +1458,7 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }} className="font-semibold">
                         = Realistic Premium
                       </span>
@@ -1477,7 +1477,7 @@ export function TargetsPage() {
                 {/* Step 3 */}
                 <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-border">
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>Realistic Premium</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {formatCurrency(
@@ -1485,7 +1485,7 @@ export function TargetsPage() {
                         )}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>
                         ÷ Avg Premium ({realism.premiumStat})
                       </span>
@@ -1496,13 +1496,13 @@ export function TargetsPage() {
                         {formatCurrency(calculatedTargets.avgPolicyPremium)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>= Policies Issued</span>
                       <span className="font-mono" style={{ color: T.ink }}>
                         {calculatedTargets.realisticAnnualPoliciesIssued}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span style={{ color: T.mut }}>
                         × (1 + {(realism.ntoBufferRate * 100).toFixed(0)}% NTO)
                       </span>
@@ -1511,7 +1511,7 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="h-px bg-muted my-1" />
-                    <div className="flex justify-between text-[11px]">
+                    <div className="flex justify-between text-[12px]">
                       <span
                         className="font-semibold"
                         style={{ color: T.amber }}
@@ -1541,7 +1541,7 @@ export function TargetsPage() {
                     justifyContent: "space-between",
                     gap: 8,
                   }}
-                  className="text-[11px]"
+                  className="text-[12px]"
                 >
                   <span style={{ color: T.mut }}>Realistic vs Optimistic</span>
                   <span className="font-mono" style={{ color: T.amber }}>
@@ -1563,17 +1563,17 @@ export function TargetsPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
-              gap: 14,
+              gap: 18,
               alignItems: "stretch",
             }}
             className="grid-cols-1 sm:grid-cols-2"
           >
             {/* NET Income Targets */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <Cap style={{ marginBottom: 10 }}>NET Income Targets</Cap>
               <div className="space-y-1">
                 {/* Annual */}
-                <div className="flex justify-between items-center text-[11px]">
+                <div className="flex justify-between items-center text-[12px]">
                   <span style={{ color: T.mut }}>Annual</span>
                   <div className="flex items-center gap-2">
                     <span
@@ -1583,7 +1583,7 @@ export function TargetsPage() {
                       {formatCurrency(calculatedTargets.annualIncomeTarget)}
                     </span>
                     <span
-                      className="font-mono text-[10px]"
+                      className="font-mono text-[11px]"
                       style={{
                         color: progressColor(
                           (actualMetrics.ytdIncome /
@@ -1615,7 +1615,7 @@ export function TargetsPage() {
                 />
 
                 {/* Quarterly */}
-                <div className="flex justify-between items-center text-[11px]">
+                <div className="flex justify-between items-center text-[12px]">
                   <span style={{ color: T.mut }}>Quarterly</span>
                   <div className="flex items-center gap-2">
                     <span
@@ -1625,7 +1625,7 @@ export function TargetsPage() {
                       {formatCurrency(calculatedTargets.quarterlyIncomeTarget)}
                     </span>
                     <span
-                      className="font-mono text-[10px]"
+                      className="font-mono text-[11px]"
                       style={{
                         color: progressColor(
                           (actualMetrics.qtdIncome /
@@ -1640,7 +1640,7 @@ export function TargetsPage() {
                 </div>
 
                 {/* Monthly */}
-                <div className="flex justify-between items-center text-[11px]">
+                <div className="flex justify-between items-center text-[12px]">
                   <span style={{ color: T.mut }}>Monthly</span>
                   <div className="flex items-center gap-2">
                     <span
@@ -1650,7 +1650,7 @@ export function TargetsPage() {
                       {formatCurrency(calculatedTargets.monthlyIncomeTarget)}
                     </span>
                     <span
-                      className="font-mono text-[10px]"
+                      className="font-mono text-[11px]"
                       style={{
                         color: progressColor(
                           (actualMetrics.mtdIncome /
@@ -1666,13 +1666,13 @@ export function TargetsPage() {
 
                 <div className="h-px bg-muted my-1" />
 
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Weekly</span>
                   <span className="font-mono" style={{ color: T.ink }}>
                     {formatCurrency(calculatedTargets.weeklyIncomeTarget)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Daily</span>
                   <span className="font-mono" style={{ color: T.ink }}>
                     {formatCurrency(calculatedTargets.dailyIncomeTarget)}
@@ -1682,12 +1682,12 @@ export function TargetsPage() {
             </Board>
 
             {/* Policy Targets */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-1 items-center">
                 <Cap>Policy Targets</Cap>
                 <span
                   style={{
-                    font: `700 9px ${T.mono}`,
+                    font: `700 11px ${T.mono}`,
                     color: T.mut,
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
@@ -1698,7 +1698,7 @@ export function TargetsPage() {
                 </span>
                 <span
                   style={{
-                    font: `700 9px ${T.mono}`,
+                    font: `700 11px ${T.mono}`,
                     color: T.amber,
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
@@ -1708,18 +1708,18 @@ export function TargetsPage() {
                   Realistic
                 </span>
 
-                <span className="text-[11px]" style={{ color: T.mut }}>
+                <span className="text-[12px]" style={{ color: T.mut }}>
                   Annual
                 </span>
                 <div className="flex items-center gap-1.5 justify-end">
                   <span
-                    className="font-mono font-bold text-[11px]"
+                    className="font-mono font-bold text-[12px]"
                     style={{ color: T.ink }}
                   >
                     {calculatedTargets.annualPoliciesTarget}
                   </span>
                   <span
-                    className="font-mono text-[10px]"
+                    className="font-mono text-[11px]"
                     style={{
                       color: progressColor(
                         (actualMetrics.ytdPolicies /
@@ -1732,40 +1732,40 @@ export function TargetsPage() {
                   </span>
                 </div>
                 <span
-                  className="font-mono font-bold text-[11px] text-right"
+                  className="font-mono font-bold text-[12px] text-right"
                   style={{ color: T.amber }}
                 >
                   {calculatedTargets.realisticAnnualAppsToWrite}
                 </span>
 
-                <span className="text-[11px]" style={{ color: T.mut }}>
+                <span className="text-[12px]" style={{ color: T.mut }}>
                   Quarterly
                 </span>
                 <span
-                  className="font-mono font-bold text-[11px] text-right"
+                  className="font-mono font-bold text-[12px] text-right"
                   style={{ color: T.ink }}
                 >
                   {calculatedTargets.quarterlyPoliciesTarget}
                 </span>
                 <span
-                  className="font-mono font-bold text-[11px] text-right"
+                  className="font-mono font-bold text-[12px] text-right"
                   style={{ color: T.amber }}
                 >
                   {calculatedTargets.realisticQuarterlyAppsToWrite}
                 </span>
 
-                <span className="text-[11px]" style={{ color: T.mut }}>
+                <span className="text-[12px]" style={{ color: T.mut }}>
                   Monthly
                 </span>
                 <div className="flex items-center gap-1.5 justify-end">
                   <span
-                    className="font-mono font-bold text-[11px]"
+                    className="font-mono font-bold text-[12px]"
                     style={{ color: T.ink }}
                   >
                     {calculatedTargets.monthlyPoliciesTarget}
                   </span>
                   <span
-                    className="font-mono text-[10px]"
+                    className="font-mono text-[11px]"
                     style={{
                       color: progressColor(
                         (actualMetrics.mtdPolicies /
@@ -1778,39 +1778,39 @@ export function TargetsPage() {
                   </span>
                 </div>
                 <span
-                  className="font-mono font-bold text-[11px] text-right"
+                  className="font-mono font-bold text-[12px] text-right"
                   style={{ color: T.amber }}
                 >
                   {calculatedTargets.realisticMonthlyAppsToWrite}
                 </span>
 
-                <span className="text-[11px]" style={{ color: T.mut }}>
+                <span className="text-[12px]" style={{ color: T.mut }}>
                   Weekly
                 </span>
                 <span
-                  className="font-mono text-[11px] text-right"
+                  className="font-mono text-[12px] text-right"
                   style={{ color: T.ink }}
                 >
                   {calculatedTargets.weeklyPoliciesTarget}
                 </span>
                 <span
-                  className="font-mono text-[11px] text-right"
+                  className="font-mono text-[12px] text-right"
                   style={{ color: T.amber }}
                 >
                   {calculatedTargets.realisticWeeklyAppsToWrite}
                 </span>
 
-                <span className="text-[11px]" style={{ color: T.mut }}>
+                <span className="text-[12px]" style={{ color: T.mut }}>
                   Daily
                 </span>
                 <span
-                  className="font-mono text-[11px] text-right"
+                  className="font-mono text-[12px] text-right"
                   style={{ color: T.ink }}
                 >
                   {calculatedTargets.dailyPoliciesTarget}
                 </span>
                 <span
-                  className="font-mono text-[11px] text-right"
+                  className="font-mono text-[12px] text-right"
                   style={{ color: T.amber }}
                 >
                   {calculatedTargets.realisticDailyAppsToWrite}
@@ -1821,7 +1821,7 @@ export function TargetsPage() {
                   marginTop: 8,
                   paddingTop: 8,
                   borderTop: `1px solid ${T.line}`,
-                  font: `500 10px ${T.data}`,
+                  font: `500 11px ${T.data}`,
                   color: T.mut,
                 }}
               >
@@ -1837,16 +1837,16 @@ export function TargetsPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
-              gap: 14,
+              gap: 18,
               alignItems: "stretch",
             }}
             className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           >
             {/* Expense Analysis */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <Cap style={{ marginBottom: 10 }}>Expense Analysis</Cap>
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Monthly Target</span>
                   <span
                     className="font-mono font-semibold"
@@ -1855,7 +1855,7 @@ export function TargetsPage() {
                     {formatCurrency(calculatedTargets.monthlyExpenseTarget)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>MTD Actual</span>
                   <span
                     className="font-mono"
@@ -1871,13 +1871,13 @@ export function TargetsPage() {
                   </span>
                 </div>
                 <div className="h-px bg-muted my-1" />
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Annual Total</span>
                   <span className="font-mono" style={{ color: T.ink }}>
                     {formatCurrency(calculatedTargets.annualExpenses)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Expense Ratio</span>
                   <span
                     className="font-mono font-bold"
@@ -1889,7 +1889,7 @@ export function TargetsPage() {
                 <div className="h-px bg-muted my-1" />
                 <div
                   style={{
-                    font: `500 10px ${T.data}`,
+                    font: `500 11px ${T.data}`,
                     color:
                       calculatedTargets.expenseRatio > 0.3 ? T.amber : T.green,
                   }}
@@ -1902,10 +1902,10 @@ export function TargetsPage() {
             </Board>
 
             {/* Key Metrics */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <Cap style={{ marginBottom: 10 }}>Key Metrics</Cap>
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span
                     style={{ color: T.mut }}
                     className="flex items-center gap-1"
@@ -1913,7 +1913,7 @@ export function TargetsPage() {
                     Commission Rate
                     {commissionProfile?.dataQuality === "HIGH" && (
                       <span
-                        className="text-[9px]"
+                        className="text-[11px]"
                         style={{ color: T.green }}
                         title="Based on your sales mix - high confidence (20+ policies)"
                       >
@@ -1922,7 +1922,7 @@ export function TargetsPage() {
                     )}
                     {commissionProfile?.dataQuality === "MEDIUM" && (
                       <span
-                        className="text-[9px]"
+                        className="text-[11px]"
                         style={{ color: T.blue }}
                         title="Based on limited sales data - moderate confidence (10-19 policies)"
                       >
@@ -1931,7 +1931,7 @@ export function TargetsPage() {
                     )}
                     {commissionProfile?.dataQuality === "LOW" && (
                       <span
-                        className="text-[9px]"
+                        className="text-[11px]"
                         style={{ color: T.amber }}
                         title="Based on very limited sales data - low confidence (1-9 policies)"
                       >
@@ -1940,7 +1940,7 @@ export function TargetsPage() {
                     )}
                     {commissionProfile?.dataQuality === "DEFAULT" && (
                       <span
-                        className="text-[9px]"
+                        className="text-[11px]"
                         style={{ color: T.amber }}
                         title="Using default rate - no recent policies found"
                       >
@@ -1949,7 +1949,7 @@ export function TargetsPage() {
                     )}
                     {commissionProfile?.dataQuality === "NONE" && (
                       <span
-                        className="text-[9px]"
+                        className="text-[11px]"
                         style={{ color: T.red }}
                         title="No commission data available"
                       >
@@ -1964,7 +1964,7 @@ export function TargetsPage() {
                     {(calculatedTargets.avgCommissionRate * 100).toFixed(1)}%
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Avg Premium</span>
                   <span
                     className="font-mono font-semibold"
@@ -1973,7 +1973,7 @@ export function TargetsPage() {
                     {formatCurrency(calculatedTargets.avgPolicyPremium)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Current Avg</span>
                   <span
                     className="font-mono"
@@ -1989,10 +1989,10 @@ export function TargetsPage() {
                   </span>
                 </div>
                 <div className="h-px bg-muted my-1" />
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Data Confidence</span>
                   <span
-                    className="font-semibold text-[10px]"
+                    className="font-semibold text-[11px]"
                     style={{
                       color:
                         confidenceTone === "green"
@@ -2005,10 +2005,10 @@ export function TargetsPage() {
                     {calculatedTargets.confidence.toUpperCase()}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-[12px]">
                   <span style={{ color: T.mut }}>Method</span>
                   <span
-                    className="text-[10px] font-medium"
+                    className="text-[11px] font-medium"
                     style={{ color: T.ink }}
                   >
                     {calculatedTargets.calculationMethod}
@@ -2022,7 +2022,7 @@ export function TargetsPage() {
                       borderTop: `1px solid ${T.line}`,
                     }}
                   >
-                    <div className="text-[9px]" style={{ color: T.green }}>
+                    <div className="text-[11px]" style={{ color: T.green }}>
                       ✓ Commission rate calculated from your sales mix (high
                       confidence)
                     </div>
@@ -2036,7 +2036,7 @@ export function TargetsPage() {
                       borderTop: `1px solid ${T.line}`,
                     }}
                   >
-                    <div className="text-[9px]" style={{ color: T.blue }}>
+                    <div className="text-[11px]" style={{ color: T.blue }}>
                       ℹ️ Commission rate based on limited data. Add more
                       policies for better accuracy.
                     </div>
@@ -2050,7 +2050,7 @@ export function TargetsPage() {
                       borderTop: `1px solid ${T.line}`,
                     }}
                   >
-                    <div className="text-[9px]" style={{ color: T.amber }}>
+                    <div className="text-[11px]" style={{ color: T.amber }}>
                       ⚠ Commission rate based on very limited data. Add more
                       policies for accuracy.
                     </div>
@@ -2064,7 +2064,7 @@ export function TargetsPage() {
                       borderTop: `1px solid ${T.line}`,
                     }}
                   >
-                    <div className="text-[9px]" style={{ color: T.amber }}>
+                    <div className="text-[11px]" style={{ color: T.amber }}>
                       ⚠ Commission rate is using defaults. Add policies to get
                       your actual rate.
                     </div>
@@ -2078,7 +2078,7 @@ export function TargetsPage() {
                       borderTop: `1px solid ${T.line}`,
                     }}
                   >
-                    <div className="text-[9px]" style={{ color: T.red }}>
+                    <div className="text-[11px]" style={{ color: T.red }}>
                       ❌ No commission data available. Contact admin to
                       configure rates.
                     </div>
@@ -2088,11 +2088,11 @@ export function TargetsPage() {
             </Board>
 
             {/* Persistency Rates */}
-            <Board pad={16} style={{ height: "100%" }}>
+            <Board pad={20} style={{ height: "100%" }}>
               <Cap style={{ marginBottom: 10 }}>Persistency Rates</Cap>
               <div className="space-y-2">
                 <div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span style={{ color: T.mut }}>13-Month Target</span>
                     <span className="font-mono" style={{ color: T.ink }}>
                       {formatPercent(
@@ -2100,7 +2100,7 @@ export function TargetsPage() {
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span style={{ color: T.mut }}>13-Month Actual</span>
                     <span
                       className="font-mono font-semibold"
@@ -2118,7 +2118,7 @@ export function TargetsPage() {
                 </div>
                 <div className="h-px bg-muted my-1" />
                 <div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span style={{ color: T.mut }}>25-Month Target</span>
                     <span className="font-mono" style={{ color: T.ink }}>
                       {formatPercent(
@@ -2126,7 +2126,7 @@ export function TargetsPage() {
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-[12px]">
                     <span style={{ color: T.mut }}>25-Month Actual</span>
                     <span
                       className="font-mono font-semibold"
@@ -2172,7 +2172,7 @@ export function TargetsPage() {
                   {validation.warnings.map((warning, i) => (
                     <p
                       key={i}
-                      className="text-[11px] font-medium"
+                      className="text-[12px] font-medium"
                       style={{ color: T.amber }}
                     >
                       {warning}
@@ -2181,7 +2181,7 @@ export function TargetsPage() {
                   {validation.recommendations.map((rec, i) => (
                     <p
                       key={i}
-                      className="text-[10px]"
+                      className="text-[11px]"
                       style={{ color: T.amber }}
                     >
                       {rec}

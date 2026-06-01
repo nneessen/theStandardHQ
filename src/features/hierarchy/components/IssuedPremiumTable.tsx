@@ -137,7 +137,7 @@ function IPRow({
   return (
     <tr className="h-9 transition-colors hover:bg-background border-b border-border/60">
       {/* Agent Name with Hierarchy */}
-      <td className="px-2 py-1.5 text-[11px] text-foreground">
+      <td className="px-2 py-1.5 text-[12px] text-foreground">
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${depth * 16}px` }}
@@ -157,7 +157,7 @@ function IPRow({
             </Button>
           )}
           {!hasChildren && depth > 0 && (
-            <span className="text-muted-foreground text-[11px] mr-1">└─</span>
+            <span className="text-muted-foreground text-[12px] mr-1">└─</span>
           )}
           <span className="font-medium">
             {agent.first_name && agent.last_name
@@ -176,7 +176,7 @@ function IPRow({
       </td>
 
       {/* IP (Issued Premium) */}
-      <td className="px-2 py-1.5 text-right text-[11px] font-mono">
+      <td className="px-2 py-1.5 text-right text-[12px] font-mono">
         {ip_total > 0 ? (
           <span className="font-bold text-info">
             {formatCurrency(ip_total)}
@@ -187,7 +187,7 @@ function IPRow({
       </td>
 
       {/* IP Policies Count */}
-      <td className="px-2 py-1.5 text-center text-[11px] font-mono">
+      <td className="px-2 py-1.5 text-center text-[12px] font-mono">
         {ip_policies > 0 ? (
           <span className="font-semibold text-foreground">{ip_policies}</span>
         ) : (
@@ -196,7 +196,7 @@ function IPRow({
       </td>
 
       {/* Average Premium */}
-      <td className="px-2 py-1.5 text-right text-[11px] font-mono">
+      <td className="px-2 py-1.5 text-right text-[12px] font-mono">
         {avg_premium > 0 ? (
           <span className="font-medium text-muted-foreground">
             {formatCurrency(avg_premium)}
@@ -346,7 +346,7 @@ export function IssuedPremiumTable({
   return (
     <div className="bg-card rounded-lg border border-border">
       <div className="px-3 py-2 border-b border-border bg-background/30">
-        <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide">
           Issued Premium (IP) — Active Policies Only
         </div>
       </div>
@@ -354,16 +354,16 @@ export function IssuedPremiumTable({
         <table className="w-full text-xs">
           <thead className="bg-background border-b border-border">
             <tr className="h-8">
-              <th className="px-2 py-1.5 text-left text-[11px] font-semibold text-muted-foreground">
+              <th className="px-2 py-1.5 text-left text-[12px] font-semibold text-muted-foreground">
                 Agent
               </th>
-              <th className="px-2 py-1.5 text-right text-[11px] font-semibold text-muted-foreground">
+              <th className="px-2 py-1.5 text-right text-[12px] font-semibold text-muted-foreground">
                 <span className="text-info">IP</span>
               </th>
-              <th className="px-2 py-1.5 text-center text-[11px] font-semibold text-muted-foreground">
+              <th className="px-2 py-1.5 text-center text-[12px] font-semibold text-muted-foreground">
                 Policies
               </th>
-              <th className="px-2 py-1.5 text-right text-[11px] font-semibold text-muted-foreground">
+              <th className="px-2 py-1.5 text-right text-[12px] font-semibold text-muted-foreground">
                 Avg Premium
               </th>
             </tr>
@@ -372,7 +372,7 @@ export function IssuedPremiumTable({
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-8">
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-[12px] text-muted-foreground">
                     Loading issued premium data...
                   </div>
                 </td>
@@ -380,7 +380,7 @@ export function IssuedPremiumTable({
             ) : agentsToDisplay.length === 0 && !owner ? (
               <tr>
                 <td colSpan={4} className="text-center py-6">
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[12px] text-muted-foreground">
                     No team members found
                   </span>
                 </td>
@@ -410,19 +410,19 @@ export function IssuedPremiumTable({
       {totalRootAgents > 0 && (
         <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background/30">
           <div className="flex items-center gap-4">
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               Total: {agents.length + (owner ? 1 : 0)} agent
               {agents.length + (owner ? 1 : 0) !== 1 ? "s" : ""}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[12px] text-muted-foreground">
                 Rows per page:
               </span>
               <Select
                 value={rowsPerPage.toString()}
                 onValueChange={handleRowsPerPageChange}
               >
-                <SelectTrigger className="h-6 w-14 text-[11px] bg-card border-border">
+                <SelectTrigger className="h-6 w-14 text-[12px] bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -436,7 +436,7 @@ export function IssuedPremiumTable({
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               Page {currentPage} of {totalPages || 1}
             </span>
             <Button

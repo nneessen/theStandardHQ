@@ -27,10 +27,10 @@ export function TeamCarriersProductsBreakdown({
   if (isLoading) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Carriers & Products
         </div>
-        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -92,31 +92,31 @@ export function TeamCarriersProductsBreakdown({
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Carriers & Products
         </div>
-        <span className="text-[10px] text-v2-ink-subtle">
+        <span className="text-[11px] text-v2-ink-subtle">
           {data.length} carriers
         </span>
       </div>
 
       {tableData.length > 0 ? (
-        <Table className="text-[11px]">
+        <Table className="text-[12px]">
           <TableHeader>
             <TableRow className="h-7 border-b border-v2-ring">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 Carrier / Product
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Premium
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Rate
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+              <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Commission
               </TableHead>
             </TableRow>
@@ -132,7 +132,7 @@ export function TeamCarriersProductsBreakdown({
                     className={cn(
                       row.isCarrier
                         ? "font-semibold text-v2-ink"
-                        : "text-[9px] text-v2-ink-muted",
+                        : "text-[11px] text-v2-ink-muted",
                     )}
                   >
                     {row.name}
@@ -155,7 +155,7 @@ export function TeamCarriersProductsBreakdown({
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
+        <div className="p-3 text-center text-[12px] text-v2-ink-subtle">
           No carrier data available
         </div>
       )}

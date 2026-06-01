@@ -151,7 +151,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
     <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide">
+          <div className="text-[12px] font-medium text-v2-ink-muted uppercase tracking-wide">
             Recent Activity
           </div>
           {activities.length > 5 && (
@@ -159,7 +159,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
               variant="ghost"
               size="sm"
               onClick={() => setShowAll(!showAll)}
-              className="h-5 px-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+              className="h-5 px-2 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle"
             >
               {showAll ? (
                 <>
@@ -179,7 +179,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
         {activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-4">
             <Activity className="h-6 w-6 text-v2-ink-subtle mb-1" />
-            <p className="text-[11px] text-v2-ink-muted">No recent activity</p>
+            <p className="text-[12px] text-v2-ink-muted">No recent activity</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -187,7 +187,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
               <div key={activity.id} className="flex items-start gap-2 py-1">
                 <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] leading-tight">
+                  <div className="text-[12px] leading-tight">
                     <span className="font-medium text-v2-ink">
                       {activity.agent}
                     </span>
@@ -196,11 +196,11 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
                     </span>
                   </div>
                   {activity.details && (
-                    <div className="text-[11px] text-v2-ink-muted">
+                    <div className="text-[12px] text-v2-ink-muted">
                       {activity.details}
                     </div>
                   )}
-                  <div className="text-[10px] text-v2-ink-subtle mt-0.5">
+                  <div className="text-[11px] text-v2-ink-subtle mt-0.5">
                     {getRelativeTime(activity.timestamp)}
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
 
         {/* Quick Stats */}
         <div className="mt-3 pt-2 border-t border-v2-ring">
-          <div className="grid grid-cols-3 gap-2 text-[11px]">
+          <div className="grid grid-cols-3 gap-2 text-[12px]">
             <div className="text-center">
               <div className="font-mono font-semibold text-success">
                 +{activities.filter((a) => a.type === "joined").length}

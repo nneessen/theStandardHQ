@@ -28,10 +28,10 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   if (isLoading || !data) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Agent Segments
         </div>
-        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[12px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
       </div>
@@ -98,15 +98,15 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+          <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Agent Segments
           </div>
-          <div className="text-[10px] text-v2-ink-subtle">
+          <div className="text-[11px] text-v2-ink-subtle">
             {data.totalAgents} agents • {formatCurrency(data.totalTeamAP)} total
             AP
           </div>
         </div>
-        <div className="text-[10px] text-v2-ink-subtle">
+        <div className="text-[11px] text-v2-ink-subtle">
           Avg: {formatCurrency(data.avgAgentAP)}
         </div>
       </div>
@@ -142,7 +142,7 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                 />
                 <span
                   className={cn(
-                    "text-[10px] font-medium",
+                    "text-[11px] font-medium",
                     getColorClass(segment.color, "text"),
                   )}
                 >
@@ -158,11 +158,11 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                 >
                   {segment.data.agentCount}
                 </span>
-                <span className="text-[9px] text-v2-ink-subtle">
+                <span className="text-[11px] text-v2-ink-subtle">
                   agents ({percentOfTeam}%)
                 </span>
               </div>
-              <div className="text-[9px] text-v2-ink-muted mt-0.5">
+              <div className="text-[11px] text-v2-ink-muted mt-0.5">
                 {formatCurrency(segment.data.totalAP)} ({percentOfAP}% of team
                 AP)
               </div>
@@ -184,22 +184,22 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
 
         return (
           <>
-            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-1">
+            <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-1">
               Top 5 Agents
             </div>
-            <Table className="text-[11px]">
+            <Table className="text-[12px]">
               <TableHeader>
                 <TableRow className="h-7 border-b border-v2-ring">
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
+                  <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas">
                     Agent
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+                  <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     Policies
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+                  <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     AP
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
+                  <TableHead className="p-1.5 text-[11px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     Persist
                   </TableHead>
                 </TableRow>
@@ -212,7 +212,7 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                   >
                     <TableCell className="p-1.5">
                       <div className="flex items-center gap-1">
-                        <span className="text-[9px] text-v2-ink-subtle">
+                        <span className="text-[11px] text-v2-ink-subtle">
                           #{idx + 1}
                         </span>
                         <span className="font-medium text-v2-ink truncate max-w-[120px]">

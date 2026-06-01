@@ -70,7 +70,7 @@ export function TeamAnalyticsDashboard({
   if (isError) {
     return (
       <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
-        <div className="text-center text-[11px] text-destructive">
+        <div className="text-center text-[12px] text-destructive">
           Failed to load team analytics. Please try again.
         </div>
       </div>
@@ -90,7 +90,7 @@ export function TeamAnalyticsDashboard({
             <h2 className="text-sm font-semibold text-v2-ink">
               Team Analytics
             </h2>
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[11px] text-v2-ink-muted">
               {teamUserIds.length} team members • Performance metrics
             </p>
           </div>
@@ -116,7 +116,7 @@ export function TeamAnalyticsDashboard({
       {isExpanded && (
         <div className="p-3">
           {isLoading ? (
-            <div className="p-4 text-center text-[11px] text-v2-ink-muted">
+            <div className="p-4 text-center text-[12px] text-v2-ink-muted">
               Loading team analytics...
             </div>
           ) : (
@@ -154,7 +154,7 @@ export function TeamAnalyticsDashboard({
           )}
 
           {/* Footer Note */}
-          <div className="mt-3 px-2 py-1 text-[10px] text-v2-ink-subtle text-center">
+          <div className="mt-3 px-2 py-1 text-[11px] text-v2-ink-subtle text-center">
             Team data aggregated from {teamUserIds.length} agents
           </div>
         </div>

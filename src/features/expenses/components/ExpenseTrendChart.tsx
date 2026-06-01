@@ -1,7 +1,12 @@
 // src/features/expenses/components/ExpenseTrendChart.tsx
-import {Card, CardHeader, CardContent, CardDescription} from "@/components/ui/card";
-import {Empty as EmptyState} from "@/components/ui/empty";
-import {formatCurrency} from "@/lib/format";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Empty as EmptyState } from "@/components/ui/empty";
+import { formatCurrency } from "@/lib/format";
 
 interface TrendDataPoint {
   month: string;
@@ -43,10 +48,10 @@ export function ExpenseTrendChart({ data }: ExpenseTrendChartProps) {
                     }}
                     title={`${item.month}: ${formatCurrency(item.amount)}`}
                   />
-                  <div className="text-[9px] text-muted-foreground font-semibold text-center">
+                  <div className="text-[11px] text-muted-foreground font-semibold text-center">
                     {item.month}
                   </div>
-                  <div className="text-[10px] font-mono font-semibold">
+                  <div className="text-[11px] font-mono font-semibold">
                     {formatCurrency(item.amount)}
                   </div>
                 </div>

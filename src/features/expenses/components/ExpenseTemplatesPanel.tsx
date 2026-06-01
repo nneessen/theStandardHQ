@@ -1,8 +1,13 @@
 // src/features/expenses/components/ExpenseTemplatesPanel.tsx
-import {Card, CardHeader, CardContent, CardDescription} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {formatCurrency} from "@/lib/format";
-import type {ExpenseTemplate} from "@/types/expense.types";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/format";
+import type { ExpenseTemplate } from "@/types/expense.types";
 
 interface ExpenseTemplatesPanelProps {
   templates: ExpenseTemplate[];
@@ -41,7 +46,7 @@ export function ExpenseTemplatesPanel({
               <div className="text-sm font-bold text-primary font-mono">
                 {formatCurrency(template.amount)}
               </div>
-              <div className="text-[9px] text-muted-foreground mt-1">
+              <div className="text-[11px] text-muted-foreground mt-1">
                 {template.category} • {template.expense_type}
               </div>
               <Button
@@ -51,7 +56,7 @@ export function ExpenseTemplatesPanel({
                   e.stopPropagation();
                   onDeleteTemplate(template);
                 }}
-                className="mt-2 h-7 text-[9px] text-destructive hover:bg-destructive/10"
+                className="mt-2 h-7 text-[11px] text-destructive hover:bg-destructive/10"
               >
                 Delete
               </Button>

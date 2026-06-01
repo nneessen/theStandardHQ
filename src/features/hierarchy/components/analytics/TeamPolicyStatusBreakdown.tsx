@@ -22,10 +22,10 @@ export function TeamPolicyStatusBreakdown({
   if (isLoading || !data) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Policy Status
         </div>
-        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
+        <div className="p-3 text-center text-[12px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
       </div>
@@ -112,16 +112,16 @@ export function TeamPolicyStatusBreakdown({
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
+          <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Team Policy Status
           </div>
-          <div className="text-[10px] text-v2-ink-subtle">
+          <div className="text-[11px] text-v2-ink-subtle">
             {data.total.count} total policies
           </div>
         </div>
         <div
           className={cn(
-            "px-1.5 py-0.5 rounded text-[9px] font-medium",
+            "px-1.5 py-0.5 rounded text-[11px] font-medium",
             data.persistencyRate >= 80
               ? "bg-success/10 text-success"
               : data.persistencyRate >= 60
@@ -138,12 +138,12 @@ export function TeamPolicyStatusBreakdown({
         {statuses.map((status) => (
           <div key={status.label} className="p-2 bg-v2-canvas rounded">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[11px] text-v2-ink-muted">
                 {status.label}
               </span>
               <span
                 className={cn(
-                  "text-[10px] font-medium",
+                  "text-[11px] font-medium",
                   getColorClass(status.color, "text"),
                 )}
               >
@@ -159,7 +159,7 @@ export function TeamPolicyStatusBreakdown({
               >
                 {status.count}
               </span>
-              <span className="text-[9px] text-v2-ink-subtle">
+              <span className="text-[11px] text-v2-ink-subtle">
                 {formatCurrency(status.premium)}
               </span>
             </div>
@@ -176,7 +176,7 @@ export function TeamPolicyStatusBreakdown({
 
       {/* Total Summary */}
       <div className="p-2 bg-v2-ring rounded flex items-center justify-between">
-        <span className="text-[10px] font-medium text-v2-ink-muted">
+        <span className="text-[11px] font-medium text-v2-ink-muted">
           Total Premium
         </span>
         <span className="font-mono font-bold text-sm text-v2-ink">
