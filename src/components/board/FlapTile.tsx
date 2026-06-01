@@ -49,8 +49,8 @@ export function FlapTile({
     >
       <div
         style={{
-          font: `700 11px ${T.mono}`,
-          letterSpacing: "0.14em",
+          font: `700 12px ${T.mono}`,
+          letterSpacing: "0.12em",
           textTransform: "uppercase",
           color: T.mut2,
           marginBottom: 8,

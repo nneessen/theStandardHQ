@@ -225,10 +225,10 @@ export function LeadPoliciesTable({
       {/* Header */}
       <div className="px-2 py-1.5 border-b border-v2-ring">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-v2-ink-muted">
+          <span className="text-[11px] font-semibold text-v2-ink-muted">
             Sold Policies
           </span>
-          <Badge variant="outline" className="text-[9px]">
+          <Badge variant="outline" className="text-[10px]">
             {sorted.length} policies
           </Badge>
         </div>
@@ -337,7 +337,7 @@ export function LeadPoliciesTable({
             <TableRow>
               <TableCell
                 colSpan={12}
-                className="text-center text-[10px] text-v2-ink-muted py-6"
+                className="text-center text-[11px] text-v2-ink-muted py-6"
               >
                 No sold policies linked to lead packages
               </TableCell>
@@ -347,7 +347,7 @@ export function LeadPoliciesTable({
               <Fragment key={row.policy.policyId}>
                 <TableRow>
                   {/* Policy submit date */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
                     {row.policy.submitDate
                       ? formatDate(row.policy.submitDate, {
                           month: "numeric",
@@ -357,7 +357,7 @@ export function LeadPoliciesTable({
                       : "\u2014"}
                   </TableCell>
                   {/* Pack purchase date */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
                     {row.packPurchaseDate
                       ? formatDate(row.packPurchaseDate, {
                           month: "numeric",
@@ -369,7 +369,7 @@ export function LeadPoliciesTable({
                   {/* Days to sale */}
                   <TableCell
                     className={cn(
-                      "text-[10px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                      "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
                       daysToSaleColor(row.daysToSale),
                     )}
                   >
@@ -377,24 +377,24 @@ export function LeadPoliciesTable({
                   </TableCell>
                   {/* Product */}
                   <TableCell
-                    className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[120px]"
+                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[120px]"
                     title={row.policy.product}
                   >
                     {row.policy.product}
                   </TableCell>
                   {/* Premium */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                     {formatCompactCurrency(row.policy.annualPremium)}
                   </TableCell>
                   {/* Agent */}
                   <TableCell
-                    className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[110px]"
+                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[110px]"
                     title={row.policy.agentName}
                   >
                     {row.policy.agentName}
                   </TableCell>
                   {/* Vendor (clickable to expand pack details) */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 truncate max-w-[100px]">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 truncate max-w-[100px]">
                     <button
                       onClick={() =>
                         setExpandedPackId((prev) =>
@@ -408,18 +408,18 @@ export function LeadPoliciesTable({
                     </button>
                   </TableCell>
                   {/* State */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted text-center">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted text-center">
                     {row.policy.clientState || "\u2014"}
                   </TableCell>
                   {/* Pack */}
                   <TableCell
-                    className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[100px]"
+                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[100px]"
                     title={row.policy.packName || undefined}
                   >
                     {row.policy.packName || "\u2014"}
                   </TableCell>
                   {/* F/A */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-center">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-center">
                     <span
                       className={cn(
                         "font-semibold",
@@ -432,13 +432,13 @@ export function LeadPoliciesTable({
                     </span>
                   </TableCell>
                   {/* Sequential policy number within pack */}
-                  <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums font-medium">
+                  <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium">
                     {row.packPolicies}
                   </TableCell>
                   {/* Pack ROI */}
                   <TableCell
                     className={cn(
-                      "text-[10px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                      "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
                       roiColor(row.packRoi),
                     )}
                   >
@@ -461,7 +461,7 @@ export function LeadPoliciesTable({
       {/* Pagination */}
       {sorted.length > 0 && (
         <div className="px-2 py-1 border-t border-v2-ring flex items-center justify-between">
-          <span className="text-[10px] text-v2-ink-muted">
+          <span className="text-[11px] text-v2-ink-muted">
             {(page - 1) * pageSize + 1}&ndash;
             {Math.min(page * pageSize, sorted.length)} of {sorted.length}
           </span>
@@ -474,7 +474,7 @@ export function LeadPoliciesTable({
                   key={size}
                   onClick={() => handlePageSizeChange(size)}
                   className={cn(
-                    "px-1.5 py-0.5 text-[10px] transition-colors",
+                    "px-1.5 py-0.5 text-[11px] transition-colors",
                     pageSize === size
                       ? "bg-v2-ring text-foreground"
                       : "text-v2-ink-muted hover:bg-v2-ring",
@@ -490,7 +490,7 @@ export function LeadPoliciesTable({
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-1 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[11px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &lsaquo;
               </button>
@@ -514,7 +514,7 @@ export function LeadPoliciesTable({
                   item === "ellipsis" ? (
                     <span
                       key={`e-${idx}`}
-                      className="px-0.5 text-[10px] text-v2-ink-subtle"
+                      className="px-0.5 text-[11px] text-v2-ink-subtle"
                     >
                       &hellip;
                     </span>
@@ -523,7 +523,7 @@ export function LeadPoliciesTable({
                       key={item}
                       onClick={() => setPage(item)}
                       className={cn(
-                        "px-1.5 py-0.5 text-[10px] rounded transition-colors",
+                        "px-1.5 py-0.5 text-[11px] rounded transition-colors",
                         page === item
                           ? "bg-v2-ring text-foreground"
                           : "text-v2-ink-muted hover:bg-v2-ring",
@@ -536,7 +536,7 @@ export function LeadPoliciesTable({
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-1 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[11px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &rsaquo;
               </button>
@@ -569,7 +569,7 @@ function PackExpandedDetail({
         <div className="grid grid-cols-[220px_1fr] gap-3 p-3 border-t border-v2-ring/60">
           {/* Left: Pack summary metrics */}
           <div>
-            <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
+            <div className="text-[10px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
               Pack Summary
             </div>
             <div className="space-y-0.5">
@@ -634,19 +634,19 @@ function PackExpandedDetail({
 
           {/* Right: All policies in this pack */}
           <div>
-            <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
+            <div className="text-[10px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
               Pack Policies
               <span className="ml-1 text-v2-ink-muted">
                 ({packPolicies.length})
               </span>
             </div>
             {packPolicies.length === 0 ? (
-              <div className="text-[10px] text-v2-ink-subtle py-2">
+              <div className="text-[11px] text-v2-ink-subtle py-2">
                 No policies in this pack
               </div>
             ) : (
               <div className="overflow-auto max-h-[240px]">
-                <table className="w-full text-[10px]">
+                <table className="w-full text-[11px]">
                   <thead>
                     <tr className="text-v2-ink-muted border-b border-v2-ring">
                       <th className="text-left font-semibold py-1 pr-2">
@@ -731,7 +731,7 @@ function MetricLine({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between text-[10px]">
+    <div className="flex items-center justify-between text-[11px]">
       <span className="text-v2-ink-muted">{label}</span>
       <span
         className={cn(
@@ -762,7 +762,7 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium", colors)}
+      className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", colors)}
     >
       {status}
     </span>

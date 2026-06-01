@@ -434,7 +434,7 @@ export function AgentDetailPage() {
         <Button
           variant="outline"
           size="sm"
-          className="h-6 text-[10px] px-2"
+          className="h-6 text-[11px] px-2"
           onClick={() => navigate({ to: "/hierarchy" })}
         >
           Back to Team
@@ -459,7 +459,7 @@ export function AgentDetailPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate({ to: "/hierarchy" })}
-                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                className="h-6 px-2 text-[11px] text-muted-foreground dark:text-muted-foreground"
               >
                 <ArrowLeft className="h-3 w-3 mr-1" />
                 Back
@@ -475,7 +475,7 @@ export function AgentDetailPage() {
                   <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
                     {agentName}
                   </h1>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-0.5">
                       <Mail className="h-2.5 w-2.5" />
                       {agentData.email}
@@ -508,16 +508,16 @@ export function AgentDetailPage() {
               <div className="flex items-center gap-3 text-[11px]">
                 <Badge
                   variant="outline"
-                  className="text-[10px] h-5 px-1.5 border-border "
+                  className="text-[11px] h-5 px-1.5 border-border "
                 >
                   Level {agentData.contract_level || 80}%
                 </Badge>
                 {agentData.approval_status === "approved" ? (
-                  <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[10px] h-5 px-1.5">
+                  <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[11px] h-5 px-1.5">
                     Active
                   </Badge>
                 ) : (
-                  <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[10px] h-5 px-1.5">
+                  <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[11px] h-5 px-1.5">
                     {agentData.approval_status}
                   </Badge>
                 )}
@@ -551,7 +551,7 @@ export function AgentDetailPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                className="h-6 px-2 text-[11px] text-muted-foreground dark:text-muted-foreground"
                 onClick={() =>
                   toast.success(
                     `Message feature coming soon for ${agentData.email}`,
@@ -564,7 +564,7 @@ export function AgentDetailPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                className="h-6 px-2 text-[11px] text-muted-foreground dark:text-muted-foreground"
                 onClick={() => setIsEditModalOpen(true)}
               >
                 <Edit className="h-3 w-3 mr-1" />
@@ -629,7 +629,7 @@ export function AgentDetailPage() {
           <div className="flex-1 overflow-auto">
             {(activeTab === "policies" || activeTab === "commissions") && (
               <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-lg px-3 py-2 border border-border mb-2">
-                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
                   Date Filter
                 </div>
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
@@ -739,7 +739,7 @@ export function AgentDetailPage() {
                                   <Badge
                                     variant="outline"
                                     className={cn(
-                                      "text-[9px] h-4 px-1",
+                                      "text-[10px] h-4 px-1",
                                       policy.lifecycleStatus === "active" &&
                                         "text-success border-success/40",
                                       policy.lifecycleStatus === "lapsed" &&
@@ -886,7 +886,7 @@ export function AgentDetailPage() {
                     {/* Pagination */}
                     {totalPolicyPages > 1 && (
                       <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           {filteredPolicies.length} policies
                         </span>
                         <div className="flex items-center gap-1">
@@ -899,7 +899,7 @@ export function AgentDetailPage() {
                           >
                             <ChevronLeft className="h-3 w-3" />
                           </Button>
-                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
+                          <span className="text-[11px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
                             {policyPage + 1} / {totalPolicyPages}
                           </span>
                           <Button
@@ -1041,7 +1041,7 @@ export function AgentDetailPage() {
                                 <Badge
                                   variant="outline"
                                   className={cn(
-                                    "text-[9px] h-4 px-1",
+                                    "text-[10px] h-4 px-1",
                                     commission.status === "paid" &&
                                       "text-success border-success/40",
                                     commission.status === "pending" &&
@@ -1060,7 +1060,7 @@ export function AgentDetailPage() {
                 </div>
                 {totalCommissionPages > 1 && (
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[11px] text-muted-foreground">
                       {filteredCommissions.length} commissions
                     </span>
                     <div className="flex items-center gap-1">
@@ -1073,7 +1073,7 @@ export function AgentDetailPage() {
                       >
                         <ChevronLeft className="h-3 w-3" />
                       </Button>
-                      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
+                      <span className="text-[11px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
                         {commissionPage + 1} / {totalCommissionPages}
                       </span>
                       <Button

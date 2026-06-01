@@ -82,7 +82,7 @@ interface RecruitListTableProps {
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 const headerCellCls =
-  "text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground";
+  "text-[11px] uppercase tracking-[0.18em] font-semibold text-muted-foreground";
 
 function leadInitials(lead: EnrichedLead) {
   const f = (lead.first_name?.[0] || "").toUpperCase();
@@ -206,7 +206,7 @@ export function RecruitListTable({
 
   const pendingLeadStatus: LeadStatus = "pending";
   const leadBadgeCls = cn(
-    "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.16em] font-bold ring-1",
+    "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] uppercase tracking-[0.16em] font-bold ring-1",
     STATUS_COLORS[pendingLeadStatus].bg,
     STATUS_COLORS[pendingLeadStatus].text,
     "ring-warning/30",
@@ -317,7 +317,7 @@ export function RecruitListTable({
                   )}
                 >
                   <Avatar className="h-9 w-9 flex-shrink-0">
-                    <AvatarFallback className="text-[10px] bg-warning/10 text-warning ring-1 ring-warning/30">
+                    <AvatarFallback className="text-[11px] bg-warning/10 text-warning ring-1 ring-warning/30">
                       {leadInitials(lead)}
                     </AvatarFallback>
                   </Avatar>
@@ -327,7 +327,7 @@ export function RecruitListTable({
                     </div>
                     <div className="mt-0.5 flex items-center gap-2">
                       <span className={leadBadgeCls}>LEAD · PENDING</span>
-                      <span className="text-[10px] text-muted-foreground truncate">
+                      <span className="text-[11px] text-muted-foreground truncate">
                         {lead.email}
                       </span>
                     </div>
@@ -340,7 +340,7 @@ export function RecruitListTable({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-6 px-2 text-[10px] text-success border-success/30 hover:bg-success/10"
+                      className="h-6 px-2 text-[11px] text-success border-success/30 hover:bg-success/10"
                       disabled={isAcceptingLead}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -358,7 +358,7 @@ export function RecruitListTable({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-6 px-2 text-[10px] text-destructive border-destructive/30 hover:bg-destructive/10"
+                      className="h-6 px-2 text-[11px] text-destructive border-destructive/30 hover:bg-destructive/10"
                       disabled={isRejectingLead}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -401,7 +401,7 @@ export function RecruitListTable({
               >
                 <Avatar className="h-9 w-9 flex-shrink-0">
                   <AvatarImage src={recruit.profile_photo_url || undefined} />
-                  <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
+                  <AvatarFallback className="text-[11px] bg-muted text-v2-ink-subtle">
                     {recruitInitials(recruit)}
                   </AvatarFallback>
                 </Avatar>
@@ -504,7 +504,7 @@ export function RecruitListTable({
                     >
                       <TableCell className="py-2 align-middle">
                         <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-[9px] bg-warning/10 text-warning ring-1 ring-warning/30">
+                          <AvatarFallback className="text-[10px] bg-warning/10 text-warning ring-1 ring-warning/30">
                             {leadInitials(lead)}
                           </AvatarFallback>
                         </Avatar>
@@ -530,7 +530,7 @@ export function RecruitListTable({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px] text-success border-success/30 hover:bg-success/10"
+                                className="h-6 px-2 text-[11px] text-success border-success/30 hover:bg-success/10"
                                 disabled={isAcceptingLead}
                                 onClick={() => onAcceptLead(lead)}
                               >
@@ -545,7 +545,7 @@ export function RecruitListTable({
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-[10px] text-destructive border-destructive/30 hover:bg-destructive/10"
+                                className="h-6 px-2 text-[11px] text-destructive border-destructive/30 hover:bg-destructive/10"
                                 disabled={isRejectingLead}
                                 onClick={() => onRejectLead(lead)}
                               >
@@ -624,7 +624,7 @@ export function RecruitListTable({
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
+                        <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
                           {recruitInitials(recruit)}
                         </AvatarFallback>
                       </Avatar>
@@ -644,7 +644,7 @@ export function RecruitListTable({
                       {isTerminal ? (
                         <span
                           className={cn(
-                            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.16em] font-bold ring-1",
+                            "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] uppercase tracking-[0.16em] font-bold ring-1",
                             recruit.onboarding_status === "completed"
                               ? "bg-success/10 dark:bg-success/20 text-success ring-success/30 dark:ring-success"
                               : recruit.onboarding_status === "dropped"
@@ -668,7 +668,7 @@ export function RecruitListTable({
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
-                                <span className="text-[10px] font-mono tabular-nums text-v2-ink-subtle">
+                                <span className="text-[11px] font-mono tabular-nums text-v2-ink-subtle">
                                   {summary.completedItems}/{summary.totalItems}
                                 </span>
                               </div>
@@ -710,7 +710,7 @@ export function RecruitListTable({
       {/* Pagination */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-border py-2 mt-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
+          <span className="text-[11px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
             Show
           </span>
           <Select
@@ -758,7 +758,7 @@ export function RecruitListTable({
           </button>
         </div>
 
-        <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
+        <span className="text-[11px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
           {paginatedRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
           {Math.min(currentPage * pageSize, visibleRows.length)} of{" "}
           {visibleRows.length}

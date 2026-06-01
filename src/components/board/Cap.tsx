@@ -7,15 +7,15 @@ export interface CapProps extends React.HTMLAttributes<HTMLDivElement> {
 
 /**
  * Space-Mono uppercase eyebrow / caption label. Ported from TheBoard.jsx `Cap`.
- * Defaults to 11px / 0.2em tracking / mut2 color; override via `style`.
+ * Defaults to 12px / 0.18em tracking / mut2 color; override via `style`.
  */
 export const Cap = React.forwardRef<HTMLDivElement, CapProps>(
   ({ style, children, ...rest }, ref) => (
     <div
       ref={ref}
       style={{
-        font: `700 11px ${T.mono}`,
-        letterSpacing: "0.2em",
+        font: `700 12px ${T.mono}`,
+        letterSpacing: "0.18em",
         color: T.mut2,
         textTransform: "uppercase",
         ...style,

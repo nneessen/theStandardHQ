@@ -109,7 +109,7 @@ const SortableHeader: React.FC<SortableHeaderProps> = ({
   return (
     <th
       className={cn(
-        "px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground select-none",
+        "px-2 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground select-none",
         align === "right" ? "text-right" : "text-left",
       )}
     >
@@ -272,7 +272,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                       />
                     ) : (
                       <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        <span className="text-[9px] font-bold text-muted-foreground">
+                        <span className="text-[10px] font-bold text-muted-foreground">
                           {(
                             r.firstName?.[0] ??
                             r.email[0] ??
@@ -291,7 +291,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                       {displayName(r)}
                     </span>
                     {r.isSelf && (
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground bg-muted px-1 py-0.5 rounded flex-shrink-0">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground bg-muted px-1 py-0.5 rounded flex-shrink-0">
                         You
                       </span>
                     )}
@@ -379,7 +379,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 {/* Last Run */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right text-[10px]",
+                    "px-2 py-1.5 text-right text-[11px]",
                     stale ? "text-warning" : "text-muted-foreground",
                   )}
                 >

@@ -96,7 +96,7 @@ function EmptyState({ isSubmit = false }: { isSubmit?: boolean }) {
               ? "No submissions in this period"
               : "No leaderboard data available"}
           </p>
-          <p className="text-[10px]">
+          <p className="text-[11px]">
             {isSubmit
               ? "Try adjusting the date range"
               : "Adjust filters or check back later"}
@@ -122,7 +122,7 @@ function ErrorState({
         className="px-4 py-8 text-center text-destructive"
       >
         <p className="text-xs font-medium">Error loading leaderboard</p>
-        <p className="text-[10px] mt-1">{message}</p>
+        <p className="text-[11px] mt-1">{message}</p>
       </td>
     </tr>
   );
@@ -158,7 +158,7 @@ function AgentRow({
               src={entry.profilePhotoUrl || undefined}
               alt={entry.agentName}
             />
-            <AvatarFallback className="text-[10px] bg-v2-ring">
+            <AvatarFallback className="text-[11px] bg-v2-ring">
               {getInitials(entry.agentName)}
             </AvatarFallback>
           </Avatar>
@@ -171,7 +171,7 @@ function AgentRow({
             >
               {entry.agentName}
             </p>
-            <p className="text-[10px] text-v2-ink-subtle truncate">
+            <p className="text-[11px] text-v2-ink-subtle truncate">
               {entry.agencyName || "No agency"}
             </p>
           </div>
@@ -197,7 +197,7 @@ function AgentRow({
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
+          <span className="text-[11px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
@@ -253,7 +253,7 @@ function AgencyRow({
             >
               {entry.agencyName}
             </p>
-            <p className="text-[10px] text-v2-ink-subtle truncate">
+            <p className="text-[11px] text-v2-ink-subtle truncate">
               {entry.ownerName} · {entry.agentCount} agent
               {entry.agentCount !== 1 ? "s" : ""}
             </p>
@@ -280,7 +280,7 @@ function AgencyRow({
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
+          <span className="text-[11px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
@@ -329,7 +329,7 @@ function SubmitRow({
               src={entry.profilePhotoUrl || undefined}
               alt={entry.agentName}
             />
-            <AvatarFallback className="text-[10px] bg-v2-ring">
+            <AvatarFallback className="text-[11px] bg-v2-ring">
               {getInitials(entry.agentName)}
             </AvatarFallback>
           </Avatar>
@@ -342,7 +342,7 @@ function SubmitRow({
             >
               {entry.agentName}
             </p>
-            <p className="text-[10px] text-v2-ink-subtle truncate">
+            <p className="text-[11px] text-v2-ink-subtle truncate">
               {entry.agencyName || "No agency"}
             </p>
           </div>
@@ -398,7 +398,7 @@ function TeamRow({
                 src={entry.leaderProfilePhotoUrl || undefined}
                 alt={entry.leaderName}
               />
-              <AvatarFallback className="text-[10px] bg-v2-ring">
+              <AvatarFallback className="text-[11px] bg-v2-ring">
                 {getInitials(entry.leaderName)}
               </AvatarFallback>
             </Avatar>
@@ -415,7 +415,7 @@ function TeamRow({
             >
               {entry.leaderName}'s Team
             </p>
-            <p className="text-[10px] text-v2-ink-subtle truncate">
+            <p className="text-[11px] text-v2-ink-subtle truncate">
               {entry.teamSize} member{entry.teamSize !== 1 ? "s" : ""} ·{" "}
               {entry.agencyName || "No agency"}
             </p>
@@ -442,7 +442,7 @@ function TeamRow({
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
+          <span className="text-[11px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
@@ -480,41 +480,41 @@ export function LeaderboardTable({
           {isSubmit ? (
             // Simplified headers for submit scope (4 columns)
             <tr>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
                 #
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 Agent
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-warning uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[11px] font-semibold text-warning uppercase tracking-wider text-right">
                 AP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Submitted
               </th>
             </tr>
           ) : (
             // Standard headers (7 columns)
             <tr>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
                 #
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 {nameHeader}
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-warning uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[11px] font-semibold text-warning uppercase tracking-wider text-right">
                 IP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider text-right">
                 AP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Policies
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Prospects
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Pipeline
               </th>
             </tr>

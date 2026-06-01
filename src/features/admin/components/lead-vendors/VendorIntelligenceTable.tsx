@@ -136,7 +136,7 @@ export function VendorIntelligenceTable({
         <span className="text-[11px] font-semibold text-v2-ink-muted">
           Vendor Intelligence
         </span>
-        <Badge variant="outline" className="text-[9px]">
+        <Badge variant="outline" className="text-[10px]">
           {sorted.length} vendors
         </Badge>
       </div>
@@ -210,7 +210,7 @@ export function VendorIntelligenceTable({
                 className="w-[70px] text-right"
               />
               {/* F/A ratio (not sortable) */}
-              <th className="text-[10px] font-semibold p-1.5 w-[70px]">F/A</th>
+              <th className="text-[11px] font-semibold p-1.5 w-[70px]">F/A</th>
               <SortableHead
                 field="trend"
                 label="Trend"
@@ -261,7 +261,7 @@ export function VendorIntelligenceTable({
       {/* Pagination */}
       {sorted.length > 0 && (
         <div className="px-3 py-1.5 border-t border-v2-ring flex items-center justify-between">
-          <span className="text-[10px] text-v2-ink-muted">
+          <span className="text-[11px] text-v2-ink-muted">
             Showing {(page - 1) * pageSize + 1}&ndash;
             {Math.min(page * pageSize, sorted.length)} of {sorted.length}
           </span>
@@ -274,7 +274,7 @@ export function VendorIntelligenceTable({
                   key={size}
                   onClick={() => onPageSizeChange(size)}
                   className={cn(
-                    "px-1.5 py-0.5 text-[10px] transition-colors",
+                    "px-1.5 py-0.5 text-[11px] transition-colors",
                     pageSize === size
                       ? "bg-v2-ring text-foreground"
                       : "text-v2-ink-muted hover:bg-v2-ring",
@@ -290,7 +290,7 @@ export function VendorIntelligenceTable({
               <button
                 onClick={() => onPageChange(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-1.5 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1.5 py-0.5 text-[11px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &lsaquo;
               </button>
@@ -314,7 +314,7 @@ export function VendorIntelligenceTable({
                   item === "ellipsis" ? (
                     <span
                       key={`e-${idx}`}
-                      className="px-1 text-[10px] text-v2-ink-subtle"
+                      className="px-1 text-[11px] text-v2-ink-subtle"
                     >
                       &hellip;
                     </span>
@@ -323,7 +323,7 @@ export function VendorIntelligenceTable({
                       key={item}
                       onClick={() => onPageChange(item)}
                       className={cn(
-                        "px-1.5 py-0.5 text-[10px] rounded transition-colors",
+                        "px-1.5 py-0.5 text-[11px] rounded transition-colors",
                         page === item
                           ? "bg-v2-ring text-foreground"
                           : "text-v2-ink-muted hover:bg-v2-ring",
@@ -336,7 +336,7 @@ export function VendorIntelligenceTable({
               <button
                 onClick={() => onPageChange(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-1.5 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1.5 py-0.5 text-[11px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &rsaquo;
               </button>
@@ -416,7 +416,7 @@ function VendorTableRow({
                 style={{ width: `${100 - freshPct}%` }}
               />
             </div>
-            <span className="text-[9px] text-v2-ink-subtle flex-shrink-0 w-[24px] text-right">
+            <span className="text-[10px] text-v2-ink-subtle flex-shrink-0 w-[24px] text-right">
               {row.freshCount}/{row.agedCount}
             </span>
           </div>

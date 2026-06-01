@@ -46,7 +46,7 @@ export function Pill({ children, tone = "blue", dot, style }: PillProps) {
         borderRadius: 999,
         background: TINT[tone],
         color,
-        font: `700 12px ${T.mono}`,
+        font: `700 12.5px ${T.mono}`,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
         whiteSpace: "nowrap",

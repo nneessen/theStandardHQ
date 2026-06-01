@@ -53,7 +53,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 border-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="text-[10px] px-1 py-0 h-4 border-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle"
           >
             <Clock className="h-2 w-2 mr-0.5" />
             Pending
@@ -63,7 +63,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 text-success border-success/40 dark:border-success"
+            className="text-[10px] px-1 py-0 h-4 text-success border-success/40 dark:border-success"
           >
             <CheckCircle className="h-2 w-2 mr-0.5" />
             Accepted
@@ -73,7 +73,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 text-destructive border-destructive/40 dark:border-destructive"
+            className="text-[10px] px-1 py-0 h-4 text-destructive border-destructive/40 dark:border-destructive"
           >
             <XCircle className="h-2 w-2 mr-0.5" />
             Declined
@@ -83,7 +83,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 text-v2-ink-subtle border-v2-ring"
+            className="text-[10px] px-1 py-0 h-4 text-v2-ink-subtle border-v2-ring"
           >
             Expired
           </Badge>
@@ -97,14 +97,14 @@ export function InvitationsList() {
     <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+          <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide">
             Pending Invitations
           </div>
           {invitations && invitations.length > 5 && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
+              className="h-5 px-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
             >
               View All
             </Button>
@@ -154,11 +154,11 @@ export function InvitationsList() {
                       <div className="text-[11px] font-medium text-v2-ink">
                         {invitation.invitee_email}
                       </div>
-                      <div className="text-[10px] text-v2-ink-muted">
+                      <div className="text-[11px] text-v2-ink-muted">
                         Sent {formatDate(invitation.created_at)}
                       </div>
                       {isInvalid && invalidReason && (
-                        <div className="text-[9px] text-warning flex items-center gap-1 mt-0.5">
+                        <div className="text-[10px] text-warning flex items-center gap-1 mt-0.5">
                           <AlertTriangle className="h-2.5 w-2.5" />
                           {invalidReason}
                         </div>
@@ -169,7 +169,7 @@ export function InvitationsList() {
                       {isStale && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] px-1 py-0 h-4 text-warning border-warning/40 dark:border-warning"
+                          className="text-[10px] px-1 py-0 h-4 text-warning border-warning/40 dark:border-warning"
                         >
                           <AlertTriangle className="h-2 w-2 mr-0.5" />
                           Stale

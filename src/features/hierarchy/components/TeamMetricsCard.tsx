@@ -125,7 +125,7 @@ export function TeamMetricsCard({
   return (
     <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
-        <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-2">
+        <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide mb-2">
           Team Metrics
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -215,7 +215,7 @@ export function TeamMetricsCard({
                 <span className="text-v2-ink-muted">vs Last Month</span>
                 <span
                   className={cn(
-                    "font-mono text-[10px]",
+                    "font-mono text-[11px]",
                     momGrowth > 0
                       ? "text-success"
                       : momGrowth < 0
@@ -274,7 +274,7 @@ export function TeamMetricsCard({
               <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
                 <span className="text-v2-ink-muted">Top Performer</span>
-                <span className="font-mono text-[10px] text-success truncate max-w-[100px]">
+                <span className="font-mono text-[11px] text-success truncate max-w-[100px]">
                   {topPerformerName}
                 </span>
               </div>
@@ -338,7 +338,7 @@ export function TeamMetricsCard({
                   {pendingInvitations}
                 </span>
               </div>
-              <div className="text-[10px] text-v2-ink-muted">
+              <div className="text-[11px] text-v2-ink-muted">
                 {retentionRate > 90
                   ? "✓ Healthy team"
                   : retentionRate > 80
@@ -355,7 +355,7 @@ export function TeamMetricsCard({
             {/* Monthly Pace */}
             {teamMonthlyAPTarget > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
+                <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                   Monthly Pace
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -381,7 +381,7 @@ export function TeamMetricsCard({
                   </div>
                   <div
                     className={cn(
-                      "px-2 py-0.5 rounded text-[10px] font-semibold",
+                      "px-2 py-0.5 rounded text-[11px] font-semibold",
                       teamMonthlyPaceStatus === "ahead"
                         ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
                         : teamMonthlyPaceStatus === "on_pace"
@@ -397,7 +397,7 @@ export function TeamMetricsCard({
                     ({teamMonthlyPacePercentage.toFixed(0)}%)
                   </div>
                 </div>
-                <div className="text-[9px] text-v2-ink-subtle mt-1">
+                <div className="text-[10px] text-v2-ink-subtle mt-1">
                   Target = sum of each team member's (policies/yr × avg premium)
                   ÷ 12 • Projected = current submission rate extrapolated to
                   month-end
@@ -408,7 +408,7 @@ export function TeamMetricsCard({
             {/* Yearly Pace */}
             {teamYearlyAPTarget > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
+                <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                   Yearly Pace
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -434,7 +434,7 @@ export function TeamMetricsCard({
                   </div>
                   <div
                     className={cn(
-                      "px-2 py-0.5 rounded text-[10px] font-semibold",
+                      "px-2 py-0.5 rounded text-[11px] font-semibold",
                       teamYearlyPaceStatus === "ahead"
                         ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
                         : teamYearlyPaceStatus === "on_pace"
@@ -450,7 +450,7 @@ export function TeamMetricsCard({
                     ({teamYearlyPacePercentage.toFixed(0)}%)
                   </div>
                 </div>
-                <div className="text-[9px] text-v2-ink-subtle mt-1">
+                <div className="text-[10px] text-v2-ink-subtle mt-1">
                   Target = sum of each team member's (policies/yr × avg premium)
                   • Projected = current submission rate extrapolated to year-end
                 </div>

@@ -169,7 +169,7 @@ function SectionTableWithChart({
               {section.tableData.headers.map((header, headerIdx) => (
                 <th
                   key={headerIdx}
-                  className="px-2 py-1.5 text-left font-semibold text-v2-ink-muted text-[10px]"
+                  className="px-2 py-1.5 text-left font-semibold text-v2-ink-muted text-[11px]"
                 >
                   {header}
                 </th>

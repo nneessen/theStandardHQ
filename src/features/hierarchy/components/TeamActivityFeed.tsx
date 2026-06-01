@@ -151,7 +151,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
     <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+          <div className="text-[11px] font-medium text-v2-ink-muted uppercase tracking-wide">
             Recent Activity
           </div>
           {activities.length > 5 && (
@@ -159,7 +159,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
               variant="ghost"
               size="sm"
               onClick={() => setShowAll(!showAll)}
-              className="h-5 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
+              className="h-5 px-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
             >
               {showAll ? (
                 <>
@@ -196,11 +196,11 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
                     </span>
                   </div>
                   {activity.details && (
-                    <div className="text-[10px] text-v2-ink-muted">
+                    <div className="text-[11px] text-v2-ink-muted">
                       {activity.details}
                     </div>
                   )}
-                  <div className="text-[9px] text-v2-ink-subtle mt-0.5">
+                  <div className="text-[10px] text-v2-ink-subtle mt-0.5">
                     {getRelativeTime(activity.timestamp)}
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
 
         {/* Quick Stats */}
         <div className="mt-3 pt-2 border-t border-v2-ring">
-          <div className="grid grid-cols-3 gap-2 text-[10px]">
+          <div className="grid grid-cols-3 gap-2 text-[11px]">
             <div className="text-center">
               <div className="font-mono font-semibold text-success">
                 +{activities.filter((a) => a.type === "joined").length}

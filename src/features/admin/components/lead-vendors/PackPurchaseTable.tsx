@@ -108,7 +108,7 @@ function ThresholdInput({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <label className="text-[10px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+      <label className="text-[11px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
         {label}
       </label>
       <div className="flex items-center gap-0.5">
@@ -120,10 +120,10 @@ function ThresholdInput({
             const parsed = parseFloat(e.target.value);
             if (!isNaN(parsed)) onChange(parsed);
           }}
-          className="w-14 px-1 py-0.5 text-[10px] text-right tabular-nums border border-border rounded bg-muted text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-14 px-1 py-0.5 text-[11px] text-right tabular-nums border border-border rounded bg-muted text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
         />
         {suffix && (
-          <span className="text-[9px] text-muted-foreground">{suffix}</span>
+          <span className="text-[10px] text-muted-foreground">{suffix}</span>
         )}
       </div>
     </div>
@@ -146,7 +146,7 @@ function SegmentedToggle<T extends string>({
 }) {
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">
+      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
         {label}
       </span>
       <div className="flex items-center gap-0 border border-border rounded overflow-hidden">
@@ -155,7 +155,7 @@ function SegmentedToggle<T extends string>({
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+              "px-1.5 py-0.5 text-[11px] font-medium transition-colors",
               value === opt.value
                 ? "bg-muted text-foreground"
                 : "text-muted-foreground hover:bg-muted",
@@ -359,10 +359,10 @@ export function PackPurchaseTable({
       {/* Header with filters */}
       <div className="px-2 py-1.5 border-b border-border space-y-1">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-muted-foreground">
+          <span className="text-[11px] font-semibold text-muted-foreground">
             All Purchases
           </span>
-          <Badge variant="outline" className="text-[9px]">
+          <Badge variant="outline" className="text-[10px]">
             {hasActiveFilters
               ? `${filtered.length}/${sorted.length} packs`
               : `${sorted.length} packs`}
@@ -414,13 +414,13 @@ export function PackPurchaseTable({
 
           {/* Quick Sale toggle */}
           <div className="flex items-center gap-1">
-            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
               Quick Sale
             </span>
             <button
               onClick={() => updateFilter("quickSale", !filters.quickSale)}
               className={cn(
-                "px-1.5 py-0.5 text-[10px] font-medium rounded border transition-colors",
+                "px-1.5 py-0.5 text-[11px] font-medium rounded border transition-colors",
                 filters.quickSale
                   ? "bg-muted text-foreground border-border"
                   : "text-muted-foreground border-border hover:bg-muted",
@@ -434,7 +434,7 @@ export function PackPurchaseTable({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-3 w-3" />
               Clear
@@ -452,7 +452,7 @@ export function PackPurchaseTable({
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-2 space-y-2">
-              <div className="text-[10px] font-semibold text-muted-foreground mb-1">
+              <div className="text-[11px] font-semibold text-muted-foreground mb-1">
                 Filter Thresholds
               </div>
 
@@ -489,7 +489,7 @@ export function PackPurchaseTable({
 
               <button
                 onClick={() => setThresholds(DEFAULT_THRESHOLDS)}
-                className="flex items-center gap-1 w-full justify-center pt-1 mt-1 border-t border-border text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1 w-full justify-center pt-1 mt-1 border-t border-border text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 <RotateCcw className="h-3 w-3" />
                 Reset Defaults
@@ -611,7 +611,7 @@ export function PackPurchaseTable({
             <TableRow>
               <TableCell
                 colSpan={13}
-                className="text-center text-[10px] text-muted-foreground py-6"
+                className="text-center text-[11px] text-muted-foreground py-6"
               >
                 No purchases match your filters
               </TableCell>
@@ -619,7 +619,7 @@ export function PackPurchaseTable({
           ) : (
             paginated.map((pack) => (
               <TableRow key={pack.packId}>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-muted-foreground whitespace-nowrap">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-muted-foreground whitespace-nowrap">
                   {formatDate(pack.purchaseDate, {
                     month: "numeric",
                     day: "numeric",
@@ -627,24 +627,24 @@ export function PackPurchaseTable({
                   })}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[140px]"
+                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[140px]"
                   title={pack.purchaseName || undefined}
                 >
                   {pack.purchaseName || "\u2014"}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
+                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
                   title={pack.vendorName}
                 >
                   {pack.vendorName}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
+                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
                   title={pack.agentName}
                 >
                   {pack.agentName}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-center">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-center">
                   <span
                     className={cn(
                       "font-semibold",
@@ -656,30 +656,30 @@ export function PackPurchaseTable({
                     {pack.leadFreshness === "fresh" ? "F" : "A"}
                   </span>
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {pack.leadCount}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {formatCompactCurrency(pack.totalCost)}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {formatCurrency(pack.costPerLead)}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {pack.policiesSold}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {formatPercent(pack.conversionRate)}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {formatCompactCurrency(pack.commissionEarned)}
                 </TableCell>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
                   {formatCompactCurrency(pack.totalPremium)}
                 </TableCell>
                 <TableCell
                   className={cn(
-                    "text-[10px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                    "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
                     roiColor(pack.roiPercentage),
                   )}
                 >
@@ -694,7 +694,7 @@ export function PackPurchaseTable({
       {/* Pagination */}
       {filtered.length > 0 && (
         <div className="px-2 py-1 border-t border-border flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             {(page - 1) * pageSize + 1}&ndash;
             {Math.min(page * pageSize, filtered.length)} of {filtered.length}
           </span>
@@ -707,7 +707,7 @@ export function PackPurchaseTable({
                   key={size}
                   onClick={() => handlePageSizeChange(size)}
                   className={cn(
-                    "px-1.5 py-0.5 text-[10px] transition-colors",
+                    "px-1.5 py-0.5 text-[11px] transition-colors",
                     pageSize === size
                       ? "bg-muted text-foreground"
                       : "text-muted-foreground hover:bg-muted",
@@ -723,7 +723,7 @@ export function PackPurchaseTable({
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &lsaquo;
               </button>
@@ -747,7 +747,7 @@ export function PackPurchaseTable({
                   item === "ellipsis" ? (
                     <span
                       key={`e-${idx}`}
-                      className="px-0.5 text-[10px] text-muted-foreground"
+                      className="px-0.5 text-[11px] text-muted-foreground"
                     >
                       &hellip;
                     </span>
@@ -756,7 +756,7 @@ export function PackPurchaseTable({
                       key={item}
                       onClick={() => setPage(item)}
                       className={cn(
-                        "px-1.5 py-0.5 text-[10px] rounded transition-colors",
+                        "px-1.5 py-0.5 text-[11px] rounded transition-colors",
                         page === item
                           ? "bg-muted text-foreground"
                           : "text-muted-foreground hover:bg-muted",
@@ -769,7 +769,7 @@ export function PackPurchaseTable({
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &rsaquo;
               </button>

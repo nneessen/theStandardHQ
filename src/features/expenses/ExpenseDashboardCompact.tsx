@@ -437,7 +437,7 @@ export function ExpenseDashboardCompact() {
                 onClick={() => setSelectedMonth(new Date())}
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[10px]"
+                className="h-6 px-2 text-[11px]"
               >
                 Today
               </Button>
@@ -451,7 +451,7 @@ export function ExpenseDashboardCompact() {
               onClick={handleExportCSV}
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[10px]"
+              className="h-6 px-2 text-[11px]"
             >
               <Download className="h-3 w-3 mr-1" />
               CSV
@@ -462,7 +462,7 @@ export function ExpenseDashboardCompact() {
                 setIsAddDialogOpen(true);
               }}
               size="sm"
-              className="h-6 px-2 text-[10px]"
+              className="h-6 px-2 text-[11px]"
             >
               <Plus className="h-3 w-3 mr-1" />
               Add
@@ -474,7 +474,7 @@ export function ExpenseDashboardCompact() {
         <div className="space-y-2">
           {/* Expense Summary Card */}
           <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
               Expense Summary
             </div>
             <div className="grid grid-cols-4 gap-4">
@@ -614,7 +614,7 @@ export function ExpenseDashboardCompact() {
                       {formatPercent(expenseRatio)}
                     </span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-[11px] text-muted-foreground">
                     {expenseRatio > 30
                       ? "⚠️ High ratio"
                       : expenseRatio > 20
@@ -630,7 +630,7 @@ export function ExpenseDashboardCompact() {
           <div className="grid grid-cols-2 gap-2">
             {/* Top Categories */}
             <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-              <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
                 Top Categories
               </div>
               <div className="space-y-1">
@@ -649,7 +649,7 @@ export function ExpenseDashboardCompact() {
                         <span className="text-muted-foreground">
                           {cat.name}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           ({cat.count})
                         </span>
                       </div>
@@ -657,7 +657,7 @@ export function ExpenseDashboardCompact() {
                         <span className="font-mono font-semibold text-foreground">
                           {formatCurrency(cat.amount)}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           {formatPercent(cat.percentage)}
                         </span>
                       </div>
@@ -669,7 +669,7 @@ export function ExpenseDashboardCompact() {
 
             {/* Recent Large Expenses */}
             <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-              <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
+              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
                 Recent Large Expenses
               </div>
               <div className="space-y-1">
@@ -687,7 +687,7 @@ export function ExpenseDashboardCompact() {
                         </span>
                         <span
                           className={cn(
-                            "text-[9px]",
+                            "text-[10px]",
                             expense.expense_type === "business"
                               ? "text-info"
                               : "text-info",
@@ -795,22 +795,22 @@ export function ExpenseDashboardCompact() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Date
                     </th>
-                    <th className="text-left p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Name
                     </th>
-                    <th className="text-left p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-left p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Category
                     </th>
-                    <th className="text-center p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-center p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Type
                     </th>
-                    <th className="text-right p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-right p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Amount
                     </th>
-                    <th className="text-center p-2 text-[10px] font-semibold text-muted-foreground bg-background">
+                    <th className="text-center p-2 text-[11px] font-semibold text-muted-foreground bg-background">
                       Actions
                     </th>
                   </tr>
@@ -858,7 +858,7 @@ export function ExpenseDashboardCompact() {
                           <td className="p-2 text-[11px] font-medium text-foreground">
                             {expense.name}
                             {expense.is_recurring && (
-                              <span className="ml-1 text-[9px] text-muted-foreground">
+                              <span className="ml-1 text-[10px] text-muted-foreground">
                                 🔁
                               </span>
                             )}
@@ -869,7 +869,7 @@ export function ExpenseDashboardCompact() {
                           <td className="p-2 text-center">
                             <span
                               className={cn(
-                                "inline-block px-1.5 py-0.5 rounded text-[9px] font-medium",
+                                "inline-block px-1.5 py-0.5 rounded text-[10px] font-medium",
                                 expense.expense_type === "business"
                                   ? "bg-info/10 text-info"
                                   : "bg-info/10 text-info",
@@ -933,7 +933,7 @@ export function ExpenseDashboardCompact() {
                 <strong className="text-warning">
                   High expense ratio detected ({formatPercent(expenseRatio)})
                 </strong>
-                <p className="text-[10px] text-warning/80 mt-0.5">
+                <p className="text-[11px] text-warning/80 mt-0.5">
                   Your expenses are {formatPercent(expenseRatio)} of gross
                   commissions. Consider reducing non-essential expenses to
                   improve profitability. Target ratio should be below 30%.

@@ -260,7 +260,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       variant: "outline" as const,
     };
     return (
-      <Badge variant={statusInfo.variant} className="text-[9px] h-4">
+      <Badge variant={statusInfo.variant} className="text-[10px] h-4">
         {statusInfo.label}
       </Badge>
     );
@@ -339,7 +339,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         <p className="text-xs font-semibold text-info dark:text-info leading-tight">
                           Unlock the Full Recruiting Pipeline
                         </p>
-                        <p className="text-[10px] text-info mt-0.5">
+                        <p className="text-[11px] text-info mt-0.5">
                           {NEW_SUBSCRIPTIONS_ENABLED
                             ? "Expand to preview Team plan features and upgrade options"
                             : "Expand to preview Team plan features"}
@@ -347,7 +347,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-info bg-card/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
+                    <div className="flex items-center gap-1.5 text-info bg-card/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[11px] font-semibold flex-shrink-0">
                       {showUpgradeDetails ? "Hide" : "View"}
                       {showUpgradeDetails ? (
                         <ChevronUp className="h-3 w-3" />
@@ -372,10 +372,10 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             >
                               <Icon className="h-3.5 w-3.5 text-info dark:text-info mt-0.5 flex-shrink-0" />
                               <div>
-                                <p className="text-[10px] font-semibold text-v2-ink-subtle leading-tight">
+                                <p className="text-[11px] font-semibold text-v2-ink-subtle leading-tight">
                                   {label}
                                 </p>
-                                <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
+                                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                                   {desc}
                                 </p>
                               </div>
@@ -386,7 +386,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     );
 
                     const teamPlanBlurb = (
-                      <p className="text-[10px] text-info leading-tight">
+                      <p className="text-[11px] text-info leading-tight">
                         Everything you need to build, onboard, and grow your
                         team on the{" "}
                         <span className="font-semibold">Team plan</span>
@@ -418,7 +418,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                           {featureGrid}
 
                           {/* Click hint */}
-                          <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
+                          <p className="text-center text-[10px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
                             Click anywhere in this panel to see pricing and
                             upgrade →
                           </p>
@@ -452,7 +452,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
             {showInstructions && (
               <div className="px-3 pb-3 space-y-2">
                 <div className="border-t border-border/60 pt-2" />
-                <ol className="space-y-1.5 text-[10px] text-v2-ink-subtle list-decimal list-inside">
+                <ol className="space-y-1.5 text-[11px] text-v2-ink-subtle list-decimal list-inside">
                   <li>
                     <span className="font-medium text-v2-ink-subtle">
                       Add a new recruit
@@ -512,7 +512,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
               <div className="flex flex-col items-center justify-center h-32 gap-2 text-muted-foreground">
                 <User className="h-8 w-8 text-muted-foreground" />
                 <p className="text-[11px]">No recruits yet</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   Add your first recruit to get started
                 </p>
               </div>
@@ -520,22 +520,22 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Name
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Contact
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Upline
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Status
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Added
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold h-8">
+                    <TableHead className="text-[11px] font-semibold h-8">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -558,7 +558,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             <AvatarImage
                               src={recruit.profile_photo_url || undefined}
                             />
-                            <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
+                            <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
                               {(recruit.first_name?.[0] || "").toUpperCase()}
                               {(recruit.last_name?.[0] || "").toUpperCase()}
                             </AvatarFallback>
@@ -571,13 +571,13 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <TableCell className="py-2">
                         <div className="flex flex-col gap-0.5">
                           {recruit.email && (
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                               <Mail className="h-3 w-3" />
                               {recruit.email}
                             </div>
                           )}
                           {recruit.phone && (
-                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                               <Phone className="h-3 w-3" />
                               {recruit.phone}
                             </div>
@@ -587,14 +587,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <TableCell className="py-2">
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline ? (
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[11px] text-muted-foreground">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recruit as any).upline.first_name}{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recruit as any).upline.last_name}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground italic">
+                          <span className="text-[11px] text-muted-foreground italic">
                             {recruit.upline_id ? "Loading..." : "Not assigned"}
                           </span>
                         )}
@@ -614,7 +614,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                               <Badge
                                 variant="secondary"
                                 className={cn(
-                                  "text-[9px] h-4",
+                                  "text-[10px] h-4",
                                   TERMINAL_STATUS_COLORS[
                                     recruit.onboarding_status!
                                   ],
@@ -628,7 +628,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             return (
                               <Badge
                                 variant="secondary"
-                                className="text-[9px] h-4 bg-info/20 text-info"
+                                className="text-[10px] h-4 bg-info/20 text-info"
                               >
                                 {recruit.current_onboarding_phase ||
                                   "In Pipeline"}
@@ -639,7 +639,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         })()}
                       </TableCell>
                       <TableCell className="py-2">
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           {recruit.created_at
                             ? formatDistanceToNow(
                                 new Date(recruit.created_at),
@@ -675,7 +675,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                                 </TooltipTrigger>
                                 <TooltipContent
                                   side="top"
-                                  className="text-[10px]"
+                                  className="text-[11px]"
                                 >
                                   Resend password setup email
                                 </TooltipContent>
@@ -704,7 +704,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-5 px-1.5 text-[10px] text-success hover:text-success hover:bg-success/10 dark:text-success dark:hover:text-success dark:hover:bg-success/20"
+                              className="h-5 px-1.5 text-[11px] text-success hover:text-success hover:bg-success/10 dark:text-success dark:hover:text-success dark:hover:bg-success/20"
                               onClick={() => setGraduatingRecruit(recruit)}
                             >
                               <GraduationCap className="h-3 w-3 mr-0.5" />
@@ -860,7 +860,7 @@ function BasicEditRecruitDialog({
         <form onSubmit={handleSubmit} className="space-y-3 mt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="edit_first_name" className="text-[10px]">
+              <Label htmlFor="edit_first_name" className="text-[11px]">
                 First Name *
               </Label>
               <Input
@@ -875,13 +875,13 @@ function BasicEditRecruitDialog({
                 className="h-8 text-[11px]"
               />
               {errors.first_name && (
-                <p className="text-[9px] text-destructive">
+                <p className="text-[10px] text-destructive">
                   {errors.first_name}
                 </p>
               )}
             </div>
             <div className="space-y-1">
-              <Label htmlFor="edit_last_name" className="text-[10px]">
+              <Label htmlFor="edit_last_name" className="text-[11px]">
                 Last Name *
               </Label>
               <Input
@@ -896,14 +896,14 @@ function BasicEditRecruitDialog({
                 className="h-8 text-[11px]"
               />
               {errors.last_name && (
-                <p className="text-[9px] text-destructive">
+                <p className="text-[10px] text-destructive">
                   {errors.last_name}
                 </p>
               )}
             </div>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="edit_email" className="text-[10px]">
+            <Label htmlFor="edit_email" className="text-[11px]">
               Email *
             </Label>
             <Input
@@ -916,12 +916,12 @@ function BasicEditRecruitDialog({
               className="h-8 text-[11px]"
             />
             {errors.email && (
-              <p className="text-[9px] text-destructive">{errors.email}</p>
+              <p className="text-[10px] text-destructive">{errors.email}</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="edit_phone" className="text-[10px]">
+              <Label htmlFor="edit_phone" className="text-[11px]">
                 Phone
               </Label>
               <Input
@@ -935,7 +935,7 @@ function BasicEditRecruitDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="edit_resident_state" className="text-[10px]">
+              <Label htmlFor="edit_resident_state" className="text-[11px]">
                 Resident State
               </Label>
               <Select
@@ -966,7 +966,7 @@ function BasicEditRecruitDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="edit_npn" className="text-[10px]">
+              <Label htmlFor="edit_npn" className="text-[11px]">
                 NPN
               </Label>
               <Input
@@ -980,7 +980,7 @@ function BasicEditRecruitDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="edit_contract_level" className="text-[10px]">
+              <Label htmlFor="edit_contract_level" className="text-[11px]">
                 Starting Comp %
               </Label>
               <Select
@@ -1015,7 +1015,7 @@ function BasicEditRecruitDialog({
           <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
             <Label
               htmlFor="edit_is_licensed"
-              className="text-[10px] cursor-pointer"
+              className="text-[11px] cursor-pointer"
             >
               Licensed Agent?
             </Label>
@@ -1036,7 +1036,7 @@ function BasicEditRecruitDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px]"
+              className="h-7 text-[11px]"
               onClick={() => onOpenChange(false)}
             >
               Cancel
@@ -1044,7 +1044,7 @@ function BasicEditRecruitDialog({
             <Button
               type="submit"
               size="sm"
-              className="h-7 text-[10px]"
+              className="h-7 text-[11px]"
               disabled={updateRecruit.isPending}
             >
               {updateRecruit.isPending ? "Saving..." : "Save Changes"}
@@ -1099,11 +1099,11 @@ function BasicDeleteRecruitDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="h-7 text-[10px]">
+          <AlertDialogCancel className="h-7 text-[11px]">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="h-7 text-[10px] bg-destructive hover:bg-destructive text-destructive-foreground"
+            className="h-7 text-[11px] bg-destructive hover:bg-destructive text-destructive-foreground"
             onClick={handleDelete}
             disabled={deleteRecruit.isPending}
           >
@@ -1242,7 +1242,7 @@ function BasicAddRecruitDialog({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-6 text-[10px] px-2 bg-secondary hover:bg-muted text-foreground dark:hover:bg-muted "
+          className="h-6 text-[11px] px-2 bg-secondary hover:bg-muted text-foreground dark:hover:bg-muted "
         >
           <UserPlus className="h-3 w-3 mr-1" />
           Add Recruit
@@ -1260,7 +1260,7 @@ function BasicAddRecruitDialog({
         <div className="flex items-center gap-2 px-3 py-2 bg-background rounded-md border border-border">
           <User className="h-4 w-4 text-muted-foreground" />
           <div className="flex-1">
-            <p className="text-[10px] text-muted-foreground">Assigned Upline</p>
+            <p className="text-[11px] text-muted-foreground">Assigned Upline</p>
             <p className="text-[11px] font-medium text-foreground">
               {user?.first_name} {user?.last_name}
             </p>
@@ -1270,7 +1270,7 @@ function BasicAddRecruitDialog({
         <form onSubmit={handleSubmit} className="space-y-3 mt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="first_name" className="text-[10px]">
+              <Label htmlFor="first_name" className="text-[11px]">
                 First Name *
               </Label>
               <Input
@@ -1286,13 +1286,13 @@ function BasicAddRecruitDialog({
                 placeholder="John"
               />
               {errors.first_name && (
-                <p className="text-[9px] text-destructive">
+                <p className="text-[10px] text-destructive">
                   {errors.first_name}
                 </p>
               )}
             </div>
             <div className="space-y-1">
-              <Label htmlFor="last_name" className="text-[10px]">
+              <Label htmlFor="last_name" className="text-[11px]">
                 Last Name *
               </Label>
               <Input
@@ -1308,14 +1308,14 @@ function BasicAddRecruitDialog({
                 placeholder="Doe"
               />
               {errors.last_name && (
-                <p className="text-[9px] text-destructive">
+                <p className="text-[10px] text-destructive">
                   {errors.last_name}
                 </p>
               )}
             </div>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="email" className="text-[10px]">
+            <Label htmlFor="email" className="text-[11px]">
               Email *
             </Label>
             <Input
@@ -1329,12 +1329,12 @@ function BasicAddRecruitDialog({
               placeholder="john.doe@example.com"
             />
             {errors.email && (
-              <p className="text-[9px] text-destructive">{errors.email}</p>
+              <p className="text-[10px] text-destructive">{errors.email}</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="phone" className="text-[10px]">
+              <Label htmlFor="phone" className="text-[11px]">
                 Phone
               </Label>
               <Input
@@ -1349,7 +1349,7 @@ function BasicAddRecruitDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="resident_state" className="text-[10px]">
+              <Label htmlFor="resident_state" className="text-[11px]">
                 Resident State
               </Label>
               <Select
@@ -1379,7 +1379,7 @@ function BasicAddRecruitDialog({
             <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
               <Label
                 htmlFor="is_licensed"
-                className="text-[10px] cursor-pointer"
+                className="text-[11px] cursor-pointer"
               >
                 Already Licensed?
               </Label>
@@ -1393,7 +1393,7 @@ function BasicAddRecruitDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="contract_level" className="text-[10px]">
+              <Label htmlFor="contract_level" className="text-[11px]">
                 Starting Comp %
               </Label>
               <Select
@@ -1426,7 +1426,7 @@ function BasicAddRecruitDialog({
             </div>
           </div>
           {errors._form && (
-            <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[10px] text-destructive">
+            <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[11px] text-destructive">
               {errors._form}
             </p>
           )}
@@ -1435,7 +1435,7 @@ function BasicAddRecruitDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-[10px]"
+              className="h-7 text-[11px]"
               onClick={() => onOpenChange(false)}
             >
               Cancel
@@ -1443,7 +1443,7 @@ function BasicAddRecruitDialog({
             <Button
               type="submit"
               size="sm"
-              className="h-7 text-[10px]"
+              className="h-7 text-[11px]"
               disabled={
                 createRecruit.isPending ||
                 initializeProgress.isPending ||
