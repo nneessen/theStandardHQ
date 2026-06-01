@@ -164,8 +164,8 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           </div>
         </header>
 
-        {/* Main hero */}
-        <main className="flex-1 flex items-center justify-center px-6 sm:px-10 pb-10">
+        {/* Main hero (semantic <main> is provided by the app-level public layout wrapper) */}
+        <div className="flex-1 flex items-center justify-center px-6 sm:px-10 pb-10">
           <div className="w-full max-w-md">
             <SoftCard
               radius="lg"
@@ -265,7 +265,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               .
             </p>
           </div>
-        </main>
+        </div>
 
         <footer className="px-6 sm:px-10 py-5 text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle text-center">
           © {new Date().getFullYear()} The Standard Financial Group

@@ -34,6 +34,29 @@ export function LegalPageLayout({
           {children}
         </div>
         <div className="mt-12 border-t border-border pt-8">
+          <nav
+            aria-label="Legal"
+            className="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-sm"
+          >
+            <Link
+              to="/terms"
+              className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/privacy"
+              className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/accessibility"
+              className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Accessibility
+            </Link>
+          </nav>
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Nick Neessen. All rights reserved.
             The Standard HQ&trade; is owned and operated by Nick Neessen as an

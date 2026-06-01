@@ -371,7 +371,7 @@ export function PublicRegistrationPage() {
                   <Input
                     id="first_name"
                     {...register("first_name")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
                 <FormField
@@ -383,7 +383,7 @@ export function PublicRegistrationPage() {
                   <Input
                     id="last_name"
                     {...register("last_name")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
               </div>
@@ -399,7 +399,7 @@ export function PublicRegistrationPage() {
                     id="password"
                     type="password"
                     {...register("password")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
                 <FormField
@@ -412,7 +412,7 @@ export function PublicRegistrationPage() {
                     id="confirm_password"
                     type="password"
                     {...register("confirm_password")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
               </div>
@@ -424,7 +424,7 @@ export function PublicRegistrationPage() {
                     type="tel"
                     placeholder="(555) 555-5555"
                     {...register("phone")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
                 <FormField id="date_of_birth" label="Date of birth">
@@ -432,7 +432,7 @@ export function PublicRegistrationPage() {
                     id="date_of_birth"
                     type="date"
                     {...register("date_of_birth")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
               </div>
@@ -442,7 +442,7 @@ export function PublicRegistrationPage() {
                   <Input
                     id="city"
                     {...register("city")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
                 <FormField id="state" label="State">
@@ -452,7 +452,7 @@ export function PublicRegistrationPage() {
                   >
                     <SelectTrigger
                       id="state"
-                      className="h-9 text-sm rounded-[2px] bg-white"
+                      className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                     >
                       <SelectValue placeholder="—" />
                     </SelectTrigger>
@@ -473,7 +473,7 @@ export function PublicRegistrationPage() {
                   <Input
                     id="zip"
                     {...register("zip")}
-                    className="h-9 text-sm rounded-[2px] bg-white"
+                    className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                   />
                 </FormField>
               </div>
@@ -498,14 +498,14 @@ export function PublicRegistrationPage() {
                         id="instagram_username"
                         placeholder="@handle"
                         {...register("instagram_username")}
-                        className="h-9 text-sm rounded-[2px] bg-white"
+                        className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                       />
                     </FormField>
                     <FormField id="facebook_handle" label="Facebook">
                       <Input
                         id="facebook_handle"
                         {...register("facebook_handle")}
-                        className="h-9 text-sm rounded-[2px] bg-white"
+                        className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                       />
                     </FormField>
                   </div>
@@ -519,7 +519,7 @@ export function PublicRegistrationPage() {
                     >
                       <SelectTrigger
                         id="referral_source"
-                        className="h-9 text-sm rounded-[2px] bg-white"
+                        className="h-9 text-sm rounded-[2px] bg-white text-neutral-900 placeholder:text-neutral-500"
                       >
                         <SelectValue placeholder="Select…" />
                       </SelectTrigger>

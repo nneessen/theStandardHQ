@@ -47,6 +47,7 @@ function App() {
     "/auth/denied",
     "/terms",
     "/privacy",
+    "/accessibility",
     "/join-",
     "/join/",
     "/register/",
@@ -90,9 +91,17 @@ function App() {
   if (isPublicPath) {
     return (
       <>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[100] focus:rounded focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-2 focus:ring-ring"
+        >
+          Skip to content
+        </a>
         <Toaster />
         <CookieConsentBanner />
-        <Outlet />
+        <main id="main-content" tabIndex={-1}>
+          <Outlet />
+        </main>
       </>
     );
   }

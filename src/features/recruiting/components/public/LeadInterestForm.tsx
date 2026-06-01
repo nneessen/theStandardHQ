@@ -78,14 +78,6 @@ export function LeadInterestForm({
   primaryColor,
   darkMode = false,
 }: LeadInterestFormProps) {
-  // Dark mode classes for inputs (prefixed with _ to indicate intentionally unused for now)
-  const _inputClass = darkMode
-    ? "bg-white/10 border-white/20 text-white placeholder:text-muted-foreground focus:border-info/70 focus:ring-info/20"
-    : "";
-  const _labelClass = darkMode ? "text-foreground" : "";
-  const _selectTriggerClass = darkMode
-    ? "bg-white/10 border-white/20 text-white [&>span]:text-white"
-    : "";
   const submitLeadMutation = useSubmitLead();
   const [honeypot, setHoneypot] = useState("");
   const [selectedSpecialties, setSelectedSpecialties] = useState<
@@ -198,7 +190,7 @@ export function LeadInterestForm({
                 id="firstName"
                 placeholder="John"
                 variant="outlined"
-                className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
@@ -226,7 +218,7 @@ export function LeadInterestForm({
                 id="lastName"
                 placeholder="Doe"
                 variant="outlined"
-                className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
@@ -257,7 +249,7 @@ export function LeadInterestForm({
               type="email"
               placeholder="john.doe@example.com"
               variant="outlined"
-              className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+              className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
@@ -286,7 +278,7 @@ export function LeadInterestForm({
               type="tel"
               placeholder="(555) 123-4567"
               variant="outlined"
-              className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+              className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
@@ -315,7 +307,7 @@ export function LeadInterestForm({
                 id="city"
                 placeholder="New York"
                 variant="outlined"
-                className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
@@ -344,7 +336,8 @@ export function LeadInterestForm({
                 onValueChange={(value) => field.handleChange(value)}
               >
                 <SelectTrigger
-                  className={`h-9 text-sm bg-background border-2 border-border  ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                  aria-label="State"
+                  className={`h-9 text-sm bg-white text-neutral-900 border-2 border-border data-[placeholder]:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                 >
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
@@ -434,7 +427,10 @@ export function LeadInterestForm({
               value={field.state.value}
               onValueChange={(value) => field.handleChange(value)}
             >
-              <SelectTrigger className="h-9 text-sm bg-background border-2 border-border ">
+              <SelectTrigger
+                aria-label="Income goals"
+                className="h-9 text-sm bg-white text-neutral-900 border-2 border-border data-[placeholder]:text-neutral-500"
+              >
                 <SelectValue placeholder="Select income goal (optional)" />
               </SelectTrigger>
               <SelectContent>
@@ -574,7 +570,7 @@ export function LeadInterestForm({
                         id="currentImoName"
                         placeholder="Enter your current IMO or agency name"
                         variant="outlined"
-                        className={`h-9 text-sm bg-background ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                        className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
@@ -633,7 +629,7 @@ export function LeadInterestForm({
               id="whyInterested"
               variant="ghost"
               placeholder="Tell us a bit about yourself and what draws you to this opportunity..."
-              className={`min-h-[56px] text-sm resize-none bg-white  text-foreground border-2 border-border  rounded-lg focus:border-foreground  focus:bg-white  ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+              className={`min-h-[56px] text-sm resize-none bg-white text-neutral-900 placeholder:text-neutral-500 border-2 border-border rounded-lg focus:border-foreground focus:bg-white ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}

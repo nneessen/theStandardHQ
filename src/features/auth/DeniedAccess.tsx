@@ -25,9 +25,9 @@ export const DeniedAccess: React.FC<{ email?: string; reason?: string }> = ({
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground text-2xl font-bold mb-4 shadow-lg">
             CT
           </div>
-          <h2 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Access Denied
-          </h2>
+          </h1>
           <p className="text-sm text-muted-foreground">
             Your account application was not approved
           </p>

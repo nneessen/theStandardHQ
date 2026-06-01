@@ -64,7 +64,7 @@ import PresentationDetailPage from "./features/training-modules/components/prese
 import { ContractingPage } from "./features/contracting/ContractingPage";
 import { MessagesPage } from "./features/messages";
 import { LeaderboardNamingPage } from "./features/messages/components/LeaderboardNamingPage";
-import { TermsPage, PrivacyPage } from "./features/legal";
+import { TermsPage, PrivacyPage, AccessibilityPage } from "./features/legal";
 import { WorkflowAdminPage } from "./features/workflows";
 import { LeaderboardPage } from "./features/leaderboard";
 import { TheStandardTeamRoutePage } from "./features/the-standard-team";
@@ -871,6 +871,12 @@ const privacyRoute = createRoute({
   component: PrivacyPage,
 });
 
+const accessibilityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "accessibility",
+  component: AccessibilityPage,
+});
+
 // Billing route - subscription management. Self-serve sign-ups are disabled, so
 // only users with an active paid subscription (or super-admins) may access it.
 const billingRoute = createRoute({
@@ -1182,6 +1188,7 @@ const routeTree = rootRoute.addChildren([
   slackNameLeaderboardRoute,
   termsRoute,
   privacyRoute,
+  accessibilityRoute,
   billingRoute,
   theStandardTeamRoute,
   leadVendorsRoute,
