@@ -10,6 +10,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { useChatBotAgent, useIsOnExemptTeam } from "@/features/chat-bot";
 import { useUserActiveAddons } from "@/hooks/subscription";
 import { useImo } from "@/contexts/ImoContext";
@@ -89,125 +91,95 @@ export function ChannelOrchestrationPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-lg bg-v2-card-dark">
-        <div className="absolute inset-0 opacity-[0.03]">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern
-                id="co-grid"
-                width="32"
-                height="32"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 32 0 L 0 0 0 32"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="0.5"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#co-grid)" />
-          </svg>
-        </div>
-        <div
-          className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(226, 255, 204, 0.15)" }}
-        />
-        <div
-          className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(132, 144, 127, 0.14)" }}
-        />
-        <div className="relative px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: "rgba(226, 255, 204, 0.25)" }}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>CHANNELS</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
             >
-              <Network className="h-4 w-4 text-foreground" />
-            </div>
-            <div>
-              <h1 className="font-display text-lg font-extrabold uppercase text-foreground tracking-tight">
-                Channel Orchestration
-              </h1>
-              <p className="text-[10px] text-muted-foreground">
-                SMS + Voice routing rules, post-call actions, voice session
-                history
+              Orchestrator
+            </h1>
+          </header>
+
+          {/* Channel availability warning */}
+          {!agent.botEnabled && !agent.voiceEnabled && (
+            <div className="flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 dark:border-destructive dark:bg-destructive/15">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+              <p className="text-[10px] text-destructive">
+                Both SMS Bot and Voice Agent are disabled. Orchestration rules
+                will not be evaluated until at least one channel is active.
               </p>
             </div>
+          )}
+
+          {/* Per-tab status banners */}
+          {activeTab === "rules" && (
+            <div className="flex items-center gap-3 rounded-lg border border-info/30 bg-info/10 px-4 py-2 dark:border-info dark:bg-info/10">
+              <ListChecks className="h-3.5 w-3.5 shrink-0 text-info" />
+              <p className="text-[10px] text-info">
+                Rules are evaluated in real-time for SMS and voice channels.
+                {!agent.voiceEnabled &&
+                  " Voice Agent is not active — voice-only rules will have no effect."}
+                {!agent.botEnabled &&
+                  " SMS Bot is not active — SMS-only rules will have no effect."}
+              </p>
+            </div>
+          )}
+          {activeTab === "post-call" && (
+            <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
+              <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
+              <p className="text-[10px] text-warning">
+                Configuration is saved. Automatic post-call execution requires
+                backend Retell integration (coming soon).
+              </p>
+            </div>
+          )}
+          {activeTab === "sessions" && (
+            <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
+              <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
+              <p className="text-[10px] text-warning">
+                Voice session history depends on backend call recording
+                integration.
+              </p>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-shrink-0",
+                  activeTab === tab.id
+                    ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
+                    : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+                )}
+              >
+                <tab.icon className="h-3 w-3" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-y-auto">
+            {activeTab === "rules" && <RulesTab />}
+            {activeTab === "post-call" && <PostCallTab />}
+            {activeTab === "sessions" && <VoiceSessionsTab />}
           </div>
         </div>
       </div>
-
-      {/* Channel availability warning */}
-      {!agent.botEnabled && !agent.voiceEnabled && (
-        <div className="flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 dark:border-destructive dark:bg-destructive/15">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
-          <p className="text-[10px] text-destructive">
-            Both SMS Bot and Voice Agent are disabled. Orchestration rules will
-            not be evaluated until at least one channel is active.
-          </p>
-        </div>
-      )}
-
-      {/* Per-tab status banners */}
-      {activeTab === "rules" && (
-        <div className="flex items-center gap-3 rounded-lg border border-info/30 bg-info/10 px-4 py-2 dark:border-info dark:bg-info/10">
-          <ListChecks className="h-3.5 w-3.5 shrink-0 text-info" />
-          <p className="text-[10px] text-info">
-            Rules are evaluated in real-time for SMS and voice channels.
-            {!agent.voiceEnabled &&
-              " Voice Agent is not active — voice-only rules will have no effect."}
-            {!agent.botEnabled &&
-              " SMS Bot is not active — SMS-only rules will have no effect."}
-          </p>
-        </div>
-      )}
-      {activeTab === "post-call" && (
-        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
-          <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
-          <p className="text-[10px] text-warning">
-            Configuration is saved. Automatic post-call execution requires
-            backend Retell integration (coming soon).
-          </p>
-        </div>
-      )}
-      {activeTab === "sessions" && (
-        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
-          <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
-          <p className="text-[10px] text-warning">
-            Voice session history depends on backend call recording integration.
-          </p>
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-shrink-0",
-              activeTab === tab.id
-                ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
-                : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
-            )}
-          >
-            <tab.icon className="h-3 w-3" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
-        {activeTab === "rules" && <RulesTab />}
-        {activeTab === "post-call" && <PostCallTab />}
-        {activeTab === "sessions" && <VoiceSessionsTab />}
-      </div>
-    </div>
+    </SectionShell>
   );
 }

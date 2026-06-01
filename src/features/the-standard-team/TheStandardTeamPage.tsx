@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Loader2, Network, UserSquare2, Users, LayoutGrid } from "lucide-react";
+import { Loader2, UserSquare2, Users, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UpgradePrompt } from "@/components/subscription";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import { useTheStandardAgents } from "./hooks/useTheStandardAgents";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import {
   LICENSING_WORKSPACE_PAID_FEATURE,
   LICENSING_WORKSPACE_TRIAL_DAYS,
@@ -171,122 +173,143 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
   const trialEndsOn = formatAccessDate(trialBanner?.endsAt ?? null);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 gap-2.5">
-      {trialBanner && (
-        <div className="rounded-md border border-border border-l-4 border-l-warning bg-card px-3 py-2">
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="outline" size="sm">
-                  7-Day Trial
-                </Badge>
-                <Badge variant="outline" size="sm">
-                  {trialBanner.daysRemaining} day
-                  {trialBanner.daysRemaining === 1 ? "" : "s"} left
-                </Badge>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>DIRECTORY</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                The Standard Team
+              </h1>
+            </div>
+            {/* View mode switcher on the right */}
+            {view !== "agent-detail" && (
+              <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+                <ViewModeButton
+                  active={view === "my"}
+                  onClick={() => setView("my")}
+                  icon={UserSquare2}
+                  label="My numbers"
+                />
+                {isUpline && (
+                  <ViewModeButton
+                    active={view === "team"}
+                    onClick={() => setView("team")}
+                    icon={Users}
+                    label="Team"
+                  />
+                )}
+                {isUpline && (
+                  <ViewModeButton
+                    active={view === "compare"}
+                    onClick={() => setView("compare")}
+                    icon={LayoutGrid}
+                    label="Compare"
+                  />
+                )}
               </div>
-              <p className="mt-1 text-[11px] font-medium text-foreground">
-                Try the team writing-numbers workspace while your trial is
-                active.
-              </p>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
-                See your team&apos;s coverage at a glance, drill into a single
-                agent, or compare side-by-side. After the trial
-                {trialEndsOn ? ` (ends ${trialEndsOn})` : ""}, this requires a
-                Pro or Team plan. Free carrier contract toggles remain in
-                Settings &rarr; Profile.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link to="/billing">
-                <Button
-                  type="button"
-                  size="sm"
-                  className="h-7 px-2 text-[10px]"
-                >
-                  View Pro/Team Plans
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between bg-card rounded-lg px-3 py-2 border border-border">
-        <div className="flex items-center gap-2">
-          <Network className="h-4 w-4 text-foreground" />
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
-            Writing Numbers
-          </h1>
-        </div>
-
-        {view !== "agent-detail" && (
-          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
-            <ViewModeButton
-              active={view === "my"}
-              onClick={() => setView("my")}
-              icon={UserSquare2}
-              label="My numbers"
-            />
-            {isUpline && (
-              <ViewModeButton
-                active={view === "team"}
-                onClick={() => setView("team")}
-                icon={Users}
-                label="Team"
-              />
             )}
-            {isUpline && (
-              <ViewModeButton
-                active={view === "compare"}
-                onClick={() => setView("compare")}
-                icon={LayoutGrid}
-                label="Compare"
+          </header>
+
+          {trialBanner && (
+            <div className="rounded-md border border-border border-l-4 border-l-warning bg-card px-3 py-2">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" size="sm">
+                      7-Day Trial
+                    </Badge>
+                    <Badge variant="outline" size="sm">
+                      {trialBanner.daysRemaining} day
+                      {trialBanner.daysRemaining === 1 ? "" : "s"} left
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-[11px] font-medium text-foreground">
+                    Try the team writing-numbers workspace while your trial is
+                    active.
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    See your team&apos;s coverage at a glance, drill into a
+                    single agent, or compare side-by-side. After the trial
+                    {trialEndsOn ? ` (ends ${trialEndsOn})` : ""}, this requires
+                    a Pro or Team plan. Free carrier contract toggles remain in
+                    Settings &rarr; Profile.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link to="/billing">
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 px-2 text-[10px]"
+                    >
+                      View Pro/Team Plans
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <section className="flex-1 min-h-0 bg-card rounded-lg border border-border overflow-hidden flex flex-col">
+            {agentsLoading ? (
+              <div className="h-full flex items-center justify-center p-4">
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading agents...
+                </div>
+              </div>
+            ) : agentsError ? (
+              <div className="h-full flex items-center justify-center p-4">
+                <p className="text-[11px] text-destructive">
+                  Failed to load agents: {agentsError.message}
+                </p>
+              </div>
+            ) : view === "my" && currentProfile?.id ? (
+              <MyWritingNumbersView agentId={currentProfile.id} />
+            ) : view === "team" ? (
+              <TeamWritingNumbersOverview
+                agents={agents}
+                currentUserId={currentProfile?.id}
+                onSelectAgent={handleSelectAgent}
               />
+            ) : view === "agent-detail" && detailAgent ? (
+              <AgentDetailView
+                agent={detailAgent}
+                isSelf={detailAgent.id === currentProfile?.id}
+                onBack={handleBackToTeam}
+              />
+            ) : view === "compare" ? (
+              <WritingNumbersMatrixView agents={agents} />
+            ) : (
+              <div className="h-full flex items-center justify-center p-4">
+                <p className="text-[11px] text-muted-foreground">
+                  Select a view above to get started.
+                </p>
+              </div>
             )}
-          </div>
-        )}
+          </section>
+        </div>
       </div>
-
-      <section className="flex-1 min-h-0 bg-card rounded-lg border border-border overflow-hidden flex flex-col">
-        {agentsLoading ? (
-          <div className="h-full flex items-center justify-center p-4">
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading agents...
-            </div>
-          </div>
-        ) : agentsError ? (
-          <div className="h-full flex items-center justify-center p-4">
-            <p className="text-[11px] text-destructive">
-              Failed to load agents: {agentsError.message}
-            </p>
-          </div>
-        ) : view === "my" && currentProfile?.id ? (
-          <MyWritingNumbersView agentId={currentProfile.id} />
-        ) : view === "team" ? (
-          <TeamWritingNumbersOverview
-            agents={agents}
-            currentUserId={currentProfile?.id}
-            onSelectAgent={handleSelectAgent}
-          />
-        ) : view === "agent-detail" && detailAgent ? (
-          <AgentDetailView
-            agent={detailAgent}
-            isSelf={detailAgent.id === currentProfile?.id}
-            onBack={handleBackToTeam}
-          />
-        ) : view === "compare" ? (
-          <WritingNumbersMatrixView agents={agents} />
-        ) : (
-          <div className="h-full flex items-center justify-center p-4">
-            <p className="text-[11px] text-muted-foreground">
-              Select a view above to get started.
-            </p>
-          </div>
-        )}
-      </section>
-    </div>
+    </SectionShell>
   );
 }
 

@@ -101,6 +101,9 @@ import { DeleteRecruitDialogOptimized } from "../components/DeleteRecruitDialog.
 import { InitializePipelineDialog } from "../components/InitializePipelineDialog";
 import { getRecruitActionPolicy } from "../utils/recruit-action-policy";
 
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
+
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -620,445 +623,487 @@ export function RecruitDetailPage() {
     : (recruiter?.email ?? "—");
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5">
-        {/* Top breadcrumb */}
-        <button
-          type="button"
-          onClick={goBack}
-          className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-3 w-3" />
-          Recruiting
-        </button>
-
-        {/* HERO — two-column: identity left, stats right */}
-        <section className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-3 sm:gap-4">
-          {/* Identity card */}
-          <div className="rounded-xl bg-card border border-border p-5 sm:p-6 flex items-start gap-5">
-            <div className="relative shrink-0">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-warning/30 via-warning/10 to-transparent blur" />
-              <Avatar className="relative h-20 w-20 ring-2 ring-background">
-                <AvatarImage src={recruit.profile_photo_url || undefined} />
-                <AvatarFallback className="text-xl font-semibold bg-muted">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground truncate">
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+              <button
+                type="button"
+                onClick={goBack}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "2px 0",
+                  color: T.mut,
+                  fontSize: 11,
+                }}
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Recruiting
+              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <Cap>RECRUITING PIPELINE</Cap>
+                <h1
+                  style={{
+                    font: `800 26px ${T.disp}`,
+                    color: T.ink,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    margin: 0,
+                  }}
+                >
                   {displayName}
                 </h1>
-                <StatusBadge
-                  isInvitation={isInvitation}
-                  status={recruit.onboarding_status}
-                />
               </div>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] text-muted-foreground">
-                {recruit.email && (
-                  <a
-                    href={`mailto:${recruit.email}`}
-                    className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    {recruit.email}
-                  </a>
-                )}
-                {recruit.phone && (
-                  <a
-                    href={`tel:${recruit.phone}`}
-                    className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors font-mono tabular-nums"
-                  >
-                    <Phone className="h-3.5 w-3.5" />
-                    {recruit.phone}
-                  </a>
-                )}
-                {recruit.created_at && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5" />
-                    Joined{" "}
-                    {formatDistanceToNow(new Date(recruit.created_at), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                )}
+            </div>
+          </header>
+
+          {/* HERO — two-column: identity left, stats right */}
+          <section className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-3 sm:gap-4">
+            {/* Identity card */}
+            <div className="rounded-xl bg-card border border-border p-5 sm:p-6 flex items-start gap-5">
+              <div className="relative shrink-0">
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-warning/30 via-warning/10 to-transparent blur" />
+                <Avatar className="relative h-20 w-20 ring-2 ring-background">
+                  <AvatarImage src={recruit.profile_photo_url || undefined} />
+                  <AvatarFallback className="text-xl font-semibold bg-muted">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-              {!isInvitation && (
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-muted-foreground">
-                    NPN
-                  </span>
-                  <NpnInline
-                    currentNpn={
-                      (recruit as unknown as { npn?: string | null }).npn ??
-                      null
-                    }
-                    saving={updateRecruit.isPending}
-                    onSave={async (npn) => {
-                      await updateRecruit.mutateAsync({
-                        id: recruit.id,
-                        updates: { npn: npn || null },
-                      });
-                    }}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground truncate">
+                    {displayName}
+                  </h1>
+                  <StatusBadge
+                    isInvitation={isInvitation}
+                    status={recruit.onboarding_status}
                   />
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Stats panel */}
-          <div className="rounded-xl bg-card border border-border overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-border bg-muted/40">
-              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
-                At a glance
-              </span>
-            </div>
-            <div className="grid grid-cols-2 divide-x divide-y divide-border">
-              <StatCell
-                label="Pipeline progress"
-                value={
-                  isInvitation
-                    ? "—"
-                    : totalPhases
-                      ? `${completedCount}/${totalPhases}`
-                      : "—"
-                }
-                hint={`${completionPct}% complete`}
-              />
-              <StatCell
-                label="Days active"
-                value={daysInPipeline.toString()}
-                hint="Since joined"
-              />
-              <StatCell
-                label="Current phase"
-                value={
-                  isInvitation
-                    ? "Invited"
-                    : (currentPhaseObj?.phase_name ?? "—")
-                }
-                hint={
-                  isCurrentPhaseBlocked
-                    ? "BLOCKED"
-                    : isInvitation
-                      ? "Awaiting signup"
-                      : currentPhase
-                        ? "In progress"
-                        : "Not started"
-                }
-                hintTone={isCurrentPhaseBlocked ? "destructive" : "muted"}
-              />
-              <StatCell
-                label="Recruiter"
-                value={recruiterName.split(" ")[0] ?? "—"}
-                hint={recruiterName}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ACTIONS — grouped by purpose, custom buttons */}
-        {policy && (
-          <section className="rounded-xl bg-card border border-border p-4 sm:p-5">
-            <div className="flex items-baseline justify-between mb-3">
-              <h2 className="text-[11px] uppercase tracking-[0.18em] font-semibold text-foreground">
-                Actions
-              </h2>
-              <span className="text-[10px] text-muted-foreground">
-                {entity.kind === "invitation"
-                  ? "Pre-registration"
-                  : `Phase ${completedCount + (currentPhase ? 1 : 0)}/${totalPhases || 0}`}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Pipeline group */}
-              {entity.kind === "registered" && (
-                <ActionGroup label="Pipeline">
-                  {!hasPipelineProgress ? (
-                    <BigButton
-                      icon={<PlayCircle className="h-4 w-4" />}
-                      tone="primary"
-                      onClick={() => setInitializeDialogOpen(true)}
-                      loading={initializeProgress.isPending}
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] text-muted-foreground">
+                  {recruit.email && (
+                    <a
+                      href={`mailto:${recruit.email}`}
+                      className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
                     >
-                      Initialize Pipeline
-                    </BigButton>
-                  ) : (
-                    <>
-                      <BigButton
-                        icon={<ArrowRight className="h-4 w-4" />}
-                        tone="primary"
-                        disabled={!policy.canAdvance}
-                        loading={advancePhase.isPending}
-                        onClick={handleAdvancePhase}
-                      >
-                        Advance Phase
-                      </BigButton>
-                      {policy.canUnblock ? (
-                        <BigButton
-                          icon={<Unlock className="h-4 w-4" />}
-                          tone="warning"
-                          loading={updatePhaseStatus.isPending}
-                          onClick={handleUnblockPhase}
-                        >
-                          Unblock
-                        </BigButton>
-                      ) : (
-                        <BigButton
-                          icon={<Lock className="h-4 w-4" />}
-                          tone="muted"
-                          disabled={!policy.canBlock}
-                          onClick={() => setBlockDialogOpen(true)}
-                        >
-                          Block
-                        </BigButton>
-                      )}
-                      <BigButton
-                        icon={<Undo2 className="h-4 w-4" />}
-                        tone="muted"
-                        disabled={!policy.canRevert}
-                        loading={revertPhase.isPending}
-                        onClick={handleRevertPhase}
-                      >
-                        Revert
-                      </BigButton>
-                    </>
+                      <Mail className="h-3.5 w-3.5" />
+                      {recruit.email}
+                    </a>
                   )}
-                </ActionGroup>
-              )}
+                  {recruit.phone && (
+                    <a
+                      href={`tel:${recruit.phone}`}
+                      className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors font-mono tabular-nums"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      {recruit.phone}
+                    </a>
+                  )}
+                  {recruit.created_at && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Joined{" "}
+                      {formatDistanceToNow(new Date(recruit.created_at), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  )}
+                </div>
+                {!isInvitation && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-muted-foreground">
+                      NPN
+                    </span>
+                    <NpnInline
+                      currentNpn={
+                        (recruit as unknown as { npn?: string | null }).npn ??
+                        null
+                      }
+                      saving={updateRecruit.isPending}
+                      onSave={async (npn) => {
+                        await updateRecruit.mutateAsync({
+                          id: recruit.id,
+                          updates: { npn: npn || null },
+                        });
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
 
-              {/* Invitation group */}
-              {entity.kind === "invitation" && (
-                <ActionGroup label="Invitation">
-                  <BigButton
-                    icon={<Send className="h-4 w-4" />}
-                    tone="primary"
-                    loading={
-                      resendInvite.isPending || resendInvitation.isPending
-                    }
-                    onClick={handleResendInvite}
-                  >
-                    Resend Invite
-                  </BigButton>
-                  <BigButton
-                    icon={<XCircle className="h-4 w-4" />}
-                    tone="destructive"
-                    loading={cancelInvitation.isPending}
-                    disabled={!policy.canCancelInvitation}
-                    onClick={handleCancelInvitation}
-                  >
-                    Cancel Invitation
-                  </BigButton>
-                </ActionGroup>
-              )}
+            {/* Stats panel */}
+            <div className="rounded-xl bg-card border border-border overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border bg-muted/40">
+                <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
+                  At a glance
+                </span>
+              </div>
+              <div className="grid grid-cols-2 divide-x divide-y divide-border">
+                <StatCell
+                  label="Pipeline progress"
+                  value={
+                    isInvitation
+                      ? "—"
+                      : totalPhases
+                        ? `${completedCount}/${totalPhases}`
+                        : "—"
+                  }
+                  hint={`${completionPct}% complete`}
+                />
+                <StatCell
+                  label="Days active"
+                  value={daysInPipeline.toString()}
+                  hint="Since joined"
+                />
+                <StatCell
+                  label="Current phase"
+                  value={
+                    isInvitation
+                      ? "Invited"
+                      : (currentPhaseObj?.phase_name ?? "—")
+                  }
+                  hint={
+                    isCurrentPhaseBlocked
+                      ? "BLOCKED"
+                      : isInvitation
+                        ? "Awaiting signup"
+                        : currentPhase
+                          ? "In progress"
+                          : "Not started"
+                  }
+                  hintTone={isCurrentPhaseBlocked ? "destructive" : "muted"}
+                />
+                <StatCell
+                  label="Recruiter"
+                  value={recruiterName.split(" ")[0] ?? "—"}
+                  hint={recruiterName}
+                />
+              </div>
+            </div>
+          </section>
 
-              {/* Communications group */}
-              {entity.kind === "registered" && (
-                <ActionGroup label="Communications">
-                  <BigButton
-                    icon={
-                      notificationStatus?.newRecruitSent ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <Hash className="h-4 w-4" />
-                      )
-                    }
-                    tone={
-                      notificationStatus?.newRecruitSent ? "success" : "muted"
-                    }
-                    disabled={policy.newRecruitSlackDisabled}
-                    loading={
-                      slackSendingType === "new_recruit" &&
-                      sendSlackNotification.isPending
-                    }
-                    onClick={() => handleSendSlackNotification("new_recruit")}
-                  >
-                    {notificationStatus?.newRecruitSent
-                      ? "Slack: New (sent)"
-                      : "Slack: New recruit"}
-                  </BigButton>
-                  <BigButton
-                    icon={
-                      notificationStatus?.npnReceivedSent ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <Hash className="h-4 w-4" />
-                      )
-                    }
-                    tone={
-                      notificationStatus?.npnReceivedSent ? "success" : "muted"
-                    }
-                    disabled={policy.npnSlackDisabled}
-                    loading={
-                      slackSendingType === "npn_received" &&
-                      sendSlackNotification.isPending
-                    }
-                    onClick={() => handleSendSlackNotification("npn_received")}
-                  >
-                    {notificationStatus?.npnReceivedSent
-                      ? "Slack: NPN (sent)"
-                      : "Slack: NPN"}
-                  </BigButton>
-                </ActionGroup>
-              )}
+          {/* ACTIONS — grouped by purpose, custom buttons */}
+          {policy && (
+            <section className="rounded-xl bg-card border border-border p-4 sm:p-5">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[11px] uppercase tracking-[0.18em] font-semibold text-foreground">
+                  Actions
+                </h2>
+                <span className="text-[10px] text-muted-foreground">
+                  {entity.kind === "invitation"
+                    ? "Pre-registration"
+                    : `Phase ${completedCount + (currentPhase ? 1 : 0)}/${totalPhases || 0}`}
+                </span>
+              </div>
 
-              {/* Admin group — only render for registered recruits.
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Pipeline group */}
+                {entity.kind === "registered" && (
+                  <ActionGroup label="Pipeline">
+                    {!hasPipelineProgress ? (
+                      <BigButton
+                        icon={<PlayCircle className="h-4 w-4" />}
+                        tone="primary"
+                        onClick={() => setInitializeDialogOpen(true)}
+                        loading={initializeProgress.isPending}
+                      >
+                        Initialize Pipeline
+                      </BigButton>
+                    ) : (
+                      <>
+                        <BigButton
+                          icon={<ArrowRight className="h-4 w-4" />}
+                          tone="primary"
+                          disabled={!policy.canAdvance}
+                          loading={advancePhase.isPending}
+                          onClick={handleAdvancePhase}
+                        >
+                          Advance Phase
+                        </BigButton>
+                        {policy.canUnblock ? (
+                          <BigButton
+                            icon={<Unlock className="h-4 w-4" />}
+                            tone="warning"
+                            loading={updatePhaseStatus.isPending}
+                            onClick={handleUnblockPhase}
+                          >
+                            Unblock
+                          </BigButton>
+                        ) : (
+                          <BigButton
+                            icon={<Lock className="h-4 w-4" />}
+                            tone="muted"
+                            disabled={!policy.canBlock}
+                            onClick={() => setBlockDialogOpen(true)}
+                          >
+                            Block
+                          </BigButton>
+                        )}
+                        <BigButton
+                          icon={<Undo2 className="h-4 w-4" />}
+                          tone="muted"
+                          disabled={!policy.canRevert}
+                          loading={revertPhase.isPending}
+                          onClick={handleRevertPhase}
+                        >
+                          Revert
+                        </BigButton>
+                      </>
+                    )}
+                  </ActionGroup>
+                )}
+
+                {/* Invitation group */}
+                {entity.kind === "invitation" && (
+                  <ActionGroup label="Invitation">
+                    <BigButton
+                      icon={<Send className="h-4 w-4" />}
+                      tone="primary"
+                      loading={
+                        resendInvite.isPending || resendInvitation.isPending
+                      }
+                      onClick={handleResendInvite}
+                    >
+                      Resend Invite
+                    </BigButton>
+                    <BigButton
+                      icon={<XCircle className="h-4 w-4" />}
+                      tone="destructive"
+                      loading={cancelInvitation.isPending}
+                      disabled={!policy.canCancelInvitation}
+                      onClick={handleCancelInvitation}
+                    >
+                      Cancel Invitation
+                    </BigButton>
+                  </ActionGroup>
+                )}
+
+                {/* Communications group */}
+                {entity.kind === "registered" && (
+                  <ActionGroup label="Communications">
+                    <BigButton
+                      icon={
+                        notificationStatus?.newRecruitSent ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Hash className="h-4 w-4" />
+                        )
+                      }
+                      tone={
+                        notificationStatus?.newRecruitSent ? "success" : "muted"
+                      }
+                      disabled={policy.newRecruitSlackDisabled}
+                      loading={
+                        slackSendingType === "new_recruit" &&
+                        sendSlackNotification.isPending
+                      }
+                      onClick={() => handleSendSlackNotification("new_recruit")}
+                    >
+                      {notificationStatus?.newRecruitSent
+                        ? "Slack: New (sent)"
+                        : "Slack: New recruit"}
+                    </BigButton>
+                    <BigButton
+                      icon={
+                        notificationStatus?.npnReceivedSent ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Hash className="h-4 w-4" />
+                        )
+                      }
+                      tone={
+                        notificationStatus?.npnReceivedSent
+                          ? "success"
+                          : "muted"
+                      }
+                      disabled={policy.npnSlackDisabled}
+                      loading={
+                        slackSendingType === "npn_received" &&
+                        sendSlackNotification.isPending
+                      }
+                      onClick={() =>
+                        handleSendSlackNotification("npn_received")
+                      }
+                    >
+                      {notificationStatus?.npnReceivedSent
+                        ? "Slack: NPN (sent)"
+                        : "Slack: NPN"}
+                    </BigButton>
+                  </ActionGroup>
+                )}
+
+                {/* Admin group — only render for registered recruits.
                   Invitation deletion lives in the Invitation group (Cancel Invitation)
                   because the synthetic `invitation-<id>` is NOT a real UUID and
                   admin_deleteuser would reject it. */}
-              {entity.kind === "registered" && (
-                <ActionGroup label="Admin">
-                  {policy.canUnenroll && (
+                {entity.kind === "registered" && (
+                  <ActionGroup label="Admin">
+                    {policy.canUnenroll && (
+                      <BigButton
+                        icon={<RotateCcw className="h-4 w-4" />}
+                        tone="muted"
+                        onClick={() => setUnenrollDialogOpen(true)}
+                      >
+                        Unenroll from Pipeline
+                      </BigButton>
+                    )}
                     <BigButton
-                      icon={<RotateCcw className="h-4 w-4" />}
-                      tone="muted"
-                      onClick={() => setUnenrollDialogOpen(true)}
+                      icon={<Trash2 className="h-4 w-4" />}
+                      tone="destructive"
+                      onClick={() => setDeleteDialogOpen(true)}
                     >
-                      Unenroll from Pipeline
+                      Delete Recruit
                     </BigButton>
-                  )}
-                  <BigButton
-                    icon={<Trash2 className="h-4 w-4" />}
-                    tone="destructive"
-                    onClick={() => setDeleteDialogOpen(true)}
-                  >
-                    Delete Recruit
-                  </BigButton>
-                </ActionGroup>
+                  </ActionGroup>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* PHASE PROGRESS — custom horizontal flow */}
+          {!isInvitation && hasPipelineProgress && sortedPhases.length > 0 && (
+            <section className="rounded-xl bg-card border border-border p-4 sm:p-5">
+              <div className="flex items-baseline justify-between mb-3">
+                <h2 className="text-[11px] uppercase tracking-[0.18em] font-semibold text-foreground">
+                  Pipeline progress
+                </h2>
+                <span className="text-[10px] text-muted-foreground">
+                  {completedCount} of {totalPhases} phases complete
+                </span>
+              </div>
+              <PhaseFlow
+                phases={sortedPhases}
+                progressMap={progressMap}
+                currentPhaseId={currentPhase?.phase_id}
+                viewingPhaseId={viewingPhaseId}
+                onPhaseClick={handlePhasePillClick}
+              />
+            </section>
+          )}
+
+          {!isInvitation && !hasPipelineProgress && (
+            <section className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-10 text-center">
+              <Circle className="h-9 w-9 text-muted-foreground mx-auto mb-3" />
+              <p className="text-[13px] font-medium text-foreground mb-1">
+                Pipeline not initialized
+              </p>
+              <p className="text-[11px] text-muted-foreground mb-4 max-w-md mx-auto">
+                Pick a pipeline template above to start tracking this
+                recruit&apos;s progress.
+              </p>
+            </section>
+          )}
+
+          {isInvitation && (
+            <section className="rounded-xl border border-warning/30 bg-warning/5 px-6 py-8 text-center">
+              <Mail className="h-9 w-9 text-warning mx-auto mb-3" />
+              <p className="text-[13px] font-semibold text-foreground mb-1">
+                Awaiting registration
+              </p>
+              <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
+                {displayName} has been invited but hasn&apos;t completed their
+                registration form yet. Resend or cancel the invitation above.
+              </p>
+            </section>
+          )}
+
+          {/* SECTIONS — stacked, no tabs */}
+          {!isInvitation && hasPipelineProgress && (
+            <SectionCard
+              icon={<ListChecks className="h-4 w-4" />}
+              title="Tasks"
+              subtitle={
+                viewingPhase
+                  ? `${viewingPhase.phase_name} · ${viewingChecklistItems.length} item${viewingChecklistItems.length === 1 ? "" : "s"}`
+                  : "Current phase"
+              }
+            >
+              {viewingChecklistItems.length > 0 ? (
+                <PhaseChecklist
+                  userId={recruit.id}
+                  checklistItems={viewingChecklistItems}
+                  checklistProgress={checklistProgress || []}
+                  isUpline={true}
+                  currentUserId={user?.id}
+                  currentPhaseId={currentPhase?.phase_id}
+                  viewedPhaseId={viewingPhaseId}
+                  isAdmin={isStaff}
+                  onPhaseComplete={() => {}}
+                  recruitEmail={recruit.email || ""}
+                  recruitName={displayName}
+                  documents={documents || []}
+                />
+              ) : (
+                <EmptySectionState
+                  icon={<ListChecks className="h-7 w-7" />}
+                  message="No tasks defined for this phase."
+                />
               )}
-            </div>
-          </section>
-        )}
+            </SectionCard>
+          )}
 
-        {/* PHASE PROGRESS — custom horizontal flow */}
-        {!isInvitation && hasPipelineProgress && sortedPhases.length > 0 && (
-          <section className="rounded-xl bg-card border border-border p-4 sm:p-5">
-            <div className="flex items-baseline justify-between mb-3">
-              <h2 className="text-[11px] uppercase tracking-[0.18em] font-semibold text-foreground">
-                Pipeline progress
-              </h2>
-              <span className="text-[10px] text-muted-foreground">
-                {completedCount} of {totalPhases} phases complete
-              </span>
-            </div>
-            <PhaseFlow
-              phases={sortedPhases}
-              progressMap={progressMap}
-              currentPhaseId={currentPhase?.phase_id}
-              viewingPhaseId={viewingPhaseId}
-              onPhaseClick={handlePhasePillClick}
-            />
-          </section>
-        )}
-
-        {!isInvitation && !hasPipelineProgress && (
-          <section className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-10 text-center">
-            <Circle className="h-9 w-9 text-muted-foreground mx-auto mb-3" />
-            <p className="text-[13px] font-medium text-foreground mb-1">
-              Pipeline not initialized
-            </p>
-            <p className="text-[11px] text-muted-foreground mb-4 max-w-md mx-auto">
-              Pick a pipeline template above to start tracking this
-              recruit&apos;s progress.
-            </p>
-          </section>
-        )}
-
-        {isInvitation && (
-          <section className="rounded-xl border border-warning/30 bg-warning/5 px-6 py-8 text-center">
-            <Mail className="h-9 w-9 text-warning mx-auto mb-3" />
-            <p className="text-[13px] font-semibold text-foreground mb-1">
-              Awaiting registration
-            </p>
-            <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
-              {displayName} has been invited but hasn&apos;t completed their
-              registration form yet. Resend or cancel the invitation above.
-            </p>
-          </section>
-        )}
-
-        {/* SECTIONS — stacked, no tabs */}
-        {!isInvitation && hasPipelineProgress && (
-          <SectionCard
-            icon={<ListChecks className="h-4 w-4" />}
-            title="Tasks"
-            subtitle={
-              viewingPhase
-                ? `${viewingPhase.phase_name} · ${viewingChecklistItems.length} item${viewingChecklistItems.length === 1 ? "" : "s"}`
-                : "Current phase"
-            }
-          >
-            {viewingChecklistItems.length > 0 ? (
-              <PhaseChecklist
+          {!isInvitation && (
+            <SectionCard
+              icon={<FolderOpen className="h-4 w-4" />}
+              title="Documents"
+              subtitle={`${(documents || []).length} file${(documents || []).length === 1 ? "" : "s"}`}
+            >
+              <DocumentManager
                 userId={recruit.id}
-                checklistItems={viewingChecklistItems}
-                checklistProgress={checklistProgress || []}
+                documents={documents}
                 isUpline={true}
                 currentUserId={user?.id}
-                currentPhaseId={currentPhase?.phase_id}
-                viewedPhaseId={viewingPhaseId}
-                isAdmin={isStaff}
-                onPhaseComplete={() => {}}
-                recruitEmail={recruit.email || ""}
+              />
+            </SectionCard>
+          )}
+
+          {!isInvitation && (
+            <SectionCard
+              icon={<Mail className="h-4 w-4" />}
+              title="Email history"
+              subtitle={`${(emails || []).length} sent`}
+            >
+              <EmailManager
+                recruitId={recruit.id}
+                recruitEmail={recruit.email}
                 recruitName={displayName}
-                documents={documents || []}
+                emails={emails}
+                isUpline={true}
+                currentUserId={user?.id}
               />
-            ) : (
-              <EmptySectionState
-                icon={<ListChecks className="h-7 w-7" />}
-                message="No tasks defined for this phase."
+            </SectionCard>
+          )}
+
+          {!isInvitation && (
+            <SectionCard
+              icon={<ActivityIcon className="h-4 w-4" />}
+              title="Activity log"
+              subtitle="Recent events"
+            >
+              <ActivityTab
+                activityLog={activityLog}
+                isLoading={activityLoading}
+                error={activityError}
               />
-            )}
-          </SectionCard>
-        )}
-
-        {!isInvitation && (
-          <SectionCard
-            icon={<FolderOpen className="h-4 w-4" />}
-            title="Documents"
-            subtitle={`${(documents || []).length} file${(documents || []).length === 1 ? "" : "s"}`}
-          >
-            <DocumentManager
-              userId={recruit.id}
-              documents={documents}
-              isUpline={true}
-              currentUserId={user?.id}
-            />
-          </SectionCard>
-        )}
-
-        {!isInvitation && (
-          <SectionCard
-            icon={<Mail className="h-4 w-4" />}
-            title="Email history"
-            subtitle={`${(emails || []).length} sent`}
-          >
-            <EmailManager
-              recruitId={recruit.id}
-              recruitEmail={recruit.email}
-              recruitName={displayName}
-              emails={emails}
-              isUpline={true}
-              currentUserId={user?.id}
-            />
-          </SectionCard>
-        )}
-
-        {!isInvitation && (
-          <SectionCard
-            icon={<ActivityIcon className="h-4 w-4" />}
-            title="Activity log"
-            subtitle="Recent events"
-          >
-            <ActivityTab
-              activityLog={activityLog}
-              isLoading={activityLoading}
-              error={activityError}
-            />
-          </SectionCard>
-        )}
+            </SectionCard>
+          )}
+        </div>
       </div>
 
       {/* Dialogs */}
@@ -1166,7 +1211,7 @@ export function RecruitDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </SectionShell>
   );
 }
 

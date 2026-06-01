@@ -1,22 +1,35 @@
 // src/features/workflows/components/WorkflowAdminPage.tsx
 
-import { Settings } from "lucide-react";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import WorkflowManager from "./WorkflowManager";
 
 export default function WorkflowAdminPage() {
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
-        <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink dark:text-v2-ink">
-            Workflow Administration
-          </h1>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Board header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>AUTOMATION</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Workflows
+            </h1>
+          </header>
+
+          <div className="flex-1 overflow-hidden bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+            <WorkflowManager />
+          </div>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
-        <WorkflowManager />
-      </div>
-    </div>
+    </SectionShell>
   );
 }

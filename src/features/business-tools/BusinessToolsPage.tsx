@@ -2,13 +2,7 @@
 // Main page with access gating and tab layout
 
 import { useState } from "react";
-import {
-  Briefcase,
-  Upload,
-  List,
-  FileText,
-  LayoutDashboard,
-} from "lucide-react";
+import { Upload, List, FileText, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useImo } from "@/contexts/ImoContext";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -18,6 +12,8 @@ import { TransactionsTab } from "./components/TransactionsTab";
 import { StatementsTab } from "./components/StatementsTab";
 import { ExportButton } from "./components/ExportButton";
 import type { BusinessToolsTab } from "./types";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 
 const TABS: { id: BusinessToolsTab; label: string; icon: React.ElementType }[] =
   [
@@ -37,44 +33,67 @@ export default function BusinessToolsPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-3 space-y-2.5 bg-v2-canvas">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
-        <div className="flex items-center gap-2">
-          <Briefcase className="h-4 w-4 text-v2-ink" />
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-            Business Tools
-          </h1>
-        </div>
-        <ExportButton />
-      </div>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-              activeTab === tab.id
-                ? "bg-v2-card shadow-sm text-v2-ink"
-                : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
-            )}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
           >
-            <tab.icon className="h-3 w-3" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
-      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>TOOLKIT</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Business Tools
+              </h1>
+            </div>
+            {/* ExportButton on the right */}
+            <ExportButton />
+          </header>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
-        {activeTab === "overview" && <OverviewTab onSwitchTab={setActiveTab} />}
-        {activeTab === "upload" && <UploadTab onSwitchTab={setActiveTab} />}
-        {activeTab === "transactions" && <TransactionsTab />}
-        {activeTab === "statements" && <StatementsTab />}
+          {/* Tabs */}
+          <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+                  activeTab === tab.id
+                    ? "bg-v2-card shadow-sm text-v2-ink"
+                    : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+                )}
+              >
+                <tab.icon className="h-3 w-3" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-y-auto">
+            {activeTab === "overview" && (
+              <OverviewTab onSwitchTab={setActiveTab} />
+            )}
+            {activeTab === "upload" && <UploadTab onSwitchTab={setActiveTab} />}
+            {activeTab === "transactions" && <TransactionsTab />}
+            {activeTab === "statements" && <StatementsTab />}
+          </div>
+        </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }

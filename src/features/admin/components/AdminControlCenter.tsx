@@ -2,7 +2,6 @@
 // Orchestration layer for Admin Center - manages tabs, shared state, and dialogs
 
 import { useState, useMemo } from "react";
-import { Users, Shield, UserCog, CheckCircle2, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAllUsers, useCreateUser } from "@/hooks/admin";
 import {
@@ -14,7 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AddUserDialog, { type NewUserData } from "./AddUserDialog";
 import EditUserDialog from "./EditUserDialog";
-import { PillNav } from "@/components/v2";
+import { PillNav, SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import type { RoleName } from "@/types/permissions.types";
 import type { UserProfile } from "@/types/user.types";
 import { hasStaffRole } from "@/constants/roles";
@@ -101,17 +101,6 @@ export default function AdminControlCenter() {
   const recruitsInPipeline =
     hierarchyFilteredUsers?.filter((u: UserProfile) => isPureRecruit(u)) || [];
 
-  // Calculate stats for header
-  const totalUsers = activeAgents?.length || 0;
-  const admins =
-    activeAgents?.filter((u: UserProfile) => u.roles?.includes("admin"))
-      .length || 0;
-  const agents =
-    activeAgents?.filter(
-      (u: UserProfile) =>
-        u.roles?.includes("agent") && !u.roles?.includes("admin"),
-    ).length || 0;
-  const approved = activeAgents?.length || 0;
   const pending = recruitsInPipeline.length;
 
   // Shared handlers
@@ -142,119 +131,105 @@ export default function AdminControlCenter() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Compact header — title + inline metric chips + tab nav in one band */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Shield className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Admin Center
-            </h1>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Board header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>CONTROL CENTER</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Admin
+              </h1>
+            </div>
+            <PillNav
+              size="sm"
+              activeValue={activeView}
+              onChange={(v) => setActiveView(v as typeof activeView)}
+              items={[
+                { label: "Users & Access", value: "users" },
+                {
+                  label: pending > 0 ? `Recruiting (${pending})` : "Recruiting",
+                  value: "recruits",
+                },
+                { label: "Roles & Permissions", value: "roles" },
+                { label: "System", value: "system" },
+              ]}
+            />
+          </header>
+
+          {/* Content area - Tab components */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {activeView === "users" && (
+              <UsersAccessTab
+                users={activeAgents}
+                roles={roles}
+                isLoading={usersLoading}
+                isSuperAdmin={isSuperAdmin}
+                onEditUser={handleEditUser}
+                onAddUser={() => setIsAddUserDialogOpen(true)}
+              />
+            )}
+
+            {activeView === "recruits" && (
+              <RecruitingPipelineTab
+                recruits={recruitsInPipeline}
+                allUsers={allUsers}
+                isLoading={usersLoading}
+                canGraduateRecruits={canGraduateRecruits || false}
+                graduationEligiblePhases={graduationEligiblePhases}
+              />
+            )}
+
+            {activeView === "roles" && (
+              <RolesPermissionsTab
+                roles={roles}
+                allPermissions={allPermissions}
+                activeAgents={activeAgents}
+                isSuperAdmin={isSuperAdmin}
+              />
+            )}
+
+            {activeView === "system" && <SystemSettingsTab />}
           </div>
-          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
-            <span className="inline-flex items-center gap-1">
-              <Users className="h-3 w-3 text-v2-ink-subtle" />
-              <span className="text-v2-ink font-semibold">{totalUsers}</span>
-              users
-            </span>
-            <span className="text-v2-ink-subtle">·</span>
-            <span className="inline-flex items-center gap-1">
-              <Shield className="h-3 w-3 text-destructive" />
-              <span className="text-v2-ink font-semibold">{admins}</span>
-              admins
-            </span>
-            <span className="text-v2-ink-subtle">·</span>
-            <span className="inline-flex items-center gap-1">
-              <UserCog className="h-3 w-3 text-info" />
-              <span className="text-v2-ink font-semibold">{agents}</span>
-              agents
-            </span>
-            <span className="text-v2-ink-subtle">·</span>
-            <span className="inline-flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-success" />
-              <span className="text-v2-ink font-semibold">{approved}</span>
-              approved
-            </span>
-            <span className="text-v2-ink-subtle">·</span>
-            <span className="inline-flex items-center gap-1">
-              <XCircle className="h-3 w-3 text-warning" />
-              <span className="text-v2-ink font-semibold">{pending}</span>
-              pending
-            </span>
-          </div>
+
+          {/* Shared dialogs */}
+          <EditUserDialog
+            user={editingUser}
+            open={isEditDialogOpen}
+            onOpenChange={(open) => {
+              setIsEditDialogOpen(open);
+              if (!open) setEditingUser(null);
+            }}
+            onDeleted={() => {
+              queryClient.invalidateQueries({ queryKey: ["users"] });
+              queryClient.invalidateQueries({ queryKey: ["recruits"] });
+            }}
+          />
+
+          <AddUserDialog
+            open={isAddUserDialogOpen}
+            onOpenChange={setIsAddUserDialogOpen}
+            onSave={handleAddUser}
+          />
         </div>
-
-        <PillNav
-          size="sm"
-          activeValue={activeView}
-          onChange={(v) => setActiveView(v as typeof activeView)}
-          items={[
-            { label: "Users & Access", value: "users" },
-            {
-              label: pending > 0 ? `Recruiting (${pending})` : "Recruiting",
-              value: "recruits",
-            },
-            { label: "Roles & Permissions", value: "roles" },
-            { label: "System", value: "system" },
-          ]}
-        />
-      </header>
-
-      {/* Content area - Tab components */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {activeView === "users" && (
-          <UsersAccessTab
-            users={activeAgents}
-            roles={roles}
-            isLoading={usersLoading}
-            isSuperAdmin={isSuperAdmin}
-            onEditUser={handleEditUser}
-            onAddUser={() => setIsAddUserDialogOpen(true)}
-          />
-        )}
-
-        {activeView === "recruits" && (
-          <RecruitingPipelineTab
-            recruits={recruitsInPipeline}
-            allUsers={allUsers}
-            isLoading={usersLoading}
-            canGraduateRecruits={canGraduateRecruits || false}
-            graduationEligiblePhases={graduationEligiblePhases}
-          />
-        )}
-
-        {activeView === "roles" && (
-          <RolesPermissionsTab
-            roles={roles}
-            allPermissions={allPermissions}
-            activeAgents={activeAgents}
-            isSuperAdmin={isSuperAdmin}
-          />
-        )}
-
-        {activeView === "system" && <SystemSettingsTab />}
       </div>
-
-      {/* Shared dialogs */}
-      <EditUserDialog
-        user={editingUser}
-        open={isEditDialogOpen}
-        onOpenChange={(open) => {
-          setIsEditDialogOpen(open);
-          if (!open) setEditingUser(null);
-        }}
-        onDeleted={() => {
-          queryClient.invalidateQueries({ queryKey: ["users"] });
-          queryClient.invalidateQueries({ queryKey: ["recruits"] });
-        }}
-      />
-
-      <AddUserDialog
-        open={isAddUserDialogOpen}
-        onOpenChange={setIsAddUserDialogOpen}
-        onSave={handleAddUser}
-      />
-    </div>
+    </SectionShell>
   );
 }

@@ -4,6 +4,8 @@ import { Send, LayoutTemplate, Users, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { CampaignListTab } from "./components/campaigns/CampaignListTab";
 import { TemplateGalleryTab } from "./components/templates/TemplateGalleryTab";
 import { AudienceListTab } from "./components/audiences/AudienceListTab";
@@ -61,60 +63,73 @@ export function MarketingHubPage({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
-          Marketing Hub
-        </h1>
-      </div>
-
-      {/* Tab Bar */}
-      <div className="flex items-center gap-0.5 px-4 pt-2 border-b border-border bg-background">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                // Clear pending blocks if navigating away from campaigns
-                if (tab.id !== "campaigns") {
-                  setPendingBlocks(undefined);
-                  setPendingSubject(undefined);
-                }
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>CAMPAIGNS</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
               }}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t-md border border-b-0 transition-colors -mb-px",
-                isActive
-                  ? "bg-background text-foreground border-border"
-                  : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50",
-              )}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+              Marketing
+            </h1>
+          </header>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-auto p-4">
-        {activeTab === "campaigns" && (
-          <CampaignListTab
-            initialBlocks={pendingBlocks}
-            initialSubject={pendingSubject}
-          />
-        )}
-        {activeTab === "templates" && (
-          <TemplateGalleryTab
-            onStartCampaignWithBlocks={handleStartCampaignWithBlocks}
-          />
-        )}
-        {activeTab === "audiences" && <AudienceListTab />}
-        {activeTab === "analytics" && <AnalyticsTab />}
+          {/* Tab Bar */}
+          <div className="flex items-center gap-0.5 px-0 pt-0 border-b border-border bg-transparent">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    // Clear pending blocks if navigating away from campaigns
+                    if (tab.id !== "campaigns") {
+                      setPendingBlocks(undefined);
+                      setPendingSubject(undefined);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-t-md border border-b-0 transition-colors -mb-px",
+                    isActive
+                      ? "bg-background text-foreground border-border"
+                      : "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50",
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-auto">
+            {activeTab === "campaigns" && (
+              <CampaignListTab
+                initialBlocks={pendingBlocks}
+                initialSubject={pendingSubject}
+              />
+            )}
+            {activeTab === "templates" && (
+              <TemplateGalleryTab
+                onStartCampaignWithBlocks={handleStartCampaignWithBlocks}
+              />
+            )}
+            {activeTab === "audiences" && <AudienceListTab />}
+            {activeTab === "analytics" && <AnalyticsTab />}
+          </div>
+        </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }

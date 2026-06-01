@@ -42,7 +42,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SoftCard } from "@/components/v2";
+import { SectionShell, SoftCard } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { usePermissionCheck } from "@/hooks/permissions";
 import { useImo } from "@/hooks/imo";
 import { usePendingAgencyRequestCount } from "@/hooks/agency-request";
@@ -304,150 +305,157 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Compact header */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-foreground" />
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
-            Settings
-          </h1>
-        </div>
-        <p className="text-[11px] text-muted-foreground">
-          {canManageCarriers
-            ? "Configure your account, organization, and insurance setup."
-            : "Manage your account, alerts, and integrations."}
-        </p>
-      </header>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Board header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>ACCOUNT</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Settings
+            </h1>
+          </header>
 
-      {/* Mobile: dropdown selector */}
-      <div className="lg:hidden">
-        <Select value={activeId} onValueChange={setActiveTab}>
-          <SelectTrigger className="h-9 bg-card border-border rounded-v2-pill text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {groups.map((g) => {
-              const groupItems = g.items.filter((i) => i.visible);
-              if (groupItems.length === 0) return null;
-              return (
-                <div key={g.label}>
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    {g.label}
-                  </div>
-                  {groupItems.map((i) => (
-                    <SelectItem key={i.id} value={i.id} className="text-sm">
-                      {i.label}
-                      {i.badge && i.badge > 0 ? ` (${i.badge})` : ""}
-                    </SelectItem>
-                  ))}
-                </div>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
+          {/* Mobile: dropdown selector */}
+          <div className="lg:hidden">
+            <Select value={activeId} onValueChange={setActiveTab}>
+              <SelectTrigger className="h-9 bg-card border-border rounded-v2-pill text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {groups.map((g) => {
+                  const groupItems = g.items.filter((i) => i.visible);
+                  if (groupItems.length === 0) return null;
+                  return (
+                    <div key={g.label}>
+                      <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {g.label}
+                      </div>
+                      {groupItems.map((i) => (
+                        <SelectItem key={i.id} value={i.id} className="text-sm">
+                          {i.label}
+                          {i.badge && i.badge > 0 ? ` (${i.badge})` : ""}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Desktop: side nav + panel */}
-      <div className="hidden lg:grid lg:grid-cols-[240px_1fr] gap-4 items-start">
-        <SoftCard padding="md" className="sticky top-3 self-start">
-          <nav className="flex flex-col gap-4">
-            {groups.map((g) => {
-              const groupItems = g.items.filter((i) => i.visible);
-              if (groupItems.length === 0) return null;
-              return (
-                <div key={g.label} className="flex flex-col gap-1">
-                  <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    {g.label}
-                  </div>
-                  <ul className="flex flex-col gap-0.5">
-                    {groupItems.map((i) => {
-                      const Icon = i.icon;
-                      const isActive = i.id === activeId;
-                      return (
-                        <li key={i.id}>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab(i.id)}
-                            aria-current={isActive ? "page" : undefined}
-                            className={cn(
-                              "w-full flex items-center gap-2 h-8 px-2.5 rounded-v2-pill text-[12px] font-medium transition-colors",
-                              isActive
-                                ? "bg-foreground text-background shadow-v2-soft"
-                                : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
-                            )}
-                          >
-                            <Icon
-                              className={cn(
-                                "h-3.5 w-3.5 flex-shrink-0",
-                                isActive && "text-warning",
-                              )}
-                            />
-                            <span className="truncate flex-1 text-left">
-                              {i.label}
-                            </span>
-                            {i.badge && i.badge > 0 ? (
-                              <span className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-v2-pill bg-accent text-foreground text-[10px] font-bold">
-                                {i.badge}
-                              </span>
-                            ) : null}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })}
-          </nav>
-        </SoftCard>
-
-        <div className="flex flex-col gap-3 min-w-0">
-          {activeItem && (
-            <SoftCard padding="md">
-              <div className="flex items-start gap-2.5">
-                <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
-                  <activeItem.icon className="h-4 w-4" />
-                </span>
-                <div className="flex flex-col leading-tight min-w-0">
-                  <h2 className="text-base font-semibold tracking-tight text-foreground">
-                    {activeItem.label}
-                  </h2>
-                  <p className="text-[12px] text-muted-foreground">
-                    {activeItem.description}
-                  </p>
-                </div>
-              </div>
+          {/* Desktop: side nav + panel */}
+          <div className="hidden lg:grid lg:grid-cols-[240px_1fr] gap-4 items-start">
+            <SoftCard padding="md" className="sticky top-3 self-start">
+              <nav className="flex flex-col gap-4">
+                {groups.map((g) => {
+                  const groupItems = g.items.filter((i) => i.visible);
+                  if (groupItems.length === 0) return null;
+                  return (
+                    <div key={g.label} className="flex flex-col gap-1">
+                      <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {g.label}
+                      </div>
+                      <ul className="flex flex-col gap-0.5">
+                        {groupItems.map((i) => {
+                          const Icon = i.icon;
+                          const isActive = i.id === activeId;
+                          return (
+                            <li key={i.id}>
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab(i.id)}
+                                aria-current={isActive ? "page" : undefined}
+                                className={cn(
+                                  "w-full flex items-center gap-2 h-8 px-2.5 rounded-v2-pill text-[12px] font-medium transition-colors",
+                                  isActive
+                                    ? "bg-foreground text-background shadow-v2-soft"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
+                                )}
+                              >
+                                <Icon
+                                  className={cn(
+                                    "h-3.5 w-3.5 flex-shrink-0",
+                                    isActive && "text-warning",
+                                  )}
+                                />
+                                <span className="truncate flex-1 text-left">
+                                  {i.label}
+                                </span>
+                                {i.badge && i.badge > 0 ? (
+                                  <span className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-v2-pill bg-accent text-foreground text-[10px] font-bold">
+                                    {i.badge}
+                                  </span>
+                                ) : null}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </nav>
             </SoftCard>
-          )}
 
-          <div className="min-w-0">
-            {activeItem && <activeItem.Component />}
+            <div className="flex flex-col gap-3 min-w-0">
+              {activeItem && (
+                <SoftCard padding="md">
+                  <div className="flex items-start gap-2.5">
+                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
+                      <activeItem.icon className="h-4 w-4" />
+                    </span>
+                    <div className="flex flex-col leading-tight min-w-0">
+                      <h2 className="text-base font-semibold tracking-tight text-foreground">
+                        {activeItem.label}
+                      </h2>
+                      <p className="text-[12px] text-muted-foreground">
+                        {activeItem.description}
+                      </p>
+                    </div>
+                  </div>
+                </SoftCard>
+              )}
+
+              <div className="min-w-0">
+                {activeItem && <activeItem.Component />}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: panel content */}
+          <div className="lg:hidden flex flex-col gap-3">
+            {activeItem && (
+              <SoftCard padding="md">
+                <div className="flex items-start gap-2.5">
+                  <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
+                    <activeItem.icon className="h-4 w-4" />
+                  </span>
+                  <div className="flex flex-col leading-tight min-w-0">
+                    <h2 className="text-base font-semibold tracking-tight text-foreground">
+                      {activeItem.label}
+                    </h2>
+                    <p className="text-[12px] text-muted-foreground">
+                      {activeItem.description}
+                    </p>
+                  </div>
+                </div>
+              </SoftCard>
+            )}
+            <div className="min-w-0">
+              {activeItem && <activeItem.Component />}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Mobile: panel content */}
-      <div className="lg:hidden flex flex-col gap-3">
-        {activeItem && (
-          <SoftCard padding="md">
-            <div className="flex items-start gap-2.5">
-              <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
-                <activeItem.icon className="h-4 w-4" />
-              </span>
-              <div className="flex flex-col leading-tight min-w-0">
-                <h2 className="text-base font-semibold tracking-tight text-foreground">
-                  {activeItem.label}
-                </h2>
-                <p className="text-[12px] text-muted-foreground">
-                  {activeItem.description}
-                </p>
-              </div>
-            </div>
-          </SoftCard>
-        )}
-        <div className="min-w-0">{activeItem && <activeItem.Component />}</div>
-      </div>
-    </div>
+    </SectionShell>
   );
 }

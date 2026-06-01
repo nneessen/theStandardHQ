@@ -11,7 +11,6 @@ import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  FileCheck,
   Search,
   CheckCircle2,
   Clock,
@@ -37,6 +36,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 
 const PAGE_SIZE = 50;
 const CONTRACT_REQUESTS_QUERY_KEY = "contract-requests-filtered";
@@ -543,529 +544,569 @@ export function ContractingDashboard() {
   }, [allRequests, totalCount]);
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-1.5 border border-v2-ring dark:border-v2-ring">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <FileCheck className="h-4 w-4" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
-              Contracting Hub
-            </h1>
-          </div>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>CARRIER CONTRACTING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Contracting
+              </h1>
+            </div>
+            {/* Stats + Search on the right */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-[10px]">
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{stats.total}</span>
+                  <span className="text-muted-foreground">total</span>
+                </div>
+                <div className="h-3 w-px bg-border" />
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-medium">{stats.requested}</span>
+                </div>
+                <div className="h-3 w-px bg-border" />
+                <div className="flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3 text-info" />
+                  <span className="font-medium">{stats.in_progress}</span>
+                </div>
+                <div className="h-3 w-px bg-border" />
+                <div className="flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-success" />
+                  <span className="font-medium">{stats.writing_received}</span>
+                </div>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <Input
+                  placeholder="Search recruit or carrier..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-7 w-56 pl-7 text-xs"
+                />
+              </div>
+            </div>
+          </header>
 
-          {/* Stats */}
-          <div className="flex items-center gap-2 text-[10px]">
-            <div className="flex items-center gap-1">
-              <span className="font-medium">{stats.total}</span>
-              <span className="text-muted-foreground">total</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-muted-foreground" />
-              <span className="font-medium">{stats.requested}</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1">
-              <AlertCircle className="h-3 w-3 text-info" />
-              <span className="font-medium">{stats.in_progress}</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-success" />
-              <span className="font-medium">{stats.writing_received}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <Input
-            placeholder="Search recruit or carrier..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-7 w-56 pl-7 text-xs"
+          {/* Filters */}
+          <ContractingFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            carriers={availableCarriers || []}
           />
-        </div>
-      </div>
 
-      {/* Filters */}
-      <ContractingFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        carriers={availableCarriers || []}
-      />
-
-      {/* Table */}
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
-        <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            <span>Grouped by recruit</span>
-            <span className="h-3 w-px bg-border" />
-            <span>{visibleAgentCount} agent rows on this page</span>
-            <span className="h-3 w-px bg-border" />
-            <span>{paginatedRequests.length} requests on this page</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={expandAllVisible}
-              className="h-6 px-2 text-[10px]"
-              disabled={agentGroups.length === 0}
-            >
-              Expand all
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={collapseAllVisible}
-              className="h-6 px-2 text-[10px]"
-              disabled={expandedRecruitIds.size === 0}
-            >
-              Collapse all
-            </Button>
-          </div>
-        </div>
-
-        <div className="overflow-auto h-[calc(100%-41px)]">
-          {isLoading ? (
-            <div className="p-3 space-y-1">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
+          {/* Table */}
+          <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
+            <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span>Grouped by recruit</span>
+                <span className="h-3 w-px bg-border" />
+                <span>{visibleAgentCount} agent rows on this page</span>
+                <span className="h-3 w-px bg-border" />
+                <span>{paginatedRequests.length} requests on this page</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={expandAllVisible}
+                  className="h-6 px-2 text-[10px]"
+                  disabled={agentGroups.length === 0}
+                >
+                  Expand all
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={collapseAllVisible}
+                  className="h-6 px-2 text-[10px]"
+                  disabled={expandedRecruitIds.size === 0}
+                >
+                  Collapse all
+                </Button>
+              </div>
             </div>
-          ) : (
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-muted/50">
-                <TableRow className="h-8">
-                  <TableHead className="h-8 w-[40px]">
-                    <Checkbox
-                      checked={
-                        allVisibleSelected
-                          ? true
-                          : someVisibleSelected
-                            ? "indeterminate"
-                            : false
-                      }
-                      onCheckedChange={toggleSelectAllVisible}
-                    />
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[280px] min-w-[260px]">
-                    Agent
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[170px]">
-                    Queue
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[220px] min-w-[200px]">
-                    Status Mix
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[95px]">
-                    Last Request
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[110px]">
-                    Last Writing
-                  </TableHead>
-                  <TableHead className="h-8 text-[10px] font-semibold w-[100px] text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {agentGroups.map((group) => {
-                  const isExpanded = expandedRecruitIds.has(group.recruitId);
-                  const visibleStatusBadges = STATUS_OPTIONS.filter(
-                    (status) => group.statusCounts[status.value],
-                  );
-                  const pendingCount =
-                    (group.statusCounts.requested || 0) +
-                    (group.statusCounts.in_progress || 0);
-                  const selectedForAgent = group.requests.filter((request) =>
-                    selectedIds.has(request.id),
-                  ).length;
 
-                  return (
-                    <Fragment key={group.recruitId}>
-                      <TableRow
-                        className="cursor-pointer hover:bg-muted/30"
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement;
-                          if (isInteractiveTarget(target)) return;
-                          toggleRecruitExpanded(group.recruitId);
-                        }}
-                      >
-                        <TableCell
-                          className="py-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Checkbox
-                            checked={getAgentSelectionState(group)}
-                            onCheckedChange={() => toggleAgentSelection(group)}
-                          />
-                        </TableCell>
+            <div className="overflow-auto h-[calc(100%-41px)]">
+              {isLoading ? (
+                <div className="p-3 space-y-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-muted/50">
+                    <TableRow className="h-8">
+                      <TableHead className="h-8 w-[40px]">
+                        <Checkbox
+                          checked={
+                            allVisibleSelected
+                              ? true
+                              : someVisibleSelected
+                                ? "indeterminate"
+                                : false
+                          }
+                          onCheckedChange={toggleSelectAllVisible}
+                        />
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[280px] min-w-[260px]">
+                        Agent
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[170px]">
+                        Queue
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[220px] min-w-[200px]">
+                        Status Mix
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[95px]">
+                        Last Request
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[110px]">
+                        Last Writing
+                      </TableHead>
+                      <TableHead className="h-8 text-[10px] font-semibold w-[100px] text-right">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {agentGroups.map((group) => {
+                      const isExpanded = expandedRecruitIds.has(
+                        group.recruitId,
+                      );
+                      const visibleStatusBadges = STATUS_OPTIONS.filter(
+                        (status) => group.statusCounts[status.value],
+                      );
+                      const pendingCount =
+                        (group.statusCounts.requested || 0) +
+                        (group.statusCounts.in_progress || 0);
+                      const selectedForAgent = group.requests.filter(
+                        (request) => selectedIds.has(request.id),
+                      ).length;
 
-                        <TableCell className="py-2">
-                          <div className="flex items-start gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleRecruitExpanded(group.recruitId);
-                              }}
-                              aria-label={
-                                isExpanded
-                                  ? `Collapse ${group.recruitName}`
-                                  : `Expand ${group.recruitName}`
-                              }
-                            >
-                              <ChevronRight
-                                className={`h-3.5 w-3.5 transition-transform ${
-                                  isExpanded ? "rotate-90" : ""
-                                }`}
-                              />
-                            </Button>
-
-                            <div className="min-w-0">
-                              <div className="font-medium text-[11px] leading-4 truncate">
-                                {group.recruitName}
-                              </div>
-                              <div className="text-[10px] text-muted-foreground truncate">
-                                {group.recruitEmail}
-                              </div>
-                              {selectedForAgent > 0 && (
-                                <div className="text-[10px] text-muted-foreground mt-0.5">
-                                  {selectedForAgent}/{group.requests.length}{" "}
-                                  selected
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-2">
-                          <div className="flex items-center gap-1">
-                            <Badge size="sm" variant="outline">
-                              {group.requests.length} req
-                            </Badge>
-                            {pendingCount > 0 && (
-                              <Badge size="sm" variant="warning">
-                                {pendingCount} pending
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-2">
-                          <div className="flex flex-wrap gap-1">
-                            {visibleStatusBadges.map((status) => (
-                              <Badge
-                                key={`${group.recruitId}-${status.value}`}
-                                size="sm"
-                                variant={getBadgeVariantForStatus(status.value)}
-                                className="gap-1"
-                              >
-                                <span>{status.label}</span>
-                                <span className="opacity-90">
-                                  {group.statusCounts[status.value]}
-                                </span>
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-2 text-[10px] text-muted-foreground">
-                          {formatCompactDate(group.requestedLatest)}
-                        </TableCell>
-
-                        <TableCell className="py-2 text-[10px] text-muted-foreground">
-                          {formatCompactDate(group.writingReceivedLatest)}
-                        </TableCell>
-
-                        <TableCell
-                          className="py-2 text-right"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-2 text-[10px]"
-                            onClick={() => toggleAgentSelection(group)}
+                      return (
+                        <Fragment key={group.recruitId}>
+                          <TableRow
+                            className="cursor-pointer hover:bg-muted/30"
+                            onClick={(e) => {
+                              const target = e.target as HTMLElement;
+                              if (isInteractiveTarget(target)) return;
+                              toggleRecruitExpanded(group.recruitId);
+                            }}
                           >
-                            {selectedForAgent === group.requests.length &&
-                            group.requests.length > 0
-                              ? "Clear"
-                              : "Select all"}
-                          </Button>
+                            <TableCell
+                              className="py-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Checkbox
+                                checked={getAgentSelectionState(group)}
+                                onCheckedChange={() =>
+                                  toggleAgentSelection(group)
+                                }
+                              />
+                            </TableCell>
+
+                            <TableCell className="py-2">
+                              <div className="flex items-start gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleRecruitExpanded(group.recruitId);
+                                  }}
+                                  aria-label={
+                                    isExpanded
+                                      ? `Collapse ${group.recruitName}`
+                                      : `Expand ${group.recruitName}`
+                                  }
+                                >
+                                  <ChevronRight
+                                    className={`h-3.5 w-3.5 transition-transform ${
+                                      isExpanded ? "rotate-90" : ""
+                                    }`}
+                                  />
+                                </Button>
+
+                                <div className="min-w-0">
+                                  <div className="font-medium text-[11px] leading-4 truncate">
+                                    {group.recruitName}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground truncate">
+                                    {group.recruitEmail}
+                                  </div>
+                                  {selectedForAgent > 0 && (
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                                      {selectedForAgent}/{group.requests.length}{" "}
+                                      selected
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-2">
+                              <div className="flex items-center gap-1">
+                                <Badge size="sm" variant="outline">
+                                  {group.requests.length} req
+                                </Badge>
+                                {pendingCount > 0 && (
+                                  <Badge size="sm" variant="warning">
+                                    {pendingCount} pending
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-2">
+                              <div className="flex flex-wrap gap-1">
+                                {visibleStatusBadges.map((status) => (
+                                  <Badge
+                                    key={`${group.recruitId}-${status.value}`}
+                                    size="sm"
+                                    variant={getBadgeVariantForStatus(
+                                      status.value,
+                                    )}
+                                    className="gap-1"
+                                  >
+                                    <span>{status.label}</span>
+                                    <span className="opacity-90">
+                                      {group.statusCounts[status.value]}
+                                    </span>
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-2 text-[10px] text-muted-foreground">
+                              {formatCompactDate(group.requestedLatest)}
+                            </TableCell>
+
+                            <TableCell className="py-2 text-[10px] text-muted-foreground">
+                              {formatCompactDate(group.writingReceivedLatest)}
+                            </TableCell>
+
+                            <TableCell
+                              className="py-2 text-right"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-[10px]"
+                                onClick={() => toggleAgentSelection(group)}
+                              >
+                                {selectedForAgent === group.requests.length &&
+                                group.requests.length > 0
+                                  ? "Clear"
+                                  : "Select all"}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+
+                          {isExpanded && (
+                            <TableRow
+                              key={`${group.recruitId}-expanded`}
+                              className="bg-muted/10"
+                            >
+                              <TableCell colSpan={7} className="p-0">
+                                <div className="px-3 py-2 border-t border-border/60">
+                                  <div className="text-[10px] text-muted-foreground mb-2">
+                                    Manage carrier requests for{" "}
+                                    {group.recruitName}
+                                  </div>
+
+                                  <div className="rounded-md border border-border overflow-hidden">
+                                    <Table>
+                                      <TableHeader className="bg-muted/40">
+                                        <TableRow className="h-8">
+                                          <TableHead className="h-8 w-[36px]">
+                                            <Checkbox
+                                              checked={getAgentSelectionState(
+                                                group,
+                                              )}
+                                              onCheckedChange={() =>
+                                                toggleAgentSelection(group)
+                                              }
+                                            />
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold">
+                                            Carrier
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold w-[110px]">
+                                            Status
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold w-[130px]">
+                                            Writing #
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold w-[100px]">
+                                            Requested
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold w-[100px]">
+                                            Received
+                                          </TableHead>
+                                          <TableHead className="h-8 text-[10px] font-semibold w-[90px] text-right">
+                                            Details
+                                          </TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {group.requests.map((request) => (
+                                          <TableRow
+                                            key={request.id}
+                                            className="h-9 hover:bg-muted/40 cursor-pointer"
+                                            onClick={(e) => {
+                                              const target =
+                                                e.target as HTMLElement;
+                                              if (isInteractiveTarget(target))
+                                                return;
+                                              handleRowClick(request);
+                                            }}
+                                          >
+                                            <TableCell
+                                              className="py-1.5"
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <Checkbox
+                                                checked={selectedIds.has(
+                                                  request.id,
+                                                )}
+                                                onCheckedChange={() =>
+                                                  toggleSelection(request.id)
+                                                }
+                                              />
+                                            </TableCell>
+
+                                            <TableCell className="py-1.5 text-[11px]">
+                                              <div className="flex items-center gap-2">
+                                                <span className="truncate">
+                                                  {request.carrier?.name ||
+                                                    "Unknown"}
+                                                </span>
+                                                <Badge
+                                                  size="sm"
+                                                  variant={getBadgeVariantForStatus(
+                                                    request.status,
+                                                  )}
+                                                >
+                                                  {STATUS_OPTIONS.find(
+                                                    (option) =>
+                                                      option.value ===
+                                                      request.status,
+                                                  )?.label || request.status}
+                                                </Badge>
+                                              </div>
+                                            </TableCell>
+
+                                            <TableCell
+                                              className="py-1.5"
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <InlineEditableCell
+                                                value={request.status}
+                                                mode="select"
+                                                options={[...STATUS_OPTIONS]}
+                                                onSave={async (newStatus) => {
+                                                  await updateMutation.mutateAsync(
+                                                    {
+                                                      id: request.id,
+                                                      updates: {
+                                                        status: newStatus,
+                                                      },
+                                                    },
+                                                  );
+                                                }}
+                                                className="inline-block"
+                                              />
+                                            </TableCell>
+
+                                            <TableCell
+                                              className="py-1.5"
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <InlineEditableCell
+                                                value={request.writing_number}
+                                                mode="text"
+                                                placeholder="Enter writing #"
+                                                onSave={async (
+                                                  newWritingNumber,
+                                                ) => {
+                                                  await updateMutation.mutateAsync(
+                                                    {
+                                                      id: request.id,
+                                                      updates: {
+                                                        writing_number:
+                                                          newWritingNumber,
+                                                        ...(newWritingNumber &&
+                                                        request.status ===
+                                                          "requested"
+                                                          ? {
+                                                              status:
+                                                                "writing_received",
+                                                            }
+                                                          : {}),
+                                                      },
+                                                    },
+                                                  );
+                                                }}
+                                                className="font-mono"
+                                              />
+                                            </TableCell>
+
+                                            <TableCell className="py-1.5 text-[10px] text-muted-foreground">
+                                              {formatCompactDate(
+                                                request.requested_date,
+                                              )}
+                                            </TableCell>
+
+                                            <TableCell className="py-1.5 text-[10px] text-muted-foreground">
+                                              {formatCompactDate(
+                                                request.writing_received_date,
+                                              )}
+                                            </TableCell>
+
+                                            <TableCell
+                                              className="py-1.5 text-right"
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-6 px-2 text-[10px]"
+                                                onClick={() =>
+                                                  handleRowClick(request)
+                                                }
+                                              >
+                                                Open
+                                              </Button>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                    {paginatedRequests.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="text-center text-xs text-muted-foreground py-8"
+                        >
+                          {searchQuery
+                            ? "No contracts match your search"
+                            : "No carrier contracts yet"}
                         </TableCell>
                       </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
 
-                      {isExpanded && (
-                        <TableRow
-                          key={`${group.recruitId}-expanded`}
-                          className="bg-muted/10"
-                        >
-                          <TableCell colSpan={7} className="p-0">
-                            <div className="px-3 py-2 border-t border-border/60">
-                              <div className="text-[10px] text-muted-foreground mb-2">
-                                Manage carrier requests for {group.recruitName}
-                              </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-1.5 border border-v2-ring dark:border-v2-ring">
+              <div className="text-[10px] text-muted-foreground">
+                Showing {(page - 1) * PAGE_SIZE + 1}-
+                {Math.min(page * PAGE_SIZE, totalCount)} of {totalCount}{" "}
+                requests
+                {" • "}
+                {visibleAgentCount} agents on this page
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-6 px-2 text-[10px]"
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                  Previous
+                </Button>
+                <span className="text-[10px] px-2">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="h-6 px-2 text-[10px]"
+                >
+                  Next
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
 
-                              <div className="rounded-md border border-border overflow-hidden">
-                                <Table>
-                                  <TableHeader className="bg-muted/40">
-                                    <TableRow className="h-8">
-                                      <TableHead className="h-8 w-[36px]">
-                                        <Checkbox
-                                          checked={getAgentSelectionState(
-                                            group,
-                                          )}
-                                          onCheckedChange={() =>
-                                            toggleAgentSelection(group)
-                                          }
-                                        />
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold">
-                                        Carrier
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold w-[110px]">
-                                        Status
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold w-[130px]">
-                                        Writing #
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold w-[100px]">
-                                        Requested
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold w-[100px]">
-                                        Received
-                                      </TableHead>
-                                      <TableHead className="h-8 text-[10px] font-semibold w-[90px] text-right">
-                                        Details
-                                      </TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {group.requests.map((request) => (
-                                      <TableRow
-                                        key={request.id}
-                                        className="h-9 hover:bg-muted/40 cursor-pointer"
-                                        onClick={(e) => {
-                                          const target =
-                                            e.target as HTMLElement;
-                                          if (isInteractiveTarget(target))
-                                            return;
-                                          handleRowClick(request);
-                                        }}
-                                      >
-                                        <TableCell
-                                          className="py-1.5"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <Checkbox
-                                            checked={selectedIds.has(
-                                              request.id,
-                                            )}
-                                            onCheckedChange={() =>
-                                              toggleSelection(request.id)
-                                            }
-                                          />
-                                        </TableCell>
+          {/* Bulk Action Toolbar */}
+          <BulkActionToolbar
+            selectedCount={selectedIds.size}
+            onStatusChange={() => setBulkStatusDialogOpen(true)}
+            onExport={handleBulkExport}
+            onDelete={handleBulkDelete}
+            onClear={() => setSelectedIds(new Set())}
+          />
 
-                                        <TableCell className="py-1.5 text-[11px]">
-                                          <div className="flex items-center gap-2">
-                                            <span className="truncate">
-                                              {request.carrier?.name ||
-                                                "Unknown"}
-                                            </span>
-                                            <Badge
-                                              size="sm"
-                                              variant={getBadgeVariantForStatus(
-                                                request.status,
-                                              )}
-                                            >
-                                              {STATUS_OPTIONS.find(
-                                                (option) =>
-                                                  option.value ===
-                                                  request.status,
-                                              )?.label || request.status}
-                                            </Badge>
-                                          </div>
-                                        </TableCell>
+          {/* Bulk Status Change Dialog */}
+          <BulkStatusChangeDialog
+            open={bulkStatusDialogOpen}
+            onOpenChange={setBulkStatusDialogOpen}
+            selectedCount={selectedIds.size}
+            onConfirm={async (newStatus) => {
+              await bulkUpdateMutation.mutateAsync(newStatus);
+            }}
+          />
 
-                                        <TableCell
-                                          className="py-1.5"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <InlineEditableCell
-                                            value={request.status}
-                                            mode="select"
-                                            options={[...STATUS_OPTIONS]}
-                                            onSave={async (newStatus) => {
-                                              await updateMutation.mutateAsync({
-                                                id: request.id,
-                                                updates: { status: newStatus },
-                                              });
-                                            }}
-                                            className="inline-block"
-                                          />
-                                        </TableCell>
-
-                                        <TableCell
-                                          className="py-1.5"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <InlineEditableCell
-                                            value={request.writing_number}
-                                            mode="text"
-                                            placeholder="Enter writing #"
-                                            onSave={async (
-                                              newWritingNumber,
-                                            ) => {
-                                              await updateMutation.mutateAsync({
-                                                id: request.id,
-                                                updates: {
-                                                  writing_number:
-                                                    newWritingNumber,
-                                                  ...(newWritingNumber &&
-                                                  request.status === "requested"
-                                                    ? {
-                                                        status:
-                                                          "writing_received",
-                                                      }
-                                                    : {}),
-                                                },
-                                              });
-                                            }}
-                                            className="font-mono"
-                                          />
-                                        </TableCell>
-
-                                        <TableCell className="py-1.5 text-[10px] text-muted-foreground">
-                                          {formatCompactDate(
-                                            request.requested_date,
-                                          )}
-                                        </TableCell>
-
-                                        <TableCell className="py-1.5 text-[10px] text-muted-foreground">
-                                          {formatCompactDate(
-                                            request.writing_received_date,
-                                          )}
-                                        </TableCell>
-
-                                        <TableCell
-                                          className="py-1.5 text-right"
-                                          onClick={(e) => e.stopPropagation()}
-                                        >
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-6 px-2 text-[10px]"
-                                            onClick={() =>
-                                              handleRowClick(request)
-                                            }
-                                          >
-                                            Open
-                                          </Button>
-                                        </TableCell>
-                                      </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </div>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </Fragment>
-                  );
-                })}
-                {paginatedRequests.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="text-center text-xs text-muted-foreground py-8"
-                    >
-                      {searchQuery
-                        ? "No contracts match your search"
-                        : "No carrier contracts yet"}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          {/* Contract Request Detail Modal */}
+          {selectedRequest && (
+            <ContractRequestDetailDialog
+              open={detailModalOpen}
+              onOpenChange={setDetailModalOpen}
+              request={selectedRequest}
+            />
           )}
         </div>
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-1.5 border border-v2-ring dark:border-v2-ring">
-          <div className="text-[10px] text-muted-foreground">
-            Showing {(page - 1) * PAGE_SIZE + 1}-
-            {Math.min(page * PAGE_SIZE, totalCount)} of {totalCount} requests
-            {" • "}
-            {visibleAgentCount} agents on this page
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="h-6 px-2 text-[10px]"
-            >
-              <ChevronLeft className="h-3 w-3" />
-              Previous
-            </Button>
-            <span className="text-[10px] px-2">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="h-6 px-2 text-[10px]"
-            >
-              Next
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Bulk Action Toolbar */}
-      <BulkActionToolbar
-        selectedCount={selectedIds.size}
-        onStatusChange={() => setBulkStatusDialogOpen(true)}
-        onExport={handleBulkExport}
-        onDelete={handleBulkDelete}
-        onClear={() => setSelectedIds(new Set())}
-      />
-
-      {/* Bulk Status Change Dialog */}
-      <BulkStatusChangeDialog
-        open={bulkStatusDialogOpen}
-        onOpenChange={setBulkStatusDialogOpen}
-        selectedCount={selectedIds.size}
-        onConfirm={async (newStatus) => {
-          await bulkUpdateMutation.mutateAsync(newStatus);
-        }}
-      />
-
-      {/* Contract Request Detail Modal */}
-      {selectedRequest && (
-        <ContractRequestDetailDialog
-          open={detailModalOpen}
-          onOpenChange={setDetailModalOpen}
-          request={selectedRequest}
-        />
-      )}
-    </div>
+    </SectionShell>
   );
 }
 
