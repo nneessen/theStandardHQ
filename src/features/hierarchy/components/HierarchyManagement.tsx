@@ -1,7 +1,9 @@
 // src/features/hierarchy/components/HierarchyManagement.tsx
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, type ReactNode } from "react";
 import { Shield, AlertCircle, Edit } from "lucide-react";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { UserSearchCombobox } from "@/components/shared/user-search-combobox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,39 @@ import type {
 
 interface HierarchyManagementProps {
   className?: string;
+}
+
+/** Charcoal "Board" page shell + departure header shared by both render states. */
+function HierarchyManagementShell({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className={`flex flex-col gap-4 ${className ?? ""}`}>
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>AGENCY HIERARCHY</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Hierarchy Management
+            </h1>
+          </header>
+          {children}
+        </div>
+      </div>
+    </SectionShell>
+  );
 }
 
 /**
@@ -178,24 +213,19 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
 
   if (!isAdmin) {
     return (
-      <div
-        className={`bg-card rounded-v2-md border border-border shadow-v2-soft ${className || ""}`}
-      >
-        <div className="px-3 py-2 border-b border-border">
-          <h3 className="text-sm font-semibold text-foreground">
-            Hierarchy Management
-          </h3>
-        </div>
-        <div className="p-3">
-          <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/30">
-            <Shield className="h-4 w-4 text-destructive mt-0.5" />
-            <p className="text-[11px] text-destructive">
-              You do not have permission to manage hierarchy. This feature is
-              restricted to administrators only.
-            </p>
+      <HierarchyManagementShell className={className}>
+        <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
+          <div className="p-3">
+            <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/30">
+              <Shield className="h-4 w-4 text-destructive mt-0.5" />
+              <p className="text-[11px] text-destructive">
+                You do not have permission to manage hierarchy. This feature is
+                restricted to administrators only.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </HierarchyManagementShell>
     );
   }
 
@@ -215,140 +245,137 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
     .sort((a, b) => a - b);
 
   return (
-    <div
-      className={`bg-card rounded-v2-md border border-border shadow-v2-soft ${className || ""}`}
-    >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-warning" />
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Hierarchy Management
-            </h3>
-            <p className="text-[10px] text-muted-foreground">
-              {downlines?.length || 0} agents across {levels.length} levels
-            </p>
-          </div>
-        </div>
-        <Badge
-          variant="outline"
-          className="text-[9px] h-5 border-warning/40 dark:border-warning text-warning"
-        >
-          Admin Only
-        </Badge>
-      </div>
-      <div className="p-3">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="text-[11px] text-muted-foreground">
-              Loading agents...
+    <HierarchyManagementShell className={className}>
+      <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-warning" />
+            <div>
+              <p className="text-[10px] text-muted-foreground">
+                {downlines?.length || 0} agents across {levels.length} levels
+              </p>
             </div>
           </div>
-        ) : !downlines || downlines.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4">
-            <Shield className="h-6 w-6 text-muted-foreground mb-1" />
-            <p className="text-[11px] text-muted-foreground">
-              No agents in hierarchy
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Agents will appear here once they are added to the system
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-lg overflow-hidden border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow className="h-8 bg-background border-b border-border">
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
-                    Agent
-                  </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
-                    Level
-                  </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
-                    Reports To
-                  </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
-                    Direct
-                  </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
-                    Total Down
-                  </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {downlines.map((agent) => {
-                  const directDownlines = downlines.filter(
-                    (d) => d.upline_id === agent.id,
-                  ).length;
-                  const totalDownlines = downlines.filter(
-                    (d) =>
-                      (d.hierarchy_path || "").includes(agent.id) &&
-                      d.id !== agent.id,
-                  ).length;
-                  const uplineEmail = agent.upline_id
-                    ? downlines.find((d) => d.id === agent.upline_id)?.email
-                    : null;
+          <Badge
+            variant="outline"
+            className="text-[9px] h-5 border-warning/40 dark:border-warning text-warning"
+          >
+            Admin Only
+          </Badge>
+        </div>
+        <div className="p-3">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="text-[11px] text-muted-foreground">
+                Loading agents...
+              </div>
+            </div>
+          ) : !downlines || downlines.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-4">
+              <Shield className="h-6 w-6 text-muted-foreground mb-1" />
+              <p className="text-[11px] text-muted-foreground">
+                No agents in hierarchy
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Agents will appear here once they are added to the system
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg overflow-hidden border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="h-8 bg-background border-b border-border">
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                      Agent
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                      Level
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                      Reports To
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                      Direct
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                      Total Down
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {downlines.map((agent) => {
+                    const directDownlines = downlines.filter(
+                      (d) => d.upline_id === agent.id,
+                    ).length;
+                    const totalDownlines = downlines.filter(
+                      (d) =>
+                        (d.hierarchy_path || "").includes(agent.id) &&
+                        d.id !== agent.id,
+                    ).length;
+                    const uplineEmail = agent.upline_id
+                      ? downlines.find((d) => d.id === agent.upline_id)?.email
+                      : null;
 
-                  return (
-                    <TableRow
-                      key={agent.id}
-                      className="h-9 border-b border-border/60 hover:bg-background"
-                    >
-                      <TableCell className="text-[11px] font-medium text-foreground">
-                        {agent.email}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                          L{agent.hierarchy_depth}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground">
-                        {uplineEmail || (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] px-1 py-0 h-4 border-border "
+                    return (
+                      <TableRow
+                        key={agent.id}
+                        className="h-9 border-b border-border/60 hover:bg-background"
+                      >
+                        <TableCell className="text-[11px] font-medium text-foreground">
+                          {agent.email}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                            L{agent.hierarchy_depth}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground">
+                          {uplineEmail || (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] px-1 py-0 h-4 border-border "
+                            >
+                              Root
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-[11px] text-right text-muted-foreground">
+                          {directDownlines}
+                        </TableCell>
+                        <TableCell className="text-[11px] text-right text-muted-foreground">
+                          {totalDownlines}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditAgent(agent)}
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                           >
-                            Root
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-[11px] text-right text-muted-foreground">
-                        {directDownlines}
-                      </TableCell>
-                      <TableCell className="text-[11px] text-right text-muted-foreground">
-                        {totalDownlines}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditAgent(agent)}
-                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
 
-      {/* Edit Dialog */}
-      <EditHierarchyDialog
-        agent={selectedAgent}
-        allAgents={downlines || []}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSave={handleSaveHierarchy}
-      />
-    </div>
+        {/* Edit Dialog */}
+        <EditHierarchyDialog
+          agent={selectedAgent}
+          allAgents={downlines || []}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSave={handleSaveHierarchy}
+        />
+      </div>
+    </HierarchyManagementShell>
   );
 }

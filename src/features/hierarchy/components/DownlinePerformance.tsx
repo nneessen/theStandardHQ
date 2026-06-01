@@ -1,8 +1,10 @@
 // src/features/hierarchy/components/DownlinePerformance.tsx
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Edit, Shield, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,39 @@ import type {
 
 interface DownlinePerformanceProps {
   className?: string;
+}
+
+/** Charcoal "Board" page shell + departure header shared by every render state. */
+function DownlineShell({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className={`flex flex-col gap-4 ${className ?? ""}`}>
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>AGENCY HIERARCHY</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Downline Performance
+            </h1>
+          </header>
+          {children}
+        </div>
+      </div>
+    </SectionShell>
+  );
 }
 
 /**
@@ -240,44 +275,42 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle>Downline Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>Loading downline data...</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        </CardContent>
-      </Card>
+      <DownlineShell className={className}>
+        <Card>
+          <CardContent className="pt-6">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>Loading downline data...</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          </CardContent>
+        </Card>
+      </DownlineShell>
     );
   }
 
   if (!performanceData || performanceData.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle>Downline Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>No downline agents yet</EmptyTitle>
-              <EmptyDescription>
-                When agents are assigned to your downline, their performance
-                metrics will appear here
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </CardContent>
-      </Card>
+      <DownlineShell className={className}>
+        <Card>
+          <CardContent className="pt-6">
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No downline agents yet</EmptyTitle>
+                <EmptyDescription>
+                  When agents are assigned to your downline, their performance
+                  metrics will appear here
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </CardContent>
+        </Card>
+      </DownlineShell>
     );
   }
 
   return (
-    <div className={className}>
+    <DownlineShell className={className}>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -440,7 +473,7 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
       />
-    </div>
+    </DownlineShell>
   );
 }
 
