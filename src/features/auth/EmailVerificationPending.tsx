@@ -105,7 +105,7 @@ export const EmailVerificationPending: React.FC = () => {
 
           {/* Bottom */}
           <div className="text-white/50 text-xs">
-            © {new Date().getFullYear()} The Standard Financial Group
+            © {new Date().getFullYear()} Nick Neessen. All rights reserved.
           </div>
         </div>
       </div>

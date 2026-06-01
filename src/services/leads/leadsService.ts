@@ -181,6 +181,8 @@ export const leadsService = {
         p_is_licensed: input.isLicensed || false,
         p_current_imo_name: input.currentImoName || null,
         p_specialties: input.specialties || null,
+        p_tcpa_consent_text: input.tcpaConsentText || null,
+        p_tcpa_consent_version: input.tcpaConsentVersion || null,
       });
 
       if (error) {

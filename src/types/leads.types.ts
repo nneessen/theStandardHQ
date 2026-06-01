@@ -61,6 +61,8 @@ export interface SubmitLeadInput {
   isLicensed?: boolean;
   currentImoName?: string;
   specialties?: LeadSpecialty[];
+  tcpaConsentText?: string;
+  tcpaConsentVersion?: string;
 }
 
 // RPC response for submit_recruiting_lead

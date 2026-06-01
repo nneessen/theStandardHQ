@@ -22,6 +22,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSubmitLead } from "../../hooks/useLeads";
 import { US_STATES } from "@/constants/states";
 import {
+  TCPA_LEAD_CONSENT_TEXT,
+  TCPA_LEAD_CONSENT_VERSION,
+} from "@/features/legal";
+import {
   INCOME_GOAL_OPTIONS,
   SPECIALTY_OPTIONS,
   type LeadAvailability,
@@ -99,6 +103,7 @@ export function LeadInterestForm({
       isLicensed: false,
       currentImoName: "",
       specialties: [] as string[],
+      tcpaConsent: false,
     },
     onSubmit: async ({ value }) => {
       // Honeypot check - if filled, it's likely a bot
@@ -130,6 +135,10 @@ export function LeadInterestForm({
         specialties: value.isLicensed
           ? (selectedSpecialties as LeadSpecialty[])
           : undefined,
+        // Record the exact consent disclosure the user agreed to (verbatim +
+        // versioned) into the communication_consent ledger server-side.
+        tcpaConsentText: TCPA_LEAD_CONSENT_TEXT,
+        tcpaConsentVersion: TCPA_LEAD_CONSENT_VERSION,
       });
 
       if (result.success && result.lead_id) {
@@ -643,31 +652,102 @@ export function LeadInterestForm({
         )}
       </form.Field>
 
-      {/* Submit Button - Theme-colored CTA */}
-      <Button
-        type="submit"
-        className={`w-full h-10 font-semibold shadow-lg hover:shadow-xl transition-all ${
-          !primaryColor ? "bg-warning hover:bg-warning text-black" : ""
-        }`}
-        style={
-          primaryColor
-            ? {
-                backgroundColor: primaryColor,
-                color: "#ffffff",
-              }
-            : undefined
-        }
-        disabled={submitLeadMutation.isPending}
+      {/* TCPA "prior express written consent" — REQUIRED. Hard-coded here in the
+          shared form (not in the per-recruiter layout disclaimer) so a recruiter's
+          custom branding can never remove it. Rendered text == recorded text. */}
+      <form.Field
+        name="tcpaConsent"
+        validators={{
+          onChange: ({ value }: { value: boolean }) =>
+            value === true
+              ? undefined
+              : "You must agree to be contacted in order to submit this form.",
+        }}
       >
-        {submitLeadMutation.isPending ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Submitting...
-          </>
-        ) : (
-          ctaText
+        {(field) => (
+          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 space-y-1.5">
+            <label
+              htmlFor="tcpaConsent"
+              className="flex items-start gap-2 cursor-pointer"
+            >
+              <Checkbox
+                id="tcpaConsent"
+                checked={field.state.value}
+                onCheckedChange={(checked) =>
+                  field.handleChange(checked === true)
+                }
+                className="mt-0.5 shrink-0 border-2 border-neutral-400 bg-white"
+              />
+              <span className="text-[11px] leading-relaxed text-neutral-700">
+                {TCPA_LEAD_CONSENT_TEXT}
+              </span>
+            </label>
+            <p className="pl-6 text-[11px] text-neutral-600">
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-900"
+              >
+                Terms of Service
+              </a>
+              {" · "}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-900"
+              >
+                Privacy Policy
+              </a>
+              {" · "}
+              <a
+                href="/accessibility"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-neutral-900"
+              >
+                Accessibility
+              </a>
+            </p>
+            {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+              <p className="pl-6 text-xs text-destructive" data-field-error>
+                {getErrorMessage(field.state.meta.errors)}
+              </p>
+            )}
+          </div>
         )}
-      </Button>
+      </form.Field>
+
+      {/* Submit Button - Theme-colored CTA. Disabled until TCPA consent is ticked. */}
+      <form.Subscribe selector={(state) => state.values.tcpaConsent}>
+        {(tcpaConsent) => (
+          <Button
+            type="submit"
+            className={`w-full h-10 font-semibold shadow-lg hover:shadow-xl transition-all ${
+              !primaryColor ? "bg-warning hover:bg-warning text-black" : ""
+            }`}
+            style={
+              primaryColor
+                ? {
+                    backgroundColor: primaryColor,
+                    color: "#ffffff",
+                  }
+                : undefined
+            }
+            disabled={submitLeadMutation.isPending || !tcpaConsent}
+          >
+            {submitLeadMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Submitting...
+              </>
+            ) : (
+              ctaText
+            )}
+          </Button>
+        )}
+      </form.Subscribe>
     </form>
   );
 }

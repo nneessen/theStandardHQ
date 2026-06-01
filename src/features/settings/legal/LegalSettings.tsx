@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { FileText, Shield, Mail } from "lucide-react";
+import { FileText, Shield, Mail, Accessibility } from "lucide-react";
 import { SoftCard } from "@/components/v2";
 
 export function LegalSettings() {
@@ -26,6 +26,13 @@ export function LegalSettings() {
           >
             <Shield className="h-4 w-4 text-muted-foreground" />
             Privacy Policy
+          </Link>
+          <Link
+            to="/accessibility"
+            className="flex items-center gap-2 text-sm text-foreground hover:underline"
+          >
+            <Accessibility className="h-4 w-4 text-muted-foreground" />
+            Accessibility
           </Link>
           <a
             href="mailto:support@thestandardhq.com"

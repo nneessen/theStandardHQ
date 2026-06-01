@@ -353,15 +353,11 @@ export function SplitPanelLayout({
             />
           </div>
 
-          {/* Disclaimer text */}
-          {theme.disclaimer_text ? (
+          {/* Optional recruiter branding text. The legally-required consent/Terms
+              language lives inside the form itself and cannot be overridden here. */}
+          {theme.disclaimer_text && (
             <p className="mt-3 text-center text-[10px] text-muted-foreground">
               {theme.disclaimer_text}
-            </p>
-          ) : (
-            <p className="mt-3 text-center text-[10px] text-muted-foreground">
-              By submitting, you agree to be contacted about career
-              opportunities.
             </p>
           )}
 

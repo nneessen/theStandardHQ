@@ -138,11 +138,13 @@ export function CenteredCardLayout({
             />
           </div>
 
-          {/* Disclaimer */}
-          <p className="mt-4 text-center text-[10px] text-muted-foreground">
-            {theme.disclaimer_text ||
-              "By submitting, you agree to be contacted about career opportunities."}
-          </p>
+          {/* Optional recruiter branding text. The legally-required consent/Terms
+              language lives inside the form itself and cannot be overridden here. */}
+          {theme.disclaimer_text && (
+            <p className="mt-4 text-center text-[10px] text-muted-foreground">
+              {theme.disclaimer_text}
+            </p>
+          )}
         </div>
 
         {/* Footer */}

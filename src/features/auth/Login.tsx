@@ -294,7 +294,13 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             >
               Privacy Policy
             </Link>
-            .
+            .{" "}
+            <Link
+              to="/accessibility"
+              className="underline underline-offset-4 transition-colors hover:text-[#f1e9d6]"
+            >
+              Accessibility
+            </Link>
           </p>
         </div>
 

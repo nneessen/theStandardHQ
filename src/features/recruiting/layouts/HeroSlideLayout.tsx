@@ -313,13 +313,15 @@ export function HeroSlideLayout({
             />
           </div>
 
-          {/* Disclaimer */}
-          <div className="p-4 border-t border-border shrink-0">
-            <p className="text-[10px] text-muted-foreground text-center">
-              {theme.disclaimer_text ||
-                "By submitting, you agree to be contacted about career opportunities."}
-            </p>
-          </div>
+          {/* Optional recruiter branding text. The legally-required consent/Terms
+              language lives inside the form itself and cannot be overridden here. */}
+          {theme.disclaimer_text && (
+            <div className="p-4 border-t border-border shrink-0">
+              <p className="text-[10px] text-muted-foreground text-center">
+                {theme.disclaimer_text}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

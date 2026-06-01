@@ -13595,6 +13595,8 @@ export type Database = {
           state: string | null;
           street_address: string | null;
           subscription_tier: string;
+          terms_accepted_at: string | null;
+          terms_version: string | null;
           updated_at: string | null;
           upline_id: string | null;
           uw_wizard_enabled: boolean;
@@ -13651,6 +13653,8 @@ export type Database = {
           state?: string | null;
           street_address?: string | null;
           subscription_tier?: string;
+          terms_accepted_at?: string | null;
+          terms_version?: string | null;
           updated_at?: string | null;
           upline_id?: string | null;
           uw_wizard_enabled?: boolean;
@@ -13707,6 +13711,8 @@ export type Database = {
           state?: string | null;
           street_address?: string | null;
           subscription_tier?: string;
+          terms_accepted_at?: string | null;
+          terms_version?: string | null;
           updated_at?: string | null;
           upline_id?: string | null;
           uw_wizard_enabled?: boolean;
@@ -15756,6 +15762,10 @@ export type Database = {
       };
     };
     Functions: {
+      accept_platform_terms: {
+        Args: { p_version: string };
+        Returns: string;
+      };
       accept_recruiting_lead: {
         Args: { p_lead_id: string; p_pipeline_template_id?: string };
         Returns: Json;
@@ -19078,6 +19088,8 @@ export type Database = {
           p_referrer_url?: string;
           p_specialties?: string[];
           p_state: string;
+          p_tcpa_consent_text?: string;
+          p_tcpa_consent_version?: string;
           p_user_agent?: string;
           p_utm_campaign?: string;
           p_utm_medium?: string;

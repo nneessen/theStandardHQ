@@ -7,6 +7,7 @@ import { PendingApproval, DeniedAccess } from "@/features/auth";
 import { usePermissionCheck } from "@/hooks/permissions";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import { useAuth } from "@/contexts/AuthContext";
+import { TermsAcceptanceGate } from "@/components/auth/TermsAcceptanceGate";
 
 interface ApprovalGuardProps {
   children: React.ReactNode;
@@ -50,7 +51,7 @@ export const ApprovalGuard: React.FC<ApprovalGuardProps> = ({ children }) => {
 
   // Admin bypass - if current user email matches admin email, always allow
   if (currentUserEmail === ADMIN_EMAIL) {
-    return <>{children}</>;
+    return <TermsAcceptanceGate>{children}</TermsAcceptanceGate>;
   }
 
   // NEW: Recruit handling - recruits should only see their onboarding pipeline
@@ -64,7 +65,7 @@ export const ApprovalGuard: React.FC<ApprovalGuardProps> = ({ children }) => {
   if (isRecruit && !isAgent && !isAdmin) {
     // If already on pipeline page, render children (the pipeline component)
     if (isOnPipelinePage) {
-      return <>{children}</>;
+      return <TermsAcceptanceGate>{children}</TermsAcceptanceGate>;
     }
     // Otherwise, redirect recruits to their pipeline
     return <Navigate to="/recruiting/my-pipeline" replace />;
@@ -87,7 +88,7 @@ export const ApprovalGuard: React.FC<ApprovalGuardProps> = ({ children }) => {
 
   // Allow access if approved or admin
   if (isApproved) {
-    return <>{children}</>;
+    return <TermsAcceptanceGate>{children}</TermsAcceptanceGate>;
   }
 
   // Fallback: show pending screen if status is unclear

@@ -565,7 +565,10 @@ export function PublicRegistrationPage() {
               <a href="/privacy" className="underline">
                 Privacy Policy
               </a>
-              .
+              .{" "}
+              <a href="/accessibility" className="underline">
+                Accessibility
+              </a>
             </p>
           </form>
         </section>

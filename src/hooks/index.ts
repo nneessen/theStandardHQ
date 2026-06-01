@@ -63,9 +63,6 @@ export * from "./audit";
 // Integration hooks
 export * from "./integrations";
 
-// Signature hooks
-export * from "./signatures";
-
 // Slack hooks
 export * from "./slack";
 
@@ -89,3 +86,6 @@ export * from "./dashboard";
 
 // Lead purchase hooks
 export * from "./lead-purchases";
+
+// Legal / Terms acceptance hooks
+export * from "./legal";

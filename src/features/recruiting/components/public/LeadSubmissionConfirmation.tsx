@@ -120,7 +120,7 @@ export function LeadSubmissionConfirmation({
 
           {/* Bottom */}
           <div className="text-white/50 text-sm">
-            &copy; {new Date().getFullYear()} The Standard Financial Group
+            &copy; {new Date().getFullYear()} Nick Neessen. All rights reserved.
           </div>
         </div>
       </div>

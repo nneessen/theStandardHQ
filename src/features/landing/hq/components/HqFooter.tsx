@@ -41,6 +41,7 @@ export function HqFooter() {
             <h4>Links</h4>
             <Link to="/terms">Terms</Link>
             <Link to="/privacy">Privacy</Link>
+            <Link to="/accessibility">Accessibility</Link>
             <Link to="/login">Agent Login</Link>
           </div>
         </div>

@@ -22,6 +22,8 @@ describe("useUsersView role-based filtering logic", () => {
     subscription_tier: "free",
 
     // All nullable fields set to null by default
+    terms_accepted_at: null,
+    terms_version: null,
     agent_status: null,
     approved_at: null,
     approved_by: null,
