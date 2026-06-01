@@ -87,6 +87,8 @@ import { useResendInvite } from "../hooks/useAuthUser";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { SectionShell } from "@/components/v2";
+import { Board, Cap, T } from "@/components/board";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
@@ -281,464 +283,494 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   };
 
   return (
-    <div className={`flex flex-col gap-3 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h1 className="text-sm font-semibold text-foreground">Recruiting</h1>
-          <Badge variant="secondary" className="text-[9px] h-4">
-            {recruits.length} recruits
-          </Badge>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <BasicAddRecruitDialog
-            open={addDialogOpen}
-            onOpenChange={setAddDialogOpen}
-          />
-        </div>
-      </div>
-
-      {/* Full Pipeline Upgrade Card */}
-      <Collapsible
-        open={showUpgradeDetails}
-        onOpenChange={setShowUpgradeDetails}
-      >
-        <div className="rounded-lg border-2 border-info/30 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40  dark:to-indigo-950/30">
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="w-full p-4 text-left hover:bg-info/10 dark:hover:bg-info/10 transition-colors rounded-lg"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-info/20 dark:bg-info/50 flex-shrink-0">
-                    <Sparkles className="h-4.5 w-4.5 text-info" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-info dark:text-info leading-tight">
-                      Unlock the Full Recruiting Pipeline
-                    </p>
-                    <p className="text-[10px] text-info mt-0.5">
-                      {NEW_SUBSCRIPTIONS_ENABLED
-                        ? "Expand to preview Team plan features and upgrade options"
-                        : "Expand to preview Team plan features"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 text-info bg-card/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
-                  {showUpgradeDetails ? "Hide" : "View"}
-                  {showUpgradeDetails ? (
-                    <ChevronUp className="h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3" />
-                  )}
-                </div>
-              </div>
-            </button>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent className="px-4 pb-4">
-            <div className="border-t border-info/80 dark:border-info/80 pt-3">
-              {(() => {
-                const featureGrid = (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {TEAM_PLAN_FEATURES.map(({ icon: Icon, label, desc }) => (
-                      <div
-                        key={label}
-                        className="flex items-start gap-2 p-2 rounded-md bg-card/80 /60 border border-info dark:border-info/50"
-                      >
-                        <Icon className="h-3.5 w-3.5 text-info dark:text-info mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-[10px] font-semibold text-v2-ink-subtle leading-tight">
-                            {label}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
-                            {desc}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-
-                const teamPlanBlurb = (
-                  <p className="text-[10px] text-info leading-tight">
-                    Everything you need to build, onboard, and grow your team on
-                    the <span className="font-semibold">Team plan</span>
-                  </p>
-                );
-
-                // Upgrade disabled: info-only panel (no /billing link / CTA).
-                if (!NEW_SUBSCRIPTIONS_ENABLED) {
-                  return (
-                    <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3">
-                      <div className="mb-3">{teamPlanBlurb}</div>
-                      {featureGrid}
-                    </div>
-                  );
-                }
-
-                return (
-                  <Link to="/billing" className="block group">
-                    <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
-                      {/* CTA row */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        {teamPlanBlurb}
-                        <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-info-foreground rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
-                          Upgrade to Team
-                          <ArrowRight className="h-3 w-3" />
-                        </div>
-                      </div>
-
-                      {featureGrid}
-
-                      {/* Click hint */}
-                      <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
-                        Click anywhere in this panel to see pricing and upgrade
-                        →
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })()}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className={`flex flex-col gap-4 ${className ?? ""}`}>
+          {/* Departure-board header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>RECRUITING · {recruits.length} TRACKED</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Recruiting
+              </h1>
             </div>
-          </CollapsibleContent>
-        </div>
-      </Collapsible>
 
-      {/* Recruiting Process Instructions */}
-      <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
-        <button
-          onClick={() => setShowInstructions(!showInstructions)}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-background rounded-lg transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Info className="h-3.5 w-3.5 text-info" />
-            <span className="text-[11px] font-medium text-muted-foreground">
-              How the Recruiting Process Works
-            </span>
-          </div>
-          {showInstructions ? (
-            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          )}
-        </button>
-        {showInstructions && (
-          <div className="px-3 pb-3 space-y-2">
-            <div className="border-t border-border/60 pt-2" />
-            <ol className="space-y-1.5 text-[10px] text-v2-ink-subtle list-decimal list-inside">
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  Add a new recruit
-                </span>{" "}
-                — Click "Add Recruit" and enter their name, email, and phone
-                number.
-              </li>
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  Recruit receives a password email
-                </span>{" "}
-                — They will be emailed a link to set their password and log in
-                to the system.
-              </li>
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  Licensing status determines next steps
-                </span>{" "}
-                — If the recruit is <em>not already licensed</em>, they are
-                added as "unlicensed" and their details can be posted to the
-                Slack recruit channel.
-              </li>
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  Recruit enters the onboarding pipeline
-                </span>{" "}
-                — They are enrolled in the standard pipeline where you can track
-                their progress through each phase.
-              </li>
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  NPN received triggers a second notification
-                </span>{" "}
-                — When the recruit's NPN (National Producer Number) is entered,
-                a second Slack notification is posted requesting email #2 be
-                sent.
-              </li>
-              <li>
-                <span className="font-medium text-v2-ink-subtle">
-                  Graduate to agent
-                </span>{" "}
-                — Once onboarding is complete, use the "Graduate" button to
-                promote the recruit to a full agent.
-              </li>
-            </ol>
-          </div>
-        )}
-      </div>
+            <div className="flex items-center gap-2">
+              <BasicAddRecruitDialog
+                open={addDialogOpen}
+                onOpenChange={setAddDialogOpen}
+              />
+            </div>
+          </header>
 
-      {/* Recruits Table */}
-      <div className="flex-1 overflow-hidden bg-card rounded-v2-md border border-border shadow-v2-soft">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-muted-foreground">
-            Loading recruits...
-          </div>
-        ) : recruits.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 gap-2 text-muted-foreground">
-            <User className="h-8 w-8 text-muted-foreground" />
-            <p className="text-[11px]">No recruits yet</p>
-            <p className="text-[10px] text-muted-foreground">
-              Add your first recruit to get started
-            </p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Name
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Contact
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Upline
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Status
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Added
-                </TableHead>
-                <TableHead className="text-[10px] font-semibold h-8">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recruits.map((recruit) => (
-                <TableRow
-                  key={recruit.id}
-                  className={cn(
-                    "cursor-pointer transition-colors",
-                    selectedRecruit?.id === recruit.id
-                      ? "bg-muted"
-                      : "hover:bg-background",
-                  )}
-                  onClick={() => handleSelectRecruit(recruit)}
+          {/* Full Pipeline Upgrade Card */}
+          <Collapsible
+            open={showUpgradeDetails}
+            onOpenChange={setShowUpgradeDetails}
+          >
+            <div className="rounded-lg border-2 border-info/30 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40  dark:to-indigo-950/30">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full p-4 text-left hover:bg-info/10 dark:hover:bg-info/10 transition-colors rounded-lg"
                 >
-                  <TableCell className="py-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-7 w-7">
-                        <AvatarImage
-                          src={recruit.profile_photo_url || undefined}
-                        />
-                        <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
-                          {(recruit.first_name?.[0] || "").toUpperCase()}
-                          {(recruit.last_name?.[0] || "").toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-[11px] font-medium text-foreground">
-                        {recruit.first_name} {recruit.last_name}
-                      </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-info/20 dark:bg-info/50 flex-shrink-0">
+                        <Sparkles className="h-4.5 w-4.5 text-info" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-info dark:text-info leading-tight">
+                          Unlock the Full Recruiting Pipeline
+                        </p>
+                        <p className="text-[10px] text-info mt-0.5">
+                          {NEW_SUBSCRIPTIONS_ENABLED
+                            ? "Expand to preview Team plan features and upgrade options"
+                            : "Expand to preview Team plan features"}
+                        </p>
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2">
-                    <div className="flex flex-col gap-0.5">
-                      {recruit.email && (
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Mail className="h-3 w-3" />
-                          {recruit.email}
-                        </div>
-                      )}
-                      {recruit.phone && (
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Phone className="h-3 w-3" />
-                          {recruit.phone}
-                        </div>
+
+                    <div className="flex items-center gap-1.5 text-info bg-card/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
+                      {showUpgradeDetails ? "Hide" : "View"}
+                      {showUpgradeDetails ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="py-2">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {(recruit as any).upline ? (
-                      <span className="text-[10px] text-muted-foreground">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {(recruit as any).upline.first_name}{" "}
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {(recruit as any).upline.last_name}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground italic">
-                        {recruit.upline_id ? "Loading..." : "Not assigned"}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2">
-                    {(() => {
-                      const terminalStatuses = [
-                        "completed",
-                        "dropped",
-                        "withdrawn",
-                      ];
-                      const isTerminal = terminalStatuses.includes(
-                        recruit.onboarding_status || "",
+                  </div>
+                </button>
+              </CollapsibleTrigger>
+
+              <CollapsibleContent className="px-4 pb-4">
+                <div className="border-t border-info/80 dark:border-info/80 pt-3">
+                  {(() => {
+                    const featureGrid = (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {TEAM_PLAN_FEATURES.map(
+                          ({ icon: Icon, label, desc }) => (
+                            <div
+                              key={label}
+                              className="flex items-start gap-2 p-2 rounded-md bg-card/80 /60 border border-info dark:border-info/50"
+                            >
+                              <Icon className="h-3.5 w-3.5 text-info dark:text-info mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-[10px] font-semibold text-v2-ink-subtle leading-tight">
+                                  {label}
+                                </p>
+                                <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
+                                  {desc}
+                                </p>
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    );
+
+                    const teamPlanBlurb = (
+                      <p className="text-[10px] text-info leading-tight">
+                        Everything you need to build, onboard, and grow your
+                        team on the{" "}
+                        <span className="font-semibold">Team plan</span>
+                      </p>
+                    );
+
+                    // Upgrade disabled: info-only panel (no /billing link / CTA).
+                    if (!NEW_SUBSCRIPTIONS_ENABLED) {
+                      return (
+                        <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3">
+                          <div className="mb-3">{teamPlanBlurb}</div>
+                          {featureGrid}
+                        </div>
                       );
-                      if (isTerminal) {
-                        return (
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "text-[9px] h-4",
-                              TERMINAL_STATUS_COLORS[
-                                recruit.onboarding_status!
-                              ],
-                            )}
-                          >
-                            {recruit.onboarding_status!.replace(/_/g, " ")}
-                          </Badge>
-                        );
-                      }
-                      if (recruit.pipeline_template_id) {
-                        return (
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] h-4 bg-info/20 text-info"
-                          >
-                            {recruit.current_onboarding_phase || "In Pipeline"}
-                          </Badge>
-                        );
-                      }
-                      return getStatusBadge(recruit.approval_status);
-                    })()}
-                  </TableCell>
-                  <TableCell className="py-2">
-                    <span className="text-[10px] text-muted-foreground">
-                      {recruit.created_at
-                        ? formatDistanceToNow(new Date(recruit.created_at), {
-                            addSuffix: true,
-                          })
-                        : "Unknown"}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    className="py-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center gap-1">
-                      {recruit.email && (
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-5 w-5 p-0 text-info hover:text-info dark:hover:text-info"
-                                disabled={resendingRecruitId === recruit.id}
-                                onClick={() => handleResendInvite(recruit)}
-                              >
-                                {resendingRecruitId === recruit.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <SendHorizontal className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-[10px]">
-                              Resend password setup email
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-v2-ink-subtle dark:hover:text-muted-foreground"
-                        onClick={() => setEditingRecruit(recruit)}
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive dark:hover:text-destructive"
-                        onClick={() => setDeletingRecruit(recruit)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                      {(recruit.approval_status === "pending" ||
-                        recruit.approval_status === "approved" ||
-                        recruit.approval_status === "active") && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-5 px-1.5 text-[10px] text-success hover:text-success hover:bg-success/10 dark:text-success dark:hover:text-success dark:hover:bg-success/20"
-                          onClick={() => setGraduatingRecruit(recruit)}
-                        >
-                          <GraduationCap className="h-3 w-3 mr-0.5" />
-                          Graduate
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+                    }
 
-      {/* Recruit Bottom Panel (slide-up drawer) */}
-      {detailSheetOpen && selectedRecruit && (
-        <div className="fixed inset-0 z-[200]">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setDetailSheetOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 bg-card border-t border-border rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
-            <RecruitBottomPanel
-              recruit={selectedRecruit}
-              onClose={() => setDetailSheetOpen(false)}
-            />
+                    return (
+                      <Link to="/billing" className="block group">
+                        <div className="rounded-md border border-info dark:border-info/50 bg-card/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
+                          {/* CTA row */}
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            {teamPlanBlurb}
+                            <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-info-foreground rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
+                              Upgrade to Team
+                              <ArrowRight className="h-3 w-3" />
+                            </div>
+                          </div>
+
+                          {featureGrid}
+
+                          {/* Click hint */}
+                          <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
+                            Click anywhere in this panel to see pricing and
+                            upgrade →
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })()}
+                </div>
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
+
+          {/* Recruiting Process Instructions */}
+          <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
+            <button
+              onClick={() => setShowInstructions(!showInstructions)}
+              className="w-full flex items-center justify-between px-3 py-2 hover:bg-background rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Info className="h-3.5 w-3.5 text-info" />
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  How the Recruiting Process Works
+                </span>
+              </div>
+              {showInstructions ? (
+                <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </button>
+            {showInstructions && (
+              <div className="px-3 pb-3 space-y-2">
+                <div className="border-t border-border/60 pt-2" />
+                <ol className="space-y-1.5 text-[10px] text-v2-ink-subtle list-decimal list-inside">
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      Add a new recruit
+                    </span>{" "}
+                    — Click "Add Recruit" and enter their name, email, and phone
+                    number.
+                  </li>
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      Recruit receives a password email
+                    </span>{" "}
+                    — They will be emailed a link to set their password and log
+                    in to the system.
+                  </li>
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      Licensing status determines next steps
+                    </span>{" "}
+                    — If the recruit is <em>not already licensed</em>, they are
+                    added as "unlicensed" and their details can be posted to the
+                    Slack recruit channel.
+                  </li>
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      Recruit enters the onboarding pipeline
+                    </span>{" "}
+                    — They are enrolled in the standard pipeline where you can
+                    track their progress through each phase.
+                  </li>
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      NPN received triggers a second notification
+                    </span>{" "}
+                    — When the recruit's NPN (National Producer Number) is
+                    entered, a second Slack notification is posted requesting
+                    email #2 be sent.
+                  </li>
+                  <li>
+                    <span className="font-medium text-v2-ink-subtle">
+                      Graduate to agent
+                    </span>{" "}
+                    — Once onboarding is complete, use the "Graduate" button to
+                    promote the recruit to a full agent.
+                  </li>
+                </ol>
+              </div>
+            )}
           </div>
+
+          {/* Recruits Table */}
+          <Board pad={0} style={{ overflow: "hidden" }}>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32 text-[11px] text-muted-foreground">
+                Loading recruits...
+              </div>
+            ) : recruits.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-32 gap-2 text-muted-foreground">
+                <User className="h-8 w-8 text-muted-foreground" />
+                <p className="text-[11px]">No recruits yet</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Add your first recruit to get started
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Name
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Contact
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Upline
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Added
+                    </TableHead>
+                    <TableHead className="text-[10px] font-semibold h-8">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recruits.map((recruit) => (
+                    <TableRow
+                      key={recruit.id}
+                      className={cn(
+                        "cursor-pointer transition-colors",
+                        selectedRecruit?.id === recruit.id
+                          ? "bg-muted"
+                          : "hover:bg-background",
+                      )}
+                      onClick={() => handleSelectRecruit(recruit)}
+                    >
+                      <TableCell className="py-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7">
+                            <AvatarImage
+                              src={recruit.profile_photo_url || undefined}
+                            />
+                            <AvatarFallback className="text-[9px] bg-muted text-v2-ink-subtle">
+                              {(recruit.first_name?.[0] || "").toUpperCase()}
+                              {(recruit.last_name?.[0] || "").toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-[11px] font-medium text-foreground">
+                            {recruit.first_name} {recruit.last_name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex flex-col gap-0.5">
+                          {recruit.email && (
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <Mail className="h-3 w-3" />
+                              {recruit.email}
+                            </div>
+                          )}
+                          {recruit.phone && (
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              {recruit.phone}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        {(recruit as any).upline ? (
+                          <span className="text-[10px] text-muted-foreground">
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {(recruit as any).upline.first_name}{" "}
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {(recruit as any).upline.last_name}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground italic">
+                            {recruit.upline_id ? "Loading..." : "Not assigned"}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {(() => {
+                          const terminalStatuses = [
+                            "completed",
+                            "dropped",
+                            "withdrawn",
+                          ];
+                          const isTerminal = terminalStatuses.includes(
+                            recruit.onboarding_status || "",
+                          );
+                          if (isTerminal) {
+                            return (
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "text-[9px] h-4",
+                                  TERMINAL_STATUS_COLORS[
+                                    recruit.onboarding_status!
+                                  ],
+                                )}
+                              >
+                                {recruit.onboarding_status!.replace(/_/g, " ")}
+                              </Badge>
+                            );
+                          }
+                          if (recruit.pipeline_template_id) {
+                            return (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] h-4 bg-info/20 text-info"
+                              >
+                                {recruit.current_onboarding_phase ||
+                                  "In Pipeline"}
+                              </Badge>
+                            );
+                          }
+                          return getStatusBadge(recruit.approval_status);
+                        })()}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <span className="text-[10px] text-muted-foreground">
+                          {recruit.created_at
+                            ? formatDistanceToNow(
+                                new Date(recruit.created_at),
+                                {
+                                  addSuffix: true,
+                                },
+                              )
+                            : "Unknown"}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className="py-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {recruit.email && (
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-5 w-5 p-0 text-info hover:text-info dark:hover:text-info"
+                                    disabled={resendingRecruitId === recruit.id}
+                                    onClick={() => handleResendInvite(recruit)}
+                                  >
+                                    {resendingRecruitId === recruit.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <SendHorizontal className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="text-[10px]"
+                                >
+                                  Resend password setup email
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 w-5 p-0 text-muted-foreground hover:text-v2-ink-subtle dark:hover:text-muted-foreground"
+                            onClick={() => setEditingRecruit(recruit)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive dark:hover:text-destructive"
+                            onClick={() => setDeletingRecruit(recruit)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          {(recruit.approval_status === "pending" ||
+                            recruit.approval_status === "approved" ||
+                            recruit.approval_status === "active") && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-5 px-1.5 text-[10px] text-success hover:text-success hover:bg-success/10 dark:text-success dark:hover:text-success dark:hover:bg-success/20"
+                              onClick={() => setGraduatingRecruit(recruit)}
+                            >
+                              <GraduationCap className="h-3 w-3 mr-0.5" />
+                              Graduate
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Board>
+
+          {/* Recruit Bottom Panel (slide-up drawer) */}
+          {detailSheetOpen && selectedRecruit && (
+            <div className="fixed inset-0 z-[200]">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setDetailSheetOpen(false)}
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-card border-t border-border rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
+                <RecruitBottomPanel
+                  recruit={selectedRecruit}
+                  onClose={() => setDetailSheetOpen(false)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Graduate to Agent Dialog */}
+          {graduatingRecruit && (
+            <GraduateToAgentDialog
+              recruit={graduatingRecruit}
+              open={!!graduatingRecruit}
+              onOpenChange={(open) => {
+                if (!open) setGraduatingRecruit(null);
+              }}
+            />
+          )}
+
+          {/* Edit Recruit Dialog */}
+          {editingRecruit && (
+            <BasicEditRecruitDialog
+              recruit={editingRecruit}
+              open={!!editingRecruit}
+              onOpenChange={(open) => {
+                if (!open) setEditingRecruit(null);
+              }}
+            />
+          )}
+
+          {/* Delete Recruit Dialog */}
+          {deletingRecruit && (
+            <BasicDeleteRecruitDialog
+              recruit={deletingRecruit}
+              open={!!deletingRecruit}
+              onOpenChange={(open) => {
+                if (!open) setDeletingRecruit(null);
+              }}
+            />
+          )}
         </div>
-      )}
-
-      {/* Graduate to Agent Dialog */}
-      {graduatingRecruit && (
-        <GraduateToAgentDialog
-          recruit={graduatingRecruit}
-          open={!!graduatingRecruit}
-          onOpenChange={(open) => {
-            if (!open) setGraduatingRecruit(null);
-          }}
-        />
-      )}
-
-      {/* Edit Recruit Dialog */}
-      {editingRecruit && (
-        <BasicEditRecruitDialog
-          recruit={editingRecruit}
-          open={!!editingRecruit}
-          onOpenChange={(open) => {
-            if (!open) setEditingRecruit(null);
-          }}
-        />
-      )}
-
-      {/* Delete Recruit Dialog */}
-      {deletingRecruit && (
-        <BasicDeleteRecruitDialog
-          recruit={deletingRecruit}
-          open={!!deletingRecruit}
-          onOpenChange={(open) => {
-            if (!open) setDeletingRecruit(null);
-          }}
-        />
-      )}
-    </div>
+      </div>
+    </SectionShell>
   );
 }
 

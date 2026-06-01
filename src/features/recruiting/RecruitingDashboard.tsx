@@ -8,7 +8,6 @@ import {
   Copy,
   Check,
   ArrowRight,
-  Users,
 } from "lucide-react";
 import {
   useRecruits,
@@ -39,7 +38,8 @@ import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { BasicRecruitingView } from "./components/BasicRecruitingView";
-import { PillButton, PillNav, SoftCard } from "@/components/v2";
+import { PillButton, PillNav, SoftCard, SectionShell } from "@/components/v2";
+import { Board, Cap, FlapTile, Num, T } from "@/components/board";
 import { cn } from "@/lib/utils";
 
 type RecruitWithRelations = UserProfile & {
@@ -267,266 +267,310 @@ function RecruitingDashboardContent() {
     : null;
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Compact header — title + inline summary + action buttons */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Users className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Recruiting
-            </h1>
-          </div>
-          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
-            <span>
-              <span className="text-v2-ink font-semibold tabular-nums">
-                {stats.active}
-              </span>{" "}
-              active
-            </span>
-            <span className="text-v2-ink-muted">·</span>
-            <span>
-              <span className="font-mono font-semibold text-warning tabular-nums">
-                {stats.invited}
-              </span>{" "}
-              invited
-            </span>
-            {stats.blocked > 0 && (
-              <>
-                <span className="text-v2-ink-muted">·</span>
-                <span>
-                  <span className="font-mono font-semibold text-destructive tabular-nums">
-                    {stats.blocked}
-                  </span>{" "}
-                  blocked
-                </span>
-              </>
-            )}
-            <span className="text-v2-ink-muted">·</span>
-            <span>
-              <span className="font-mono font-semibold text-success tabular-nums">
-                {stats.completed}
-              </span>{" "}
-              complete
-            </span>
-            {stats.dropped > 0 && (
-              <>
-                <span className="text-v2-ink-muted">·</span>
-                <span>
-                  <span className="font-mono font-semibold tabular-nums">
-                    {stats.dropped}
-                  </span>{" "}
-                  dropped
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <PillButton
-            tone="ghost"
-            size="sm"
-            onClick={handleExportCSV}
-            leadingIcon={<Download className="h-3.5 w-3.5" />}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Departure-board header — eyebrow + title + action buttons */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
           >
-            Export
-          </PillButton>
-          <PillButton
-            tone="ghost"
-            size="sm"
-            onClick={() => setSendInviteDialogOpen(true)}
-            leadingIcon={<Mail className="h-3.5 w-3.5" />}
-          >
-            Send invite
-          </PillButton>
-          <Link to="/recruiting/admin/pipelines">
-            <PillButton
-              tone="ghost"
-              size="sm"
-              leadingIcon={<Settings2 className="h-3.5 w-3.5" />}
-            >
-              Pipelines
-            </PillButton>
-          </Link>
-          <PillButton
-            tone="black"
-            size="sm"
-            onClick={() => setAddRecruitDialogOpen(true)}
-            leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
-          >
-            Add recruit
-          </PillButton>
-        </div>
-      </header>
-
-      {/* Filter row */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <PillNav
-          size="sm"
-          activeValue={statusFilter}
-          onChange={setStatusFilter}
-          items={filterItems}
-        />
-        <label className="inline-flex items-center gap-1.5 text-[11px] text-v2-ink-muted cursor-pointer">
-          <input
-            type="checkbox"
-            checked={hideProspects}
-            onChange={(e) => setHideProspects(e.target.checked)}
-            className="h-3.5 w-3.5 rounded border-v2-ring"
-          />
-          Hide prospects (unenrolled recruits)
-        </label>
-      </div>
-
-      {/* Heads-up banner when Hide Prospects is on — explains why a freshly
-          added recruit might not appear in the list yet. */}
-      {hideProspects && (
-        <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-warning/30 bg-warning/5 text-[11px] text-v2-ink">
-          <span>
-            <strong>Hide prospects is on</strong> — recruits not yet enrolled in
-            a pipeline are hidden. If a recruit you just added doesn&apos;t show
-            up here, enroll them in a pipeline from their profile, or click to
-            show all.
-          </span>
-          <button
-            type="button"
-            onClick={() => setHideProspects(false)}
-            className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md border border-warning/40 text-warning hover:bg-warning/10 text-[10px] uppercase tracking-[0.16em] font-semibold"
-          >
-            Show all
-          </button>
-        </div>
-      )}
-
-      {/* Recruiting link strip — only for non-staff with custom branding */}
-      {!isStaffRole && hasCustomBranding && (
-        <SoftCard
-          variant="tinted"
-          padding="sm"
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-        >
-          {recruitingLinkUrl ? (
-            <>
-              <div className="flex items-center gap-2 min-w-0">
-                <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
-                <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-v2-ink-muted">
-                  Your link
-                </span>
-                <span className="text-[12px] font-mono text-v2-ink truncate">
-                  {recruitingLinkUrl}
-                </span>
-              </div>
-              <PillButton
-                tone="yellow"
-                size="sm"
-                onClick={handleCopyLink}
-                leadingIcon={
-                  linkCopied ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )
-                }
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>RECRUITING PIPELINE</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
               >
-                {linkCopied ? "Copied" : "Copy link"}
-              </PillButton>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 min-w-0">
-                <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
-                <span className="text-[12px] text-v2-ink-muted">
-                  Set up your personal recruiting link to share on social media.
-                </span>
-              </div>
-              <Link to="/settings">
-                <PillButton
-                  tone="yellow"
-                  size="sm"
-                  trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                >
-                  Set up link
-                </PillButton>
-              </Link>
-            </>
-          )}
-        </SoftCard>
-      )}
+                Recruiting
+              </h1>
+            </div>
 
-      {/* Table */}
-      <SoftCard padding="none" className="overflow-hidden">
-        <RecruitListTable
-          rows={rows}
-          isLoading={recruitsLoading}
-          onSelectRecruit={handleSelectRecruit}
-          onSelectLead={handleSelectLead}
-          onAcceptLead={handleAcceptLead}
-          onRejectLead={handleRejectLead}
-          isAcceptingLead={acceptLeadMutation.isPending}
-          isRejectingLead={rejectLeadMutation.isPending}
-        />
-
-        {rows.length === 0 && !recruitsLoading && (
-          <div className="px-5 py-8 text-center">
-            <p className="text-[12px] text-v2-ink-muted mb-3">
-              {statusFilter
-                ? `No recruits match the "${statusFilter}" filter.`
-                : "No recruits yet — send an invite or add one to start your pipeline."}
-            </p>
-            {!statusFilter && (
+            <div className="flex flex-wrap items-center gap-1.5">
               <PillButton
-                tone="black"
+                tone="ghost"
+                size="sm"
+                onClick={handleExportCSV}
+                leadingIcon={<Download className="h-3.5 w-3.5" />}
+              >
+                Export
+              </PillButton>
+              <PillButton
+                tone="ghost"
                 size="sm"
                 onClick={() => setSendInviteDialogOpen(true)}
                 leadingIcon={<Mail className="h-3.5 w-3.5" />}
               >
-                Send your first invite
+                Send invite
               </PillButton>
-            )}
+              <Link to="/recruiting/admin/pipelines">
+                <PillButton
+                  tone="ghost"
+                  size="sm"
+                  leadingIcon={<Settings2 className="h-3.5 w-3.5" />}
+                >
+                  Pipelines
+                </PillButton>
+              </Link>
+              <PillButton
+                tone="black"
+                size="sm"
+                onClick={() => setAddRecruitDialogOpen(true)}
+                leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
+              >
+                Add recruit
+              </PillButton>
+            </div>
+          </header>
+
+          {/* Hero band — pipeline snapshot (real counts from `stats`) */}
+          <Board
+            pad={20}
+            rivets
+            style={{
+              background: `radial-gradient(130% 180% at 0% 0%, rgba(91,155,255,0.12), rgba(91,155,255,0.01)), ${T.panelGradient}`,
+              border: "1px solid rgba(91,155,255,0.28)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 24,
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flexShrink: 0 }}>
+                <Cap>IN PIPELINE</Cap>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 10,
+                    marginTop: 4,
+                  }}
+                >
+                  <Num text={String(stats.total)} size="xl" lit />
+                  <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
+                    {stats.total === 1 ? "recruit" : "recruits"} tracked
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(min(100%, 130px), 1fr))",
+                  gap: 10,
+                  flex: 1,
+                  minWidth: 240,
+                }}
+              >
+                <FlapTile
+                  label="Active"
+                  value={String(stats.active)}
+                  tone="blue"
+                />
+                <FlapTile
+                  label="Invited"
+                  value={String(stats.invited)}
+                  tone="amber"
+                />
+                <FlapTile
+                  label="Completed"
+                  value={String(stats.completed)}
+                  tone="green"
+                />
+                <FlapTile
+                  label="Blocked"
+                  value={String(stats.blocked)}
+                  tone={stats.blocked > 0 ? "red" : "default"}
+                />
+              </div>
+            </div>
+          </Board>
+
+          {/* Filter row */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <PillNav
+              size="sm"
+              activeValue={statusFilter}
+              onChange={setStatusFilter}
+              items={filterItems}
+            />
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-v2-ink-muted cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hideProspects}
+                onChange={(e) => setHideProspects(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-v2-ring"
+              />
+              Hide prospects (unenrolled recruits)
+            </label>
           </div>
-        )}
-      </SoftCard>
 
-      <AddRecruitDialog
-        open={addRecruitDialogOpen}
-        onOpenChange={setAddRecruitDialogOpen}
-        onSuccess={(newRecruitId, meta) => {
-          setWizardState({
-            recruitId: newRecruitId,
-            recruitName: meta.fullName,
-            isLicensed: meta.isLicensed,
-            skippedPipeline: meta.skippedPipeline,
-          });
-        }}
-      />
+          {/* Heads-up banner when Hide Prospects is on — explains why a freshly
+          added recruit might not appear in the list yet. */}
+          {hideProspects && (
+            <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-warning/30 bg-warning/5 text-[11px] text-v2-ink">
+              <span>
+                <strong>Hide prospects is on</strong> — recruits not yet
+                enrolled in a pipeline are hidden. If a recruit you just added
+                doesn&apos;t show up here, enroll them in a pipeline from their
+                profile, or click to show all.
+              </span>
+              <button
+                type="button"
+                onClick={() => setHideProspects(false)}
+                className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md border border-warning/40 text-warning hover:bg-warning/10 text-[10px] uppercase tracking-[0.16em] font-semibold"
+              >
+                Show all
+              </button>
+            </div>
+          )}
 
-      <PostAddRecruitWizard
-        open={!!wizardState}
-        onOpenChange={(o) => {
-          if (!o) setWizardState(null);
-        }}
-        recruitId={wizardState?.recruitId ?? null}
-        recruitName={wizardState?.recruitName ?? ""}
-        isLicensed={wizardState?.isLicensed ?? false}
-        skippedPipeline={wizardState?.skippedPipeline ?? false}
-        onComplete={() => {
-          const id = wizardState?.recruitId;
-          setWizardState(null);
-          if (id) {
-            navigate({
-              to: "/recruiting/$recruitId",
-              params: { recruitId: id },
-            });
-          }
-        }}
-      />
+          {/* Recruiting link strip — only for non-staff with custom branding */}
+          {!isStaffRole && hasCustomBranding && (
+            <SoftCard
+              variant="tinted"
+              padding="sm"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+            >
+              {recruitingLinkUrl ? (
+                <>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                    <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-v2-ink-muted">
+                      Your link
+                    </span>
+                    <span className="text-[12px] font-mono text-v2-ink truncate">
+                      {recruitingLinkUrl}
+                    </span>
+                  </div>
+                  <PillButton
+                    tone="yellow"
+                    size="sm"
+                    onClick={handleCopyLink}
+                    leadingIcon={
+                      linkCopied ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )
+                    }
+                  >
+                    {linkCopied ? "Copied" : "Copy link"}
+                  </PillButton>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                    <span className="text-[12px] text-v2-ink-muted">
+                      Set up your personal recruiting link to share on social
+                      media.
+                    </span>
+                  </div>
+                  <Link to="/settings">
+                    <PillButton
+                      tone="yellow"
+                      size="sm"
+                      trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                    >
+                      Set up link
+                    </PillButton>
+                  </Link>
+                </>
+              )}
+            </SoftCard>
+          )}
 
-      <SendInviteDialog
-        open={sendInviteDialogOpen}
-        onOpenChange={setSendInviteDialogOpen}
-      />
-    </div>
+          {/* Table */}
+          <Board pad={0} style={{ overflow: "hidden" }}>
+            <RecruitListTable
+              rows={rows}
+              isLoading={recruitsLoading}
+              onSelectRecruit={handleSelectRecruit}
+              onSelectLead={handleSelectLead}
+              onAcceptLead={handleAcceptLead}
+              onRejectLead={handleRejectLead}
+              isAcceptingLead={acceptLeadMutation.isPending}
+              isRejectingLead={rejectLeadMutation.isPending}
+            />
+
+            {rows.length === 0 && !recruitsLoading && (
+              <div className="px-5 py-8 text-center">
+                <p className="text-[12px] text-v2-ink-muted mb-3">
+                  {statusFilter
+                    ? `No recruits match the "${statusFilter}" filter.`
+                    : "No recruits yet — send an invite or add one to start your pipeline."}
+                </p>
+                {!statusFilter && (
+                  <PillButton
+                    tone="black"
+                    size="sm"
+                    onClick={() => setSendInviteDialogOpen(true)}
+                    leadingIcon={<Mail className="h-3.5 w-3.5" />}
+                  >
+                    Send your first invite
+                  </PillButton>
+                )}
+              </div>
+            )}
+          </Board>
+
+          <AddRecruitDialog
+            open={addRecruitDialogOpen}
+            onOpenChange={setAddRecruitDialogOpen}
+            onSuccess={(newRecruitId, meta) => {
+              setWizardState({
+                recruitId: newRecruitId,
+                recruitName: meta.fullName,
+                isLicensed: meta.isLicensed,
+                skippedPipeline: meta.skippedPipeline,
+              });
+            }}
+          />
+
+          <PostAddRecruitWizard
+            open={!!wizardState}
+            onOpenChange={(o) => {
+              if (!o) setWizardState(null);
+            }}
+            recruitId={wizardState?.recruitId ?? null}
+            recruitName={wizardState?.recruitName ?? ""}
+            isLicensed={wizardState?.isLicensed ?? false}
+            skippedPipeline={wizardState?.skippedPipeline ?? false}
+            onComplete={() => {
+              const id = wizardState?.recruitId;
+              setWizardState(null);
+              if (id) {
+                navigate({
+                  to: "/recruiting/$recruitId",
+                  params: { recruitId: id },
+                });
+              }
+            }}
+          />
+
+          <SendInviteDialog
+            open={sendInviteDialogOpen}
+            onOpenChange={setSendInviteDialogOpen}
+          />
+        </div>
+      </div>
+    </SectionShell>
   );
 }
 
@@ -596,97 +640,143 @@ function FreeUplineRecruitingView() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Users className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Your team
-            </h1>
-            <span className="rounded-full bg-v2-card-tinted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-v2-ink-muted">
-              Free
-            </span>
-          </div>
-          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
-            <span>
-              <span className="text-v2-ink font-semibold tabular-nums">
-                {stats.active}
-              </span>{" "}
-              active
-            </span>
-            <span className="text-v2-ink-muted">·</span>
-            <span>
-              <span className="font-mono font-semibold text-success tabular-nums">
-                {stats.completed}
-              </span>{" "}
-              complete
-            </span>
-            {stats.dropped > 0 && (
-              <>
-                <span className="text-v2-ink-muted">·</span>
-                <span>
-                  <span className="font-mono font-semibold tabular-nums">
-                    {stats.dropped}
-                  </span>{" "}
-                  dropped
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Link to="/billing">
-            <PillButton
-              tone="ghost"
-              size="sm"
-              trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
-            >
-              Upgrade for full pipeline
-            </PillButton>
-          </Link>
-          <PillButton
-            tone="black"
-            size="sm"
-            onClick={() => setAddRecruitDialogOpen(true)}
-            leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
           >
-            Add recruit
-          </PillButton>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>YOUR TEAM · FREE PLAN</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Your team
+              </h1>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Link to="/billing">
+                <PillButton
+                  tone="ghost"
+                  size="sm"
+                  trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                >
+                  Upgrade for full pipeline
+                </PillButton>
+              </Link>
+              <PillButton
+                tone="black"
+                size="sm"
+                onClick={() => setAddRecruitDialogOpen(true)}
+                leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
+              >
+                Add recruit
+              </PillButton>
+            </div>
+          </header>
+
+          {/* Snapshot band — real counts from `stats` */}
+          <Board pad={20} rivets>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 24,
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ flexShrink: 0 }}>
+                <Cap>ON YOUR TEAM</Cap>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 10,
+                    marginTop: 4,
+                  }}
+                >
+                  <Num text={String(stats.total)} size="xl" lit />
+                  <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
+                    {stats.total === 1 ? "recruit" : "recruits"}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(min(100%, 130px), 1fr))",
+                  gap: 10,
+                  flex: 1,
+                  minWidth: 200,
+                }}
+              >
+                <FlapTile
+                  label="Active"
+                  value={String(stats.active)}
+                  tone="blue"
+                />
+                <FlapTile
+                  label="Completed"
+                  value={String(stats.completed)}
+                  tone="green"
+                />
+                <FlapTile
+                  label="Dropped"
+                  value={String(stats.dropped)}
+                  tone={stats.dropped > 0 ? "amber" : "default"}
+                />
+              </div>
+            </div>
+          </Board>
+
+          <p className={cn("text-[11px] text-v2-ink-muted")}>
+            You can keep managing your existing recruits on the free plan.{" "}
+            <Link
+              to="/billing"
+              className="font-semibold text-warning hover:underline underline-offset-2"
+            >
+              Upgrade
+            </Link>{" "}
+            to unlock the full pipeline configuration and add more.
+          </p>
+
+          <Board pad={0} style={{ overflow: "hidden" }}>
+            <RecruitListTable
+              rows={recruitRows}
+              isLoading={recruitsLoading}
+              onSelectRecruit={handleSelectRecruit}
+            />
+          </Board>
+
+          <AddRecruitDialog
+            open={addRecruitDialogOpen}
+            onOpenChange={setAddRecruitDialogOpen}
+            onSuccess={(newRecruitId) => {
+              navigate({
+                to: "/recruiting/$recruitId",
+                params: { recruitId: newRecruitId },
+              });
+            }}
+          />
         </div>
-      </header>
-
-      <p className={cn("text-[11px] text-v2-ink-muted")}>
-        You can keep managing your existing recruits on the free plan.{" "}
-        <Link
-          to="/billing"
-          className="font-semibold text-warning hover:underline underline-offset-2"
-        >
-          Upgrade
-        </Link>{" "}
-        to unlock the full pipeline configuration and add more.
-      </p>
-
-      <SoftCard padding="none" className="overflow-hidden">
-        <RecruitListTable
-          rows={recruitRows}
-          isLoading={recruitsLoading}
-          onSelectRecruit={handleSelectRecruit}
-        />
-      </SoftCard>
-
-      <AddRecruitDialog
-        open={addRecruitDialogOpen}
-        onOpenChange={setAddRecruitDialogOpen}
-        onSuccess={(newRecruitId) => {
-          navigate({
-            to: "/recruiting/$recruitId",
-            params: { recruitId: newRecruitId },
-          });
-        }}
-      />
-    </div>
+      </div>
+    </SectionShell>
   );
 }
 
