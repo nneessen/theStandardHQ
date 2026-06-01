@@ -19,6 +19,8 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -143,304 +145,322 @@ export function BotHealthPage() {
     : "never";
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-3 overflow-y-auto">
-      {/* Header row */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Bot Health
-            </h1>
-          </div>
-          <span className="text-[10px] text-v2-ink-muted">
-            standard-chat-bot · system-wide monitoring
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {data && (
-            <Badge
-              variant={overallStatusVariant(data.status)}
-              className="capitalize"
-            >
-              {data.status}
-            </Badge>
-          )}
-          {data && computedLevel !== "ok" && (
-            <Badge variant={levelBadgeVariant(computedLevel)}>
-              computed: {computedLevel}
-            </Badge>
-          )}
-          <span className="text-[10px] text-v2-ink-muted hidden sm:inline">
-            updated {lastUpdatedLabel}
-          </span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => void refetch()}
-            disabled={isFetching}
-            className="h-7 gap-1 text-[11px]"
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-3">
+          {/* Header row */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
           >
-            {isFetching ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3 w-3" />
-            )}
-            Refresh
-          </Button>
-        </div>
-      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>BOT HEALTH · MONITORING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Bot Health
+              </h1>
+            </div>
 
-      {/* Unreachable banner — stacks ON TOP of stale data */}
-      {isServiceError && (
-        <Alert variant="destructive">
-          <ServerCrash className="h-4 w-4" />
-          <AlertTitle>Bot API unreachable</AlertTitle>
-          <AlertDescription>
-            Could not reach standard-chat-bot.{" "}
-            {data
-              ? `Showing last-known snapshot from ${lastUpdatedLabel}.`
-              : "No data has been received yet."}{" "}
-            {error?.message && (
-              <span className="font-mono text-[11px] opacity-80">
-                ({error.message})
+            <div className="flex items-center gap-2">
+              {data && (
+                <Badge
+                  variant={overallStatusVariant(data.status)}
+                  className="capitalize"
+                >
+                  {data.status}
+                </Badge>
+              )}
+              {data && computedLevel !== "ok" && (
+                <Badge variant={levelBadgeVariant(computedLevel)}>
+                  computed: {computedLevel}
+                </Badge>
+              )}
+              <span className="text-[10px] text-v2-ink-muted hidden sm:inline">
+                updated {lastUpdatedLabel}
               </span>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void refetch()}
+                disabled={isFetching}
+                className="h-7 gap-1 text-[11px]"
+              >
+                {isFetching ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3 w-3" />
+                )}
+                Refresh
+              </Button>
+            </div>
+          </header>
 
-      {/* Non-service error (e.g. 400 / auth) */}
-      {error && !isServiceError && (
-        <Alert variant="warning">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Monitoring request failed</AlertTitle>
-          <AlertDescription className="font-mono text-[11px]">
-            {error.message || "Unknown error"}
-          </AlertDescription>
-        </Alert>
-      )}
+          {/* Unreachable banner — stacks ON TOP of stale data */}
+          {isServiceError && (
+            <Alert variant="destructive">
+              <ServerCrash className="h-4 w-4" />
+              <AlertTitle>Bot API unreachable</AlertTitle>
+              <AlertDescription>
+                Could not reach standard-chat-bot.{" "}
+                {data
+                  ? `Showing last-known snapshot from ${lastUpdatedLabel}.`
+                  : "No data has been received yet."}{" "}
+                {error?.message && (
+                  <span className="font-mono text-[11px] opacity-80">
+                    ({error.message})
+                  </span>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {/* Initial loading state */}
-      {isLoading && !data && (
-        <Card variant="outlined">
-          <CardContent className="flex items-center justify-center gap-2 p-10 text-v2-ink-muted">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-xs">Loading bot health…</span>
-          </CardContent>
-        </Card>
-      )}
+          {/* Non-service error (e.g. 400 / auth) */}
+          {error && !isServiceError && (
+            <Alert variant="warning">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Monitoring request failed</AlertTitle>
+              <AlertDescription className="font-mono text-[11px]">
+                {error.message || "Unknown error"}
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {/* Data-driven sections. Keep rendering even during an error
+          {/* Initial loading state */}
+          {isLoading && !data && (
+            <Card variant="outlined">
+              <CardContent className="flex items-center justify-center gap-2 p-10 text-v2-ink-muted">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-xs">Loading bot health…</span>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Data-driven sections. Keep rendering even during an error
           refetch — TanStack Query v5 keeps `data` populated so users
           can still see the last-known state behind the banner. */}
-      {data && (
-        <div
-          className={cn(
-            "space-y-3",
-            isServiceError && "opacity-60", // dim stale data behind the banner
-          )}
-        >
-          {/* Hero cards row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <HeroCard
-              icon={<Gauge className="h-4 w-4" />}
-              label="Queue depth"
-              primary={formatNumber(data.jobQueue.totalPending)}
-              primaryLevel={computedLevel}
-              secondary={`${formatNumber(data.jobQueue.totalActive)} active`}
-              footer={
-                data.jobQueue.running ? "worker running" : "worker STOPPED"
-              }
-              footerLevel={data.jobQueue.running ? "ok" : "critical"}
-            />
-            <HeroCard
-              icon={<AlertTriangle className="h-4 w-4" />}
-              label="Failed (24h)"
-              primary={formatNumber(data.jobQueue.totalFailed24h)}
-              primaryLevel={failedLevel}
-              secondary={`warn > ${TOTAL_FAILED_24H_THRESHOLD.warn} · crit > ${TOTAL_FAILED_24H_THRESHOLD.critical}`}
-            />
-            <HeroCard
-              icon={<Database className="h-4 w-4" />}
-              label="DB latency"
-              primary={`${data.database.latencyMs.toFixed(1)} ms`}
-              primaryLevel={dbLatencyLevel}
-              secondary={data.database.connected ? "connected" : "DISCONNECTED"}
-              secondaryLevel={data.database.connected ? "ok" : "critical"}
-            />
-            <HeroCard
-              icon={<Activity className="h-4 w-4" />}
-              label="Throughput"
-              primary={formatNumber(data.throughput.messagesLastHour)}
-              primaryLevel="ok"
-              secondary={`${formatNumber(
-                data.throughput.messagesLast24h,
-              )} msgs / 24h`}
-              footer={`${formatNumber(
-                data.throughput.conversationsLast24h,
-              )} convos / 24h`}
-            />
-          </div>
+          {data && (
+            <div
+              className={cn(
+                "space-y-3",
+                isServiceError && "opacity-60", // dim stale data behind the banner
+              )}
+            >
+              {/* Hero cards row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <HeroCard
+                  icon={<Gauge className="h-4 w-4" />}
+                  label="Queue depth"
+                  primary={formatNumber(data.jobQueue.totalPending)}
+                  primaryLevel={computedLevel}
+                  secondary={`${formatNumber(data.jobQueue.totalActive)} active`}
+                  footer={
+                    data.jobQueue.running ? "worker running" : "worker STOPPED"
+                  }
+                  footerLevel={data.jobQueue.running ? "ok" : "critical"}
+                />
+                <HeroCard
+                  icon={<AlertTriangle className="h-4 w-4" />}
+                  label="Failed (24h)"
+                  primary={formatNumber(data.jobQueue.totalFailed24h)}
+                  primaryLevel={failedLevel}
+                  secondary={`warn > ${TOTAL_FAILED_24H_THRESHOLD.warn} · crit > ${TOTAL_FAILED_24H_THRESHOLD.critical}`}
+                />
+                <HeroCard
+                  icon={<Database className="h-4 w-4" />}
+                  label="DB latency"
+                  primary={`${data.database.latencyMs.toFixed(1)} ms`}
+                  primaryLevel={dbLatencyLevel}
+                  secondary={
+                    data.database.connected ? "connected" : "DISCONNECTED"
+                  }
+                  secondaryLevel={data.database.connected ? "ok" : "critical"}
+                />
+                <HeroCard
+                  icon={<Activity className="h-4 w-4" />}
+                  label="Throughput"
+                  primary={formatNumber(data.throughput.messagesLastHour)}
+                  primaryLevel="ok"
+                  secondary={`${formatNumber(
+                    data.throughput.messagesLast24h,
+                  )} msgs / 24h`}
+                  footer={`${formatNumber(
+                    data.throughput.conversationsLast24h,
+                  )} convos / 24h`}
+                />
+              </div>
 
-          {/* Per-queue breakdown */}
-          <Card variant="outlined">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted">
-                Queue breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="h-8 text-[11px]">Queue</TableHead>
-                    <TableHead className="h-8 text-[11px] text-right">
-                      Pending
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] text-right">
-                      Active
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] text-right">
-                      Failed 24h
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] text-right">
-                      Threshold
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] text-right">
-                      Level
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {queueRows.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center text-[11px] text-v2-ink-muted py-4"
-                      >
-                        No queues reported.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {queueRows.map((q) => (
-                    <TableRow
-                      key={q.queue}
-                      className={cn(
-                        q.level === "critical" &&
-                          "bg-destructive/10 dark:bg-destructive/10",
-                        q.level === "warn" &&
-                          "bg-warning/10 dark:bg-warning/10",
+              {/* Per-queue breakdown */}
+              <Card variant="outlined">
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted">
+                    Queue breakdown
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="h-8 text-[11px]">Queue</TableHead>
+                        <TableHead className="h-8 text-[11px] text-right">
+                          Pending
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] text-right">
+                          Active
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] text-right">
+                          Failed 24h
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] text-right">
+                          Threshold
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] text-right">
+                          Level
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {queueRows.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={6}
+                            className="text-center text-[11px] text-v2-ink-muted py-4"
+                          >
+                            No queues reported.
+                          </TableCell>
+                        </TableRow>
                       )}
-                    >
-                      <TableCell className="py-1.5 text-xs font-mono">
-                        {q.queue}
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "py-1.5 text-xs text-right font-semibold",
-                          heroNumberClass(q.level),
-                        )}
-                      >
-                        {formatNumber(q.pending)}
-                      </TableCell>
-                      <TableCell className="py-1.5 text-xs text-right">
-                        {formatNumber(q.active)}
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "py-1.5 text-xs text-right",
-                          q.failed24h > 0 && "text-destructive font-semibold",
-                        )}
-                      >
-                        {formatNumber(q.failed24h)}
-                      </TableCell>
-                      <TableCell className="py-1.5 text-[10px] text-right text-v2-ink-muted font-mono">
-                        {q.threshold.warn} / {q.threshold.critical}
-                      </TableCell>
-                      <TableCell className="py-1.5 text-right">
-                        <Badge
-                          variant={levelBadgeVariant(q.level)}
-                          size="sm"
-                          className="capitalize"
+                      {queueRows.map((q) => (
+                        <TableRow
+                          key={q.queue}
+                          className={cn(
+                            q.level === "critical" &&
+                              "bg-destructive/10 dark:bg-destructive/10",
+                            q.level === "warn" &&
+                              "bg-warning/10 dark:bg-warning/10",
+                          )}
                         >
-                          {q.level}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                          <TableCell className="py-1.5 text-xs font-mono">
+                            {q.queue}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "py-1.5 text-xs text-right font-semibold",
+                              heroNumberClass(q.level),
+                            )}
+                          >
+                            {formatNumber(q.pending)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-xs text-right">
+                            {formatNumber(q.active)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "py-1.5 text-xs text-right",
+                              q.failed24h > 0 &&
+                                "text-destructive font-semibold",
+                            )}
+                          >
+                            {formatNumber(q.failed24h)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-[10px] text-right text-v2-ink-muted font-mono">
+                            {q.threshold.warn} / {q.threshold.critical}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right">
+                            <Badge
+                              variant={levelBadgeVariant(q.level)}
+                              size="sm"
+                              className="capitalize"
+                            >
+                              {q.level}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
 
-          {/* Process + agents footer row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Card variant="outlined">
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
-                  <TimerReset className="h-3.5 w-3.5" />
-                  Process
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
-                <StatPair
-                  label="Uptime"
-                  value={formatUptime(data.process.uptimeSeconds)}
-                />
-                <StatPair
-                  label="RSS"
-                  value={`${data.process.memoryUsageMb.rss} MB`}
-                />
-                <StatPair
-                  label="Heap"
-                  value={`${data.process.memoryUsageMb.heapUsed}/${data.process.memoryUsageMb.heapTotal} MB`}
-                />
-                <StatPair
-                  label="Node"
-                  value={data.process.nodeVersion}
-                  className="col-span-3"
-                />
-              </CardContent>
-            </Card>
+              {/* Process + agents footer row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Card variant="outlined">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
+                      <TimerReset className="h-3.5 w-3.5" />
+                      Process
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
+                    <StatPair
+                      label="Uptime"
+                      value={formatUptime(data.process.uptimeSeconds)}
+                    />
+                    <StatPair
+                      label="RSS"
+                      value={`${data.process.memoryUsageMb.rss} MB`}
+                    />
+                    <StatPair
+                      label="Heap"
+                      value={`${data.process.memoryUsageMb.heapUsed}/${data.process.memoryUsageMb.heapTotal} MB`}
+                    />
+                    <StatPair
+                      label="Node"
+                      value={data.process.nodeVersion}
+                      className="col-span-3"
+                    />
+                  </CardContent>
+                </Card>
 
-            <Card variant="outlined">
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5" />
-                  Agents
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
-                <StatPair
-                  label="Total"
-                  value={formatNumber(data.agents.totalAgents)}
-                />
-                <StatPair
-                  label="Active"
-                  value={formatNumber(data.agents.activeAgents)}
-                />
-                <StatPair
-                  label="Bot enabled"
-                  value={formatNumber(data.agents.botEnabledAgents)}
-                />
-              </CardContent>
-            </Card>
-          </div>
+                <Card variant="outlined">
+                  <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5" />
+                      Agents
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
+                    <StatPair
+                      label="Total"
+                      value={formatNumber(data.agents.totalAgents)}
+                    />
+                    <StatPair
+                      label="Active"
+                      value={formatNumber(data.agents.activeAgents)}
+                    />
+                    <StatPair
+                      label="Bot enabled"
+                      value={formatNumber(data.agents.botEnabledAgents)}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-          {/* Full-width timestamp footer */}
-          <div className="text-[10px] text-v2-ink-muted text-center pt-1">
-            Last snapshot:{" "}
-            <span className="font-mono">
-              {new Date(data.timestamp).toLocaleString()}
-            </span>
-            {" · "}
-            polling every 30s
-          </div>
+              {/* Full-width timestamp footer */}
+              <div className="text-[10px] text-v2-ink-muted text-center pt-1">
+                Last snapshot:{" "}
+                <span className="font-mono">
+                  {new Date(data.timestamp).toLocaleString()}
+                </span>
+                {" · "}
+                polling every 30s
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </SectionShell>
   );
 }
 
