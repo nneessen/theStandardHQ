@@ -8,7 +8,6 @@ import {
   Calendar,
   FileText,
   Sheet,
-  FileBarChart,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,7 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import { PillButton, SoftCard } from "@/components/v2";
+import { PillButton, SoftCard, SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import {
   TimePeriodSelector,
   AdvancedTimePeriod,
@@ -143,206 +143,219 @@ export function ReportsDashboard() {
   };
 
   return (
-    <>
-      <div className="flex flex-col gap-3">
-        {/* Compact header — title dropdown + period selector + actions in ONE row */}
-        <header className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 min-w-0 flex-wrap">
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <FileBarChart className="h-4 w-4 text-foreground" />
-              <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
-                Reports
-              </h1>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Departure-board header — eyebrow + title + report dropdown | period + actions */}
+          <header className="flex items-end justify-between gap-3 flex-wrap">
+            <div className="flex items-end gap-3 min-w-0 flex-wrap">
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <Cap>REPORTING</Cap>
+                <h1
+                  style={{
+                    font: `800 26px ${T.disp}`,
+                    color: T.ink,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    margin: 0,
+                  }}
+                >
+                  Reports
+                </h1>
+              </div>
+              {/* Report Type Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <PillButton
+                    tone="ghost"
+                    size="sm"
+                    className="h-7 px-2.5 text-[11px]"
+                  >
+                    {getReportName(selectedType)}
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </PillButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
+                    <div key={key}>
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        {category.name}
+                      </DropdownMenuLabel>
+                      {category.reports.map((report) => (
+                        <DropdownMenuItem
+                          key={report.type}
+                          onClick={() => setSelectedType(report.type)}
+                          className={`text-xs ${selectedType === report.type ? "bg-accent/40 text-foreground" : ""}`}
+                        >
+                          <span className="mr-2">{report.icon}</span>
+                          {report.name}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                    </div>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            {/* Report Type Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <TimePeriodSelector
+                selectedPeriod={timePeriod}
+                onPeriodChange={setTimePeriod}
+                customRange={customRange}
+                onCustomRangeChange={setCustomRange}
+              />
+              <div className="hidden sm:flex gap-1">
                 <PillButton
+                  onClick={handleExportPDF}
+                  tone="ghost"
+                  size="sm"
+                  disabled={!report || isLoading}
+                  className="h-7 px-2.5 text-[11px]"
+                  title="Export to PDF"
+                >
+                  <FileText className="h-3 w-3" />
+                  PDF
+                </PillButton>
+                <PillButton
+                  onClick={handleExportExcel}
+                  tone="ghost"
+                  size="sm"
+                  disabled={!report || isLoading}
+                  className="h-7 px-2.5 text-[11px]"
+                  title="Export to Excel"
+                >
+                  <Sheet className="h-3 w-3" />
+                  Excel
+                </PillButton>
+                <PillButton
+                  onClick={() => setBundleDialogOpen(true)}
                   tone="ghost"
                   size="sm"
                   className="h-7 px-2.5 text-[11px]"
                 >
-                  {getReportName(selectedType)}
-                  <ChevronDown className="h-3 w-3 opacity-50" />
+                  <Package className="h-3 w-3" />
+                  Bundle
                 </PillButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
-                  <div key={key}>
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      {category.name}
-                    </DropdownMenuLabel>
-                    {category.reports.map((report) => (
-                      <DropdownMenuItem
-                        key={report.type}
-                        onClick={() => setSelectedType(report.type)}
-                        className={`text-xs ${selectedType === report.type ? "bg-accent/40 text-foreground" : ""}`}
-                      >
-                        <span className="mr-2">{report.icon}</span>
-                        {report.name}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                  </div>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <TimePeriodSelector
-              selectedPeriod={timePeriod}
-              onPeriodChange={setTimePeriod}
-              customRange={customRange}
-              onCustomRangeChange={setCustomRange}
-            />
-            <div className="hidden sm:flex gap-1">
-              <PillButton
-                onClick={handleExportPDF}
-                tone="ghost"
-                size="sm"
-                disabled={!report || isLoading}
-                className="h-7 px-2.5 text-[11px]"
-                title="Export to PDF"
-              >
-                <FileText className="h-3 w-3" />
-                PDF
-              </PillButton>
-              <PillButton
-                onClick={handleExportExcel}
-                tone="ghost"
-                size="sm"
-                disabled={!report || isLoading}
-                className="h-7 px-2.5 text-[11px]"
-                title="Export to Excel"
-              >
-                <Sheet className="h-3 w-3" />
-                Excel
-              </PillButton>
-              <PillButton
-                onClick={() => setBundleDialogOpen(true)}
-                tone="ghost"
-                size="sm"
-                className="h-7 px-2.5 text-[11px]"
-              >
-                <Package className="h-3 w-3" />
-                Bundle
-              </PillButton>
-              <PillButton
-                onClick={() => setShowScheduledReports(!showScheduledReports)}
-                tone={showScheduledReports ? "black" : "ghost"}
-                size="sm"
-                className="h-7 px-2.5 text-[11px]"
-              >
-                <Calendar className="h-3 w-3" />
-                Schedule
-              </PillButton>
-            </div>
-          </div>
-        </header>
-
-        {/* Scheduled Reports Panel */}
-        <Collapsible
-          open={showScheduledReports}
-          onOpenChange={setShowScheduledReports}
-        >
-          <CollapsibleContent>
-            <SoftCard padding="md">
-              <ScheduledReportsManager />
-            </SoftCard>
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* Main Content */}
-        <div className="flex-1 space-y-2.5">
-          {/* Loading State */}
-          {isLoading && (
-            <SoftCard padding="lg">
-              <div className="flex flex-col items-center justify-center py-6">
-                <Loader2 className="w-6 h-6 text-muted-foreground animate-spin mb-2" />
-                <p className="text-xs text-muted-foreground">
-                  Generating report…
-                </p>
+                <PillButton
+                  onClick={() => setShowScheduledReports(!showScheduledReports)}
+                  tone={showScheduledReports ? "black" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2.5 text-[11px]"
+                >
+                  <Calendar className="h-3 w-3" />
+                  Schedule
+                </PillButton>
               </div>
-            </SoftCard>
-          )}
+            </div>
+          </header>
 
-          {/* Error State */}
-          {error && (
-            <SoftCard
-              padding="md"
-              className="border-destructive/40 dark:border-destructive"
-            >
-              <p className="text-xs text-destructive">
-                Error:{" "}
-                {error instanceof Error ? error.message : "Unknown error"}
-              </p>
-            </SoftCard>
-          )}
+          {/* Scheduled Reports Panel */}
+          <Collapsible
+            open={showScheduledReports}
+            onOpenChange={setShowScheduledReports}
+          >
+            <CollapsibleContent>
+              <SoftCard padding="md">
+                <ScheduledReportsManager />
+              </SoftCard>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Team Performance Reports (Phase 6) */}
-          {selectedType === "imo-performance" && (
-            <ImoPerformanceReport
-              dateRange={{
-                startDate: dateRange.startDate,
-                endDate: dateRange.endDate,
-              }}
-            />
-          )}
-
-          {selectedType === "agency-performance" && (
-            <AgencyPerformanceReport
-              dateRange={{
-                startDate: dateRange.startDate,
-                endDate: dateRange.endDate,
-              }}
-            />
-          )}
-
-          {/* Standard Report Document */}
-          {!isLoading &&
-            !error &&
-            report &&
-            selectedType !== "imo-performance" &&
-            selectedType !== "agency-performance" && (
-              <SoftCard padding="none" className="overflow-hidden">
-                <ReportDocumentHeader title={report.title} filters={filters} />
-                <ExecutiveSummary summary={report.summary} />
-
-                {/* Report Sections */}
-                {report.sections.map((section) => (
-                  <ReportSectionCard
-                    key={section.id}
-                    section={section}
-                    onAgingBucketClick={handleAgingBucketClick}
-                    onClientTierClick={handleClientTierClick}
-                  />
-                ))}
-
-                {/* Report Footer */}
-                <div className="px-3 py-2 bg-background text-center border-t border-border">
-                  <p className="text-[11px] text-muted-foreground">
-                    Report ID: {report.id} · Generated{" "}
-                    {report.generatedAt.toLocaleString()}
+          {/* Main Content */}
+          <div className="flex-1 space-y-2.5">
+            {/* Loading State */}
+            {isLoading && (
+              <SoftCard padding="lg">
+                <div className="flex flex-col items-center justify-center py-6">
+                  <Loader2 className="w-6 h-6 text-muted-foreground animate-spin mb-2" />
+                  <p className="text-xs text-muted-foreground">
+                    Generating report…
                   </p>
                 </div>
               </SoftCard>
             )}
+
+            {/* Error State */}
+            {error && (
+              <SoftCard
+                padding="md"
+                className="border-destructive/40 dark:border-destructive"
+              >
+                <p className="text-xs text-destructive">
+                  Error:{" "}
+                  {error instanceof Error ? error.message : "Unknown error"}
+                </p>
+              </SoftCard>
+            )}
+
+            {/* Team Performance Reports (Phase 6) */}
+            {selectedType === "imo-performance" && (
+              <ImoPerformanceReport
+                dateRange={{
+                  startDate: dateRange.startDate,
+                  endDate: dateRange.endDate,
+                }}
+              />
+            )}
+
+            {selectedType === "agency-performance" && (
+              <AgencyPerformanceReport
+                dateRange={{
+                  startDate: dateRange.startDate,
+                  endDate: dateRange.endDate,
+                }}
+              />
+            )}
+
+            {/* Standard Report Document */}
+            {!isLoading &&
+              !error &&
+              report &&
+              selectedType !== "imo-performance" &&
+              selectedType !== "agency-performance" && (
+                <SoftCard padding="none" className="overflow-hidden">
+                  <ReportDocumentHeader
+                    title={report.title}
+                    filters={filters}
+                  />
+                  <ExecutiveSummary summary={report.summary} />
+
+                  {/* Report Sections */}
+                  {report.sections.map((section) => (
+                    <ReportSectionCard
+                      key={section.id}
+                      section={section}
+                      onAgingBucketClick={handleAgingBucketClick}
+                      onClientTierClick={handleClientTierClick}
+                    />
+                  ))}
+
+                  {/* Report Footer */}
+                  <div className="px-3 py-2 bg-background text-center border-t border-border">
+                    <p className="text-[11px] text-muted-foreground">
+                      Report ID: {report.id} · Generated{" "}
+                      {report.generatedAt.toLocaleString()}
+                    </p>
+                  </div>
+                </SoftCard>
+              )}
+          </div>
         </div>
+
+        {/* Dialogs */}
+        <BundleExportDialog
+          open={bundleDialogOpen}
+          onOpenChange={setBundleDialogOpen}
+          filters={filters}
+        />
+
+        <DrillDownDrawer
+          open={!!drillDownContext}
+          onClose={() => setDrillDownContext(null)}
+          context={drillDownContext}
+        />
       </div>
-
-      {/* Dialogs */}
-      <BundleExportDialog
-        open={bundleDialogOpen}
-        onOpenChange={setBundleDialogOpen}
-        filters={filters}
-      />
-
-      <DrillDownDrawer
-        open={!!drillDownContext}
-        onClose={() => setDrillDownContext(null)}
-        context={drillDownContext}
-      />
-    </>
+    </SectionShell>
   );
 }
