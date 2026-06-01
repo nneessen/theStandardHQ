@@ -3,6 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import {
   useLeadVendorAdminOverview,
   useLeadPackList,
@@ -424,103 +426,127 @@ export function LeadIntelligenceDashboard() {
   // ── Render ──────────────────────────────────────────────────────────────
   if (isLoading && !vendors) {
     return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
-      </div>
+      <SectionShell className="dashboard-canvas">
+        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+          </div>
+        </div>
+      </SectionShell>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {/* Command Bar */}
-      <IntelligenceCommandBar
-        filters={filters}
-        updateFilter={updateFilter}
-        clearFilters={clearFilters}
-        activeFilterCount={activeFilterCount}
-        vendorOptions={vendorOptions}
-        agentOptions={agentOptions}
-      />
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-3">
+          {/* Departure-board header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>ACQUISITION</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Lead Intelligence
+            </h1>
+          </header>
 
-      {/* Intelligence Pulse */}
-      <LeadKpiTabs
-        portfolioMetrics={portfolioMetrics}
-        packCount={filteredPacks.length}
-        heatDistribution={heatDistribution}
-        vendorRowCount={vendorIntelligenceRows.length}
-        freshAgedAggregates={freshAgedAggregates}
-        filteredPacks={filteredPacks}
-        recentPolicies={filteredRecentPolicies}
-        vendors={vendors ?? []}
-        packMetrics={filteredPackMetrics}
-        vendorIntelligenceRows={vendorIntelligenceRows}
-      />
+          {/* Command Bar */}
+          <IntelligenceCommandBar
+            filters={filters}
+            updateFilter={updateFilter}
+            clearFilters={clearFilters}
+            activeFilterCount={activeFilterCount}
+            vendorOptions={vendorOptions}
+            agentOptions={agentOptions}
+          />
 
-      {/* View Toggle */}
-      <div className="flex items-center gap-0.5 border border-v2-ring rounded overflow-hidden w-fit">
-        <button
-          onClick={() => setViewMode("vendor")}
-          className={cn(
-            "px-2 py-1 text-[11px] font-medium transition-colors",
-            viewMode === "vendor"
-              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
-              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+          {/* Intelligence Pulse */}
+          <LeadKpiTabs
+            portfolioMetrics={portfolioMetrics}
+            packCount={filteredPacks.length}
+            heatDistribution={heatDistribution}
+            vendorRowCount={vendorIntelligenceRows.length}
+            freshAgedAggregates={freshAgedAggregates}
+            filteredPacks={filteredPacks}
+            recentPolicies={filteredRecentPolicies}
+            vendors={vendors ?? []}
+            packMetrics={filteredPackMetrics}
+            vendorIntelligenceRows={vendorIntelligenceRows}
+          />
+
+          {/* View Toggle */}
+          <div className="flex items-center gap-0.5 border border-v2-ring rounded overflow-hidden w-fit">
+            <button
+              onClick={() => setViewMode("vendor")}
+              className={cn(
+                "px-2 py-1 text-[11px] font-medium transition-colors",
+                viewMode === "vendor"
+                  ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
+                  : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+              )}
+            >
+              By Vendor
+            </button>
+            <button
+              onClick={() => setViewMode("purchases")}
+              className={cn(
+                "px-2 py-1 text-[11px] font-medium transition-colors",
+                viewMode === "purchases"
+                  ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
+                  : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+              )}
+            >
+              All Purchases
+            </button>
+            <button
+              onClick={() => setViewMode("policies")}
+              className={cn(
+                "px-2 py-1 text-[11px] font-medium transition-colors",
+                viewMode === "policies"
+                  ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
+                  : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+              )}
+            >
+              Sold Policies
+            </button>
+          </div>
+
+          {/* Table */}
+          {viewMode === "vendor" ? (
+            <VendorIntelligenceTable
+              rows={vendorIntelligenceRows}
+              isLoading={isLoading}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(1);
+              }}
+              startDate={filters.startDate || undefined}
+              endDate={filters.endDate || undefined}
+            />
+          ) : viewMode === "purchases" ? (
+            <PackPurchaseTable
+              packs={filteredPacks}
+              packMetrics={packMetrics}
+              isLoading={isLoading}
+            />
+          ) : (
+            <LeadPoliciesTable
+              policies={filteredRecentPolicies}
+              packs={allPacks ?? []}
+              isLoading={isLoading}
+            />
           )}
-        >
-          By Vendor
-        </button>
-        <button
-          onClick={() => setViewMode("purchases")}
-          className={cn(
-            "px-2 py-1 text-[11px] font-medium transition-colors",
-            viewMode === "purchases"
-              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
-              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
-          )}
-        >
-          All Purchases
-        </button>
-        <button
-          onClick={() => setViewMode("policies")}
-          className={cn(
-            "px-2 py-1 text-[11px] font-medium transition-colors",
-            viewMode === "policies"
-              ? "bg-v2-ring text-foreground dark:bg-v2-ring dark:text-v2-ink"
-              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
-          )}
-        >
-          Sold Policies
-        </button>
+        </div>
       </div>
-
-      {/* Table */}
-      {viewMode === "vendor" ? (
-        <VendorIntelligenceTable
-          rows={vendorIntelligenceRows}
-          isLoading={isLoading}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(1);
-          }}
-          startDate={filters.startDate || undefined}
-          endDate={filters.endDate || undefined}
-        />
-      ) : viewMode === "purchases" ? (
-        <PackPurchaseTable
-          packs={filteredPacks}
-          packMetrics={packMetrics}
-          isLoading={isLoading}
-        />
-      ) : (
-        <LeadPoliciesTable
-          policies={filteredRecentPolicies}
-          packs={allPacks ?? []}
-          isLoading={isLoading}
-        />
-      )}
-    </div>
+    </SectionShell>
   );
 }

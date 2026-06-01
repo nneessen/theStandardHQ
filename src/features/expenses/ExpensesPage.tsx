@@ -1,8 +1,8 @@
 // src/features/expenses/ExpensesPage.tsx
 
 import { useState } from "react";
-import { Receipt, Target } from "lucide-react";
-import { PillNav } from "@/components/v2";
+import { PillNav, SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { ExpenseDashboardCompact } from "./ExpenseDashboardCompact";
 import { LeadPurchaseDashboard } from "./leads";
 
@@ -12,35 +12,43 @@ export function ExpensesPage() {
   const [activeTab, setActiveTab] = useState<TabValue>("expenses");
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Tab nav — pill-shaped, matches Leaderboard / Dashboard hero */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          {activeTab === "expenses" ? (
-            <Receipt className="h-4 w-4 text-v2-ink" />
-          ) : (
-            <Target className="h-4 w-4 text-v2-ink" />
-          )}
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-            {activeTab === "expenses" ? "Expenses" : "Lead Purchases"}
-          </h1>
-        </div>
-        <PillNav
-          size="sm"
-          activeValue={activeTab}
-          onChange={(v) => setActiveTab(v as TabValue)}
-          items={[
-            { label: "General Expenses", value: "expenses" },
-            { label: "Lead Purchases", value: "leads" },
-          ]}
-        />
-      </div>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Departure-board header — eyebrow + title + tab nav */}
+          <header className="flex items-end justify-between gap-3 flex-wrap">
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>SPEND TRACKING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                {activeTab === "expenses" ? "Expenses" : "Lead Purchases"}
+              </h1>
+            </div>
+            <PillNav
+              size="sm"
+              activeValue={activeTab}
+              onChange={(v) => setActiveTab(v as TabValue)}
+              items={[
+                { label: "General Expenses", value: "expenses" },
+                { label: "Lead Purchases", value: "leads" },
+              ]}
+            />
+          </header>
 
-      {/* Active dashboard */}
-      <div className="min-w-0">
-        {activeTab === "expenses" && <ExpenseDashboardCompact />}
-        {activeTab === "leads" && <LeadPurchaseDashboard />}
+          {/* Active dashboard */}
+          <div className="min-w-0">
+            {activeTab === "expenses" && <ExpenseDashboardCompact />}
+            {activeTab === "leads" && <LeadPurchaseDashboard />}
+          </div>
+        </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PillNav, SoftCard } from "@/components/v2";
+import { PillNav, SectionShell } from "@/components/v2";
 import { BoardPageHeader, Board, Cap, Num, T } from "@/components/board";
 import {
   useAgentLeaderboard,
@@ -145,95 +145,103 @@ export function LeaderboardPage() {
     : [];
 
   return (
-    <div className="flex flex-col gap-3">
-      <BoardPageHeader
-        title="LEADERBOARD"
-        meta={
-          totals && !isLoading
-            ? `${totals.totalEntries.toLocaleString()} ${entryLabel}`
-            : undefined
-        }
-        periods={[...BOARD_PERIODS]}
-        period={filters.timePeriod.toUpperCase()}
-        onPeriodChange={(label) =>
-          updateFilter("timePeriod", LABEL_TO_PERIOD[label])
-        }
-        actions={
-          <div className="flex flex-wrap items-center gap-1.5">
-            <PillNav
-              size="sm"
-              activeValue={filters.scope}
-              onChange={(v) => updateFilter("scope", v as LeaderboardScope)}
-              items={scopes.map((s) => ({ label: s.label, value: s.value }))}
-            />
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-3">
+          <BoardPageHeader
+            title="LEADERBOARD"
+            meta={
+              totals && !isLoading
+                ? `${totals.totalEntries.toLocaleString()} ${entryLabel}`
+                : undefined
+            }
+            periods={[...BOARD_PERIODS]}
+            period={filters.timePeriod.toUpperCase()}
+            onPeriodChange={(label) =>
+              updateFilter("timePeriod", LABEL_TO_PERIOD[label])
+            }
+            actions={
+              <div className="flex flex-wrap items-center gap-1.5">
+                <PillNav
+                  size="sm"
+                  activeValue={filters.scope}
+                  onChange={(v) => updateFilter("scope", v as LeaderboardScope)}
+                  items={scopes.map((s) => ({
+                    label: s.label,
+                    value: s.value,
+                  }))}
+                />
 
-            {filters.scope === "team" && (
-              <Select
-                value={String(filters.teamThreshold || 5)}
-                onValueChange={(v) =>
-                  updateFilter("teamThreshold", Number(v) as TeamThreshold)
-                }
-              >
-                <SelectTrigger className="h-7 w-16 text-[11px] border-border bg-card rounded-v2-pill">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {thresholds.map((t) => (
-                    <SelectItem key={t.value} value={String(t.value)}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                {filters.scope === "team" && (
+                  <Select
+                    value={String(filters.teamThreshold || 5)}
+                    onValueChange={(v) =>
+                      updateFilter("teamThreshold", Number(v) as TeamThreshold)
+                    }
+                  >
+                    <SelectTrigger className="h-7 w-16 text-[11px] border-border bg-card rounded-v2-pill">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {thresholds.map((t) => (
+                        <SelectItem key={t.value} value={String(t.value)}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
-            {filters.timePeriod === "custom" && (
-              <LeaderboardCustomRange
-                startDate={filters.startDate}
-                endDate={filters.endDate}
-                onChange={(start, end) => {
-                  setFilters((prev) => ({
-                    ...prev,
-                    startDate: start,
-                    endDate: end,
-                  }));
-                }}
-              />
-            )}
+                {filters.timePeriod === "custom" && (
+                  <LeaderboardCustomRange
+                    startDate={filters.startDate}
+                    endDate={filters.endDate}
+                    onChange={(start, end) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        startDate: start,
+                        endDate: end,
+                      }));
+                    }}
+                  />
+                )}
 
-            <MetricsHelpPopover />
-          </div>
-        }
-      />
-
-      {/* Real, scope-aware totals as riveted board panels. */}
-      {statCells.length > 0 && (
-        <div
-          className="grid gap-3"
-          style={{
-            gridTemplateColumns: `repeat(${statCells.length}, minmax(0,1fr))`,
-          }}
-        >
-          {statCells.map((c) => (
-            <Board key={c.label} pad={16}>
-              <Cap>{c.label}</Cap>
-              <div className="mt-2">
-                <Num text={c.value} size="md" color={c.tone} />
+                <MetricsHelpPopover />
               </div>
-            </Board>
-          ))}
-        </div>
-      )}
+            }
+          />
 
-      {/* Main table */}
-      <SoftCard padding="none" className="overflow-hidden flex flex-col">
-        <LeaderboardTable
-          scope={filters.scope}
-          entries={data?.entries || []}
-          isLoading={isLoading}
-          error={error}
-        />
-      </SoftCard>
-    </div>
+          {/* Real, scope-aware totals as riveted board panels. */}
+          {statCells.length > 0 && (
+            <div
+              className="grid gap-3"
+              style={{
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 170px), 1fr))",
+              }}
+            >
+              {statCells.map((c) => (
+                <Board key={c.label} pad={16}>
+                  <Cap>{c.label}</Cap>
+                  <div className="mt-2">
+                    <Num text={c.value} size="lg" color={c.tone} />
+                  </div>
+                </Board>
+              ))}
+            </div>
+          )}
+
+          {/* Main table */}
+          <Board pad={0} style={{ overflow: "hidden" }}>
+            <LeaderboardTable
+              scope={filters.scope}
+              entries={data?.entries || []}
+              isLoading={isLoading}
+              error={error}
+            />
+          </Board>
+        </div>
+      </div>
+    </SectionShell>
   );
 }
