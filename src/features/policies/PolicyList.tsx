@@ -558,7 +558,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
       />
 
       {/* Table card */}
-      <SoftCard padding="none" className="overflow-hidden flex flex-col">
+      <SoftCard padding="none" lift className="overflow-hidden flex flex-col">
         {/* Search + filter toggle (compact, single row) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border bg-v2-card-tinted">
           <div className="flex-1 relative flex items-center min-w-0">

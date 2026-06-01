@@ -39,14 +39,7 @@ export function BoardHero({
   const isLeader = rank === 1;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1.6fr 1fr",
-        gap: 16,
-        marginBottom: 16,
-      }}
-    >
+    <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
       <Board pad={24} style={{ backgroundImage: T.brushed }}>
         <div
           style={{

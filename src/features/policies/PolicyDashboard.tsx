@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SectionShell } from "@/components/v2";
 import { PolicyDialog } from "./components/PolicyDialog";
 import { FirstSellerNamingDialog } from "./components/FirstSellerNamingDialog";
 import { LeadSourceDialog } from "./components/LeadSourceDialog";
@@ -235,188 +236,199 @@ export const PolicyDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <>
-        <LogoSpinner size="sm" className="mr-2" />
-        Loading policies...
-      </>
+      <SectionShell className="dashboard-canvas">
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-v2-ink-muted">
+          <LogoSpinner size="sm" className="mr-2" />
+          Loading policies...
+        </div>
+      </SectionShell>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/30">
-        <AlertCircle size={20} className="text-destructive" />
-        <span className="text-destructive font-medium">
-          Error loading policies: {(error as Error).message}
-        </span>
-        <Button
-          onClick={() => refetch()}
-          variant="outline"
-          size="sm"
-          className="ml-auto"
-        >
-          Retry
-        </Button>
-      </div>
+      <SectionShell className="dashboard-canvas">
+        <div className="mx-auto mt-8 flex max-w-[1820px] items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
+          <AlertCircle size={20} className="text-destructive" />
+          <span className="text-destructive font-medium">
+            Error loading policies: {(error as Error).message}
+          </span>
+          <Button
+            onClick={() => refetch()}
+            variant="outline"
+            size="sm"
+            className="ml-auto"
+          >
+            Retry
+          </Button>
+        </div>
+      </SectionShell>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <PolicyList
-        onEditPolicy={handleEditPolicy}
-        onNewPolicy={() => setIsPolicyFormOpen(true)}
-      />
-
-      {canTrackLeadSource && pendingLeadSource && !pendingFirstSaleGroup && (
-        <LeadSourceDialog
-          open={true}
-          onOpenChange={() => {}}
-          policyId={pendingLeadSource.policyId}
-          policyNumber={pendingLeadSource.policyNumber}
-          onComplete={() => {
-            setPendingLeadSource(null);
-            if (user?.id && !pendingFirstSaleGroup) {
-              checkFirstSeller(user.id);
-            }
-          }}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto flex w-full max-w-[1820px] flex-col gap-5 px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <PolicyList
+          onEditPolicy={handleEditPolicy}
+          onNewPolicy={() => setIsPolicyFormOpen(true)}
         />
-      )}
 
-      {/* First Seller Naming Dialog - unified single dialog for all channels */}
-      {pendingFirstSaleGroup && (
-        <FirstSellerNamingDialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPendingFirstSaleGroup(null);
-            }
-          }}
-          groupId={pendingFirstSaleGroup.groupId}
-          agencyName={pendingFirstSaleGroup.agencyName}
-          totalChannels={pendingFirstSaleGroup.totalChannels}
-          channelNames={pendingFirstSaleGroup.channelNames}
-        />
-      )}
-
-      {/* Policy Dialog */}
-      <PolicyDialog
-        open={isPolicyFormOpen}
-        onOpenChange={(open) => {
-          setIsPolicyFormOpen(open);
-          if (!open) {
-            setEditingPolicyId(undefined);
-            setFormErrors({});
-          }
-        }}
-        onSave={async (formData: NewPolicyForm) => {
-          setFormErrors({});
-
-          if (!user?.id) {
-            toast.error("You must be logged in");
-            return null;
-          }
-
-          try {
-            const clientResult = await clientService.createOrFind(
-              {
-                name: formData.clientName,
-                email: formData.clientEmail || undefined,
-                phone: formData.clientPhone || undefined,
-                address: JSON.stringify({
-                  state: formData.clientState,
-                  street: formData.clientStreet || undefined,
-                  city: formData.clientCity || undefined,
-                  zipCode: formData.clientZipCode || undefined,
-                }),
-                date_of_birth: formData.clientDOB,
-              },
-              user.id,
-            );
-
-            if (!clientResult.success || !clientResult.data) {
-              throw (
-                clientResult.error || new Error("Failed to create/find client")
-              );
-            }
-            const client = clientResult.data;
-
-            if (editingPolicyId) {
-              // Update existing policy
-              const updateData = transformFormToUpdateData(formData, client.id);
-              await updatePolicyMutation.mutateAsync({
-                id: editingPolicyId,
-                updates: updateData,
-              });
-              toast.success("Policy updated successfully");
-              return null;
-            } else {
-              // Create new policy
-              const createData = transformFormToCreateData(
-                formData,
-                client.id,
-                user.id,
-              );
-              const result = await createPolicyMutation.mutateAsync(createData);
-              toast.success(
-                `Policy ${result.policyNumber} created successfully!`,
-              );
-
-              if (canTrackLeadSource || isLeadSourceAccessLoading) {
-                // Show lead source dialog BEFORE checking first seller
-                // The dialog's onComplete will trigger checkFirstSeller
-                setPendingLeadSource({
-                  policyId: result.id,
-                  policyNumber: result.policyNumber,
-                });
-              } else {
-                // Free tier skips lead source attribution, but should still
-                // continue to first-seller detection.
+        {canTrackLeadSource && pendingLeadSource && !pendingFirstSaleGroup && (
+          <LeadSourceDialog
+            open={true}
+            onOpenChange={() => {}}
+            policyId={pendingLeadSource.policyId}
+            policyNumber={pendingLeadSource.policyNumber}
+            onComplete={() => {
+              setPendingLeadSource(null);
+              if (user?.id && !pendingFirstSaleGroup) {
                 checkFirstSeller(user.id);
               }
+            }}
+          />
+        )}
 
-              return result;
-            }
-          } catch (error) {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
+        {/* First Seller Naming Dialog - unified single dialog for all channels */}
+        {pendingFirstSaleGroup && (
+          <FirstSellerNamingDialog
+            open={true}
+            onOpenChange={(open) => {
+              if (!open) {
+                setPendingFirstSaleGroup(null);
+              }
+            }}
+            groupId={pendingFirstSaleGroup.groupId}
+            agencyName={pendingFirstSaleGroup.agencyName}
+            totalChannels={pendingFirstSaleGroup.totalChannels}
+            channelNames={pendingFirstSaleGroup.channelNames}
+          />
+        )}
 
-            // Detect network errors and show friendly message
-            if (
-              errorMessage.toLowerCase().includes("failed to fetch") ||
-              errorMessage.toLowerCase().includes("network")
-            ) {
-              toast.error(
-                "Network error occurred. Please check your connection and try again.",
-                { duration: 5000 },
-              );
-              throw error;
-            }
-
-            // Extract field-level errors from ValidationError
-            if (error instanceof ValidationError && error.validationErrors) {
-              const fieldErrors: Record<string, string> = {};
-              error.validationErrors.forEach((ve) => {
-                fieldErrors[ve.field] = ve.message;
-              });
-              setFormErrors(fieldErrors);
-            } else {
-              // Clear any previous field errors if this is a different type of error
+        {/* Policy Dialog */}
+        <PolicyDialog
+          open={isPolicyFormOpen}
+          onOpenChange={(open) => {
+            setIsPolicyFormOpen(open);
+            if (!open) {
+              setEditingPolicyId(undefined);
               setFormErrors({});
             }
+          }}
+          onSave={async (formData: NewPolicyForm) => {
+            setFormErrors({});
 
-            toast.error(errorMessage);
-            throw error;
+            if (!user?.id) {
+              toast.error("You must be logged in");
+              return null;
+            }
+
+            try {
+              const clientResult = await clientService.createOrFind(
+                {
+                  name: formData.clientName,
+                  email: formData.clientEmail || undefined,
+                  phone: formData.clientPhone || undefined,
+                  address: JSON.stringify({
+                    state: formData.clientState,
+                    street: formData.clientStreet || undefined,
+                    city: formData.clientCity || undefined,
+                    zipCode: formData.clientZipCode || undefined,
+                  }),
+                  date_of_birth: formData.clientDOB,
+                },
+                user.id,
+              );
+
+              if (!clientResult.success || !clientResult.data) {
+                throw (
+                  clientResult.error ||
+                  new Error("Failed to create/find client")
+                );
+              }
+              const client = clientResult.data;
+
+              if (editingPolicyId) {
+                // Update existing policy
+                const updateData = transformFormToUpdateData(
+                  formData,
+                  client.id,
+                );
+                await updatePolicyMutation.mutateAsync({
+                  id: editingPolicyId,
+                  updates: updateData,
+                });
+                toast.success("Policy updated successfully");
+                return null;
+              } else {
+                // Create new policy
+                const createData = transformFormToCreateData(
+                  formData,
+                  client.id,
+                  user.id,
+                );
+                const result =
+                  await createPolicyMutation.mutateAsync(createData);
+                toast.success(
+                  `Policy ${result.policyNumber} created successfully!`,
+                );
+
+                if (canTrackLeadSource || isLeadSourceAccessLoading) {
+                  // Show lead source dialog BEFORE checking first seller
+                  // The dialog's onComplete will trigger checkFirstSeller
+                  setPendingLeadSource({
+                    policyId: result.id,
+                    policyNumber: result.policyNumber,
+                  });
+                } else {
+                  // Free tier skips lead source attribution, but should still
+                  // continue to first-seller detection.
+                  checkFirstSeller(user.id);
+                }
+
+                return result;
+              }
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : String(error);
+
+              // Detect network errors and show friendly message
+              if (
+                errorMessage.toLowerCase().includes("failed to fetch") ||
+                errorMessage.toLowerCase().includes("network")
+              ) {
+                toast.error(
+                  "Network error occurred. Please check your connection and try again.",
+                  { duration: 5000 },
+                );
+                throw error;
+              }
+
+              // Extract field-level errors from ValidationError
+              if (error instanceof ValidationError && error.validationErrors) {
+                const fieldErrors: Record<string, string> = {};
+                error.validationErrors.forEach((ve) => {
+                  fieldErrors[ve.field] = ve.message;
+                });
+                setFormErrors(fieldErrors);
+              } else {
+                // Clear any previous field errors if this is a different type of error
+                setFormErrors({});
+              }
+
+              toast.error(errorMessage);
+              throw error;
+            }
+          }}
+          policyId={editingPolicyId}
+          policy={editingPolicy}
+          isLoadingPolicy={isEditingPolicyLoading}
+          externalErrors={formErrors}
+          isPending={
+            createPolicyMutation.isPending || updatePolicyMutation.isPending
           }
-        }}
-        policyId={editingPolicyId}
-        policy={editingPolicy}
-        isLoadingPolicy={isEditingPolicyLoading}
-        externalErrors={formErrors}
-        isPending={
-          createPolicyMutation.isPending || updatePolicyMutation.isPending
-        }
-      />
-    </div>
+        />
+      </div>
+    </SectionShell>
   );
 };

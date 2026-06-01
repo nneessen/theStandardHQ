@@ -17,6 +17,18 @@ export { BoardPageHeader } from "./BoardPageHeader";
 export type { BoardPageHeaderProps } from "./BoardPageHeader";
 export { BoardListHeader } from "./BoardListHeader";
 export type { BoardListHeaderProps } from "./BoardListHeader";
+export { Bar } from "./Bar";
+export type { BarProps, BarTone } from "./Bar";
+export { Pill } from "./Pill";
+export type { PillProps, PillTone } from "./Pill";
+export { FlapTile } from "./FlapTile";
+export type { FlapTileProps, FlapTileTone } from "./FlapTile";
+export { RadialProgress } from "./RadialProgress";
+export type { RadialProgressProps, RadialTone } from "./RadialProgress";
+export { AnimatedNumber } from "./AnimatedNumber";
+export type { AnimatedNumberProps } from "./AnimatedNumber";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";
 // Jarvis orb (lazy three.js — `three` is not pulled into the main bundle).
 export { JarvisOrbView } from "./jarvis/JarvisOrbView";
 export type { JarvisOrbViewProps } from "./jarvis/JarvisOrbView";

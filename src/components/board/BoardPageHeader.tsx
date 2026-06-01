@@ -37,6 +37,7 @@ export function BoardPageHeader({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        flexWrap: "wrap",
         gap: 16,
         marginBottom: 18,
         ...style,

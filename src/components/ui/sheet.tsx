@@ -3,6 +3,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { usePortalContainer } from "./portal-container";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -108,7 +109,7 @@ const SheetContent = React.forwardRef<
     { side = "right", size, className, children, hideCloseButton, ...props },
     ref,
   ) => (
-    <SheetPortal>
+    <SheetPortal container={usePortalContainer()}>
       <SheetOverlay />
       <SheetPrimitive.Content
         ref={ref}

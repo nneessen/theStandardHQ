@@ -390,6 +390,22 @@
   background-attachment: fixed;
 }
 
+/* Cinematic login (public page, NOT .theme-v2): the shared SignInForm inputs use
+   bg-v2-card/text-v2-ink, which resolve to the light global palette (white). On
+   the dark split-screen login that reads as bright white boxes — override them to
+   a recessed charcoal-tile treatment so they match the reactor panel. Scoped to
+   `.login-surface` so nothing else is affected. (0,1,1) beats the utility (0,1,0),
+   so no !important needed.) */
+.login-surface input {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(236, 226, 205, 0.18);
+  color: #f1e9d6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.login-surface input::placeholder {
+  color: rgba(236, 226, 205, 0.38);
+}
+
 /* Globally promote shadcn Cards to "Board" panels inside the v2 theme.
    Cards keep their layout/content but pick up the warm panel gradient, 12px
    radius, line2 border, and the riveted inset+drop shadow so every page that
@@ -400,6 +416,20 @@
   background-image: var(--board-panel-gradient);
   box-shadow: var(--board-panel-shadow);
   border: 1px solid var(--v2-ring-strong);
+}
+
+/* Radix-portaled floating surfaces (dropdown menus, select listboxes, dialogs,
+   sheets) render into the `.theme-v2-portal-host` node inside the board shell —
+   see src/components/ui/portal-container.tsx — so they already inherit the
+   charcoal board tokens. Give the panel-like ones the same riveted gradient +
+   lift shadow as Cards so they read as Board panels, not flat charcoal. Public
+   pages mount no host, so their portals fall back to document.body untouched. */
+.theme-v2-portal-host [role="menu"],
+.theme-v2-portal-host [role="listbox"],
+.theme-v2-portal-host [role="dialog"],
+.theme-v2-portal-host [role="alertdialog"] {
+  background-image: var(--board-panel-gradient);
+  box-shadow: var(--board-panel-shadow);
 }
 
 /* Page-level H1/H2 inside theme-v2 use the landing display font (Big Shoulders

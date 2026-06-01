@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { usePortalContainer } from "./portal-container";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -74,7 +75,7 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, children, hideCloseButton, variant, size, ...props }, ref) => (
-  <DialogPortal>
+  <DialogPortal container={usePortalContainer()}>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}

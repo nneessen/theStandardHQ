@@ -63,20 +63,20 @@ export function QuickActions({
     <Board
       pad={0}
       rivets={false}
-      style={{ marginBottom: 16, display: "flex", overflow: "hidden" }}
+      className="mb-4 flex flex-col overflow-hidden md:flex-row"
     >
       {/* Jarvis launcher */}
       <button
         type="button"
         onClick={onJarvis}
         aria-label="Open Jarvis"
+        className="w-full border-b md:w-auto md:flex-[0_0_36%] md:border-b-0 md:border-r"
         style={{
-          flex: "0 0 36%",
           display: "flex",
           alignItems: "center",
           gap: 14,
           padding: "14px 18px",
-          borderRight: `1px solid ${T.line2}`,
+          borderColor: "rgba(236,226,205,0.08)",
           position: "relative",
           cursor: "pointer",
           background: `radial-gradient(130% 160% at 0% 0%, rgba(70,216,245,0.16), rgba(70,216,245,0.02))`,
@@ -135,12 +135,13 @@ export function QuickActions({
         </kbd>
       </button>
 
-      {/* action cells */}
+      {/* action cells — auto-fit so they wrap to multiple rows on narrow screens
+          instead of overflowing horizontally. */}
       <div
         style={{
           flex: 1,
           display: "grid",
-          gridTemplateColumns: `repeat(${acts.length},1fr)`,
+          gridTemplateColumns: "repeat(auto-fit, minmax(76px, 1fr))",
         }}
       >
         {acts.map((a, i) => {
@@ -160,11 +161,16 @@ export function QuickActions({
                 gap: 9,
                 padding: "14px 4px",
                 cursor: a.soon ? "default" : "pointer",
-                borderRight:
-                  i < acts.length - 1 ? `1px solid ${T.line}` : "none",
-                background: a.primary ? "rgba(91,155,255,0.12)" : "transparent",
+                // `border: none` first to drop the UA button border, THEN a
+                // single delicate hairline (the old code re-declared `border`
+                // after `borderRight`, which reset the width to ~3px and painted
+                // a heavy line in the text colour).
                 border: "none",
-                borderRightStyle: i < acts.length - 1 ? "solid" : "none",
+                borderRight:
+                  i < acts.length - 1
+                    ? "1px solid rgba(236,226,205,0.06)"
+                    : "none",
+                background: a.primary ? "rgba(91,155,255,0.12)" : "transparent",
               }}
             >
               {a.soon && (

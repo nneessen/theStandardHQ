@@ -16,7 +16,9 @@ export function BoardStatRow({ cells }: { cells: BoardStat[] }) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${cells.length},1fr)`,
+        // auto-fit wraps the stat cells on narrow screens instead of forcing N
+        // fixed columns that overflow on mobile.
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
         gap: 16,
         marginBottom: 16,
       }}
