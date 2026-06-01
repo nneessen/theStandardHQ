@@ -22,8 +22,9 @@ import {
   ChevronRight,
   Calendar,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +76,6 @@ interface AlertItem {
 type TimePeriod = "week" | "month" | "quarter";
 
 export function TrainerDashboard() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [periodOffset, setPeriodOffset] = useState(0);
@@ -382,695 +382,722 @@ export function TrainerDashboard() {
     }
   };
 
-  const userName = user?.first_name || "Trainer";
-
   return (
-    <div className="flex flex-col gap-2.5">
-      {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-card rounded-lg px-2 sm:px-3 py-2 border border-border dark:border-border">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-foreground dark:text-foreground" />
-          <div>
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground dark:text-foreground">
-              Welcome back, {userName}
-            </h1>
-            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-              Training & Contracting Overview
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          {/* Time Period Switcher */}
-          <div className="flex items-center bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md p-0.5">
-            {(["week", "month", "quarter"] as TimePeriod[]).map((period) => (
-              <button
-                key={period}
-                onClick={() => {
-                  setTimePeriod(period);
-                  setPeriodOffset(0);
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>TRAINING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
                 }}
-                className={cn(
-                  "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
-                  timePeriod === period
-                    ? "bg-muted text-foreground shadow-sm"
-                    : "text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
-                )}
               >
-                {period.charAt(0).toUpperCase() + period.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Period Navigator */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setPeriodOffset((p) => p + 1)}
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[10px] text-muted-foreground dark:text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span>
-                {format(dateRange.start, "MMM d")} -{" "}
-                {format(dateRange.end, "MMM d")}
-              </span>
+                Trainer Dashboard
+              </h1>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setPeriodOffset((p) => Math.max(0, p - 1))}
-              disabled={periodOffset === 0}
-            >
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div>
-        <div className="space-y-2">
-          {/* Main 3-column layout */}
-          <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[280px_1fr_280px]">
-            {/* Left Column - Key Metrics */}
-            <div className="bg-card rounded-lg border border-border dark:border-border p-3">
-              <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
-                Key Metrics
-              </div>
-              <div className="space-y-0.5">
-                {/* Recruiting Metrics */}
-                <StatRow
-                  label="Total Enrolled"
-                  value={recruitStats?.total || 0}
-                  loading={statsLoading}
-                  icon={<Users className="h-3 w-3" />}
-                />
-                <StatRow
-                  label="Active in Pipeline"
-                  value={recruitStats?.active || 0}
-                  loading={statsLoading}
-                  icon={<Clock className="h-3 w-3" />}
-                  color="text-info"
-                />
-                <StatRow
-                  label="Completed (MTD)"
-                  value={recruitStats?.completedThisMonth || 0}
-                  loading={statsLoading}
-                  icon={<CheckCircle2 className="h-3 w-3" />}
-                  color="text-success"
-                />
-                <StatRow
-                  label="Dropped"
-                  value={recruitStats?.dropped || 0}
-                  loading={statsLoading}
-                  icon={<TrendingDown className="h-3 w-3" />}
-                  color="text-destructive"
-                />
-                <StatRow
-                  label="Prospects (Not Enrolled)"
-                  value={recruitStats?.prospects || 0}
-                  loading={statsLoading}
-                  icon={<UserPlus className="h-3 w-3" />}
-                  color="text-muted-foreground dark:text-muted-foreground"
-                />
-
-                <div className="my-2 border-t border-border dark:border-border" />
-
-                {/* Contracting Metrics */}
-                <StatRow
-                  label="Contracts Pending"
-                  value={contractStats?.pending || 0}
-                  loading={contractsLoading}
-                  icon={<Clock className="h-3 w-3" />}
-                />
-                <StatRow
-                  label="Contracts Submitted"
-                  value={contractStats?.submitted || 0}
-                  loading={contractsLoading}
-                  icon={<Send className="h-3 w-3" />}
-                  color="text-info"
-                />
-                <StatRow
-                  label="Contracts Approved"
-                  value={contractStats?.approved || 0}
-                  loading={contractsLoading}
-                  icon={<CheckCircle2 className="h-3 w-3" />}
-                  color="text-success"
-                />
-                <StatRow
-                  label="Contracts Rejected"
-                  value={contractStats?.rejected || 0}
-                  loading={contractsLoading}
-                  icon={<XCircle className="h-3 w-3" />}
-                  color="text-destructive"
-                />
-              </div>
-            </div>
-
-            {/* Center Column - Performance Overview */}
-            <div className="bg-card rounded-lg border border-border dark:border-border p-3">
-              <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
-                Performance Overview
-              </div>
-
-              {/* Status Banner */}
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border dark:border-border">
-                {conversionRate >= 60 ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                ) : (
-                  <AlertCircle className="h-3.5 w-3.5 text-warning" />
+            {/* existing actions */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              {/* Time Period Switcher */}
+              <div className="flex items-center bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md p-0.5">
+                {(["week", "month", "quarter"] as TimePeriod[]).map(
+                  (period) => (
+                    <button
+                      key={period}
+                      onClick={() => {
+                        setTimePeriod(period);
+                        setPeriodOffset(0);
+                      }}
+                      className={cn(
+                        "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
+                        timePeriod === period
+                          ? "bg-muted text-foreground shadow-sm"
+                          : "text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
+                      )}
+                    >
+                      {period.charAt(0).toUpperCase() + period.slice(1)}
+                    </button>
+                  ),
                 )}
-                <div className="flex-1">
-                  <div
-                    className={cn(
-                      "text-[11px] font-semibold",
-                      conversionRate >= 60 ? "text-success" : "text-warning",
-                    )}
-                  >
-                    {conversionRate >= 60
-                      ? "Pipeline Healthy"
-                      : "Pipeline Needs Attention"}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                    {conversionRate}% conversion rate |{" "}
-                    {recruitStats?.avgDaysToComplete || 0} avg days to complete
-                  </div>
-                </div>
               </div>
 
-              {/* Performance Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border dark:border-border">
-                      <th className="text-left py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
-                        Metric
-                      </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
-                        Current
-                      </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
-                        Target
-                      </th>
-                      <th className="text-center py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase w-8">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <PerformanceRow
-                      metric="Conversion Rate"
-                      current={`${conversionRate}%`}
-                      target="60%"
-                      status={
-                        conversionRate >= 60
-                          ? "hit"
-                          : conversionRate >= 40
-                            ? "fair"
-                            : "poor"
-                      }
-                      loading={statsLoading}
-                    />
-                    <PerformanceRow
-                      metric="Contract Approval"
-                      current={`${contractApprovalRate}%`}
-                      target="80%"
-                      status={
-                        contractApprovalRate >= 80
-                          ? "hit"
-                          : contractApprovalRate >= 60
-                            ? "fair"
-                            : "poor"
-                      }
-                      loading={contractsLoading}
-                    />
-                    <PerformanceRow
-                      metric="Avg Days to Complete"
-                      current={`${recruitStats?.avgDaysToComplete || 0}`}
-                      target="30"
-                      status={
-                        (recruitStats?.avgDaysToComplete || 0) <= 30
-                          ? "hit"
-                          : (recruitStats?.avgDaysToComplete || 0) <= 45
-                            ? "fair"
-                            : "poor"
-                      }
-                      loading={statsLoading}
-                    />
-                    <PerformanceRow
-                      metric="Needs Attention"
-                      current={`${recruitStats?.needsAttention || 0}`}
-                      target="0"
-                      status={
-                        (recruitStats?.needsAttention || 0) === 0
-                          ? "hit"
-                          : (recruitStats?.needsAttention || 0) <= 3
-                            ? "fair"
-                            : "poor"
-                      }
-                      loading={statsLoading}
-                    />
-                    <PerformanceRow
-                      metric="Active Recruits"
-                      current={`${recruitStats?.active || 0}`}
-                      target="—"
-                      status="neutral"
-                      loading={statsLoading}
-                    />
-                  </tbody>
-                </table>
+              {/* Period Navigator */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setPeriodOffset((p) => p + 1)}
+                >
+                  <ChevronLeft className="h-3 w-3" />
+                </Button>
+                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[10px] text-muted-foreground dark:text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  <span>
+                    {format(dateRange.start, "MMM d")} -{" "}
+                    {format(dateRange.end, "MMM d")}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setPeriodOffset((p) => Math.max(0, p - 1))}
+                  disabled={periodOffset === 0}
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
               </div>
             </div>
+          </header>
 
-            {/* Right Column - Alerts + Quick Actions */}
-            <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-              {/* Alerts Panel */}
-              {alerts.length > 0 && (
+          {/* Main Content */}
+          <div>
+            <div className="space-y-2">
+              {/* Main 3-column layout */}
+              <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[280px_1fr_280px]">
+                {/* Left Column - Key Metrics */}
                 <div className="bg-card rounded-lg border border-border dark:border-border p-3">
                   <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
-                    Alerts
+                    Key Metrics
                   </div>
-                  <div className="space-y-2">
-                    {alerts.map((alert, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-2 pb-2 border-b border-border dark:border-border/50 last:border-b-0 last:pb-0"
-                      >
-                        {getAlertIcon(alert.type)}
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={cn(
-                              "text-[11px] font-semibold",
-                              getAlertTextColor(alert.type),
-                            )}
-                          >
-                            {alert.title}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                            {alert.message}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="space-y-0.5">
+                    {/* Recruiting Metrics */}
+                    <StatRow
+                      label="Total Enrolled"
+                      value={recruitStats?.total || 0}
+                      loading={statsLoading}
+                      icon={<Users className="h-3 w-3" />}
+                    />
+                    <StatRow
+                      label="Active in Pipeline"
+                      value={recruitStats?.active || 0}
+                      loading={statsLoading}
+                      icon={<Clock className="h-3 w-3" />}
+                      color="text-info"
+                    />
+                    <StatRow
+                      label="Completed (MTD)"
+                      value={recruitStats?.completedThisMonth || 0}
+                      loading={statsLoading}
+                      icon={<CheckCircle2 className="h-3 w-3" />}
+                      color="text-success"
+                    />
+                    <StatRow
+                      label="Dropped"
+                      value={recruitStats?.dropped || 0}
+                      loading={statsLoading}
+                      icon={<TrendingDown className="h-3 w-3" />}
+                      color="text-destructive"
+                    />
+                    <StatRow
+                      label="Prospects (Not Enrolled)"
+                      value={recruitStats?.prospects || 0}
+                      loading={statsLoading}
+                      icon={<UserPlus className="h-3 w-3" />}
+                      color="text-muted-foreground dark:text-muted-foreground"
+                    />
+
+                    <div className="my-2 border-t border-border dark:border-border" />
+
+                    {/* Contracting Metrics */}
+                    <StatRow
+                      label="Contracts Pending"
+                      value={contractStats?.pending || 0}
+                      loading={contractsLoading}
+                      icon={<Clock className="h-3 w-3" />}
+                    />
+                    <StatRow
+                      label="Contracts Submitted"
+                      value={contractStats?.submitted || 0}
+                      loading={contractsLoading}
+                      icon={<Send className="h-3 w-3" />}
+                      color="text-info"
+                    />
+                    <StatRow
+                      label="Contracts Approved"
+                      value={contractStats?.approved || 0}
+                      loading={contractsLoading}
+                      icon={<CheckCircle2 className="h-3 w-3" />}
+                      color="text-success"
+                    />
+                    <StatRow
+                      label="Contracts Rejected"
+                      value={contractStats?.rejected || 0}
+                      loading={contractsLoading}
+                      icon={<XCircle className="h-3 w-3" />}
+                      color="text-destructive"
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Quick Actions Panel */}
+                {/* Center Column - Performance Overview */}
+                <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
+                    Performance Overview
+                  </div>
+
+                  {/* Status Banner */}
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border dark:border-border">
+                    {conversionRate >= 60 ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                    ) : (
+                      <AlertCircle className="h-3.5 w-3.5 text-warning" />
+                    )}
+                    <div className="flex-1">
+                      <div
+                        className={cn(
+                          "text-[11px] font-semibold",
+                          conversionRate >= 60
+                            ? "text-success"
+                            : "text-warning",
+                        )}
+                      >
+                        {conversionRate >= 60
+                          ? "Pipeline Healthy"
+                          : "Pipeline Needs Attention"}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                        {conversionRate}% conversion rate |{" "}
+                        {recruitStats?.avgDaysToComplete || 0} avg days to
+                        complete
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Performance Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border dark:border-border">
+                          <th className="text-left py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
+                            Metric
+                          </th>
+                          <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
+                            Current
+                          </th>
+                          <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
+                            Target
+                          </th>
+                          <th className="text-center py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase w-8">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <PerformanceRow
+                          metric="Conversion Rate"
+                          current={`${conversionRate}%`}
+                          target="60%"
+                          status={
+                            conversionRate >= 60
+                              ? "hit"
+                              : conversionRate >= 40
+                                ? "fair"
+                                : "poor"
+                          }
+                          loading={statsLoading}
+                        />
+                        <PerformanceRow
+                          metric="Contract Approval"
+                          current={`${contractApprovalRate}%`}
+                          target="80%"
+                          status={
+                            contractApprovalRate >= 80
+                              ? "hit"
+                              : contractApprovalRate >= 60
+                                ? "fair"
+                                : "poor"
+                          }
+                          loading={contractsLoading}
+                        />
+                        <PerformanceRow
+                          metric="Avg Days to Complete"
+                          current={`${recruitStats?.avgDaysToComplete || 0}`}
+                          target="30"
+                          status={
+                            (recruitStats?.avgDaysToComplete || 0) <= 30
+                              ? "hit"
+                              : (recruitStats?.avgDaysToComplete || 0) <= 45
+                                ? "fair"
+                                : "poor"
+                          }
+                          loading={statsLoading}
+                        />
+                        <PerformanceRow
+                          metric="Needs Attention"
+                          current={`${recruitStats?.needsAttention || 0}`}
+                          target="0"
+                          status={
+                            (recruitStats?.needsAttention || 0) === 0
+                              ? "hit"
+                              : (recruitStats?.needsAttention || 0) <= 3
+                                ? "fair"
+                                : "poor"
+                          }
+                          loading={statsLoading}
+                        />
+                        <PerformanceRow
+                          metric="Active Recruits"
+                          current={`${recruitStats?.active || 0}`}
+                          target="—"
+                          status="neutral"
+                          loading={statsLoading}
+                        />
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Right Column - Alerts + Quick Actions */}
+                <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
+                  {/* Alerts Panel */}
+                  {alerts.length > 0 && (
+                    <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+                      <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
+                        Alerts
+                      </div>
+                      <div className="space-y-2">
+                        {alerts.map((alert, index) => (
+                          <div
+                            key={index}
+                            className="flex items-start gap-2 pb-2 border-b border-border dark:border-border/50 last:border-b-0 last:pb-0"
+                          >
+                            {getAlertIcon(alert.type)}
+                            <div className="flex-1 min-w-0">
+                              <div
+                                className={cn(
+                                  "text-[11px] font-semibold",
+                                  getAlertTextColor(alert.type),
+                                )}
+                              >
+                                {alert.title}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                                {alert.message}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Actions Panel */}
+                  <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+                    <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
+                      Quick Actions
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
+                        onClick={() => navigate({ to: "/recruiting" })}
+                      >
+                        <UserPlus className="h-3 w-3 mr-1.5" />
+                        View Recruiting Pipeline
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
+                        onClick={() => navigate({ to: "/contracting" })}
+                      >
+                        <FileCheck className="h-3 w-3 mr-1.5" />
+                        Manage Contracts
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
+                        onClick={() => navigate({ to: "/messages" })}
+                      >
+                        <Mail className="h-3 w-3 mr-1.5" />
+                        Messages
+                        {messageStats?.unread ? (
+                          <Badge className="ml-auto h-4 px-1 text-[9px] bg-destructive text-destructive-foreground">
+                            {messageStats.unread}
+                          </Badge>
+                        ) : null}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
+                        onClick={() => navigate({ to: "/training-hub" })}
+                      >
+                        <GraduationCap className="h-3 w-3 mr-1.5" />
+                        Training Hub
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Conversion Rate Card */}
+                  {recruitStats && recruitStats.total > 0 && (
+                    <div
+                      className={cn(
+                        "rounded-lg p-3",
+                        conversionRate >= 60
+                          ? "bg-success text-success-foreground"
+                          : "bg-warning text-warning-foreground",
+                      )}
+                    >
+                      <p className="text-[10px] font-medium opacity-80 uppercase tracking-wide">
+                        Pipeline Conversion
+                      </p>
+                      <p className="text-2xl font-bold mt-0.5">
+                        {conversionRate}%
+                      </p>
+                      <p className="text-[10px] opacity-70 mt-0.5">
+                        {recruitStats.completedTotal} of {recruitStats.total}{" "}
+                        recruits completed
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* KPI Grid */}
               <div className="bg-card rounded-lg border border-border dark:border-border p-3">
                 <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
-                  Quick Actions
+                  Detailed KPI Breakdown
                 </div>
-                <div className="flex flex-col gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
-                    onClick={() => navigate({ to: "/recruiting" })}
-                  >
-                    <UserPlus className="h-3 w-3 mr-1.5" />
-                    View Recruiting Pipeline
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
-                    onClick={() => navigate({ to: "/contracting" })}
-                  >
-                    <FileCheck className="h-3 w-3 mr-1.5" />
-                    Manage Contracts
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
-                    onClick={() => navigate({ to: "/messages" })}
-                  >
-                    <Mail className="h-3 w-3 mr-1.5" />
-                    Messages
-                    {messageStats?.unread ? (
-                      <Badge className="ml-auto h-4 px-1 text-[9px] bg-destructive text-destructive-foreground">
-                        {messageStats.unread}
-                      </Badge>
-                    ) : null}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted"
-                    onClick={() => navigate({ to: "/training-hub" })}
-                  >
-                    <GraduationCap className="h-3 w-3 mr-1.5" />
-                    Training Hub
-                  </Button>
-                </div>
-              </div>
-
-              {/* Conversion Rate Card */}
-              {recruitStats && recruitStats.total > 0 && (
-                <div
-                  className={cn(
-                    "rounded-lg p-3",
-                    conversionRate >= 60
-                      ? "bg-success text-success-foreground"
-                      : "bg-warning text-warning-foreground",
-                  )}
-                >
-                  <p className="text-[10px] font-medium opacity-80 uppercase tracking-wide">
-                    Pipeline Conversion
-                  </p>
-                  <p className="text-2xl font-bold mt-0.5">{conversionRate}%</p>
-                  <p className="text-[10px] opacity-70 mt-0.5">
-                    {recruitStats.completedTotal} of {recruitStats.total}{" "}
-                    recruits completed
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* KPI Grid */}
-          <div className="bg-card rounded-lg border border-border dark:border-border p-3">
-            <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
-              Detailed KPI Breakdown
-            </div>
-            <TooltipProvider delayDuration={200}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Recruiting Section */}
-                <div>
-                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
-                    Recruiting Pipeline
-                  </div>
-                  <div className="space-y-1">
-                    <KPIRow
-                      label="Total Enrolled"
-                      value={recruitStats?.total?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Active"
-                      value={recruitStats?.active?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Completed (Total)"
-                      value={recruitStats?.completedTotal?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Completed (MTD)"
-                      value={
-                        recruitStats?.completedThisMonth?.toString() || "0"
-                      }
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Dropped"
-                      value={recruitStats?.dropped?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Prospects"
-                      value={recruitStats?.prospects?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Conversion Rate"
-                      value={`${conversionRate}%`}
-                      loading={statsLoading}
-                    />
-                  </div>
-                </div>
-
-                {/* Contracting Section */}
-                <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 sm:border-t-0 sm:pt-0">
-                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
-                    Carrier Contracts
-                  </div>
-                  <div className="space-y-1">
-                    <KPIRow
-                      label="Total Contracts"
-                      value={contractStats?.total?.toString() || "0"}
-                      loading={contractsLoading}
-                    />
-                    <KPIRow
-                      label="Pending"
-                      value={contractStats?.pending?.toString() || "0"}
-                      loading={contractsLoading}
-                    />
-                    <KPIRow
-                      label="Submitted"
-                      value={contractStats?.submitted?.toString() || "0"}
-                      loading={contractsLoading}
-                    />
-                    <KPIRow
-                      label="Approved"
-                      value={contractStats?.approved?.toString() || "0"}
-                      loading={contractsLoading}
-                    />
-                    <KPIRow
-                      label="Rejected"
-                      value={contractStats?.rejected?.toString() || "0"}
-                      loading={contractsLoading}
-                    />
-                    <KPIRow
-                      label="Approval Rate"
-                      value={`${contractApprovalRate}%`}
-                      loading={contractsLoading}
-                    />
-                  </div>
-                </div>
-
-                {/* Activity Section */}
-                <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
-                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
-                    Activity & Engagement
-                  </div>
-                  <div className="space-y-1">
-                    <KPIRow
-                      label="Needs Attention"
-                      value={recruitStats?.needsAttention?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Avg Days to Complete"
-                      value={recruitStats?.avgDaysToComplete?.toString() || "0"}
-                      loading={statsLoading}
-                    />
-                    <KPIRow
-                      label="Unread Messages"
-                      value={messageStats?.unread?.toString() || "0"}
-                      loading={false}
-                    />
-                    <KPIRow
-                      label="Recent Updates"
-                      value={recentRecruits?.length?.toString() || "0"}
-                      loading={recruitsLoading}
-                    />
-                  </div>
-                </div>
-              </div>
-            </TooltipProvider>
-          </div>
-
-          {/* Agency Pipeline Breakdown - Shows recruiting metrics by agency/pipeline owner */}
-          <AgencyPipelineOverview />
-
-          {/* Recent Activity Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-            {/* Recent Recruits */}
-            <div className="bg-card rounded-lg border border-border dark:border-border">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
-                <div className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
-                  <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
-                    Recent Recruits
-                  </h2>
-                </div>
-                <Link to="/recruiting">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
-                  >
-                    View All
-                    <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-              <div className="divide-y divide-border dark:divide-border">
-                {recruitsLoading ? (
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="px-3 py-2">
-                      <Skeleton className="h-8 w-full" />
-                    </div>
-                  ))
-                ) : recentRecruits && recentRecruits.length > 0 ? (
-                  recentRecruits.slice(0, 5).map((recruit) => {
-                    const name =
-                      recruit.first_name && recruit.last_name
-                        ? `${recruit.first_name} ${recruit.last_name}`
-                        : recruit.email;
-                    const phase =
-                      recruit.current_onboarding_phase ||
-                      recruit.onboarding_status ||
-                      "Not Started";
-
-                    return (
-                      <div
-                        key={recruit.id}
-                        onClick={() =>
-                          navigate({
-                            to: "/recruiting",
-                            search: { recruitId: recruit.id },
-                          })
-                        }
-                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
-                            {name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
-                              {name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
-                              {recruit.email}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "text-[9px] h-5 px-1.5",
-                              getStatusBadgeClass(phase),
-                            )}
-                          >
-                            {phase.replace(/_/g, " ")}
-                          </Badge>
-                          <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
-                            {recruit.updated_at
-                              ? formatDistanceToNow(
-                                  new Date(recruit.updated_at),
-                                  { addSuffix: true },
-                                )
-                              : "-"}
-                          </span>
-                        </div>
+                <TooltipProvider delayDuration={200}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Recruiting Section */}
+                    <div>
+                      <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
+                        Recruiting Pipeline
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="px-3 py-6 text-center">
-                    <UserPlus className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
-                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
-                      No recruits in pipeline yet
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Recent Contracts */}
-            <div className="bg-card rounded-lg border border-border dark:border-border">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
-                <div className="flex items-center gap-1.5">
-                  <FileCheck className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
-                  <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
-                    Recent Contracts
-                  </h2>
-                </div>
-                <Link to="/contracting">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
-                  >
-                    View All
-                    <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-              <div className="divide-y divide-border dark:divide-border">
-                {contractsListLoading ? (
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="px-3 py-2">
-                      <Skeleton className="h-8 w-full" />
+                      <div className="space-y-1">
+                        <KPIRow
+                          label="Total Enrolled"
+                          value={recruitStats?.total?.toString() || "0"}
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Active"
+                          value={recruitStats?.active?.toString() || "0"}
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Completed (Total)"
+                          value={
+                            recruitStats?.completedTotal?.toString() || "0"
+                          }
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Completed (MTD)"
+                          value={
+                            recruitStats?.completedThisMonth?.toString() || "0"
+                          }
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Dropped"
+                          value={recruitStats?.dropped?.toString() || "0"}
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Prospects"
+                          value={recruitStats?.prospects?.toString() || "0"}
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Conversion Rate"
+                          value={`${conversionRate}%`}
+                          loading={statsLoading}
+                        />
+                      </div>
                     </div>
-                  ))
-                ) : recentContracts && recentContracts.length > 0 ? (
-                  recentContracts.map((contract) => {
-                    // Supabase returns single relations, but TypeScript infers array
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const agent = contract.agent as any;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const carrier = contract.carrier as any;
-                    const agentName =
-                      agent?.first_name && agent?.last_name
-                        ? `${agent.first_name} ${agent.last_name}`
-                        : agent?.email || "Unknown";
 
-                    return (
-                      <Link
-                        key={contract.id}
-                        to="/contracting"
-                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
-                            {agentName.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
-                              {agentName}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
-                              {carrier?.name || "Unknown Carrier"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "text-[9px] h-5 px-1.5",
-                              getStatusBadgeClass(contract.status),
-                            )}
-                          >
-                            {contract.status}
-                          </Badge>
-                          <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
-                            {contract.updated_at
-                              ? formatDistanceToNow(
-                                  new Date(contract.updated_at),
-                                  { addSuffix: true },
-                                )
-                              : "-"}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <div className="px-3 py-6 text-center">
-                    <FileCheck className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
-                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
-                      No contracts yet
-                    </p>
+                    {/* Contracting Section */}
+                    <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 sm:border-t-0 sm:pt-0">
+                      <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
+                        Carrier Contracts
+                      </div>
+                      <div className="space-y-1">
+                        <KPIRow
+                          label="Total Contracts"
+                          value={contractStats?.total?.toString() || "0"}
+                          loading={contractsLoading}
+                        />
+                        <KPIRow
+                          label="Pending"
+                          value={contractStats?.pending?.toString() || "0"}
+                          loading={contractsLoading}
+                        />
+                        <KPIRow
+                          label="Submitted"
+                          value={contractStats?.submitted?.toString() || "0"}
+                          loading={contractsLoading}
+                        />
+                        <KPIRow
+                          label="Approved"
+                          value={contractStats?.approved?.toString() || "0"}
+                          loading={contractsLoading}
+                        />
+                        <KPIRow
+                          label="Rejected"
+                          value={contractStats?.rejected?.toString() || "0"}
+                          loading={contractsLoading}
+                        />
+                        <KPIRow
+                          label="Approval Rate"
+                          value={`${contractApprovalRate}%`}
+                          loading={contractsLoading}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Activity Section */}
+                    <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
+                      <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
+                        Activity & Engagement
+                      </div>
+                      <div className="space-y-1">
+                        <KPIRow
+                          label="Needs Attention"
+                          value={
+                            recruitStats?.needsAttention?.toString() || "0"
+                          }
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Avg Days to Complete"
+                          value={
+                            recruitStats?.avgDaysToComplete?.toString() || "0"
+                          }
+                          loading={statsLoading}
+                        />
+                        <KPIRow
+                          label="Unread Messages"
+                          value={messageStats?.unread?.toString() || "0"}
+                          loading={false}
+                        />
+                        <KPIRow
+                          label="Recent Updates"
+                          value={recentRecruits?.length?.toString() || "0"}
+                          loading={recruitsLoading}
+                        />
+                      </div>
+                    </div>
                   </div>
-                )}
+                </TooltipProvider>
+              </div>
+
+              {/* Agency Pipeline Breakdown - Shows recruiting metrics by agency/pipeline owner */}
+              <AgencyPipelineOverview />
+
+              {/* Recent Activity Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {/* Recent Recruits */}
+                <div className="bg-card rounded-lg border border-border dark:border-border">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+                      <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
+                        Recent Recruits
+                      </h2>
+                    </div>
+                    <Link to="/recruiting">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
+                      >
+                        View All
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="divide-y divide-border dark:divide-border">
+                    {recruitsLoading ? (
+                      [1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="px-3 py-2">
+                          <Skeleton className="h-8 w-full" />
+                        </div>
+                      ))
+                    ) : recentRecruits && recentRecruits.length > 0 ? (
+                      recentRecruits.slice(0, 5).map((recruit) => {
+                        const name =
+                          recruit.first_name && recruit.last_name
+                            ? `${recruit.first_name} ${recruit.last_name}`
+                            : recruit.email;
+                        const phase =
+                          recruit.current_onboarding_phase ||
+                          recruit.onboarding_status ||
+                          "Not Started";
+
+                        return (
+                          <div
+                            key={recruit.id}
+                            onClick={() =>
+                              navigate({
+                                to: "/recruiting",
+                                search: { recruitId: recruit.id },
+                              })
+                            }
+                            className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+                                {name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
+                                  {name}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
+                                  {recruit.email}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "text-[9px] h-5 px-1.5",
+                                  getStatusBadgeClass(phase),
+                                )}
+                              >
+                                {phase.replace(/_/g, " ")}
+                              </Badge>
+                              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                                {recruit.updated_at
+                                  ? formatDistanceToNow(
+                                      new Date(recruit.updated_at),
+                                      { addSuffix: true },
+                                    )
+                                  : "-"}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-3 py-6 text-center">
+                        <UserPlus className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
+                        <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                          No recruits in pipeline yet
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Recent Contracts */}
+                <div className="bg-card rounded-lg border border-border dark:border-border">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
+                    <div className="flex items-center gap-1.5">
+                      <FileCheck className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+                      <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
+                        Recent Contracts
+                      </h2>
+                    </div>
+                    <Link to="/contracting">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
+                      >
+                        View All
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="divide-y divide-border dark:divide-border">
+                    {contractsListLoading ? (
+                      [1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="px-3 py-2">
+                          <Skeleton className="h-8 w-full" />
+                        </div>
+                      ))
+                    ) : recentContracts && recentContracts.length > 0 ? (
+                      recentContracts.map((contract) => {
+                        // Supabase returns single relations, but TypeScript infers array
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const agent = contract.agent as any;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const carrier = contract.carrier as any;
+                        const agentName =
+                          agent?.first_name && agent?.last_name
+                            ? `${agent.first_name} ${agent.last_name}`
+                            : agent?.email || "Unknown";
+
+                        return (
+                          <Link
+                            key={contract.id}
+                            to="/contracting"
+                            className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+                                {agentName.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
+                                  {agentName}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
+                                  {carrier?.name || "Unknown Carrier"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "text-[9px] h-5 px-1.5",
+                                  getStatusBadgeClass(contract.status),
+                                )}
+                              >
+                                {contract.status}
+                              </Badge>
+                              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                                {contract.updated_at
+                                  ? formatDistanceToNow(
+                                      new Date(contract.updated_at),
+                                      { addSuffix: true },
+                                    )
+                                  : "-"}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })
+                    ) : (
+                      <div className="px-3 py-6 text-center">
+                        <FileCheck className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
+                        <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                          No contracts yet
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }
 

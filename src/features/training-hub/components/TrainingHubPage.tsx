@@ -3,10 +3,11 @@
 // Note: Recruit pipeline management is now via the main /recruiting page
 // Note: Automation/workflows moved to super-admin-only /system/workflows page
 import { useState, useEffect } from "react";
-import { Mail, Search, X, GraduationCap, FileText } from "lucide-react";
+import { Mail, Search, X, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PillNav, SoftCard } from "@/components/v2";
+import { PillNav, SoftCard, SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { useQuery } from "@tanstack/react-query";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
@@ -74,73 +75,96 @@ export default function TrainingHubPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Compact header — title + inline stats + search */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <GraduationCap className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Training Hub
-            </h1>
-          </div>
-          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
-            <span className="inline-flex items-center gap-1">
-              <Mail className="h-3 w-3 text-info" />
-              <span className="text-v2-ink font-semibold">
-                {templateStats?.count ?? 0}
-              </span>
-              templates
-            </span>
-            <span className="text-v2-ink-subtle">·</span>
-            <span className="inline-flex items-center gap-1">
-              <FileText className="h-3 w-3 text-success" />
-              <span className="text-v2-ink font-semibold">
-                {documentStats?.count ?? 0}
-              </span>
-              documents
-            </span>
-          </div>
-        </div>
-        <div className="relative w-56 flex-shrink-0">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
-          <Input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-7 pl-7 pr-7 text-xs bg-v2-card border-v2-ring"
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>TRAINING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Training Hub
+              </h1>
+            </div>
+            {/* existing actions */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+                <span className="inline-flex items-center gap-1">
+                  <Mail className="h-3 w-3 text-info" />
+                  <span className="text-v2-ink font-semibold">
+                    {templateStats?.count ?? 0}
+                  </span>
+                  templates
+                </span>
+                <span className="text-v2-ink-subtle">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <FileText className="h-3 w-3 text-success" />
+                  <span className="text-v2-ink font-semibold">
+                    {documentStats?.count ?? 0}
+                  </span>
+                  documents
+                </span>
+              </div>
+              <div className="relative w-56 flex-shrink-0">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-7 pl-7 pr-7 text-xs bg-v2-card border-v2-ring"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0.5 top-1/2 -translate-y-1/2 h-6 w-6"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </header>
+
+          <PillNav
+            size="sm"
+            activeValue={activeView}
+            onChange={(v) => setActiveView(v as TabView)}
+            items={tabItems}
           />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0.5 top-1/2 -translate-y-1/2 h-6 w-6"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
+
+          <SoftCard padding="md">
+            {activeView === "templates" && (
+              <EmailTemplatesTab searchQuery={searchQuery} />
+            )}
+            {activeView === "documents" && (
+              <DocumentsTab searchQuery={searchQuery} />
+            )}
+            {activeView === "modules" && <ModulesManagementTab />}
+            {activeView === "activity" && (
+              <ActivityTab searchQuery={searchQuery} />
+            )}
+          </SoftCard>
         </div>
-      </header>
-
-      <PillNav
-        size="sm"
-        activeValue={activeView}
-        onChange={(v) => setActiveView(v as TabView)}
-        items={tabItems}
-      />
-
-      <SoftCard padding="md">
-        {activeView === "templates" && (
-          <EmailTemplatesTab searchQuery={searchQuery} />
-        )}
-        {activeView === "documents" && (
-          <DocumentsTab searchQuery={searchQuery} />
-        )}
-        {activeView === "modules" && <ModulesManagementTab />}
-        {activeView === "activity" && <ActivityTab searchQuery={searchQuery} />}
-      </SoftCard>
-    </div>
+      </div>
+    </SectionShell>
   );
 }

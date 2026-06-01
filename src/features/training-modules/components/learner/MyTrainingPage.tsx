@@ -1,9 +1,10 @@
 // src/features/training-modules/components/learner/MyTrainingPage.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { BookOpen, Target, Clock, Loader2, Plus } from "lucide-react";
+import { Target, Clock, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PillNav } from "@/components/v2";
+import { PillNav, SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { useMyTrainingAssignments } from "../../hooks/useTrainingAssignments";
 import { useTrainingUserStats } from "../../hooks/useTrainingGamification";
 import { useCanManageTraining } from "../../hooks/useCanManageTraining";
@@ -73,102 +74,121 @@ export default function MyTrainingPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Compact header with inline stats */}
-      <header className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <BookOpen className="h-4 w-4 text-v2-ink" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              My Training
-            </h1>
-          </div>
-          <div className="flex items-center gap-3 text-[11px] text-v2-ink-muted leading-tight">
-            <XpDisplay xp={stats?.total_xp || 0} />
-            <StreakIndicator days={stats?.current_streak_days || 0} />
-            <span className="inline-flex items-center gap-1">
-              <Target className="h-3 w-3 text-info" />
-              <span className="text-v2-ink font-semibold">
-                {stats?.modules_completed || 0}
-              </span>
-              completed
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Clock className="h-3 w-3 text-v2-ink-subtle" />
-              <span className="text-v2-ink font-semibold">
-                {Math.round((stats?.total_time_spent_seconds || 0) / 3600)}h
-              </span>
-              spent
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <PillNav
-        size="sm"
-        activeValue={activeTab}
-        onChange={(v) => setActiveTab(v as TabId)}
-        items={tabs.map((t) => ({ label: t.label, value: t.id }))}
-      />
-
-      <div>
-        {activeTab === "assignments" && (
-          <AssignmentsTab assignments={assignments} />
-        )}
-
-        {activeTab === "presentations" && (
-          <div className="space-y-3">
-            {/* Toolbar: week picker + new submission button */}
-            <div className="flex items-center justify-between">
-              <PresentationWeekPicker
-                weekStart={weekStart}
-                onChange={setWeekStart}
-              />
-              <Button
-                size="sm"
-                className="h-7 text-[11px]"
-                onClick={() =>
-                  navigate({ to: "/my-training/presentations/record" })
-                }
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>LEARNING</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
               >
-                <Plus className="h-3 w-3 mr-1" />
-                New Submission
-              </Button>
+                My Training
+              </h1>
             </div>
+            {/* existing actions */}
+            <div className="flex items-center gap-3 text-[11px] text-v2-ink-muted leading-tight">
+              <XpDisplay xp={stats?.total_xp || 0} />
+              <StreakIndicator days={stats?.current_streak_days || 0} />
+              <span className="inline-flex items-center gap-1">
+                <Target className="h-3 w-3 text-info" />
+                <span className="text-v2-ink font-semibold">
+                  {stats?.modules_completed || 0}
+                </span>
+                completed
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3 w-3 text-v2-ink-subtle" />
+                <span className="text-v2-ink font-semibold">
+                  {Math.round((stats?.total_time_spent_seconds || 0) / 3600)}h
+                </span>
+                spent
+              </span>
+            </div>
+          </header>
 
-            {/* Manager compliance table */}
-            {canManage && agency && (
-              <PresentationComplianceTable
-                agencyId={agency.id}
-                weekStart={weekStart}
-              />
+          <PillNav
+            size="sm"
+            activeValue={activeTab}
+            onChange={(v) => setActiveTab(v as TabId)}
+            items={tabs.map((t) => ({ label: t.label, value: t.id }))}
+          />
+
+          <div>
+            {activeTab === "assignments" && (
+              <AssignmentsTab assignments={assignments} />
             )}
 
-            {/* Submissions list */}
-            <PresentationSubmissionList
-              filters={{
-                weekStart,
-                ...(canManage ? {} : { userId: user?.id || "" }),
-                ...(agency ? { agencyId: agency.id } : {}),
-              }}
-              showSubmitter={canManage}
-            />
+            {activeTab === "presentations" && (
+              <div className="space-y-3">
+                {/* Toolbar: week picker + new submission button */}
+                <div className="flex items-center justify-between">
+                  <PresentationWeekPicker
+                    weekStart={weekStart}
+                    onChange={setWeekStart}
+                  />
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px]"
+                    onClick={() =>
+                      navigate({ to: "/my-training/presentations/record" })
+                    }
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    New Submission
+                  </Button>
+                </div>
+
+                {/* Manager compliance table */}
+                {canManage && agency && (
+                  <PresentationComplianceTable
+                    agencyId={agency.id}
+                    weekStart={weekStart}
+                  />
+                )}
+
+                {/* Submissions list */}
+                <PresentationSubmissionList
+                  filters={{
+                    weekStart,
+                    ...(canManage ? {} : { userId: user?.id || "" }),
+                    ...(agency ? { agencyId: agency.id } : {}),
+                  }}
+                  showSubmitter={canManage}
+                />
+              </div>
+            )}
+
+            {activeTab === "leaderboard" && agency && (
+              <LeaderboardTable agencyId={agency.id} />
+            )}
+
+            {activeTab === "badges" && (
+              <div className="space-y-3">
+                {canManage && <BadgesManagementTab />}
+                <BadgeGrid />
+              </div>
+            )}
+
+            {activeTab === "modules" && canManage && <ModulesManagementTab />}
           </div>
-        )}
-
-        {activeTab === "leaderboard" && agency && (
-          <LeaderboardTable agencyId={agency.id} />
-        )}
-
-        {activeTab === "badges" && (
-          <div className="space-y-3">
-            {canManage && <BadgesManagementTab />}
-            <BadgeGrid />
-          </div>
-        )}
-
-        {activeTab === "modules" && canManage && <ModulesManagementTab />}
+        </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }

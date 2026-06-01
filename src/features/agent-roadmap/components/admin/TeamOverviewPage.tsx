@@ -13,6 +13,8 @@ import {
   Circle,
   AlertTriangle,
 } from "lucide-react";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -89,213 +91,234 @@ export function TeamOverviewPage() {
   }, [overview]);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* ── Header bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 bg-card rounded-lg px-3 py-2 border border-border dark:border-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 shrink-0"
-          onClick={() => navigate({ to: "/agent-roadmap" })}
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-foreground dark:text-foreground" />
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground dark:text-foreground">
-            Team Progress
-          </h1>
-          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground hidden sm:inline">
-            All agents across all roadmaps
-          </span>
-        </div>
-
-        <div className="flex-1" />
-
-        {stats && (
-          <div className="flex items-center gap-3 text-[11px]">
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground dark:text-foreground">
-                {stats.total}
-              </span>
-              <span className="text-muted-foreground dark:text-muted-foreground">
-                agents
-              </span>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* header */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>ROADMAP</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Team Progress
+              </h1>
             </div>
-            <div className="h-3 w-px bg-muted dark:bg-muted" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground dark:text-foreground">
-                {stats.avgPercent}%
-              </span>
-              <span className="text-muted-foreground dark:text-muted-foreground">
-                avg
-              </span>
+            {/* existing actions */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 shrink-0"
+                onClick={() => navigate({ to: "/agent-roadmap" })}
+                aria-label="Back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+
+              {stats && (
+                <div className="flex items-center gap-3 text-[11px]">
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-foreground dark:text-foreground">
+                      {stats.total}
+                    </span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">
+                      agents
+                    </span>
+                  </div>
+                  <div className="h-3 w-px bg-muted dark:bg-muted" />
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-foreground dark:text-foreground">
+                      {stats.avgPercent}%
+                    </span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">
+                      avg
+                    </span>
+                  </div>
+                  {stats.allDone > 0 && (
+                    <>
+                      <div className="h-3 w-px bg-muted dark:bg-muted" />
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-success" />
+                        <span className="font-medium">{stats.allDone}</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">
+                          done
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {stats.stuck > 0 && (
+                    <>
+                      <div className="h-3 w-px bg-muted dark:bg-muted" />
+                      <div className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 text-warning" />
+                        <span className="font-medium">{stats.stuck}</span>
+                        <span className="text-muted-foreground dark:text-muted-foreground">
+                          stuck
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
-            {stats.allDone > 0 && (
-              <>
-                <div className="h-3 w-px bg-muted dark:bg-muted" />
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-success" />
-                  <span className="font-medium">{stats.allDone}</span>
-                  <span className="text-muted-foreground dark:text-muted-foreground">
-                    done
-                  </span>
-                </div>
-              </>
-            )}
-            {stats.stuck > 0 && (
-              <>
-                <div className="h-3 w-px bg-muted dark:bg-muted" />
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-warning" />
-                  <span className="font-medium">{stats.stuck}</span>
-                  <span className="text-muted-foreground dark:text-muted-foreground">
-                    stuck
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+          </header>
 
-      {/* ── Table ──────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
-        {isLoading ? (
-          <div className="space-y-1.5">
-            {[1, 2, 3, 4].map((n) => (
-              <div
-                key={n}
-                className="h-14 rounded-lg bg-card border border-border dark:border-border animate-pulse"
-              />
-            ))}
-          </div>
-        ) : !overview || overview.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                </EmptyMedia>
-                <EmptyTitle>No agent activity yet</EmptyTitle>
-                <EmptyDescription>
-                  Once agents start working through roadmaps, their progress
-                  will appear here.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </div>
-        ) : (
-          <div className="bg-card rounded-lg border border-border dark:border-border overflow-x-auto">
-            <TooltipProvider delayDuration={200}>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b border-border dark:border-border">
-                    <TableHead className="w-[200px] sticky left-0 bg-card z-10 text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
-                      Agent
-                    </TableHead>
-                    <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
-                      Overall
-                    </TableHead>
-                    {publishedRoadmaps.map((rm) => (
-                      <TableHead
-                        key={rm.id}
-                        className="min-w-[130px] text-center"
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate({
-                              to: "/admin/agent-roadmap/$roadmapId/team",
-                              params: { roadmapId: rm.id },
-                            })
-                          }
-                          className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
-                        >
-                          {rm.title}
-                        </button>
-                      </TableHead>
-                    ))}
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
-                      Last active
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {overview.map((agent) => {
-                    const isStuck =
-                      agent.lastActivityAt &&
-                      agent.overallPercent < 100 &&
-                      (Date.now() - new Date(agent.lastActivityAt).getTime()) /
-                        (1000 * 60 * 60) >
-                        STUCK_THRESHOLD_HOURS;
-
-                    return (
-                      <TableRow
-                        key={agent.userId}
-                        className="border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/30"
-                      >
-                        <TableCell className="sticky left-0 bg-card z-10">
-                          <div className="text-sm font-semibold text-foreground dark:text-foreground truncate max-w-[180px]">
-                            {displayName(agent)}
-                          </div>
-                          {agent.email && (
-                            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[180px]">
-                              {agent.email}
-                            </div>
-                          )}
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={agent.overallPercent}
-                              className="h-1.5 w-14"
-                            />
-                            <span className="text-[11px] font-bold text-foreground dark:text-foreground tabular-nums w-8 text-right">
-                              {agent.overallPercent}%
-                            </span>
-                          </div>
-                        </TableCell>
-
+          {/* ── Table ──────────────────────────────────────────────────── */}
+          <div className="overflow-auto">
+            {isLoading ? (
+              <div className="space-y-1.5">
+                {[1, 2, 3, 4].map((n) => (
+                  <div
+                    key={n}
+                    className="h-14 rounded-lg bg-card border border-border dark:border-border animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : !overview || overview.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    </EmptyMedia>
+                    <EmptyTitle>No agent activity yet</EmptyTitle>
+                    <EmptyDescription>
+                      Once agents start working through roadmaps, their progress
+                      will appear here.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              </div>
+            ) : (
+              <div className="bg-card rounded-lg border border-border dark:border-border overflow-x-auto">
+                <TooltipProvider delayDuration={200}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-border dark:border-border">
+                        <TableHead className="w-[200px] sticky left-0 bg-card z-10 text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                          Agent
+                        </TableHead>
+                        <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                          Overall
+                        </TableHead>
                         {publishedRoadmaps.map((rm) => (
-                          <TableCell key={rm.id} className="text-center">
-                            <RoadmapCell summary={agent.roadmaps.get(rm.id)} />
-                          </TableCell>
+                          <TableHead
+                            key={rm.id}
+                            className="min-w-[130px] text-center"
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate({
+                                  to: "/admin/agent-roadmap/$roadmapId/team",
+                                  params: { roadmapId: rm.id },
+                                })
+                              }
+                              className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
+                            >
+                              {rm.title}
+                            </button>
+                          </TableHead>
                         ))}
-
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            {agent.lastActivityAt ? (
-                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
-                                {formatDistanceToNow(
-                                  new Date(agent.lastActivityAt),
-                                  { addSuffix: true },
-                                )}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
-                                Never
-                              </span>
-                            )}
-                            {isStuck && (
-                              <Badge variant="warning" size="sm">
-                                Stuck
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
+                        <TableHead className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                          Last active
+                        </TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TooltipProvider>
+                    </TableHeader>
+                    <TableBody>
+                      {overview.map((agent) => {
+                        const isStuck =
+                          agent.lastActivityAt &&
+                          agent.overallPercent < 100 &&
+                          (Date.now() -
+                            new Date(agent.lastActivityAt).getTime()) /
+                            (1000 * 60 * 60) >
+                            STUCK_THRESHOLD_HOURS;
+
+                        return (
+                          <TableRow
+                            key={agent.userId}
+                            className="border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/30"
+                          >
+                            <TableCell className="sticky left-0 bg-card z-10">
+                              <div className="text-sm font-semibold text-foreground dark:text-foreground truncate max-w-[180px]">
+                                {displayName(agent)}
+                              </div>
+                              {agent.email && (
+                                <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[180px]">
+                                  {agent.email}
+                                </div>
+                              )}
+                            </TableCell>
+
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Progress
+                                  value={agent.overallPercent}
+                                  className="h-1.5 w-14"
+                                />
+                                <span className="text-[11px] font-bold text-foreground dark:text-foreground tabular-nums w-8 text-right">
+                                  {agent.overallPercent}%
+                                </span>
+                              </div>
+                            </TableCell>
+
+                            {publishedRoadmaps.map((rm) => (
+                              <TableCell key={rm.id} className="text-center">
+                                <RoadmapCell
+                                  summary={agent.roadmaps.get(rm.id)}
+                                />
+                              </TableCell>
+                            ))}
+
+                            <TableCell>
+                              <div className="flex items-center gap-1.5">
+                                {agent.lastActivityAt ? (
+                                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                                    {formatDistanceToNow(
+                                      new Date(agent.lastActivityAt),
+                                      { addSuffix: true },
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                                    Never
+                                  </span>
+                                )}
+                                {isStuck && (
+                                  <Badge variant="warning" size="sm">
+                                    Stuck
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TooltipProvider>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }
 
