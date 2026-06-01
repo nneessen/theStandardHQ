@@ -249,7 +249,9 @@ gating per section, export (CSV/PDF), upgrade banner.
 
 ## Page redesign progress
 - [x] Dashboard (pre-existing) · [x] Analytics · [x] Shared controls/portals · [x] Targets · [x] Policies
-- [ ] Recruiting/Team · [ ] Reports · [ ] (remaining nav pages)
+- [x] Recruiting (`/recruiting` — all 3 tier variants) · [x] Team (`/hierarchy` main dashboard)
+- [ ] Recruiting/Team leftovers: `MyRecruitingPipeline`, `PipelineAdminPage` + admin sub-pages, `AgentDetailPage`, `OrgChartPage`, hierarchy sub-routes (overrides/downlines)
+- [ ] Reports · [ ] (remaining nav pages)
 
 Note: some pages are already partly Board (use `BoardListHeader`/`SoftCard`). Check
 first — often the only gap is the `dashboard-canvas` `SectionShell` wrapper + a
