@@ -5,8 +5,9 @@
 // Wizard steps: smart-view → preview → configure → confirm → progress → results
 
 import { useState } from "react";
-import { Zap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import {
   useCloseAiConnectionStatus,
   NotConnectedPrompt,
@@ -170,159 +171,167 @@ export function LeadDropPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-2">
-          <Zap className="h-5 w-5 text-success" />
-        </div>
-        <div>
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight">
-            Lead Drop
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Bulk-transfer leads from your Close CRM to a teammate's — with Smart
-            View auto-created on delivery
-          </p>
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Header */}
+          <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <Cap>CLOSE CRM</Cap>
+            <h1
+              style={{
+                font: `800 26px ${T.disp}`,
+                color: T.ink,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              Lead Drop
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Bulk-transfer leads from your Close CRM to a teammate's — with
+              Smart View auto-created on delivery
+            </p>
+          </header>
+
+          {/* Not connected guard */}
+          {!isLoading && !connection?.connected && <NotConnectedPrompt />}
+
+          {connection?.connected && (
+            <Tabs defaultValue="drop" className="space-y-4">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-v2-ring/70 p-1 dark:bg-v2-ring/70">
+                <TabsTrigger value="drop" className="text-xs">
+                  Drop
+                </TabsTrigger>
+                <TabsTrigger value="history" className="text-xs">
+                  History
+                </TabsTrigger>
+              </TabsList>
+
+              {/* ── Drop tab (wizard) ────────────────────────────────────── */}
+              <TabsContent value="drop">
+                <div className="border rounded-lg p-5 space-y-5 bg-card">
+                  {/* Step breadcrumb */}
+                  {step !== "progress" && step !== "results" && (
+                    <div className="flex items-center gap-1">
+                      {WIZARD_STEPS.map((s, i) => (
+                        <span key={s} className="flex items-center gap-1">
+                          <span
+                            className={[
+                              "text-[10px] font-medium",
+                              s === step
+                                ? "text-foreground"
+                                : WIZARD_STEPS.indexOf(step) > i
+                                  ? "text-success"
+                                  : "text-muted-foreground",
+                            ].join(" ")}
+                          >
+                            {STEP_LABELS[s]}
+                          </span>
+                          {i < WIZARD_STEPS.length - 1 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              ›
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Step: Smart View */}
+                  {step === "smart-view" && (
+                    <SmartViewStep
+                      selected={smartView}
+                      onSelect={setSmartView}
+                      onNext={() => {
+                        setAllLeads([]);
+                        setSelectedIds(new Set());
+                        setStep("preview");
+                      }}
+                    />
+                  )}
+
+                  {/* Step: Preview */}
+                  {step === "preview" && smartView && (
+                    <LeadPreviewStep
+                      smartView={smartView}
+                      allLeads={allLeads}
+                      selectedIds={selectedIds}
+                      onLeadsLoaded={handleLeadsLoaded}
+                      onToggle={handleToggle}
+                      onSelectAll={handleSelectAll}
+                      onDeselectAll={handleDeselectAll}
+                      onNext={() => setStep("configure")}
+                      onBack={() => setStep("smart-view")}
+                    />
+                  )}
+
+                  {/* Step: Configure */}
+                  {step === "configure" && (
+                    <ConfigureStep
+                      recipient={recipient}
+                      leadSourceLabel={leadSourceLabel}
+                      recipientSmartViewName={recipientSmartViewName}
+                      sequence={sequence}
+                      selectedCount={selectedIds.size}
+                      onRecipientChange={setRecipient}
+                      onLeadSourceChange={setLeadSourceLabel}
+                      onRecipientSmartViewNameChange={setRecipientSmartViewName}
+                      onSequenceChange={setSequence}
+                      onNext={() => setStep("confirm")}
+                      onBack={() => setStep("preview")}
+                    />
+                  )}
+
+                  {/* Step: Confirm */}
+                  {step === "confirm" && smartView && recipient && (
+                    <ConfirmStep
+                      smartView={smartView}
+                      selectedCount={selectedIds.size}
+                      recipient={recipient}
+                      leadSourceLabel={leadSourceLabel}
+                      recipientSmartViewName={recipientSmartViewName}
+                      sequence={sequence}
+                      isDropping={createDrop.isPending}
+                      onConfirm={handleConfirmDrop}
+                      onBack={() => setStep("configure")}
+                    />
+                  )}
+
+                  {/* Step: Progress */}
+                  {step === "progress" && jobId && (
+                    <ProgressStep
+                      jobId={jobId}
+                      totalLeads={selectedIds.size}
+                      onComplete={handleProgressComplete}
+                    />
+                  )}
+
+                  {/* Step: Results */}
+                  {step === "results" && completedJob && (
+                    <ResultsStep job={completedJob} onNewDrop={handleNewDrop} />
+                  )}
+
+                  {/* Drop mutation error (if create_drop_job itself fails) */}
+                  {createDrop.isError && step === "confirm" && (
+                    <p className="text-xs text-destructive text-center">
+                      {createDrop.error?.message ??
+                        "Failed to start drop. Please try again."}
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* ── History tab ───────────────────────────────────────────── */}
+              <TabsContent value="history">
+                <div className="border rounded-lg p-4 bg-card">
+                  <HistoryTab />
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </div>
-
-      {/* Not connected guard */}
-      {!isLoading && !connection?.connected && <NotConnectedPrompt />}
-
-      {connection?.connected && (
-        <Tabs defaultValue="drop" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-v2-ring/70 p-1 dark:bg-v2-ring/70">
-            <TabsTrigger value="drop" className="text-xs">
-              Drop
-            </TabsTrigger>
-            <TabsTrigger value="history" className="text-xs">
-              History
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ── Drop tab (wizard) ────────────────────────────────────── */}
-          <TabsContent value="drop">
-            <div className="border rounded-lg p-5 space-y-5 bg-card">
-              {/* Step breadcrumb */}
-              {step !== "progress" && step !== "results" && (
-                <div className="flex items-center gap-1">
-                  {WIZARD_STEPS.map((s, i) => (
-                    <span key={s} className="flex items-center gap-1">
-                      <span
-                        className={[
-                          "text-[10px] font-medium",
-                          s === step
-                            ? "text-foreground"
-                            : WIZARD_STEPS.indexOf(step) > i
-                              ? "text-success"
-                              : "text-muted-foreground",
-                        ].join(" ")}
-                      >
-                        {STEP_LABELS[s]}
-                      </span>
-                      {i < WIZARD_STEPS.length - 1 && (
-                        <span className="text-[10px] text-muted-foreground">
-                          ›
-                        </span>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Step: Smart View */}
-              {step === "smart-view" && (
-                <SmartViewStep
-                  selected={smartView}
-                  onSelect={setSmartView}
-                  onNext={() => {
-                    setAllLeads([]);
-                    setSelectedIds(new Set());
-                    setStep("preview");
-                  }}
-                />
-              )}
-
-              {/* Step: Preview */}
-              {step === "preview" && smartView && (
-                <LeadPreviewStep
-                  smartView={smartView}
-                  allLeads={allLeads}
-                  selectedIds={selectedIds}
-                  onLeadsLoaded={handleLeadsLoaded}
-                  onToggle={handleToggle}
-                  onSelectAll={handleSelectAll}
-                  onDeselectAll={handleDeselectAll}
-                  onNext={() => setStep("configure")}
-                  onBack={() => setStep("smart-view")}
-                />
-              )}
-
-              {/* Step: Configure */}
-              {step === "configure" && (
-                <ConfigureStep
-                  recipient={recipient}
-                  leadSourceLabel={leadSourceLabel}
-                  recipientSmartViewName={recipientSmartViewName}
-                  sequence={sequence}
-                  selectedCount={selectedIds.size}
-                  onRecipientChange={setRecipient}
-                  onLeadSourceChange={setLeadSourceLabel}
-                  onRecipientSmartViewNameChange={setRecipientSmartViewName}
-                  onSequenceChange={setSequence}
-                  onNext={() => setStep("confirm")}
-                  onBack={() => setStep("preview")}
-                />
-              )}
-
-              {/* Step: Confirm */}
-              {step === "confirm" && smartView && recipient && (
-                <ConfirmStep
-                  smartView={smartView}
-                  selectedCount={selectedIds.size}
-                  recipient={recipient}
-                  leadSourceLabel={leadSourceLabel}
-                  recipientSmartViewName={recipientSmartViewName}
-                  sequence={sequence}
-                  isDropping={createDrop.isPending}
-                  onConfirm={handleConfirmDrop}
-                  onBack={() => setStep("configure")}
-                />
-              )}
-
-              {/* Step: Progress */}
-              {step === "progress" && jobId && (
-                <ProgressStep
-                  jobId={jobId}
-                  totalLeads={selectedIds.size}
-                  onComplete={handleProgressComplete}
-                />
-              )}
-
-              {/* Step: Results */}
-              {step === "results" && completedJob && (
-                <ResultsStep job={completedJob} onNewDrop={handleNewDrop} />
-              )}
-
-              {/* Drop mutation error (if create_drop_job itself fails) */}
-              {createDrop.isError && step === "confirm" && (
-                <p className="text-xs text-destructive text-center">
-                  {createDrop.error?.message ??
-                    "Failed to start drop. Please try again."}
-                </p>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── History tab ───────────────────────────────────────────── */}
-          <TabsContent value="history">
-            <div className="border rounded-lg p-4 bg-card">
-              <HistoryTab />
-            </div>
-          </TabsContent>
-        </Tabs>
-      )}
-    </div>
+    </SectionShell>
   );
 }
