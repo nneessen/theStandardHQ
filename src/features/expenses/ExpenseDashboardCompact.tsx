@@ -50,6 +50,7 @@ import type {
 } from "../../types/expense.types";
 import { isSameMonth, formatDateForDisplay } from "../../lib/date";
 import { formatCurrency, formatPercent } from "../../lib/format";
+import { Board, Cap, FlapTile } from "@/components/board";
 import { toast } from "sonner";
 import { DEFAULT_EXPENSE_CATEGORIES } from "../../types/expense.types";
 import {
@@ -140,7 +141,7 @@ export function ExpenseDashboardCompact() {
   const recurringAmount = monthlyExpenses
     .filter((e) => e.is_recurring)
     .reduce((sum, e) => sum + e.amount, 0);
-  const oneTimeAmount = monthlyExpenses
+  const _oneTimeAmount = monthlyExpenses
     .filter((e) => !e.is_recurring)
     .reduce((sum, e) => sum + e.amount, 0);
 
@@ -472,159 +473,63 @@ export function ExpenseDashboardCompact() {
 
         {/* Main Content */}
         <div className="space-y-2">
-          {/* Expense Summary Card */}
-          <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
-            <div className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[0.18em] mb-2">
-              Expense Summary
+          {/* Expense Summary — Board panel with FlapTile metrics */}
+          <Board pad={20}>
+            <Cap style={{ marginBottom: 14 }}>Expense Summary</Cap>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 155px), 1fr))",
+                gap: 10,
+              }}
+            >
+              <FlapTile
+                label="Monthly Total"
+                value={formatCurrency(totalAmount)}
+                tone="blue"
+              />
+              <FlapTile label="YTD Total" value={formatCurrency(ytdTotal)} />
+              <FlapTile
+                label="Avg Monthly"
+                value={formatCurrency(avgMonthlyExpense)}
+              />
+              <FlapTile
+                label="MoM Change"
+                value={`${momGrowth > 0 ? "\u2191" : "\u2193"} ${Math.abs(momGrowth).toFixed(1)}%`}
+                tone={momGrowth > 0 ? "red" : "green"}
+              />
+              <FlapTile
+                label="Business"
+                value={formatCurrency(businessAmount)}
+                tone="blue"
+              />
+              <FlapTile
+                label="Personal"
+                value={formatCurrency(personalAmount)}
+              />
+              <FlapTile
+                label="Tax Deductible"
+                value={formatCurrency(deductibleAmount)}
+                tone="green"
+              />
+              <FlapTile
+                label="Recurring"
+                value={formatCurrency(recurringAmount)}
+              />
+              <FlapTile
+                label="Expense Ratio"
+                value={formatPercent(expenseRatio)}
+                tone={
+                  expenseRatio > 30
+                    ? "red"
+                    : expenseRatio > 20
+                      ? "amber"
+                      : "green"
+                }
+              />
             </div>
-            <div className="grid grid-cols-4 gap-4">
-              {/* Total Expenses */}
-              <div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Monthly Total</span>
-                    <span className="font-mono font-bold text-foreground">
-                      {formatCurrency(totalAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">YTD Total</span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(ytdTotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Avg Monthly</span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(avgMonthlyExpense)}
-                    </span>
-                  </div>
-                  <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">MoM Change</span>
-                    <span
-                      className={cn(
-                        "font-mono font-semibold",
-                        momGrowth > 0 ? "text-destructive" : "text-success",
-                      )}
-                    >
-                      {momGrowth > 0 ? "↑" : "↓"}{" "}
-                      {Math.abs(momGrowth).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Business vs Personal */}
-              <div className="border-l border-border pl-4">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Business</span>
-                    <span className="font-mono font-semibold text-info">
-                      {formatCurrency(businessAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Personal</span>
-                    <span className="font-mono font-semibold text-info">
-                      {formatCurrency(personalAmount)}
-                    </span>
-                  </div>
-                  <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Business %</span>
-                    <span className="font-mono font-bold text-foreground">
-                      {totalAmount > 0
-                        ? formatPercent((businessAmount / totalAmount) * 100)
-                        : "0%"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tax Deductible & Recurring */}
-              <div className="border-l border-border pl-4">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">
-                      Tax Deductible
-                    </span>
-                    <span className="font-mono font-semibold text-success">
-                      {formatCurrency(deductibleAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Deductible %</span>
-                    <span className="font-mono text-foreground">
-                      {totalAmount > 0
-                        ? formatPercent((deductibleAmount / totalAmount) * 100)
-                        : "0%"}
-                    </span>
-                  </div>
-                  <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">Recurring</span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(recurringAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">One-Time</span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(oneTimeAmount)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Expense Ratio */}
-              <div className="border-l border-border pl-4">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">
-                      Gross Commission
-                    </span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(grossCommission)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground">
-                      Total Expenses
-                    </span>
-                    <span className="font-mono text-foreground">
-                      {formatCurrency(totalAmount)}
-                    </span>
-                  </div>
-                  <div className="h-px bg-muted my-1" />
-                  <div className="flex justify-between text-[12px]">
-                    <span className="text-muted-foreground font-semibold">
-                      Expense Ratio
-                    </span>
-                    <span
-                      className={cn(
-                        "font-mono font-bold",
-                        expenseRatio > 30
-                          ? "text-destructive"
-                          : expenseRatio > 20
-                            ? "text-warning"
-                            : "text-success",
-                      )}
-                    >
-                      {formatPercent(expenseRatio)}
-                    </span>
-                  </div>
-                  <div className="text-[12px] text-muted-foreground">
-                    {expenseRatio > 30
-                      ? "⚠️ High ratio"
-                      : expenseRatio > 20
-                        ? "⚡ Watch ratio"
-                        : "✓ Healthy ratio"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </Board>
 
           {/* Top Categories & Recent Expenses */}
           <div className="grid grid-cols-2 gap-2">
