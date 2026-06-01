@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Settings2, ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import { PipelineTemplatesList } from "./PipelineTemplatesList";
 import { PipelineTemplateEditor } from "./PipelineTemplateEditor";
 import { useIsAdmin, useUserRoles } from "@/hooks/permissions";
@@ -42,48 +44,64 @@ export function PipelineAdminPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-3 space-y-2.5">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-[11px]"
-            onClick={() => navigate({ to: "/recruiting" })}
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">
+          {/* Departure-board header — back link + eyebrow + title */}
+          <header
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
           >
-            <ArrowLeft className="h-3 w-3 mr-1.5" />
-            Back to Recruiting
-          </Button>
-          <div className="h-4 w-px bg-v2-ring" />
-          <div className="flex items-center gap-2">
-            <Settings2 className="h-4 w-4 text-v2-ink-muted" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-              Pipeline Administration
-            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[11px] mt-1"
+              onClick={() => navigate({ to: "/recruiting" })}
+            >
+              <ArrowLeft className="h-3 w-3 mr-1.5" />
+              Back to Recruiting
+            </Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Cap>RECRUITING ADMIN</Cap>
+              <h1
+                style={{
+                  font: `800 26px ${T.disp}`,
+                  color: T.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  margin: 0,
+                }}
+              >
+                Pipeline Administration
+              </h1>
+            </div>
+          </header>
+
+          {/* Content */}
+          <div className="flex-1 min-h-0">
+            {selectedTemplateId ? (
+              <PipelineTemplateEditor
+                templateId={selectedTemplateId}
+                onClose={() => setSelectedTemplateId(null)}
+                isAdmin={isAdmin ?? false}
+                currentUserId={user?.id}
+                isStaffRole={isStaffRole}
+              />
+            ) : (
+              <PipelineTemplatesList
+                onSelectTemplate={(id) => setSelectedTemplateId(id)}
+                isAdmin={isAdmin ?? false}
+                currentUserId={user?.id}
+                isStaffRole={isStaffRole}
+              />
+            )}
           </div>
         </div>
       </div>
-
-      {/* Content */}
-      <div className="flex-1 min-h-0 overflow-auto">
-        {selectedTemplateId ? (
-          <PipelineTemplateEditor
-            templateId={selectedTemplateId}
-            onClose={() => setSelectedTemplateId(null)}
-            isAdmin={isAdmin ?? false}
-            currentUserId={user?.id}
-            isStaffRole={isStaffRole}
-          />
-        ) : (
-          <PipelineTemplatesList
-            onSelectTemplate={(id) => setSelectedTemplateId(id)}
-            isAdmin={isAdmin ?? false}
-            currentUserId={user?.id}
-            isStaffRole={isStaffRole}
-          />
-        )}
-      </div>
-    </div>
+    </SectionShell>
   );
 }

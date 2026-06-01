@@ -30,6 +30,7 @@ import {
 } from "@/hooks/hierarchy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SectionShell } from "@/components/v2";
 import {
   Table,
   TableBody,
@@ -448,449 +449,639 @@ export function AgentDetailPage() {
       : agentData.email;
 
   return (
-    <div className="min-h-screen flex flex-col p-3 space-y-2.5">
-      {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate({ to: "/hierarchy" })}
-            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
-          >
-            <ArrowLeft className="h-3 w-3 mr-1" />
-            Back
-          </Button>
-          <div className="h-3 w-px bg-muted" />
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col space-y-2.5">
+          {/* Compact Header with inline stats */}
+          <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate({ to: "/hierarchy" })}
+                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+              >
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                Back
+              </Button>
+              <div className="h-3 w-px bg-muted" />
 
-          {/* Agent info inline */}
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-              <User className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
-            <div>
-              <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
-                {agentName}
-              </h1>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-0.5">
-                  <Mail className="h-2.5 w-2.5" />
-                  {agentData.email}
-                </span>
-                {agentData.phone && (
-                  <>
-                    <span className="text-muted-foreground">|</span>
+              {/* Agent info inline */}
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+                <div>
+                  <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
+                    {agentName}
+                  </h1>
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-0.5">
-                      <Phone className="h-2.5 w-2.5" />
-                      {agentData.phone}
+                      <Mail className="h-2.5 w-2.5" />
+                      {agentData.email}
                     </span>
-                  </>
+                    {agentData.phone && (
+                      <>
+                        <span className="text-muted-foreground">|</span>
+                        <span className="flex items-center gap-0.5">
+                          <Phone className="h-2.5 w-2.5" />
+                          {agentData.phone}
+                        </span>
+                      </>
+                    )}
+                    {agentData.state && (
+                      <>
+                        <span className="text-muted-foreground">|</span>
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="h-2.5 w-2.5" />
+                          {agentData.state}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-3 w-px bg-muted" />
+
+              {/* Inline compact stats */}
+              <div className="flex items-center gap-3 text-[11px]">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-5 px-1.5 border-border "
+                >
+                  Level {agentData.contract_level || 80}%
+                </Badge>
+                {agentData.approval_status === "approved" ? (
+                  <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[10px] h-5 px-1.5">
+                    Active
+                  </Badge>
+                ) : (
+                  <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[10px] h-5 px-1.5">
+                    {agentData.approval_status}
+                  </Badge>
                 )}
-                {agentData.state && (
-                  <>
-                    <span className="text-muted-foreground">|</span>
-                    <span className="flex items-center gap-0.5">
-                      <MapPin className="h-2.5 w-2.5" />
-                      {agentData.state}
-                    </span>
-                  </>
-                )}
+                <div className="h-3 w-px bg-muted" />
+                <div className="flex items-center gap-1">
+                  <FileCheck className="h-3 w-3 text-muted-foreground" />
+                  <span className="font-medium text-foreground">
+                    {mtdMetrics.policies}
+                  </span>
+                  <span className="text-muted-foreground">MTD</span>
+                </div>
+                <div className="h-3 w-px bg-muted" />
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 text-success" />
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(mtdMetrics.premium)}
+                  </span>
+                </div>
+                <div className="h-3 w-px bg-muted" />
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-info" />
+                  <span className="font-medium text-foreground">
+                    {ytdMetrics.policies}
+                  </span>
+                  <span className="text-muted-foreground">YTD</span>
+                </div>
               </div>
             </div>
+
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                onClick={() =>
+                  toast.success(
+                    `Message feature coming soon for ${agentData.email}`,
+                  )
+                }
+              >
+                <Mail className="h-3 w-3 mr-1" />
+                Message
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                onClick={() => setIsEditModalOpen(true)}
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
+            </div>
           </div>
 
-          <div className="h-3 w-px bg-muted" />
-
-          {/* Inline compact stats */}
-          <div className="flex items-center gap-3 text-[11px]">
-            <Badge
-              variant="outline"
-              className="text-[10px] h-5 px-1.5 border-border "
+          {/* Compact tabs */}
+          <div className="flex items-center gap-0.5 bg-background rounded-md p-0.5 w-fit">
+            <button
+              onClick={() => setActiveTab("policies")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+                activeTab === "policies"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
+              )}
             >
-              Level {agentData.contract_level || 80}%
-            </Badge>
-            {agentData.approval_status === "approved" ? (
-              <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[10px] h-5 px-1.5">
-                Active
-              </Badge>
-            ) : (
-              <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[10px] h-5 px-1.5">
-                {agentData.approval_status}
-              </Badge>
+              <FileCheck className="h-3.5 w-3.5" />
+              Policies
+            </button>
+            <button
+              onClick={() => setActiveTab("commissions")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+                activeTab === "commissions"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
+              )}
+            >
+              <DollarSign className="h-3.5 w-3.5" />
+              Commissions
+            </button>
+            <button
+              onClick={() => setActiveTab("overrides")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+                activeTab === "overrides"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
+              )}
+            >
+              <TrendingUp className="h-3.5 w-3.5" />
+              Overrides
+            </button>
+            <button
+              onClick={() => setActiveTab("team")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+                activeTab === "team"
+                  ? "bg-card shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
+              )}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Team
+            </button>
+          </div>
+
+          {/* Content area */}
+          <div className="flex-1 overflow-auto">
+            {(activeTab === "policies" || activeTab === "commissions") && (
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-lg px-3 py-2 border border-border mb-2">
+                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
+                  Date Filter
+                </div>
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
+                  <TimePeriodSwitcher
+                    timePeriod={timePeriod}
+                    onTimePeriodChange={handleTimePeriodChange}
+                  />
+                  <PeriodNavigator
+                    timePeriod={timePeriod}
+                    periodOffset={periodOffset}
+                    onOffsetChange={setPeriodOffset}
+                    dateRange={dateRange}
+                  />
+                  <DateRangeDisplay
+                    timePeriod={timePeriod}
+                    dateRange={dateRange}
+                  />
+                </div>
+              </div>
             )}
-            <div className="h-3 w-px bg-muted" />
-            <div className="flex items-center gap-1">
-              <FileCheck className="h-3 w-3 text-muted-foreground" />
-              <span className="font-medium text-foreground">
-                {mtdMetrics.policies}
-              </span>
-              <span className="text-muted-foreground">MTD</span>
-            </div>
-            <div className="h-3 w-px bg-muted" />
-            <div className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-success" />
-              <span className="font-medium text-foreground">
-                {formatCurrency(mtdMetrics.premium)}
-              </span>
-            </div>
-            <div className="h-3 w-px bg-muted" />
-            <div className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-info" />
-              <span className="font-medium text-foreground">
-                {ytdMetrics.policies}
-              </span>
-              <span className="text-muted-foreground">YTD</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
-            onClick={() =>
-              toast.success(
-                `Message feature coming soon for ${agentData.email}`,
-              )
-            }
-          >
-            <Mail className="h-3 w-3 mr-1" />
-            Message
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            <Edit className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
-        </div>
-      </div>
+            {/* Policies Tab */}
+            {activeTab === "policies" &&
+              (() => {
+                return (
+                  <div className="space-y-2">
+                    <div className="rounded-lg bg-card border border-border">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-background z-10">
+                          <TableRow className="border-b border-border hover:bg-transparent">
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Policy #
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Client
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Product
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Carrier
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Submit Date
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Effective
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                              Premium
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Status
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-8" />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loadingPolicies ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={9}
+                                className="text-center text-[11px] text-muted-foreground py-8"
+                              >
+                                Loading policies...
+                              </TableCell>
+                            </TableRow>
+                          ) : filteredPolicies.length === 0 ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={9}
+                                className="text-center text-[11px] text-muted-foreground py-8"
+                              >
+                                {policyList.length === 0
+                                  ? "No policies found"
+                                  : "No policies in selected date range"}
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            paginatedPolicies.map((policy: AgentPolicy) => (
+                              <TableRow
+                                key={policy.id}
+                                className="hover:bg-background border-b border-border/60"
+                              >
+                                <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
+                                  {policy.policyNumber}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {policy.clientName}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {policy.product}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {policy.carrier}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {formatDate(policy.submitDate)}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {formatDate(policy.effectiveDate)}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                                  {formatCurrency(policy.annualPremium)}
+                                </TableCell>
+                                <TableCell className="py-1.5">
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "text-[9px] h-4 px-1",
+                                      policy.lifecycleStatus === "active" &&
+                                        "text-success border-success/40",
+                                      policy.lifecycleStatus === "lapsed" &&
+                                        "text-warning border-warning dark:border-warning",
+                                      policy.lifecycleStatus === "cancelled" &&
+                                        "text-destructive border-destructive/40",
+                                      policy.status === "pending" &&
+                                        "text-warning border-warning dark:border-warning",
+                                      policy.status === "approved" &&
+                                        !policy.lifecycleStatus &&
+                                        "text-info border-info/40",
+                                      policy.status === "denied" &&
+                                        "text-destructive border-destructive/40",
+                                    )}
+                                  >
+                                    {policy.lifecycleStatus || policy.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="py-1.5 w-8">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-5 w-5 p-0"
+                                      >
+                                        <MoreHorizontal className="h-3 w-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-44"
+                                    >
+                                      <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="text-[11px]">
+                                          Application Status
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                          {[
+                                            "pending",
+                                            "approved",
+                                            "denied",
+                                          ].map((s) => (
+                                            <DropdownMenuItem
+                                              key={s}
+                                              className={cn(
+                                                "text-[11px] capitalize",
+                                                policy.status === s &&
+                                                  "font-semibold",
+                                              )}
+                                              disabled={policy.status === s}
+                                              onClick={() =>
+                                                handleStatusChange(
+                                                  policy.id,
+                                                  s,
+                                                  policy.lifecycleStatus,
+                                                )
+                                              }
+                                            >
+                                              {s}
+                                            </DropdownMenuItem>
+                                          ))}
+                                        </DropdownMenuSubContent>
+                                      </DropdownMenuSub>
+                                      <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="text-[11px]">
+                                          Lifecycle Status
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                          {[
+                                            {
+                                              value: "active",
+                                              label: "Active",
+                                            },
+                                            {
+                                              value: "lapsed",
+                                              label: "Lapsed",
+                                            },
+                                            {
+                                              value: "cancelled",
+                                              label: "Cancelled",
+                                            },
+                                          ].map((s) => (
+                                            <DropdownMenuItem
+                                              key={s.value}
+                                              className={cn(
+                                                "text-[11px]",
+                                                policy.lifecycleStatus ===
+                                                  s.value && "font-semibold",
+                                              )}
+                                              disabled={
+                                                policy.lifecycleStatus ===
+                                                s.value
+                                              }
+                                              onClick={() =>
+                                                handleLifecycleChange(
+                                                  policy.id,
+                                                  s.value,
+                                                )
+                                              }
+                                            >
+                                              {s.label}
+                                            </DropdownMenuItem>
+                                          ))}
+                                          {policy.lifecycleStatus && (
+                                            <DropdownMenuItem
+                                              className="text-[11px] text-muted-foreground"
+                                              onClick={() =>
+                                                handleLifecycleChange(
+                                                  policy.id,
+                                                  null,
+                                                )
+                                              }
+                                            >
+                                              Clear
+                                            </DropdownMenuItem>
+                                          )}
+                                        </DropdownMenuSubContent>
+                                      </DropdownMenuSub>
+                                      <DropdownMenuItem
+                                        className="text-[11px] text-destructive"
+                                        disabled={
+                                          deletePolicyMutation.isPending
+                                        }
+                                        onClick={() =>
+                                          handleDeletePolicy(
+                                            policy.id,
+                                            policy.policyNumber,
+                                          )
+                                        }
+                                      >
+                                        <Trash2 className="h-3 w-3 mr-1.5" />
+                                        Delete Policy
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {/* Pagination */}
+                    {totalPolicyPages > 1 && (
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[10px] text-muted-foreground">
+                          {filteredPolicies.length} policies
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            disabled={policyPage === 0}
+                            onClick={() => setPolicyPage((p) => p - 1)}
+                          >
+                            <ChevronLeft className="h-3 w-3" />
+                          </Button>
+                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
+                            {policyPage + 1} / {totalPolicyPages}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            disabled={policyPage >= totalPolicyPages - 1}
+                            onClick={() => setPolicyPage((p) => p + 1)}
+                          >
+                            <ChevronRight className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
-      {/* Compact tabs */}
-      <div className="flex items-center gap-0.5 bg-background rounded-md p-0.5 w-fit">
-        <button
-          onClick={() => setActiveTab("policies")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-            activeTab === "policies"
-              ? "bg-card shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
-          )}
-        >
-          <FileCheck className="h-3.5 w-3.5" />
-          Policies
-        </button>
-        <button
-          onClick={() => setActiveTab("commissions")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-            activeTab === "commissions"
-              ? "bg-card shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
-          )}
-        >
-          <DollarSign className="h-3.5 w-3.5" />
-          Commissions
-        </button>
-        <button
-          onClick={() => setActiveTab("overrides")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-            activeTab === "overrides"
-              ? "bg-card shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
-          )}
-        >
-          <TrendingUp className="h-3.5 w-3.5" />
-          Overrides
-        </button>
-        <button
-          onClick={() => setActiveTab("team")}
-          className={cn(
-            "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-            activeTab === "team"
-              ? "bg-card shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
-          )}
-        >
-          <Users className="h-3.5 w-3.5" />
-          Team
-        </button>
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 overflow-auto">
-        {(activeTab === "policies" || activeTab === "commissions") && (
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-lg px-3 py-2 border border-border mb-2">
-            <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
-              Date Filter
-            </div>
-            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
-              <TimePeriodSwitcher
-                timePeriod={timePeriod}
-                onTimePeriodChange={handleTimePeriodChange}
-              />
-              <PeriodNavigator
-                timePeriod={timePeriod}
-                periodOffset={periodOffset}
-                onOffsetChange={setPeriodOffset}
-                dateRange={dateRange}
-              />
-              <DateRangeDisplay timePeriod={timePeriod} dateRange={dateRange} />
-            </div>
-          </div>
-        )}
-
-        {/* Policies Tab */}
-        {activeTab === "policies" &&
-          (() => {
-            return (
+            {/* Commissions Tab */}
+            {activeTab === "commissions" && (
               <div className="space-y-2">
+                {/* Inline commission stats header */}
+                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
+                  <div className="flex items-center gap-4 text-[11px]">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Advances:</span>
+                      <span className="font-semibold text-foreground">
+                        {formatCurrency(commissionMetrics.advances)}
+                      </span>
+                    </div>
+                    <div className="h-3 w-px bg-muted" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Earned:</span>
+                      <span className="font-semibold text-success">
+                        {formatCurrency(commissionMetrics.earned)}
+                      </span>
+                    </div>
+                    <div className="h-3 w-px bg-muted" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Unearned:</span>
+                      <span className="font-semibold text-warning">
+                        {formatCurrency(commissionMetrics.unearned)}
+                      </span>
+                    </div>
+                    <div className="h-3 w-px bg-muted" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">
+                        Chargebacks:
+                      </span>
+                      <span className="font-semibold text-destructive">
+                        {formatCurrency(commissionMetrics.chargebacks)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Commission table */}
                 <div className="rounded-lg bg-card border border-border">
                   <Table>
                     <TableHeader className="sticky top-0 bg-background z-10">
                       <TableRow className="border-b border-border hover:bg-transparent">
                         <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Policy #
+                          Date
                         </TableHead>
                         <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Client
+                          Type
                         </TableHead>
                         <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Product
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Carrier
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Submit Date
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Effective
+                          Policy
                         </TableHead>
                         <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                          Premium
+                          Advance
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                          Earned
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                          Unearned
+                        </TableHead>
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-center">
+                          Progress
                         </TableHead>
                         <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Status
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-8" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {loadingPolicies ? (
+                      {loadingCommissions ? (
                         <TableRow>
                           <TableCell
-                            colSpan={9}
+                            colSpan={8}
                             className="text-center text-[11px] text-muted-foreground py-8"
                           >
-                            Loading policies...
+                            Loading commissions...
                           </TableCell>
                         </TableRow>
-                      ) : filteredPolicies.length === 0 ? (
+                      ) : filteredCommissions.length === 0 ? (
                         <TableRow>
                           <TableCell
-                            colSpan={9}
+                            colSpan={8}
                             className="text-center text-[11px] text-muted-foreground py-8"
                           >
-                            {policyList.length === 0
-                              ? "No policies found"
-                              : "No policies in selected date range"}
+                            {commissionList.length === 0
+                              ? "No commissions found"
+                              : "No commissions in selected date range"}
                           </TableCell>
                         </TableRow>
                       ) : (
-                        paginatedPolicies.map((policy: AgentPolicy) => (
-                          <TableRow
-                            key={policy.id}
-                            className="hover:bg-background border-b border-border/60"
-                          >
-                            <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
-                              {policy.policyNumber}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {policy.clientName}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {policy.product}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {policy.carrier}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {formatDate(policy.submitDate)}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {formatDate(policy.effectiveDate)}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
-                              {formatCurrency(policy.annualPremium)}
-                            </TableCell>
-                            <TableCell className="py-1.5">
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-[9px] h-4 px-1",
-                                  policy.lifecycleStatus === "active" &&
-                                    "text-success border-success/40",
-                                  policy.lifecycleStatus === "lapsed" &&
-                                    "text-warning border-warning dark:border-warning",
-                                  policy.lifecycleStatus === "cancelled" &&
-                                    "text-destructive border-destructive/40",
-                                  policy.status === "pending" &&
-                                    "text-warning border-warning dark:border-warning",
-                                  policy.status === "approved" &&
-                                    !policy.lifecycleStatus &&
-                                    "text-info border-info/40",
-                                  policy.status === "denied" &&
-                                    "text-destructive border-destructive/40",
-                                )}
-                              >
-                                {policy.lifecycleStatus || policy.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="py-1.5 w-8">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-5 w-5 p-0"
-                                  >
-                                    <MoreHorizontal className="h-3 w-3" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="w-44"
+                        paginatedCommissions.map(
+                          (commission: AgentCommission) => (
+                            <TableRow
+                              key={commission.id}
+                              className="hover:bg-background border-b border-border/60"
+                            >
+                              <TableCell className="py-1.5 text-[11px] text-foreground">
+                                {formatDate(commission.date)}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] text-foreground capitalize">
+                                {commission.type}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
+                                {commission.policyNumber}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                                {formatCurrency(commission.amount)}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] font-semibold text-success text-right">
+                                {formatCurrency(commission.earnedAmount || 0)}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] text-warning text-right">
+                                {formatCurrency(commission.unearnedAmount || 0)}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-[11px] text-muted-foreground text-center">
+                                {commission.monthsPaid || 0}/
+                                {commission.advanceMonths || 9} mo
+                              </TableCell>
+                              <TableCell className="py-1.5">
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "text-[9px] h-4 px-1",
+                                    commission.status === "paid" &&
+                                      "text-success border-success/40",
+                                    commission.status === "pending" &&
+                                      "text-warning border-warning dark:border-warning",
+                                  )}
                                 >
-                                  <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-[11px]">
-                                      Application Status
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                      {["pending", "approved", "denied"].map(
-                                        (s) => (
-                                          <DropdownMenuItem
-                                            key={s}
-                                            className={cn(
-                                              "text-[11px] capitalize",
-                                              policy.status === s &&
-                                                "font-semibold",
-                                            )}
-                                            disabled={policy.status === s}
-                                            onClick={() =>
-                                              handleStatusChange(
-                                                policy.id,
-                                                s,
-                                                policy.lifecycleStatus,
-                                              )
-                                            }
-                                          >
-                                            {s}
-                                          </DropdownMenuItem>
-                                        ),
-                                      )}
-                                    </DropdownMenuSubContent>
-                                  </DropdownMenuSub>
-                                  <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-[11px]">
-                                      Lifecycle Status
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                      {[
-                                        { value: "active", label: "Active" },
-                                        { value: "lapsed", label: "Lapsed" },
-                                        {
-                                          value: "cancelled",
-                                          label: "Cancelled",
-                                        },
-                                      ].map((s) => (
-                                        <DropdownMenuItem
-                                          key={s.value}
-                                          className={cn(
-                                            "text-[11px]",
-                                            policy.lifecycleStatus ===
-                                              s.value && "font-semibold",
-                                          )}
-                                          disabled={
-                                            policy.lifecycleStatus === s.value
-                                          }
-                                          onClick={() =>
-                                            handleLifecycleChange(
-                                              policy.id,
-                                              s.value,
-                                            )
-                                          }
-                                        >
-                                          {s.label}
-                                        </DropdownMenuItem>
-                                      ))}
-                                      {policy.lifecycleStatus && (
-                                        <DropdownMenuItem
-                                          className="text-[11px] text-muted-foreground"
-                                          onClick={() =>
-                                            handleLifecycleChange(
-                                              policy.id,
-                                              null,
-                                            )
-                                          }
-                                        >
-                                          Clear
-                                        </DropdownMenuItem>
-                                      )}
-                                    </DropdownMenuSubContent>
-                                  </DropdownMenuSub>
-                                  <DropdownMenuItem
-                                    className="text-[11px] text-destructive"
-                                    disabled={deletePolicyMutation.isPending}
-                                    onClick={() =>
-                                      handleDeletePolicy(
-                                        policy.id,
-                                        policy.policyNumber,
-                                      )
-                                    }
-                                  >
-                                    <Trash2 className="h-3 w-3 mr-1.5" />
-                                    Delete Policy
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                                  {commission.status}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ),
+                        )
                       )}
                     </TableBody>
                   </Table>
                 </div>
-                {/* Pagination */}
-                {totalPolicyPages > 1 && (
+                {totalCommissionPages > 1 && (
                   <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] text-muted-foreground">
-                      {filteredPolicies.length} policies
+                      {filteredCommissions.length} commissions
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0"
-                        disabled={policyPage === 0}
-                        onClick={() => setPolicyPage((p) => p - 1)}
+                        disabled={commissionPage === 0}
+                        onClick={() => setCommissionPage((p) => p - 1)}
                       >
                         <ChevronLeft className="h-3 w-3" />
                       </Button>
                       <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
-                        {policyPage + 1} / {totalPolicyPages}
+                        {commissionPage + 1} / {totalCommissionPages}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0"
-                        disabled={policyPage >= totalPolicyPages - 1}
-                        onClick={() => setPolicyPage((p) => p + 1)}
+                        disabled={commissionPage >= totalCommissionPages - 1}
+                        onClick={() => setCommissionPage((p) => p + 1)}
                       >
                         <ChevronRight className="h-3 w-3" />
                       </Button>
@@ -898,438 +1089,280 @@ export function AgentDetailPage() {
                   </div>
                 )}
               </div>
-            );
-          })()}
-
-        {/* Commissions Tab */}
-        {activeTab === "commissions" && (
-          <div className="space-y-2">
-            {/* Inline commission stats header */}
-            <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-              <div className="flex items-center gap-4 text-[11px]">
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Advances:</span>
-                  <span className="font-semibold text-foreground">
-                    {formatCurrency(commissionMetrics.advances)}
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Earned:</span>
-                  <span className="font-semibold text-success">
-                    {formatCurrency(commissionMetrics.earned)}
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Unearned:</span>
-                  <span className="font-semibold text-warning">
-                    {formatCurrency(commissionMetrics.unearned)}
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">Chargebacks:</span>
-                  <span className="font-semibold text-destructive">
-                    {formatCurrency(commissionMetrics.chargebacks)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Commission table */}
-            <div className="rounded-lg bg-card border border-border">
-              <Table>
-                <TableHeader className="sticky top-0 bg-background z-10">
-                  <TableRow className="border-b border-border hover:bg-transparent">
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                      Date
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                      Type
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                      Policy
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                      Advance
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                      Earned
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                      Unearned
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-center">
-                      Progress
-                    </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                      Status
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loadingCommissions ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="text-center text-[11px] text-muted-foreground py-8"
-                      >
-                        Loading commissions...
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredCommissions.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="text-center text-[11px] text-muted-foreground py-8"
-                      >
-                        {commissionList.length === 0
-                          ? "No commissions found"
-                          : "No commissions in selected date range"}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedCommissions.map((commission: AgentCommission) => (
-                      <TableRow
-                        key={commission.id}
-                        className="hover:bg-background border-b border-border/60"
-                      >
-                        <TableCell className="py-1.5 text-[11px] text-foreground">
-                          {formatDate(commission.date)}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-foreground capitalize">
-                          {commission.type}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
-                          {commission.policyNumber}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
-                          {formatCurrency(commission.amount)}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-semibold text-success text-right">
-                          {formatCurrency(commission.earnedAmount || 0)}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-warning text-right">
-                          {formatCurrency(commission.unearnedAmount || 0)}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-muted-foreground text-center">
-                          {commission.monthsPaid || 0}/
-                          {commission.advanceMonths || 9} mo
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-[9px] h-4 px-1",
-                              commission.status === "paid" &&
-                                "text-success border-success/40",
-                              commission.status === "pending" &&
-                                "text-warning border-warning dark:border-warning",
-                            )}
-                          >
-                            {commission.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            {totalCommissionPages > 1 && (
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] text-muted-foreground">
-                  {filteredCommissions.length} commissions
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    disabled={commissionPage === 0}
-                    onClick={() => setCommissionPage((p) => p - 1)}
-                  >
-                    <ChevronLeft className="h-3 w-3" />
-                  </Button>
-                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
-                    {commissionPage + 1} / {totalCommissionPages}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    disabled={commissionPage >= totalCommissionPages - 1}
-                    onClick={() => setCommissionPage((p) => p + 1)}
-                  >
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
             )}
-          </div>
-        )}
 
-        {/* Overrides Tab */}
-        {activeTab === "overrides" && (
-          <div className="space-y-2">
-            {/* Inline override stats header */}
-            <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-              <div className="flex items-center gap-4 text-[11px]">
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">
-                    Their MTD Earnings:
-                  </span>
-                  <span className="font-semibold text-success">
-                    {formatCurrency(agentOverrideEarnings.mtd)}
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <span className="text-muted-foreground">
-                    Their YTD Earnings:
-                  </span>
-                  <span className="font-semibold text-success">
-                    {formatCurrency(agentOverrideEarnings.ytd)}
-                  </span>
-                </div>
-                {/* Show viewer's overrides from this agent if not viewing own profile */}
-                {currentUser?.id !== agentId && (
-                  <>
-                    <div className="h-3 w-px bg-muted" />
+            {/* Overrides Tab */}
+            {activeTab === "overrides" && (
+              <div className="space-y-2">
+                {/* Inline override stats header */}
+                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
+                  <div className="flex items-center gap-4 text-[11px]">
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">
-                        Your MTD earned from them:
+                        Their MTD Earnings:
                       </span>
-                      <span className="font-semibold text-info">
-                        {formatCurrency(viewerEarningsFromAgent.mtd)}
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Pending:</span>
-                      <span className="font-semibold text-warning">
-                        {formatCurrency(viewerEarningsFromAgent.mtdPending)}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Two-column layout for override details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {/* Agent's Override Earnings from Downlines */}
-              <div className="rounded-lg bg-card border border-border p-4">
-                <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
-                  Their Override Earnings
-                </h4>
-                {agentOverrideEarnings.mtd > 0 ||
-                agentOverrideEarnings.ytd > 0 ||
-                agentOverrideEarnings.mtdPending > 0 ||
-                agentOverrideEarnings.ytdPending > 0 ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">MTD Earned:</span>
                       <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.mtd)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px]">
+                    <div className="h-3 w-px bg-muted" />
+                    <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">
-                        MTD Pending:
+                        Their YTD Earnings:
                       </span>
-                      <span className="font-semibold text-warning">
-                        {formatCurrency(agentOverrideEarnings.mtdPending)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">YTD Earned:</span>
                       <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.ytd)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">
-                        YTD Pending:
-                      </span>
-                      <span className="font-semibold text-warning">
-                        {formatCurrency(agentOverrideEarnings.ytdPending)}
-                      </span>
-                    </div>
+                    {/* Show viewer's overrides from this agent if not viewing own profile */}
+                    {currentUser?.id !== agentId && (
+                      <>
+                        <div className="h-3 w-px bg-muted" />
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">
+                            Your MTD earned from them:
+                          </span>
+                          <span className="font-semibold text-info">
+                            {formatCurrency(viewerEarningsFromAgent.mtd)}
+                          </span>
+                        </div>
+                        <div className="h-3 w-px bg-muted" />
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">
+                            Pending:
+                          </span>
+                          <span className="font-semibold text-warning">
+                            {formatCurrency(viewerEarningsFromAgent.mtdPending)}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground text-center py-2">
-                    No override earnings yet
-                  </p>
-                )}
-              </div>
+                </div>
 
-              {/* Your Overrides from This Agent (only if not viewing own profile) */}
-              {currentUser?.id !== agentId && (
-                <div className="rounded-lg bg-card border border-border p-4">
-                  <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
-                    Your Overrides from This Agent
-                  </h4>
-                  {viewerEarningsFromAgent.mtd > 0 ||
-                  viewerEarningsFromAgent.ytd > 0 ||
-                  viewerEarningsFromAgent.mtdPending > 0 ||
-                  viewerEarningsFromAgent.ytdPending > 0 ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">
-                          MTD Earned:
-                        </span>
-                        <span className="font-semibold text-info">
-                          {formatCurrency(viewerEarningsFromAgent.mtd)}
-                        </span>
+                {/* Two-column layout for override details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {/* Agent's Override Earnings from Downlines */}
+                  <div className="rounded-lg bg-card border border-border p-4">
+                    <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
+                      Their Override Earnings
+                    </h4>
+                    {agentOverrideEarnings.mtd > 0 ||
+                    agentOverrideEarnings.ytd > 0 ||
+                    agentOverrideEarnings.mtdPending > 0 ||
+                    agentOverrideEarnings.ytdPending > 0 ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">
+                            MTD Earned:
+                          </span>
+                          <span className="font-semibold text-success">
+                            {formatCurrency(agentOverrideEarnings.mtd)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">
+                            MTD Pending:
+                          </span>
+                          <span className="font-semibold text-warning">
+                            {formatCurrency(agentOverrideEarnings.mtdPending)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">
+                            YTD Earned:
+                          </span>
+                          <span className="font-semibold text-success">
+                            {formatCurrency(agentOverrideEarnings.ytd)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">
+                            YTD Pending:
+                          </span>
+                          <span className="font-semibold text-warning">
+                            {formatCurrency(agentOverrideEarnings.ytdPending)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">
-                          MTD Pending:
-                        </span>
-                        <span className="font-semibold text-warning">
-                          {formatCurrency(viewerEarningsFromAgent.mtdPending)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">
-                          YTD Earned:
-                        </span>
-                        <span className="font-semibold text-info">
-                          {formatCurrency(viewerEarningsFromAgent.ytd)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground">
-                          YTD Pending:
-                        </span>
-                        <span className="font-semibold text-warning">
-                          {formatCurrency(viewerEarningsFromAgent.ytdPending)}
-                        </span>
-                      </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground text-center py-2">
+                        No override earnings yet
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Your Overrides from This Agent (only if not viewing own profile) */}
+                  {currentUser?.id !== agentId && (
+                    <div className="rounded-lg bg-card border border-border p-4">
+                      <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
+                        Your Overrides from This Agent
+                      </h4>
+                      {viewerEarningsFromAgent.mtd > 0 ||
+                      viewerEarningsFromAgent.ytd > 0 ||
+                      viewerEarningsFromAgent.mtdPending > 0 ||
+                      viewerEarningsFromAgent.ytdPending > 0 ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">
+                              MTD Earned:
+                            </span>
+                            <span className="font-semibold text-info">
+                              {formatCurrency(viewerEarningsFromAgent.mtd)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">
+                              MTD Pending:
+                            </span>
+                            <span className="font-semibold text-warning">
+                              {formatCurrency(
+                                viewerEarningsFromAgent.mtdPending,
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">
+                              YTD Earned:
+                            </span>
+                            <span className="font-semibold text-info">
+                              {formatCurrency(viewerEarningsFromAgent.ytd)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">
+                              YTD Pending:
+                            </span>
+                            <span className="font-semibold text-warning">
+                              {formatCurrency(
+                                viewerEarningsFromAgent.ytdPending,
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground text-center py-2">
+                          No overrides from this agent yet
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground text-center py-2">
-                      No overrides from this agent yet
-                    </p>
                   )}
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* Team Tab */}
-        {activeTab === "team" && (
-          <div className="space-y-2">
-            {teamComparison?.directReports?.length > 0 ? (
-              <>
-                {/* Inline team stats header */}
-                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-                  <div className="flex items-center gap-4 text-[11px]">
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-semibold text-foreground">
-                        {teamComparison.totalMembers}
-                      </span>
-                      <span className="text-muted-foreground">
-                        direct reports
-                      </span>
+            {/* Team Tab */}
+            {activeTab === "team" && (
+              <div className="space-y-2">
+                {teamComparison?.directReports?.length > 0 ? (
+                  <>
+                    {/* Inline team stats header */}
+                    <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
+                      <div className="flex items-center gap-4 text-[11px]">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3 text-muted-foreground" />
+                          <span className="font-semibold text-foreground">
+                            {teamComparison.totalMembers}
+                          </span>
+                          <span className="text-muted-foreground">
+                            direct reports
+                          </span>
+                        </div>
+                        <div className="h-3 w-px bg-muted" />
+                        <div className="flex items-center gap-1">
+                          <FileCheck className="h-3 w-3 text-muted-foreground" />
+                          <span className="font-semibold text-foreground">
+                            {teamComparison.totalPolicies}
+                          </span>
+                          <span className="text-muted-foreground">
+                            team policies
+                          </span>
+                        </div>
+                        <div className="h-3 w-px bg-muted" />
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3 text-success" />
+                          <span className="font-semibold text-success">
+                            {formatCurrency(teamComparison.totalPremium)}
+                          </span>
+                          <span className="text-muted-foreground">
+                            team premium
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <FileCheck className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-semibold text-foreground">
-                        {teamComparison.totalPolicies}
-                      </span>
-                      <span className="text-muted-foreground">
-                        team policies
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-3 w-3 text-success" />
-                      <span className="font-semibold text-success">
-                        {formatCurrency(teamComparison.totalPremium)}
-                      </span>
-                      <span className="text-muted-foreground">
-                        team premium
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Team table */}
-                <div className="rounded-lg bg-card border border-border">
-                  <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10">
-                      <TableRow className="border-b border-border hover:bg-transparent">
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                          Agent
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                          Level
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                          Policies
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
-                          Premium
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teamComparison.directReports.map(
-                        (member: {
-                          id: string;
-                          name: string;
-                          email: string;
-                          contractLevel: number;
-                          policies: number;
-                          premium: number;
-                        }) => (
-                          <TableRow
-                            key={member.id}
-                            className="hover:bg-background border-b border-border/60"
-                          >
-                            <TableCell className="py-1.5 text-[11px] text-foreground">
-                              {member.name}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground text-right">
-                              {member.contractLevel}%
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-foreground text-right">
-                              {member.policies}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
-                              {formatCurrency(member.premium)}
-                            </TableCell>
+                    {/* Team table */}
+                    <div className="rounded-lg bg-card border border-border">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-background z-10">
+                          <TableRow className="border-b border-border hover:bg-transparent">
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                              Agent
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                              Level
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                              Policies
+                            </TableHead>
+                            <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
+                              Premium
+                            </TableHead>
                           </TableRow>
-                        ),
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </>
-            ) : (
-              <div className="rounded-lg bg-card border border-border p-6 text-center">
-                <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                <p className="text-[11px] text-muted-foreground">
-                  No direct reports
-                </p>
+                        </TableHeader>
+                        <TableBody>
+                          {teamComparison.directReports.map(
+                            (member: {
+                              id: string;
+                              name: string;
+                              email: string;
+                              contractLevel: number;
+                              policies: number;
+                              premium: number;
+                            }) => (
+                              <TableRow
+                                key={member.id}
+                                className="hover:bg-background border-b border-border/60"
+                              >
+                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                  {member.name}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground text-right">
+                                  {member.contractLevel}%
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] text-foreground text-right">
+                                  {member.policies}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                                  {formatCurrency(member.premium)}
+                                </TableCell>
+                              </TableRow>
+                            ),
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-lg bg-card border border-border p-6 text-center">
+                    <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-[11px] text-muted-foreground">
+                      No direct reports
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* Edit Agent Modal */}
-      <EditAgentModal
-        agent={agentData}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-      />
-    </div>
+          {/* Edit Agent Modal */}
+          <EditAgentModal
+            agent={agentData}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+          />
+        </div>
+      </div>
+    </SectionShell>
   );
 }

@@ -1,5 +1,7 @@
 // src/features/hierarchy/OrgChartPage.tsx
 // Phase 12A: Org Chart Page - Interactive organizational hierarchy visualization
+// Re-skinned to "The Board" charcoal design system (shell + departure header);
+// the OrgChartVisualization and data logic are preserved verbatim.
 
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -15,7 +17,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SectionShell } from "@/components/v2";
+import { Cap, T } from "@/components/board";
 import type { OrgChartNode, OrgChartScope } from "@/types/hierarchy.types";
+
+/** Charcoal page shell shared by every render state. */
+function OrgChartShell({ children }: { children: React.ReactNode }) {
+  return (
+    <SectionShell className="dashboard-canvas">
+      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="flex flex-col gap-4">{children}</div>
+      </div>
+    </SectionShell>
+  );
+}
+
+/** Departure-board header shared by every render state. */
+function OrgChartHeader({
+  subtitle,
+  right,
+}: {
+  subtitle?: string;
+  right?: React.ReactNode;
+}) {
+  return (
+    <header
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: 12,
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <Cap>AGENCY HIERARCHY</Cap>
+        <h1
+          style={{
+            font: `800 26px ${T.disp}`,
+            color: T.ink,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            margin: 0,
+          }}
+        >
+          Organization Chart
+        </h1>
+        {subtitle && (
+          <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
+            {subtitle}
+          </span>
+        )}
+      </div>
+      {right}
+    </header>
+  );
+}
 
 export const OrgChartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,18 +109,8 @@ export const OrgChartPage: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Organization Chart
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Loading organizational structure...
-            </p>
-          </div>
-        </div>
+      <OrgChartShell>
+        <OrgChartHeader subtitle="Loading organizational structure..." />
         <Card>
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center">
@@ -74,22 +121,15 @@ export const OrgChartPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </OrgChartShell>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Organization Chart
-            </h1>
-          </div>
-        </div>
+      <OrgChartShell>
+        <OrgChartHeader />
         <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
@@ -113,22 +153,15 @@ export const OrgChartPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </OrgChartShell>
     );
   }
 
   // Empty state
   if (!orgChartData) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Organization Chart
-            </h1>
-          </div>
-        </div>
+      <OrgChartShell>
+        <OrgChartHeader />
         <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
@@ -143,52 +176,43 @@ export const OrgChartPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </OrgChartShell>
     );
   }
 
   return (
-    <div className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="space-y-1">
-          <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Organization Chart
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Interactive view of your organizational hierarchy with performance
-            metrics
-          </p>
-        </div>
+    <OrgChartShell>
+      <OrgChartHeader
+        subtitle="Interactive view of your organizational hierarchy with performance metrics"
+        right={
+          <div className="flex items-center gap-2">
+            <Select
+              value={scope}
+              onValueChange={(value) => setScope(value as OrgChartScope)}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="View scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto-detect</SelectItem>
+                <SelectItem value="imo">IMO View</SelectItem>
+                <SelectItem value="agency">Agency View</SelectItem>
+                <SelectItem value="agent">My Team</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <div className="flex items-center gap-2">
-          <Select
-            value={scope}
-            onValueChange={(value) => setScope(value as OrgChartScope)}
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="View scope" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">Auto-detect</SelectItem>
-              <SelectItem value="imo">IMO View</SelectItem>
-              <SelectItem value="agency">Agency View</SelectItem>
-              <SelectItem value="agent">My Team</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="gap-1"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="gap-1"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </Button>
+          </div>
+        }
+      />
 
       {/* Org Chart Visualization */}
       <OrgChartVisualization
@@ -197,7 +221,7 @@ export const OrgChartPage: React.FC = () => {
         onDrillDown={handleDrillDown}
         showMetrics={true}
       />
-    </div>
+    </OrgChartShell>
   );
 };
 
