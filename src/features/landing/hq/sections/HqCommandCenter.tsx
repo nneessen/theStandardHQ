@@ -1,17 +1,20 @@
 /*
- * Command Center — a 3D scroll-tilt frame (data-tilt-card drives the perspective
- * reveal in initLandingEffects) wrapping a REAL screenshot of the main dashboard.
+ * Main Dashboard ("The Board") — a 3D scroll-tilt frame (data-tilt-card drives
+ * the perspective reveal in initLandingEffects) wrapping a REAL screenshot of
+ * the authenticated dashboard. This is the DASHBOARD — NOT the Jarvis Command
+ * Center, which now lives in HqJarvis.
  *
- * Content honesty: this section renders ONLY when a real screenshot is supplied
- * (PRODUCT_SCREENSHOTS[0]); the page guards it. The earlier fabricated-KPI mock
- * was removed — we never present invented numbers as the real product.
+ * Content honesty: renders ONLY when a real Board screenshot exists
+ * (DASHBOARD_SHOT). It stays null until a Slack/Discord-free capture is cropped
+ * to public/landing/screens/, so nothing ships until then — no placeholder.
+ * (Section id/class remain "command"/"cmd" to preserve existing CSS + anchors.)
  */
 
 import { staggerStyle } from "../lib/cssVar";
-import { PRODUCT_SCREENSHOTS } from "../data/product-screenshots";
+import { DASHBOARD_SHOT } from "../data/product-screenshots";
 
 export function HqCommandCenter() {
-  const shot = PRODUCT_SCREENSHOTS[0];
+  const shot = DASHBOARD_SHOT;
   if (!shot) return null;
 
   return (

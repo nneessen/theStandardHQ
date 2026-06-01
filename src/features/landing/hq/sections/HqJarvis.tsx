@@ -1,18 +1,21 @@
 /*
- * Jarvis showcase — orb + orbiting capability chips + a canned typewriter demo
- * + capability tilt cards. This is a SHOWCASE: it never invokes the real
- * assistant (Jarvis is gated to authenticated internal users). The "Ask Jarvis"
- * CTA routes to Apply; "See the AI toolkit" scrolls to the toolkit section.
+ * Jarvis showcase — a REAL screenshot of the Jarvis Command Center (the agent's
+ * AI surface) paired with a canned typewriter demo. This is a SHOWCASE: it never
+ * invokes the real assistant (Jarvis is gated to authenticated internal users).
+ * The "Ask Jarvis" CTA routes to Apply; "See the AI toolkit" scrolls to toolkit.
  */
 
 import { Link } from "@tanstack/react-router";
 import { staggerStyle } from "../lib/cssVar";
 import { APPLY_PATH } from "../lib/links";
 import { useJarvisTypewriter } from "../lib/useJarvisTypewriter";
-import { JARVIS_CHIPS, JARVIS_DEMO } from "../data/content";
+import { JARVIS_DEMO } from "../data/content";
+import { PRODUCT_SCREENSHOTS } from "../data/product-screenshots";
 
 export function HqJarvis({ reducedMotion }: { reducedMotion: boolean }) {
   const { you, jarvis } = useJarvisTypewriter(JARVIS_DEMO, reducedMotion);
+  // The Command Center capture IS Jarvis's real UI → it's the primary image here.
+  const cc = PRODUCT_SCREENSHOTS[0];
 
   return (
     <section className="jarvis" id="jarvis">
@@ -51,33 +54,21 @@ export function HqJarvis({ reducedMotion }: { reducedMotion: boolean }) {
               </a>
             </div>
           </div>
-          <div className="jarvis-orb" data-reveal style={staggerStyle(2)}>
-            <div className="orb">
-              <span className="ring" />
-              <span className="ring r2" />
-              <span className="ring r3" />
-              <span className="opulse" />
-              <span className="core" />
+          {cc && (
+            <div
+              className="cmd-stage"
+              data-reveal
+              style={staggerStyle(2, { marginTop: 0 })}
+            >
+              <div className="cmd-card" data-tilt-card>
+                <img
+                  src={cc.src}
+                  alt="The Jarvis Command Center"
+                  style={{ display: "block", width: "100%", height: "auto" }}
+                />
+              </div>
             </div>
-            <div className="orb-chips">
-              {JARVIS_CHIPS.map((c, i) => {
-                const a = (i / JARVIS_CHIPS.length) * Math.PI * 2 - Math.PI / 2;
-                const R = 178;
-                return (
-                  <span
-                    className="ochip"
-                    key={c}
-                    style={{
-                      transform: `translate(${Math.round(Math.cos(a) * R)}px,${Math.round(Math.sin(a) * R)}px)`,
-                      animationDelay: `${i * 0.5}s`,
-                    }}
-                  >
-                    {c}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

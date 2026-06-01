@@ -195,14 +195,15 @@ export default function GalleryCanvas({
     const FRAME_MS = 1000 / 60;
     let lastT = performance.now();
     // Scroll gives a gentle, CAPPED boost — an uncapped term let a fast scroll
-    // spike the drift and blur the screens past. Base drift lowered so the
-    // dashboards linger long enough to actually read.
-    const BASE_DRIFT = 0.01;
-    const MAX_VEL = 0.03;
+    // spike the drift and blur the screens past. Base drift + cap lowered again
+    // (0.01→0.006, 0.03→0.016) so each screen — the FIRST one especially —
+    // lingers long enough to actually read.
+    const BASE_DRIFT = 0.006;
+    const MAX_VEL = 0.016;
     let vel = 0;
     let lastY = window.scrollY;
     const onScroll = () => {
-      vel = Math.min(MAX_VEL, vel + Math.abs(window.scrollY - lastY) * 0.0006);
+      vel = Math.min(MAX_VEL, vel + Math.abs(window.scrollY - lastY) * 0.0004);
       lastY = window.scrollY;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
