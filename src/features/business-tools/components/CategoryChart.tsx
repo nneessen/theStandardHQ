@@ -73,7 +73,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
         <CartesianGrid
           strokeDasharray="3 3"
           horizontal={false}
-          stroke="#e4e4e7"
+          stroke="rgba(255,255,255,0.07)"
         />
         <XAxis
           type="number"

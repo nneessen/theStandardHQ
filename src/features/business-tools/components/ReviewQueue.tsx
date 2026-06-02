@@ -2,6 +2,7 @@
 // Mini table showing last 10 transactions needing review with inline actions
 
 import { Check, X, ArrowRight } from "lucide-react";
+import { Board, Cap } from "@/components/board";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -28,24 +29,22 @@ export function ReviewQueue({ transactions, onSwitchTab }: ReviewQueueProps) {
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4 text-center">
-        <p className="text-xs text-v2-ink-muted">
+      <Board pad={16}>
+        <p className="text-xs text-v2-ink-muted text-center">
           All caught up! No transactions need review.
         </p>
-      </div>
+      </Board>
     );
   }
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
-        <span className="text-[11px] font-medium text-v2-ink-muted">
-          Needs Review
-        </span>
+    <Board pad={0} style={{ overflow: "hidden" }}>
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/5">
+        <Cap>Needs Review</Cap>
         <Button
           size="sm"
           variant="ghost"
-          className="h-5 text-[10px] text-success"
+          className="h-5 text-[11px] text-success"
           onClick={() => onSwitchTab("transactions")}
         >
           View All
@@ -105,6 +104,6 @@ export function ReviewQueue({ transactions, onSwitchTab }: ReviewQueueProps) {
           ))}
         </tbody>
       </table>
-    </div>
+    </Board>
   );
 }
