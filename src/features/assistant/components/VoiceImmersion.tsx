@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { ArcReactor, type ReactorMode } from "./hud/ArcReactorLazy";
 import { useDocumentVisible } from "../lib/useDocumentVisible";
-import type { AssistantVoiceSession } from "../hooks/useAssistantVoiceSession";
+import type { VoiceSessionUi } from "../hooks/voiceSession.types";
 
 interface Props {
-  voice: AssistantVoiceSession;
+  voice: VoiceSessionUi;
   assistantName: string;
   accent: string;
 }
@@ -122,7 +122,7 @@ function Waveform({
   voice,
   accent,
 }: {
-  voice: AssistantVoiceSession;
+  voice: VoiceSessionUi;
   accent: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

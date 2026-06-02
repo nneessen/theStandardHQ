@@ -7,6 +7,8 @@ import {
   useAssistantVoiceSession,
   type AssistantVoiceSession,
 } from "./hooks/useAssistantVoiceSession";
+import { useJarvisVoiceSession } from "./hooks/useJarvisVoiceSession";
+import type { VoiceSessionUi } from "./hooks/voiceSession.types";
 import { useKeepWarm } from "./hooks/useKeepWarm";
 import { useSound } from "./hooks/useSound";
 import { takeSentence } from "./lib/sentences";
@@ -51,8 +53,12 @@ export function AssistantPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
   conversationIdRef.current = conversationId;
-  // runMessage is created before the voice session, so reach it through a ref.
-  const voiceRef = useRef<AssistantVoiceSession | null>(null);
+  // The LEGACY voice hook drives the browser-side TTS queue; runMessage reaches it through
+  // a ref (it's created before the hook). The realtime path needs none of this — its worker
+  // speaks the reply — so this ref always points at the legacy session.
+  const speechRef = useRef<AssistantVoiceSession | null>(null);
+  // The ACTIVE voice session (legacy or realtime) for the ⌘J launch shortcut.
+  const activeVoiceRef = useRef<VoiceSessionUi | null>(null);
 
   const accent = agentTheme(agentKey).accent;
 
@@ -107,13 +113,13 @@ export function AssistantPage() {
         if (!speak) return;
         if (final) {
           const rest = speechBuf.trim();
-          if (rest) voiceRef.current?.enqueueSpeech(rest);
+          if (rest) speechRef.current?.enqueueSpeech(rest);
           speechBuf = "";
           return;
         }
         let sentence = takeSentence(speechBuf);
         while (sentence) {
-          voiceRef.current?.enqueueSpeech(sentence.text);
+          speechRef.current?.enqueueSpeech(sentence.text);
           speechBuf = sentence.rest;
           sentence = takeSentence(speechBuf);
         }
@@ -154,7 +160,7 @@ export function AssistantPage() {
           },
         });
         flushSentences(true);
-        if (speak) voiceRef.current?.finishSpeech();
+        if (speak) speechRef.current?.finishSpeech();
         setConversationId(res.conversationId);
         setAgentKey(res.agentKey);
         setMessages((m) =>
@@ -181,10 +187,10 @@ export function AssistantPage() {
         scrollToBottom();
         // In voice mode, don't resolve until the spoken reply finishes playing,
         // so the voice loop doesn't reopen the mic mid-sentence.
-        if (speak) await voiceRef.current?.speechIdle();
+        if (speak) await speechRef.current?.speechIdle();
         return res.message;
       } catch (e) {
-        if (speak) voiceRef.current?.cancelSpeech();
+        if (speak) speechRef.current?.cancelSpeech();
         play("error");
         setMessages((m) =>
           m.map((msg) =>
@@ -214,22 +220,33 @@ export function AssistantPage() {
   // mounted (route is already gated to authorized users).
   const { warm } = useKeepWarm(true);
 
-  const voice = useAssistantVoiceSession({
+  const voiceEnabled = prefs?.voice_enabled ?? false;
+  const realtimeEnabled = prefs?.voice_engine === "realtime";
+
+  // Both hooks are called unconditionally (React hook rules); only the SELECTED one is ever
+  // started. Legacy drives browser STT/TTS via onUtterance→runMessage; realtime is a LiveKit
+  // transport whose persistent worker owns the whole pipeline (so it has no onUtterance).
+  const legacyVoice = useAssistantVoiceSession({
     onUtterance: (text) => runMessage(text, { speak: true }),
-    enabled: prefs?.voice_enabled ?? false,
+    enabled: voiceEnabled && !realtimeEnabled,
   });
-  voiceRef.current = voice;
+  const realtimeVoice = useJarvisVoiceSession({
+    enabled: voiceEnabled && realtimeEnabled,
+  });
+  const voice: VoiceSessionUi = realtimeEnabled ? realtimeVoice : legacyVoice;
+  speechRef.current = legacyVoice;
+  activeVoiceRef.current = voice;
 
   // ⌘J (from anywhere) lands here and asks us to begin voice immediately so the
   // user can just talk. Mirror the orb's click guard: skip if a session is
   // already running, surface the same notice if the backend probe says voice
-  // isn't configured, otherwise start. Read live state through voiceRef since the
+  // isn't configured, otherwise start. Read live state through activeVoiceRef since the
   // request can arrive asynchronously. Wait out the one-time boot overlay so the
   // mic permission prompt doesn't appear behind a full-screen animation.
   useEffect(() => {
     if (booting) return; // pending request is preserved until boot finishes
     const launch = () => {
-      const v = voiceRef.current;
+      const v = activeVoiceRef.current;
       if (!v || VOICE_ACTIVE.has(v.state)) return;
       if (v.available === false) {
         toast.info("Voice isn't configured yet. Text chat is fully available.");

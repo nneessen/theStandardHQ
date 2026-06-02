@@ -1062,6 +1062,7 @@ export type Database = {
           updated_at: string | null;
           user_id: string;
           voice_enabled: boolean;
+          voice_engine: string;
         };
         Insert: {
           assistant_name?: string;
@@ -1073,6 +1074,7 @@ export type Database = {
           updated_at?: string | null;
           user_id: string;
           voice_enabled?: boolean;
+          voice_engine?: string;
         };
         Update: {
           assistant_name?: string;
@@ -1084,6 +1086,7 @@ export type Database = {
           updated_at?: string | null;
           user_id?: string;
           voice_enabled?: boolean;
+          voice_engine?: string;
         };
         Relationships: [
           {

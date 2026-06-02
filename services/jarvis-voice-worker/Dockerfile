@@ -10,15 +10,21 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Pre-bake the Silero VAD + turn-detector model weights into the image so the first real turn
+# never pays a cold model-download tax. The standalone `livekit-agents download-files` bin
+# auto-discovers the installed @livekit/agents-plugin-* packages and fetches their model files;
+# it needs neither the built app nor any runtime secrets (contacts only the plugin model CDNs,
+# never Supabase/LiveKit/Deepgram/ElevenLabs). Pinning: model versions are fixed by the pinned
+# plugins in package-lock.json (installed by `npm ci` above), so the weights are deterministic
+# for this image. NOT masked with `|| true` — a failed/partial download MUST fail the build
+# rather than silently ship a broken image. (Verified locally; the deprecated
+# `node dist/agent.js download-files` form is avoided.)
+RUN ./node_modules/.bin/livekit-agents download-files
+
 # Build TypeScript -> dist/.
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
-
-# NOTE: @livekit/agents (Silero VAD / turn-detector) can pre-download model weights to avoid
-# a cold first-turn fetch. Add that step here ONCE the installed SDK's CLI subcommand is
-# confirmed AND the weights can be version-pinned/checksum-verified. Do NOT mask its failure
-# with `|| true/echo` — a swallowed error would ship a broken or tampered image silently.
 
 ENV NODE_ENV=production
 

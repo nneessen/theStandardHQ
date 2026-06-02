@@ -9,6 +9,58 @@ remaining M1 work.
 
 ---
 
+---
+
+## ✅ UPDATE — session 2 (2026-06-02 PM): client + infra DONE; blocked on LiveKit creds
+
+Everything buildable is built and verified. **The only thing standing between here and first audio
+is a valid LiveKit key/secret** — the current pair is rejected by LiveKit Cloud.
+
+**Shipped this session (all `tsc`/eslint/deno/docker green, committed):**
+- **Worker runtime smoke** — `npm run dev` boots the never-run worker: loads all 4 plugins,
+  registers/listens (1.4.5). The Docker image builds **end-to-end** with weights baked.
+- **Frontend realtime client** — `src/features/assistant/hooks/useJarvisVoiceSession.ts`
+  (`livekit-client`): token → join → mic → JWT published **addressed to the agent identity only**
+  (reliable; bounded re-send to beat the worker's `dataReceived`-registration join race + re-send
+  on every `TOKEN_REFRESHED`) → play agent track; **mic-only** analyser (agent visuals were
+  already synthetic; remote-track Web Audio reads zero in some Chrome builds); state from the
+  verified `lk.agent.state` attribute. Shared `voiceSession.types.ts` (`VoiceSessionUi`) so
+  `VoiceOrb`/`VoiceImmersion`/`CommandCenterLayout` render either transport. `AssistantPage`
+  calls **both** hooks unconditionally and selects by the flag (legacy path untouched).
+- **`voice_engine` gate** — prod migration `20260602164643` (`text NOT NULL DEFAULT 'legacy'`),
+  types synced (surgical 3-line add — a full regen with the local CLI v2.23.4 is a 33k-line
+  semicolon-only reformat; do NOT commit that), plumbed through prefs + an opt-in **toggle** in
+  the assistant settings sheet (Realtime voice · Beta).
+- **Voice rate-limit bucket** — bridge sends `x-jarvis-surface: voice`; orchestrator →
+  `ratelimit:req:assistant-voice:<uid>` @ 600/hr (token axis unchanged). `core/rateBucket.ts` +
+  deno tests; suite 105/0.
+- **Dockerfile** — bakes Silero/turn-detector weights via `livekit-agents download-files`.
+
+**⛔ THE BLOCKER (owner-only): LiveKit credentials are invalid.**
+The key/secret in `.env.local` — and the *same* key (`APIHeZgZXPh5xwJ`) in the deployed token
+endpoint's Supabase secret — are **rejected by LiveKit Cloud: 401 "invalid token"** for
+`standard-hq-wz8p7ono.livekit.cloud`. Proven 3 ways (worker WS registration, `RoomServiceClient.
+listRooms`, swapped-pair retry). Token signing is local, so this was invisible until the first
+worker run. **Nothing downstream can be verified until this is fixed.**
+
+**Exact remaining steps (owner):**
+1. LiveKit Cloud dashboard → project `standard-hq-wz8p7ono` → confirm it's active → create/confirm
+   a **valid** API key + secret. Set the SAME valid pair in **all three** places:
+   - repo-root `.env.local` (`LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET`/`LIVEKIT_URL`),
+   - Supabase function secret (`supabase secrets set` for `assistant-voice-livekit-token`),
+   - `fly secrets set` on the worker.
+   Re-verify with: `cd services/jarvis-voice-worker && node -e "import('livekit-server-sdk').then(...)"`
+   (a `RoomServiceClient.listRooms()` returning OK) — or just `npm run dev` and watch it register.
+2. Get a real `ELEVENLABS_API_KEY` (the worker `.env.local` has a placeholder) into worker
+   `.env.local` + `fly secrets`.
+3. `cd services/jarvis-voice-worker && flyctl auth login && fly launch --no-deploy && fly deploy && fly scale count 1`.
+4. On your account: assistant settings → enable **Voice** + **Realtime voice (Beta)** → open
+   `/command-center` → start a session → speak. Verify the §5 "awesome" bar; measure latency.
+
+Below is the original step-by-step (still accurate for the owner-gated steps).
+
+---
+
 ## TL;DR — exactly where we are
 
 | Piece | Status |

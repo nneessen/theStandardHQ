@@ -42,6 +42,10 @@ export async function* callOrchestrator(
       // The USER's JWT — RLS scoping rides on this, never a worker secret.
       Authorization: `Bearer ${userJwt}`,
       apikey: cfg.anonKey,
+      // Tag this as a voice turn so the orchestrator uses the higher-capacity voice
+      // request rate-limit bucket instead of the 30/hr typed cap (a spoken session
+      // runs 10+ turns/min). The per-user token budget still bounds real spend.
+      "x-jarvis-surface": "voice",
     },
     body: JSON.stringify({ message, conversationId }),
     // Hang-guard: without this a stuck orchestrator hangs the voice turn forever (no

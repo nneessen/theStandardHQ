@@ -22,7 +22,7 @@ ElevenLabs voice** — and move the media/transport/turn-taking onto a real fram
 ```
 Browser ⇄ WebRTC ⇄ Agent Worker (LiveKit Agents, Node, always-on on Fly.io)
             ├ Silero VAD + turn-detection (correct endpointing)
-            ├ Deepgram STT nova-3 (streaming, keyword-boosted for carriers/products/names)
+            ├ Deepgram STT nova-2-general (streaming, weighted-keyword boost for carriers/products/names)
             ├ "LLM" = the existing assistant-orchestrator (Claude, unchanged) via SSE
             ├ ElevenLabs TTS (streaming)
             └ barge-in
@@ -76,14 +76,35 @@ from the LiveKit-signed room name) and rejects a mismatch. The frontend MUST pub
   data**. Fixed: `routeToAgent` keeps the prior turn's specialist on a no-intent follow-up;
   grounding rules forbid disavowing a prior tool-backed answer.
 
-## Status (2026-06-02)
+## Status (2026-06-02, M1 frontend+infra session)
 
 - ✅ **Token endpoint** `assistant-voice-livekit-token` — deployed; warm-200 + 401-on-unauth.
-- ✅ **Worker scaffold** `services/jarvis-voice-worker/` — `npm ci` (0 vulns), typecheck +
-  build green against `@livekit/agents@1.4.5`; security + supply-chain reviewed/hardened.
-  **NOT runtime-verified** (needs a live LiveKit room + the frontend client).
-- ⏭️ **Frontend LiveKit client** (replace `useAssistantVoiceSession.ts`) → **Fly deploy** →
-  first runtime smoke → cut over (delete the MediaRecorder + MediaSource path).
+- ✅ **Worker** `services/jarvis-voice-worker/` — `npm ci` (0 vulns), typecheck + build green
+  vs `@livekit/agents@1.4.5`; **runtime-init verified** (`npm run dev` starts, loads all four
+  plugins, registers/listens) and the **Docker image builds end-to-end** with model weights
+  baked (`livekit-agents download-files`).
+- ✅ **Frontend realtime client** `src/features/assistant/hooks/useJarvisVoiceSession.ts` —
+  `livekit-client` hook: mint token → join → publish mic → publish the user's Supabase JWT
+  **addressed to the agent identity only** (reliable; re-sent on the worker-registration join
+  race + every ~1h token refresh) → play the agent track; mic-only analyser for the visualizers;
+  UI state derived from the verified `lk.agent.state` participant attribute. Gated behind
+  `assistant_preferences.voice_engine = 'realtime'` (new column, prod-migrated; opt-in toggle in
+  the assistant settings sheet). The legacy MediaRecorder/MediaSource hook stays for `legacy`
+  users and is deleted only at cutover. Both hooks are called unconditionally (React rules) and
+  the UI selects one — `tsc`, eslint, and the assistant unit suite are green.
+- ✅ **Voice rate-limit bucket** — the worker bridge tags turns `x-jarvis-surface: voice`; the
+  orchestrator routes them to `ratelimit:req:assistant-voice:<uid>` at 600/hr (vs the 30/hr
+  typed cap) so a 10+-turn/min spoken session never self-throttles; the 200k/day token axis
+  stays the real cost ceiling. New deno tests; full orchestrator suite 105/0.
+- ⛔ **BLOCKED on LiveKit credentials → no first audio yet.** The API key/secret in `.env.local`
+  (and in the deployed token endpoint's Supabase secret — same key `APIHeZgZXPh5xwJ`) are
+  **rejected by LiveKit Cloud with 401 "invalid token"** for `standard-hq-wz8p7ono` — proven via
+  worker WS registration, `RoomServiceClient.listRooms`, and a swapped-pair retry. (Local token
+  signing never validated them; this session's worker smoke was the first real exercise.) Until a
+  **valid** key/secret for that project is set in `.env.local` + the Supabase function secret +
+  `fly secrets`, no client can join. Also needs a real `ELEVENLABS_API_KEY` and `flyctl auth login`.
+- ⏭️ **Remaining (owner-gated):** fix creds → `fly deploy` + `fly scale count 1` → live
+  first-audio smoke against the §5 "awesome" bar → flip default to `realtime` → delete legacy path.
 
 ## Second brain (planned, not built)
 

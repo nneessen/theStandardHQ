@@ -25,12 +25,14 @@ export function AssistantSettingsSheet() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [realtimeVoice, setRealtimeVoice] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
     if (prefs && open) {
       setName(prefs.assistant_name);
       setVoiceEnabled(prefs.voice_enabled);
+      setRealtimeVoice(prefs.voice_engine === "realtime");
       setSoundEnabled(prefs.sound_enabled);
     }
   }, [prefs, open]);
@@ -40,6 +42,7 @@ export function AssistantSettingsSheet() {
       await update.mutateAsync({
         assistant_name: name.trim() || "Jarvis",
         voice_enabled: voiceEnabled,
+        voice_engine: realtimeVoice ? "realtime" : "legacy",
         sound_enabled: soundEnabled,
       });
       toast.success("Preferences saved.");
@@ -89,6 +92,31 @@ export function AssistantSettingsSheet() {
               checked={voiceEnabled}
               onCheckedChange={setVoiceEnabled}
               aria-label="Enable voice"
+            />
+          </div>
+          <div
+            className={`ml-4 flex items-center justify-between rounded-md border border-border p-3 transition-opacity ${
+              voiceEnabled ? "" : "pointer-events-none opacity-50"
+            }`}
+          >
+            <div className="pr-3">
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                Realtime voice
+                <span className="rounded bg-primary/15 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  Beta
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Streams audio over a live connection for natural, low-latency
+                conversation with barge-in — you can interrupt mid-reply. Off
+                uses the classic record-then-transcribe mode.
+              </div>
+            </div>
+            <Switch
+              checked={realtimeVoice}
+              onCheckedChange={setRealtimeVoice}
+              disabled={!voiceEnabled}
+              aria-label="Enable realtime voice"
             />
           </div>
           <div className="flex items-center justify-between rounded-md border border-border p-3">

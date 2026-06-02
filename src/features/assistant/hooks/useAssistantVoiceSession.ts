@@ -5,15 +5,11 @@ import {
   supabaseFunctionsUrl,
 } from "@/services/base/supabase-config";
 import { createSpeechQueue, type SpeechQueue } from "../lib/speechQueue";
+import type { VoiceSessionState } from "./voiceSession.types";
 
-export type VoiceSessionState =
-  | "idle"
-  | "checking"
-  | "unavailable"
-  | "listening" // mic open, waiting for speech
-  | "capturing" // user is speaking
-  | "thinking" // transcribing + orchestrator running
-  | "speaking"; // playing the spoken reply
+// Canonical state union now lives in voiceSession.types (shared with the realtime hook).
+// Re-exported here so existing importers of this module keep working unchanged.
+export type { VoiceSessionState };
 
 interface UseVoiceOptions {
   /**

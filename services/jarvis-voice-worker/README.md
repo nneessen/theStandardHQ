@@ -17,39 +17,44 @@ browser sends that user's **Supabase JWT** over the LiveKit **data channel**
 orchestrator with **that JWT**, so `ctx.db` stays RLS-scoped exactly like the typed path
 and the `revocation_deny` kill switch keeps working. (`src/orchestrator-bridge.ts`.)
 
-## Status — type-checks against @livekit/agents 1.4.5 (not yet runtime-verified)
+## Status — boots + builds; live STT→brain→TTS turn blocked on valid LiveKit creds
 
 - ✅ `src/orchestrator-bridge.ts` — SSE bridge to `assistant-orchestrator` (final, SDK-agnostic).
-- ✅ `src/agent.ts` — worker entrypoint + pipeline + JWT/data-channel store, **reconciled to
-  the real `@livekit/agents@1.4.5` API**: bridges via a `voice.Agent` `llmNode()` override
-  (returns a `ReadableStream<string>` of the orchestrator's deltas — 1.x `LLMStream` has no
-  public text adapter), `ChatContext.items`, `ServerOptions`, Deepgram `nova-3`.
-  `npm ci` → 0 vulns; `npm run typecheck` → 0 errors; `npm run build` → emits `dist/`.
-- ⚠️ **Not runtime-verified.** Type-checking ≠ running — the worker needs a live LiveKit room
-  + the frontend client publishing the JWT over the data channel + a real STT→brain→TTS turn.
-  That smoke can't happen until the frontend client + Fly deploy land.
+  Tags each turn `x-jarvis-surface: voice` so the orchestrator uses the voice rate-limit bucket.
+- ✅ `src/agent.ts` — worker entrypoint + pipeline + JWT/data-channel store, reconciled to the
+  real `@livekit/agents@1.4.5` API: bridges via a `voice.Agent` `llmNode()` override (returns a
+  `ReadableStream<string>` of the orchestrator's deltas — 1.x `LLMStream` has no public text
+  adapter), `ChatContext.items`, `ServerOptions`. STT = Deepgram **`nova-2-general`** with
+  weighted `keywords` boosting (NOT nova-3 — nova-3 ignores `keywords` in favor of unweighted
+  `keyterm`, dropping the carrier/product/name boosts; see the comment in `agent.ts`).
+- ✅ **Runtime init verified** — `npm run dev` starts the worker, loads all four plugins, and
+  registers/listens (LiveKit 1.4.5). `npm ci` → 0 vulns; `typecheck` + `build` → green. The
+  Docker image builds and bakes the Silero/turn-detector weights (`livekit-agents download-files`).
+- ⛔ **Live turn blocked on credentials.** The LiveKit API key/secret currently in `.env.local`
+  (and in the deployed token endpoint's Supabase secret) are **rejected by LiveKit Cloud with
+  401 "invalid token"** for `standard-hq-wz8p7ono.livekit.cloud` — verified via worker WS
+  registration, `RoomServiceClient.listRooms`, and a swapped-pair retry. No client can join and
+  the worker can't register until a **valid** key/secret for that project is set in all three
+  places (`.env.local`, the Supabase function secret, and `fly secrets`). Also set a real
+  `ELEVENLABS_API_KEY` (the local placeholder won't synthesize).
 
 ## Next steps (the path to first audio)
 
-Done: ✅ `npm ci` (0 vulns) · ✅ `npm run typecheck` (0 errors) · ✅ `npm run build`. Remaining:
+Done this session: ✅ runtime-init smoke · ✅ Docker image builds + bakes weights · ✅ voice
+rate-limit bucket wired (orchestrator + this bridge) · ✅ **frontend client built**
+(`src/features/assistant/hooks/useJarvisVoiceSession.ts`: token → join → publish mic → publish
+the user JWT addressed to the agent identity only (reliable, re-sent on the join race + every
+~1h token refresh) → play the agent track; gated behind `assistant_preferences.voice_engine =
+'realtime'`, opt-in toggle in the assistant settings sheet). Remaining is **owner-gated**:
 
-```bash
-cd services/jarvis-voice-worker
-cp .env.example .env.local       # fill from the repo-root .env.local (LIVEKIT_*, DEEPGRAM,
-                                 # ELEVENLABS, SUPABASE_URL, SUPABASE_ANON_KEY)
-npm run dev                      # run the worker against LiveKit Cloud (first RUNTIME smoke)
-```
+1. **Fix the LiveKit credentials** (see the ⛔ above) — set a valid key/secret for
+   `standard-hq-wz8p7ono` in `.env.local`, the Supabase function secret, AND `fly secrets`.
+2. `flyctl auth login`, then deploy (below).
+3. Live first-audio smoke from `/command-center` with `voice_engine='realtime'`.
 
-Then build the **frontend client** (replace `src/features/assistant/hooks/useAssistantVoiceSession.ts`):
-fetch a token from `assistant-voice-livekit-token`, join the room with `livekit-client`,
-publish the mic, and play the agent's audio track.
-
-**Security requirement for the JWT hand-off (do not skip):** publish the user's Supabase JWT
-over the data channel **addressed to the agent participant's identity only, with reliable
-delivery** — `publishData` defaults to an unaddressed BROADCAST to all participants, so always
-pass the explicit destination. Re-publish on every ~1h token refresh (the worker swaps it).
-The worker already binds the JWT's `sub` to the room owner (`agent.ts`), but addressed
-delivery keeps the token off any other participant's wire in the first place.
+The JWT hand-off security invariant is already implemented on both ends: the client publishes
+`{type:auth,jwt}` **addressed to the agent identity only** (never a broadcast) over the reliable
+data channel, and the worker binds the JWT `sub` to the LiveKit-signed room owner before using it.
 
 ## Deploy (Fly)
 

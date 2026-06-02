@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { Loader2, Mic, MicOff, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { AssistantVoiceSession } from "../hooks/useAssistantVoiceSession";
+import type { VoiceSessionUi } from "../hooks/voiceSession.types";
 
 interface Props {
-  voice: AssistantVoiceSession;
+  voice: VoiceSessionUi;
   assistantName?: string;
 }
 

@@ -21,6 +21,7 @@ import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool } from "./core/guard.ts";
+import { requestRateBucket } from "./core/rateBucket.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
 import { redact, summarizeToolOutput } from "./core/redaction.ts";
 import { assessGrounding } from "./core/grounding.ts";
@@ -82,10 +83,16 @@ serve(async (req) => {
     // network rejection propagates to the outer catch → 500 (same as the old serial
     // awaits). Minor change: an access-denied user's rate-limit counters increment
     // once before the 403 — harmless (per-user; still 403'd).
-    //   Rate buckets: Request = 30/hr per function; Token = 200k/day shared across
-    //   Anthropic functions (checked here at 0 tokens to reject if already over).
+    //   Rate buckets: Request = 30/hr typed · 600/hr voice (its OWN bucket — a spoken
+    //   session runs 10+ turns/min and would trip the 30/hr cap mid-conversation); Token =
+    //   200k/day shared across Anthropic functions (checked here at 0 tokens to reject if
+    //   already over) — the token axis stays the real cost ceiling for BOTH surfaces.
+    // The realtime voice worker tags its turns with `x-jarvis-surface: voice`. This header
+    // only selects the caller's OWN per-user request bucket (not a tenant boundary), so a
+    // spoofed value at most inflates that one user's request allowance — still token-bounded.
+    const isVoiceSurface = req.headers.get("x-jarvis-surface") === "voice";
     const adminClient = createSupabaseAdminClient();
-    const reqBucketKey = `ratelimit:req:assistant-orchestrator:${user.id}`;
+    const reqBucket = requestRateBucket(user.id, isVoiceSurface);
     const tokBucketKey = `ratelimit:tok:${user.id}`;
 
     const [profileRes, reqLimit, tokLimit, imoRes, prefsRes] =
@@ -97,7 +104,11 @@ serve(async (req) => {
           .single(),
         enforceRateLimit(
           adminClient,
-          { key: reqBucketKey, maxRequests: 30, windowSeconds: 3600 },
+          {
+            key: reqBucket.key,
+            maxRequests: reqBucket.maxRequests,
+            windowSeconds: 3600,
+          },
           cors,
         ),
         enforceRateLimit(

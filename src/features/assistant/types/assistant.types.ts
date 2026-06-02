@@ -66,10 +66,21 @@ export interface ActionRequest {
   error: string | null;
 }
 
+/**
+ * Voice transport selection (gates which voice client renders):
+ * - `legacy`   — browser MediaRecorder + Whisper STT + MediaSource MP3 playback (current).
+ * - `realtime` — LiveKit Agents worker: Deepgram STT + ElevenLabs TTS + server VAD + barge-in.
+ *
+ * Stored as a free `text` column (no DB CHECK per project convention); this union is the
+ * source of truth for valid values. Unknown/legacy DB values normalize to `legacy`.
+ */
+export type VoiceEngine = "legacy" | "realtime";
+
 export interface AssistantPreferences {
   assistant_name: string;
   enabled_agents: string[];
   voice_enabled: boolean;
+  voice_engine: VoiceEngine;
   sound_enabled: boolean;
   tone: string;
   briefing_style: string;

@@ -12,7 +12,7 @@ import { HudFrame } from "./hud/HudFrame";
 import { SidePanels } from "./hud/SidePanels";
 import { AgentBanner } from "./hud/AgentBanner";
 import { agentTheme } from "../lib/agentTheme";
-import type { AssistantVoiceSession } from "../hooks/useAssistantVoiceSession";
+import type { VoiceSessionUi } from "../hooks/voiceSession.types";
 
 interface Props {
   assistantName: string;
@@ -20,7 +20,7 @@ interface Props {
   accent: string;
   reactorMode: ReactorMode;
   audioLevel?: number;
-  voice: AssistantVoiceSession;
+  voice: VoiceSessionUi;
   children: ReactNode;
 }
 
