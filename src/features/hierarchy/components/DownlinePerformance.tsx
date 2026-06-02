@@ -1,13 +1,11 @@
 // src/features/hierarchy/components/DownlinePerformance.tsx
 
-import { useState, type ReactNode } from "react";
-import { Edit, Shield, Trash2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useMemo, useState, type ReactNode } from "react";
+import { Edit, Shield, Trash2, Users } from "lucide-react";
 import { SectionShell } from "@/components/v2";
-import { Cap, T } from "@/components/board";
+import { Board, Cap, FlapTile, Pill, EmptyState, T } from "@/components/board";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -36,12 +34,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-} from "@/components/ui/empty";
 import { formatCurrency } from "@/lib/format";
 import {
   useAllDownlinePerformance,
@@ -247,6 +239,26 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
       d.agent_email.toLowerCase().includes(searchTerm.toLowerCase()),
     ) || [];
 
+  // Whole-downline aggregates for the summary band (not affected by search).
+  const totals = useMemo(() => {
+    const rows = performanceData ?? [];
+    const sum = (fn: (d: (typeof rows)[number]) => number) =>
+      rows.reduce((acc, d) => acc + (fn(d) || 0), 0);
+    const persistencyVals = rows
+      .map((d) => d.persistency_rate)
+      .filter((v) => Number.isFinite(v));
+    return {
+      agents: rows.length,
+      premium: sum((d) => d.total_premium),
+      policies: sum((d) => d.policies_written),
+      active: sum((d) => d.policies_active),
+      overrides: sum((d) => d.total_overrides_generated),
+      persistency: persistencyVals.length
+        ? persistencyVals.reduce((a, b) => a + b, 0) / persistencyVals.length
+        : 0,
+    };
+  }, [performanceData]);
+
   // Paginate
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -276,15 +288,11 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
   if (isLoading) {
     return (
       <DownlineShell className={className}>
-        <Card>
-          <CardContent className="pt-6">
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>Loading downline data...</EmptyTitle>
-              </EmptyHeader>
-            </Empty>
-          </CardContent>
-        </Card>
+        <Board pad={40}>
+          <div className="text-center text-sm text-v2-ink-muted">
+            Loading downline data…
+          </div>
+        </Board>
       </DownlineShell>
     );
   }
@@ -292,37 +300,75 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
   if (!performanceData || performanceData.length === 0) {
     return (
       <DownlineShell className={className}>
-        <Card>
-          <CardContent className="pt-6">
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>No downline agents yet</EmptyTitle>
-                <EmptyDescription>
-                  When agents are assigned to your downline, their performance
-                  metrics will appear here
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          </CardContent>
-        </Card>
+        <Board pad={20}>
+          <EmptyState
+            icon={<Users size={20} />}
+            title="No downline agents yet"
+            hint="When agents are assigned to your downline, their performance metrics will appear here."
+            pad={48}
+          />
+        </Board>
       </DownlineShell>
     );
   }
 
   return (
     <DownlineShell className={className}>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Downline Performance</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Performance metrics and hierarchy management
-              </p>
-            </div>
-            {isAdmin && <Badge variant="outline">Admin Mode</Badge>}
+      {/* Summary band — whole-downline aggregates */}
+      <Board pad={18}>
+        <Cap style={{ marginBottom: 14 }}>Downline Totals</Cap>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+            gap: 10,
+          }}
+        >
+          <FlapTile label="Agents" value={totals.agents.toLocaleString()} />
+          <FlapTile
+            label="Total Premium"
+            value={formatCurrency(totals.premium)}
+            tone="blue"
+          />
+          <FlapTile label="Policies" value={totals.policies.toLocaleString()} />
+          <FlapTile label="Active" value={totals.active.toLocaleString()} />
+          <FlapTile
+            label="Overrides Gen."
+            value={formatCurrency(totals.overrides)}
+            tone="green"
+          />
+          <FlapTile
+            label="Avg Persistency"
+            value={`${totals.persistency.toFixed(1)}%`}
+            tone={
+              totals.persistency >= 90
+                ? "green"
+                : totals.persistency >= 80
+                  ? "amber"
+                  : "red"
+            }
+          />
+        </div>
+      </Board>
+
+      {/* Performance table */}
+      <Board pad={0} style={{ overflow: "hidden" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+            padding: "16px 18px 12px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Cap>Performance & Hierarchy</Cap>
+            {isAdmin && <Pill tone="blue">Admin Mode</Pill>}
           </div>
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex items-center gap-3">
             <Input
               placeholder="Search by email..."
               value={searchTerm}
@@ -330,16 +376,16 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="max-w-sm"
+              className="h-8 max-w-[260px] text-[12px]"
             />
-            <div className="text-sm text-muted-foreground">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredData.length)}{" "}
-              of {filteredData.length}
+            <div className="text-[11px] text-v2-ink-muted whitespace-nowrap">
+              {startIndex + 1}-{Math.min(endIndex, filteredData.length)} of{" "}
+              {filteredData.length}
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg shadow-sm">
+        </div>
+        <div className="px-2 pb-3">
+          <div className="rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -432,15 +478,20 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between mt-3 px-2">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 text-sm rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 bg-card"
+                className="px-4 py-1.5 text-[12px] rounded-md transition-colors disabled:opacity-50"
+                style={{
+                  background: T.tile,
+                  border: `1px solid ${T.line2}`,
+                  color: T.ink,
+                }}
               >
                 Previous
               </button>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-[11px] text-v2-ink-muted">
                 Page {currentPage} of {totalPages}
               </div>
               <button
@@ -448,14 +499,19 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 text-sm rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 bg-card"
+                className="px-4 py-1.5 text-[12px] rounded-md transition-colors disabled:opacity-50"
+                style={{
+                  background: T.tile,
+                  border: `1px solid ${T.line2}`,
+                  color: T.ink,
+                }}
               >
                 Next
               </button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </Board>
 
       {/* Edit Hierarchy Dialog (Admin Only) */}
       {isAdmin && (
