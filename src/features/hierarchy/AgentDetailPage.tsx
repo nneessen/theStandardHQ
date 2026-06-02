@@ -926,40 +926,38 @@ export function AgentDetailPage() {
             {/* Commissions Tab */}
             {activeTab === "commissions" && (
               <div className="space-y-2">
-                {/* Inline commission stats header */}
-                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-                  <div className="flex items-center gap-4 text-[11px]">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Advances:</span>
-                      <span className="font-semibold text-foreground">
-                        {formatCurrency(commissionMetrics.advances)}
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Earned:</span>
-                      <span className="font-semibold text-success">
-                        {formatCurrency(commissionMetrics.earned)}
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Unearned:</span>
-                      <span className="font-semibold text-warning">
-                        {formatCurrency(commissionMetrics.unearned)}
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Chargebacks:
-                      </span>
-                      <span className="font-semibold text-destructive">
-                        {formatCurrency(commissionMetrics.chargebacks)}
-                      </span>
-                    </div>
+                {/* Commission stats band — big & clean */}
+                <Board pad={18}>
+                  <Cap style={{ marginBottom: 14 }}>Commissions</Cap>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <FlapTile
+                      label="Advances"
+                      value={formatCurrency(commissionMetrics.advances)}
+                    />
+                    <FlapTile
+                      label="Earned"
+                      value={formatCurrency(commissionMetrics.earned)}
+                      tone="green"
+                    />
+                    <FlapTile
+                      label="Unearned"
+                      value={formatCurrency(commissionMetrics.unearned)}
+                      tone="amber"
+                    />
+                    <FlapTile
+                      label="Chargebacks"
+                      value={formatCurrency(commissionMetrics.chargebacks)}
+                      tone="red"
+                    />
                   </div>
-                </div>
+                </Board>
 
                 {/* Commission table */}
                 <div className="rounded-lg bg-card border border-border">
@@ -1255,40 +1253,32 @@ export function AgentDetailPage() {
               <div className="space-y-2">
                 {teamComparison?.directReports?.length > 0 ? (
                   <>
-                    {/* Inline team stats header */}
-                    <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-                      <div className="flex items-center gap-4 text-[11px]">
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-semibold text-foreground">
-                            {teamComparison.totalMembers}
-                          </span>
-                          <span className="text-muted-foreground">
-                            direct reports
-                          </span>
-                        </div>
-                        <div className="h-3 w-px bg-muted" />
-                        <div className="flex items-center gap-1">
-                          <FileCheck className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-semibold text-foreground">
-                            {teamComparison.totalPolicies}
-                          </span>
-                          <span className="text-muted-foreground">
-                            team policies
-                          </span>
-                        </div>
-                        <div className="h-3 w-px bg-muted" />
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="h-3 w-3 text-success" />
-                          <span className="font-semibold text-success">
-                            {formatCurrency(teamComparison.totalPremium)}
-                          </span>
-                          <span className="text-muted-foreground">
-                            team premium
-                          </span>
-                        </div>
+                    {/* Team stats band — big & clean */}
+                    <Board pad={18}>
+                      <Cap style={{ marginBottom: 14 }}>Team</Cap>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+                          gap: 10,
+                        }}
+                      >
+                        <FlapTile
+                          label="Direct Reports"
+                          value={teamComparison.totalMembers.toLocaleString()}
+                        />
+                        <FlapTile
+                          label="Team Policies"
+                          value={teamComparison.totalPolicies.toLocaleString()}
+                        />
+                        <FlapTile
+                          label="Team Premium"
+                          value={formatCurrency(teamComparison.totalPremium)}
+                          tone="green"
+                        />
                       </div>
-                    </div>
+                    </Board>
 
                     {/* Team table */}
                     <div className="rounded-lg bg-card border border-border">
