@@ -1099,158 +1099,152 @@ export function AgentDetailPage() {
             {/* Overrides Tab */}
             {activeTab === "overrides" && (
               <div className="space-y-2">
-                {/* Inline override stats header */}
-                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
-                  <div className="flex items-center gap-4 text-[11px]">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Their MTD Earnings:
-                      </span>
-                      <span className="font-semibold text-success">
-                        {formatCurrency(agentOverrideEarnings.mtd)}
-                      </span>
-                    </div>
-                    <div className="h-3 w-px bg-muted" />
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Their YTD Earnings:
-                      </span>
-                      <span className="font-semibold text-success">
-                        {formatCurrency(agentOverrideEarnings.ytd)}
-                      </span>
-                    </div>
-                    {/* Show viewer's overrides from this agent if not viewing own profile */}
+                {/* Override stats band — big & clean */}
+                <Board pad={18}>
+                  <Cap style={{ marginBottom: 14 }}>Override Earnings</Cap>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <FlapTile
+                      label="Their MTD"
+                      value={formatCurrency(agentOverrideEarnings.mtd)}
+                      tone="green"
+                    />
+                    <FlapTile
+                      label="Their YTD"
+                      value={formatCurrency(agentOverrideEarnings.ytd)}
+                      tone="green"
+                    />
                     {currentUser?.id !== agentId && (
                       <>
-                        <div className="h-3 w-px bg-muted" />
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">
-                            Your MTD earned from them:
-                          </span>
-                          <span className="font-semibold text-info">
-                            {formatCurrency(viewerEarningsFromAgent.mtd)}
-                          </span>
-                        </div>
-                        <div className="h-3 w-px bg-muted" />
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">
-                            Pending:
-                          </span>
-                          <span className="font-semibold text-warning">
-                            {formatCurrency(viewerEarningsFromAgent.mtdPending)}
-                          </span>
-                        </div>
+                        <FlapTile
+                          label="Your MTD From Them"
+                          value={formatCurrency(viewerEarningsFromAgent.mtd)}
+                          tone="blue"
+                        />
+                        <FlapTile
+                          label="Your MTD Pending"
+                          value={formatCurrency(
+                            viewerEarningsFromAgent.mtdPending,
+                          )}
+                          tone="amber"
+                        />
                       </>
                     )}
                   </div>
-                </div>
+                </Board>
 
                 {/* Two-column layout for override details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {/* Agent's Override Earnings from Downlines */}
-                  <div className="rounded-lg bg-card border border-border p-4">
-                    <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
+                  <Board pad={16}>
+                    <Cap style={{ marginBottom: 12 }}>
                       Their Override Earnings
-                    </h4>
+                    </Cap>
                     {agentOverrideEarnings.mtd > 0 ||
                     agentOverrideEarnings.ytd > 0 ||
                     agentOverrideEarnings.mtdPending > 0 ||
                     agentOverrideEarnings.ytdPending > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">
-                            MTD Earned:
-                          </span>
-                          <span className="font-semibold text-success">
-                            {formatCurrency(agentOverrideEarnings.mtd)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">
-                            MTD Pending:
-                          </span>
-                          <span className="font-semibold text-warning">
-                            {formatCurrency(agentOverrideEarnings.mtdPending)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">
-                            YTD Earned:
-                          </span>
-                          <span className="font-semibold text-success">
-                            {formatCurrency(agentOverrideEarnings.ytd)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">
-                            YTD Pending:
-                          </span>
-                          <span className="font-semibold text-warning">
-                            {formatCurrency(agentOverrideEarnings.ytdPending)}
-                          </span>
-                        </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 8,
+                        }}
+                      >
+                        <FlapTile
+                          sm
+                          label="MTD Earned"
+                          value={formatCurrency(agentOverrideEarnings.mtd)}
+                          tone="green"
+                        />
+                        <FlapTile
+                          sm
+                          label="MTD Pending"
+                          value={formatCurrency(
+                            agentOverrideEarnings.mtdPending,
+                          )}
+                          tone="amber"
+                        />
+                        <FlapTile
+                          sm
+                          label="YTD Earned"
+                          value={formatCurrency(agentOverrideEarnings.ytd)}
+                          tone="green"
+                        />
+                        <FlapTile
+                          sm
+                          label="YTD Pending"
+                          value={formatCurrency(
+                            agentOverrideEarnings.ytdPending,
+                          )}
+                          tone="amber"
+                        />
                       </div>
                     ) : (
-                      <p className="text-[11px] text-muted-foreground text-center py-2">
+                      <p className="text-[11px] text-v2-ink-muted text-center py-2">
                         No override earnings yet
                       </p>
                     )}
-                  </div>
+                  </Board>
 
                   {/* Your Overrides from This Agent (only if not viewing own profile) */}
                   {currentUser?.id !== agentId && (
-                    <div className="rounded-lg bg-card border border-border p-4">
-                      <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
+                    <Board pad={16}>
+                      <Cap style={{ marginBottom: 12 }}>
                         Your Overrides from This Agent
-                      </h4>
+                      </Cap>
                       {viewerEarningsFromAgent.mtd > 0 ||
                       viewerEarningsFromAgent.ytd > 0 ||
                       viewerEarningsFromAgent.mtdPending > 0 ||
                       viewerEarningsFromAgent.ytdPending > 0 ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground">
-                              MTD Earned:
-                            </span>
-                            <span className="font-semibold text-info">
-                              {formatCurrency(viewerEarningsFromAgent.mtd)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground">
-                              MTD Pending:
-                            </span>
-                            <span className="font-semibold text-warning">
-                              {formatCurrency(
-                                viewerEarningsFromAgent.mtdPending,
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground">
-                              YTD Earned:
-                            </span>
-                            <span className="font-semibold text-info">
-                              {formatCurrency(viewerEarningsFromAgent.ytd)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-muted-foreground">
-                              YTD Pending:
-                            </span>
-                            <span className="font-semibold text-warning">
-                              {formatCurrency(
-                                viewerEarningsFromAgent.ytdPending,
-                              )}
-                            </span>
-                          </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 8,
+                          }}
+                        >
+                          <FlapTile
+                            sm
+                            label="MTD Earned"
+                            value={formatCurrency(viewerEarningsFromAgent.mtd)}
+                            tone="blue"
+                          />
+                          <FlapTile
+                            sm
+                            label="MTD Pending"
+                            value={formatCurrency(
+                              viewerEarningsFromAgent.mtdPending,
+                            )}
+                            tone="amber"
+                          />
+                          <FlapTile
+                            sm
+                            label="YTD Earned"
+                            value={formatCurrency(viewerEarningsFromAgent.ytd)}
+                            tone="blue"
+                          />
+                          <FlapTile
+                            sm
+                            label="YTD Pending"
+                            value={formatCurrency(
+                              viewerEarningsFromAgent.ytdPending,
+                            )}
+                            tone="amber"
+                          />
                         </div>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground text-center py-2">
+                        <p className="text-[11px] text-v2-ink-muted text-center py-2">
                           No overrides from this agent yet
                         </p>
                       )}
-                    </div>
+                    </Board>
                   )}
                 </div>
               </div>
