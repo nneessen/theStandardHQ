@@ -42,7 +42,9 @@ export function AssistantSettingsSheet() {
       await update.mutateAsync({
         assistant_name: name.trim() || "Jarvis",
         voice_enabled: voiceEnabled,
-        voice_engine: realtimeVoice ? "realtime" : "legacy",
+        // Never persist 'realtime' while voice is off (the toggle is disabled then) —
+        // otherwise re-enabling voice later would silently start a realtime session.
+        voice_engine: voiceEnabled && realtimeVoice ? "realtime" : "legacy",
         sound_enabled: soundEnabled,
       });
       toast.success("Preferences saved.");

@@ -237,6 +237,22 @@ export function AssistantPage() {
   speechRef.current = legacyVoice;
   activeVoiceRef.current = voice;
 
+  // Stable handles to each hook's stop() (the hook objects are fresh every render).
+  const legacyStopRef = useRef(legacyVoice.stop);
+  legacyStopRef.current = legacyVoice.stop;
+  const realtimeStopRef = useRef(realtimeVoice.stop);
+  realtimeStopRef.current = realtimeVoice.stop;
+
+  // When the transport selection flips (user toggles Realtime voice mid-session), tear
+  // down the now-inactive hook. Otherwise a running session on the other transport leaks —
+  // e.g. the legacy mic stays open and keeps transcribing with no UI left to stop it,
+  // since the orb/immersion now track the newly-selected hook. stop() is a no-op when that
+  // hook is already idle.
+  useEffect(() => {
+    if (realtimeEnabled) legacyStopRef.current();
+    else realtimeStopRef.current();
+  }, [realtimeEnabled]);
+
   // ⌘J (from anywhere) lands here and asks us to begin voice immediately so the
   // user can just talk. Mirror the orb's click guard: skip if a session is
   // already running, surface the same notice if the backend probe says voice

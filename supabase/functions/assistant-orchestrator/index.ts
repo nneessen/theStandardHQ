@@ -90,6 +90,9 @@ serve(async (req) => {
     // The realtime voice worker tags its turns with `x-jarvis-surface: voice`. This header
     // only selects the caller's OWN per-user request bucket (not a tenant boundary), so a
     // spoofed value at most inflates that one user's request allowance — still token-bounded.
+    // Note: it is deliberately NOT in `_shared/cors.ts` Access-Control-Allow-Headers, so a
+    // BROWSER cannot send it (preflight blocks it) — only the server-side worker does. Do not
+    // add it to the CORS allow-list (that would let any tab self-grant the higher bucket).
     const isVoiceSurface = req.headers.get("x-jarvis-surface") === "voice";
     const adminClient = createSupabaseAdminClient();
     const reqBucket = requestRateBucket(user.id, isVoiceSurface);

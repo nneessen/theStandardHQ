@@ -67,33 +67,42 @@ export async function* callOrchestrator(
   const decoder = new TextDecoder();
   let buf = "";
 
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += decoder.decode(value, { stream: true });
-    if (buf.length > MAX_SSE_BUFFER) {
-      throw new Error("assistant-orchestrator stream exceeded buffer ceiling");
-    }
-
-    // SSE frames are separated by a blank line; emit text as `delta`s arrive.
-    let sep: number;
-    while ((sep = buf.indexOf("\n\n")) !== -1) {
-      const frame = parseSseFrame(buf.slice(0, sep));
-      buf = buf.slice(sep + 2);
-      if (!frame) continue;
-
-      if (frame.event === "delta") {
-        const text = frame.data?.text;
-        if (typeof text === "string" && text) yield text;
-      } else if (frame.event === "done") {
-        const id =
-          (frame.data?.conversationId as string | undefined) ??
-          (frame.data?.conversation_id as string | undefined);
-        if (typeof id === "string") onConversationId(id);
-        return;
+  // try/finally so EVERY exit path releases the reader lock and cancels the body: the
+  // `done`-frame early return, a thrown buffer-overflow, AND the consumer abandoning this
+  // generator mid-stream (barge-in → AgentSession calls `.return()` on the iterator). In a
+  // persistent worker hosting many rooms, an un-cancelled body holds its connection open
+  // until TCP timeout; under load that leaks the fetch/connection pool.
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      if (buf.length > MAX_SSE_BUFFER) {
+        throw new Error("assistant-orchestrator stream exceeded buffer ceiling");
       }
-      // `tool` (chip activity) and other events carry no speakable text — ignore.
+
+      // SSE frames are separated by a blank line; emit text as `delta`s arrive.
+      let sep: number;
+      while ((sep = buf.indexOf("\n\n")) !== -1) {
+        const frame = parseSseFrame(buf.slice(0, sep));
+        buf = buf.slice(sep + 2);
+        if (!frame) continue;
+
+        if (frame.event === "delta") {
+          const text = frame.data?.text;
+          if (typeof text === "string" && text) yield text;
+        } else if (frame.event === "done") {
+          const id =
+            (frame.data?.conversationId as string | undefined) ??
+            (frame.data?.conversation_id as string | undefined);
+          if (typeof id === "string") onConversationId(id);
+          return;
+        }
+        // `tool` (chip activity) and other events carry no speakable text — ignore.
+      }
     }
+  } finally {
+    await reader.cancel().catch(() => {});
   }
 }
 

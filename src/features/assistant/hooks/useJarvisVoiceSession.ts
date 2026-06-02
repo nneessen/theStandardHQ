@@ -91,6 +91,9 @@ export function useJarvisVoiceSession({
 
   const roomRef = useRef<Room | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
+  // The agent audio track currently attached to audioElRef — so a republished track
+  // (after an internal reconnect) detaches the stale one instead of the live one.
+  const agentTrackRef = useRef<RemoteTrack | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const tdBufRef = useRef<Uint8Array | null>(null);
@@ -162,6 +165,11 @@ export function useJarvisVoiceSession({
           .webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
+      // Created after the connect/mic awaits, so it's outside the click gesture and
+      // Chrome boots it "suspended" — a suspended context never processes the graph,
+      // so the analyser would read flat silence and the visualizer would stay dead.
+      // Resume best-effort (no-op where already running, e.g. Safari).
+      if (ctx.state === "suspended") void ctx.resume().catch(() => {});
       const src = ctx.createMediaStreamSource(new MediaStream([mst]));
       const an = ctx.createAnalyser();
       an.fftSize = 2048;
@@ -238,9 +246,20 @@ export function useJarvisVoiceSession({
     tdBufRef.current = null;
     agentIdentityRef.current = null;
     agentActiveRef.current = false;
+    agentTrackRef.current = null;
     const room = roomRef.current;
     roomRef.current = null;
-    if (room) void room.disconnect().catch(() => {});
+    if (room) {
+      // Remove OUR listeners BEFORE disconnect. `disconnect()` is async and emits
+      // RoomEvent.Disconnected on a later tick — if our handler were still attached it
+      // would run setPhase("idle") AFTER this teardown, clobbering the "unavailable"
+      // phase set by the mic-deny / join-timeout error paths and firing setState on an
+      // unmounted component. A SERVER-initiated drop still reaches the handler because
+      // teardown hasn't run yet in that case. We own this Room instance, so removing all
+      // listeners is safe.
+      room.removeAllListeners();
+      void room.disconnect().catch(() => {});
+    }
   }, [stopAuthResend]);
 
   // --- availability probe (does NOT prove LiveKit creds; only that the fn is live) -
@@ -249,9 +268,17 @@ export function useJarvisVoiceSession({
     let cancelled = false;
     (async () => {
       try {
+        // The gateway enforces verify_jwt on this function, so the warm ping needs the
+        // user's Bearer token even though the warm short-circuit runs before app-level
+        // auth — apikey alone returns 401 and would falsely mark voice unavailable.
+        const jwt = await accessToken();
         const res = await fetch(`${TOKEN_ENDPOINT}?warm=1`, {
           method: "POST",
-          headers: { apikey: supabaseAnonKey, "Content-Type": "application/json" },
+          headers: {
+            ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+            apikey: supabaseAnonKey,
+            "Content-Type": "application/json",
+          },
           body: "{}",
         });
         if (!cancelled) setAvailable(res.ok);
@@ -262,7 +289,7 @@ export function useJarvisVoiceSession({
     return () => {
       cancelled = true;
     };
-  }, [enabled, available]);
+  }, [enabled, available, accessToken]);
 
   // --- event wiring ---------------------------------------------------------------
   const wireEvents = useCallback(
@@ -281,13 +308,25 @@ export function useJarvisVoiceSession({
             document.body.appendChild(el);
             audioElRef.current = el;
           }
+          // Detach any previously-attached agent track first: if the agent republishes
+          // its track (LiveKit internal reconnect), the OLD track still references `el`,
+          // and its later TrackUnsubscribed would otherwise detach the live one.
+          if (agentTrackRef.current && agentTrackRef.current !== track) {
+            agentTrackRef.current.detach(el);
+          }
+          agentTrackRef.current = track;
           track.attach(el);
           void el.play().catch(() => {
             // Autoplay blocked — startAudio() + the playback-status handler recover it.
           });
         })
         .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
-          if (audioElRef.current) track.detach(audioElRef.current);
+          // Only detach if THIS is the live track (a stale republished track's
+          // unsubscribe must not yank the element from the current one).
+          if (audioElRef.current && track === agentTrackRef.current) {
+            track.detach(audioElRef.current);
+            agentTrackRef.current = null;
+          }
         })
         .on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
           if (isAgent(participant)) onAgentAvailable(participant);

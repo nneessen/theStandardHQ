@@ -73,6 +73,18 @@ worker run. **Nothing downstream can be verified until this is fixed.**
    the dual-hook refactor touched `AssistantPage`; logic is byte-identical for legacy users but
    no test drives the full typed flow end-to-end).
 
+**⚠️ Capacity decision before real multi-turn voice (code-review finding):** the request
+rate-limit bucket is now voice-scoped (600/hr), but the **per-user token bucket
+(`ratelimit:tok:<uid>`, 200k tokens/day, shared with the typed path) is the BINDING limit** —
+and it counts `cache_read_input_tokens` every turn (`index.ts:385-388`), i.e. the full cached
+system-prompt+tools (~5–15k) on each turn. So a voice session 429s after roughly **16–40 turns
+(single-digit minutes)** regardless of the 600/hr request cap. The request-bucket change is
+necessary but **not sufficient**. Decide a voice token policy — give voice its own
+`ratelimit:tok:assistant-voice:<uid>` bucket with a higher daily cap (raises the spend ceiling —
+your call given the $200/mo budget), or accept short sessions. This was left undone on purpose
+because it changes the money/spend ceiling. (`rateBucket.ts` is the place to add the token-bucket
+selector mirroring the request one.)
+
 **Known fast-follows (not blockers for first audio):**
 - The realtime hook surfaces "Tap to enable audio." if the browser blocks autoplay, but nothing is
   yet wired to a user gesture that calls `room.startAudio()` to recover (the orb/backdrop only
