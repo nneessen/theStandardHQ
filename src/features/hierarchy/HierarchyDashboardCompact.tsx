@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Download, UserPlus, AlertCircle } from "lucide-react";
-import { PillButton, SoftCard, SectionShell } from "@/components/v2";
+import { PillButton, SoftCard, SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap, FlapTile, Num, T } from "@/components/board";
 import { useMyDownlines, useMyHierarchyStats } from "@/hooks";
 import { useCurrentUserProfile } from "@/hooks/admin";
@@ -103,6 +103,11 @@ export function HierarchyDashboardCompact() {
     : null;
 
   const [sendInvitationModalOpen, setSendInvitationModalOpen] = useState(false);
+  // One team-production table at a time — submissions (AP) vs issued (IP) —
+  // instead of two near-identical tables stacked (which read as duplicates).
+  const [teamTableView, setTeamTableView] = useState<"submissions" | "issued">(
+    "submissions",
+  );
 
   const handleExportCSV = () => {
     try {
@@ -302,21 +307,45 @@ export function HierarchyDashboardCompact() {
               timePeriod={timePeriod}
             />
 
-            {/* Agent Table - Submissions (all policies by effective_date) */}
-            <AgentTable
-              agents={downlines}
-              owner={owner}
-              isLoading={isLoading}
-              dateRange={{ start: startDate, end: endDate }}
-            />
+            {/* Team production — ONE table at a time (AP submissions vs IP
+                issued), toggled, so they don't stack as confusing duplicates. */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Cap>Team Production</Cap>
+                <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
+                  {teamTableView === "submissions"
+                    ? "All submissions by submit date · Annual Premium"
+                    : "Active issued policies only · Issued Premium"}
+                </span>
+              </div>
+              <PillNav
+                size="sm"
+                activeValue={teamTableView}
+                onChange={(v) =>
+                  setTeamTableView(v as "submissions" | "issued")
+                }
+                items={[
+                  { label: "Submissions · AP", value: "submissions" },
+                  { label: "Issued · IP", value: "issued" },
+                ]}
+              />
+            </div>
 
-            {/* Issued Premium Table - Active policies only */}
-            <IssuedPremiumTable
-              agents={downlines}
-              owner={owner}
-              isLoading={isLoading}
-              dateRange={{ start: startDate, end: endDate }}
-            />
+            {teamTableView === "submissions" ? (
+              <AgentTable
+                agents={downlines}
+                owner={owner}
+                isLoading={isLoading}
+                dateRange={{ start: startDate, end: endDate }}
+              />
+            ) : (
+              <IssuedPremiumTable
+                agents={downlines}
+                owner={owner}
+                isLoading={isLoading}
+                dateRange={{ start: startDate, end: endDate }}
+              />
+            )}
 
             {/* Team Analytics Dashboard - Premium Feature (Team tier or Owner) */}
             {downlines.length > 0 && canViewTeamAnalytics && (
