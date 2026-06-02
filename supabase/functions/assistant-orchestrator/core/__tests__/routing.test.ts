@@ -217,3 +217,34 @@ Deno.test(
     );
   },
 );
+
+Deno.test(
+  "routeToAgent keeps the prior agent on a contentless follow-up (continuity)",
+  () => {
+    // "yes" matches no intent → stay with the specialist that handled the prior turn
+    // (it has the tools/context), instead of snapping to the default and losing them.
+    assertEquals(
+      routeToAgent("yes", [...ALL_WIRED], "production-analyst"),
+      "production-analyst",
+    );
+    assertEquals(
+      routeToAgent("ok do that", [...ALL_WIRED], "policy-risk"),
+      "policy-risk",
+    );
+    // A clear topic switch still WINS over stickiness.
+    assertEquals(
+      routeToAgent(
+        "how is my recruiting pipeline?",
+        [...ALL_WIRED],
+        "production-analyst",
+      ),
+      "recruiting",
+    );
+    // No prior agent → default. Prior agent not enabled → default.
+    assertEquals(routeToAgent("yes", [...ALL_WIRED]), "executive-briefing");
+    assertEquals(
+      routeToAgent("yes", ["executive-briefing"], "production-analyst"),
+      "executive-briefing",
+    );
+  },
+);

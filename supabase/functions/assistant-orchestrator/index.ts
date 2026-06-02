@@ -148,7 +148,26 @@ serve(async (req) => {
     const enabledAgents =
       (prefs?.enabled_agents as AgentKey[] | undefined) ?? ALL_AGENT_KEYS;
 
-    const agentKey = routeToAgent(message, enabledAgents);
+    // Agent continuity: a follow-up with no clear intent ("yes", "ok") should stay
+    // with the specialist that handled the prior turn rather than snapping back to the
+    // default (which would strip away that specialist's tools/context). Look up the
+    // last assistant turn's agent for this conversation (RLS-scoped; null/ignored if
+    // none or not owned).
+    let previousAgent: AgentKey | null = null;
+    if (conversationId) {
+      const { data: lastMsg } = await db
+        .from("assistant_messages")
+        .select("agent_key")
+        .eq("conversation_id", conversationId)
+        .eq("role", "assistant")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const prev = (lastMsg as { agent_key?: string } | null)?.agent_key;
+      previousAgent = (prev as AgentKey | undefined) ?? null;
+    }
+
+    const agentKey = routeToAgent(message, enabledAgents, previousAgent);
     const agent = getAgent(agentKey);
 
     // Reuse the conversation if it exists and is owned (RLS); otherwise create one.

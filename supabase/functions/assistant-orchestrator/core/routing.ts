@@ -170,9 +170,17 @@ export function classifyIntent(message: string): AgentKey | null {
 export function routeToAgent(
   userMessage: string,
   enabledAgents: AgentKey[] = [DEFAULT_AGENT],
+  previousAgent?: AgentKey | null,
 ): AgentKey {
   const intent = classifyIntent(userMessage);
+  // A clear topic switch wins — route to the matched specialist.
   if (intent && enabledAgents.includes(intent)) return intent;
+  // No clear intent (a contentless follow-up like "yes", "ok", "and them?"):
+  // STAY with the prior turn's specialist. Re-routing such follow-ups to the
+  // default agent strips away the specialist's tools + context — e.g. a "yes"
+  // after a per-policy answer would land on Executive Briefing, which lacks
+  // queryPolicies, and the model can neither reproduce nor refresh the detail.
+  if (previousAgent && enabledAgents.includes(previousAgent)) return previousAgent;
   if (enabledAgents.includes(DEFAULT_AGENT)) return DEFAULT_AGENT;
   return enabledAgents[0] ?? DEFAULT_AGENT;
 }
