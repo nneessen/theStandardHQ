@@ -53,9 +53,32 @@ worker run. **Nothing downstream can be verified until this is fixed.**
    (a `RoomServiceClient.listRooms()` returning OK) — or just `npm run dev` and watch it register.
 2. Get a real `ELEVENLABS_API_KEY` (the worker `.env.local` has a placeholder) into worker
    `.env.local` + `fly secrets`.
-3. `cd services/jarvis-voice-worker && flyctl auth login && fly launch --no-deploy && fly deploy && fly scale count 1`.
-4. On your account: assistant settings → enable **Voice** + **Realtime voice (Beta)** → open
+3. **Deploy the orchestrator rate-limit change** — it's committed but edge functions deploy
+   MANUALLY here, not on push: `supabase functions deploy assistant-orchestrator`. **Why it
+   matters:** without it the worker's `x-jarvis-surface: voice` header hits the OLD orchestrator,
+   which ignores it and uses the 30/hr typed bucket → voice works for ~30 turns then **errors
+   mid-conversation** (looks like a fresh bug). Doesn't block *first audio* (a couple of turns
+   won't hit 30/hr), but ship it before any real multi-turn use. ⚠️ There is **foreign
+   uncommitted drift in `_shared/`** (`owned-tables.ts`, `email-compliance.ts`) — run your
+   drift/clobber-diff gate first so the deploy doesn't bundle unreviewed `_shared` changes into
+   the brain (that's why this wasn't auto-deployed this session).
+4. `cd services/jarvis-voice-worker && flyctl auth login && fly launch --no-deploy && fly deploy && fly scale count 1`.
+5. **Ship the frontend.** The realtime client is committed but not deployed — it reaches users via
+   the normal app deploy (Vercel). For the *first* smoke you can run the local dev frontend
+   (`npm run dev:web`, pointed at prod via `VITE_ALLOW_REMOTE_SUPABASE_DEV=true`) instead of waiting
+   on Vercel. Either way the worker (Fly) + token endpoint + orchestrator must be live.
+6. On your account: assistant settings → enable **Voice** + **Realtime voice (Beta)** → open
    `/command-center` → start a session → speak. Verify the §5 "awesome" bar; measure latency.
+   Also do a 30-second **typed-message** smoke (the "don't break the typed path" constraint —
+   the dual-hook refactor touched `AssistantPage`; logic is byte-identical for legacy users but
+   no test drives the full typed flow end-to-end).
+
+**Known fast-follows (not blockers for first audio):**
+- The realtime hook surfaces "Tap to enable audio." if the browser blocks autoplay, but nothing is
+  yet wired to a user gesture that calls `room.startAudio()` to recover (the orb/backdrop only
+  stop). On Chrome with mic granted the in-`start()` `startAudio()` almost always succeeds, so it
+  won't bite the first smoke — but wire the recovery tap (or drop the message) before broader rollout.
+- Worker scaling (`maxJobs`/job-per-process/autoscale) per the master-plan review is still TODO.
 
 Below is the original step-by-step (still accurate for the owner-gated steps).
 
