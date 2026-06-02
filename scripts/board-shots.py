@@ -45,10 +45,19 @@ def main() -> int:
 
         print(f"→ logging in at {BASE}/login")
         page.goto(f"{BASE}/login", wait_until="networkidle", timeout=30_000)
-        page.get_by_label("Email", exact=False).first.fill(EMAIL)
-        page.get_by_label("Password", exact=False).first.fill(PASSWORD)
+        # Login inputs are placeholder-only (no <label> association), so
+        # get_by_label() silently matches nothing — select by input type.
+        page.locator("input[type=email]").first.fill(EMAIL)
+        page.locator("input[type=password]").first.fill(PASSWORD)
         page.get_by_role("button", name="Sign in", exact=False).first.click()
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(3500)
+        if page.url.rstrip("/").endswith("/login"):
+            print(
+                "✗ login failed (still on /login) — check E2E_EMAIL/"
+                "E2E_PASSWORD in .env.local. Aborting."
+            )
+            browser.close()
+            return 3
 
         for route in routes:
             for vname, vw, vh in VIEWPORTS:

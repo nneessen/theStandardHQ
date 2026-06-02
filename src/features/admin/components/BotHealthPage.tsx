@@ -5,10 +5,7 @@
 
 import { useMemo } from "react";
 import {
-  Activity,
   AlertTriangle,
-  Database,
-  Gauge,
   Loader2,
   RefreshCw,
   ServerCrash,
@@ -17,11 +14,10 @@ import {
 } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionShell } from "@/components/v2";
-import { Cap, T } from "@/components/board";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Board, Cap, FlapTile, Pill, T } from "@/components/board";
+import type { FlapTileTone, PillTone } from "@/components/board";
 import {
   Table,
   TableBody,
@@ -45,30 +41,20 @@ import {
 
 // ─── Small presentation helpers ────────────────────────────────
 
-function levelBadgeVariant(
-  level: ThresholdLevel,
-): "success" | "warning" | "destructive" {
-  switch (level) {
-    case "critical":
-      return "destructive";
-    case "warn":
-      return "warning";
-    default:
-      return "success";
-  }
+// ThresholdLevel (ok|warn|critical) → Board accent tones.
+function levelTone(level: ThresholdLevel): FlapTileTone {
+  return level === "critical" ? "red" : level === "warn" ? "amber" : "green";
+}
+function levelPill(level: ThresholdLevel): PillTone {
+  return level === "critical" ? "red" : level === "warn" ? "amber" : "green";
 }
 
-function overallStatusVariant(
-  status: SystemMonitoringResponse["status"],
-): "success" | "warning" | "destructive" {
-  switch (status) {
-    case "unhealthy":
-      return "destructive";
-    case "degraded":
-      return "warning";
-    default:
-      return "success";
-  }
+function statusPill(status: SystemMonitoringResponse["status"]): PillTone {
+  return status === "unhealthy"
+    ? "red"
+    : status === "degraded"
+      ? "amber"
+      : "green";
 }
 
 function formatUptime(seconds: number): string {
@@ -175,19 +161,16 @@ export function BotHealthPage() {
 
             <div className="flex items-center gap-2">
               {data && (
-                <Badge
-                  variant={overallStatusVariant(data.status)}
-                  className="capitalize"
-                >
+                <Pill tone={statusPill(data.status)} dot>
                   {data.status}
-                </Badge>
+                </Pill>
               )}
               {data && computedLevel !== "ok" && (
-                <Badge variant={levelBadgeVariant(computedLevel)}>
+                <Pill tone={levelPill(computedLevel)}>
                   computed: {computedLevel}
-                </Badge>
+                </Pill>
               )}
-              <span className="text-[10px] text-v2-ink-muted hidden sm:inline">
+              <span className="text-[11px] text-v2-ink-muted hidden sm:inline">
                 updated {lastUpdatedLabel}
               </span>
               <Button
@@ -239,12 +222,12 @@ export function BotHealthPage() {
 
           {/* Initial loading state */}
           {isLoading && !data && (
-            <Card variant="outlined">
-              <CardContent className="flex items-center justify-center gap-2 p-10 text-v2-ink-muted">
+            <Board pad={40}>
+              <div className="flex items-center justify-center gap-2 text-v2-ink-muted">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-xs">Loading bot health…</span>
-              </CardContent>
-            </Card>
+              </div>
+            </Board>
           )}
 
           {/* Data-driven sections. Keep rendering even during an error
@@ -257,198 +240,240 @@ export function BotHealthPage() {
                 isServiceError && "opacity-60", // dim stale data behind the banner
               )}
             >
-              {/* Hero cards row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <HeroCard
-                  icon={<Gauge className="h-4 w-4" />}
-                  label="Queue depth"
-                  primary={formatNumber(data.jobQueue.totalPending)}
-                  primaryLevel={computedLevel}
-                  secondary={`${formatNumber(data.jobQueue.totalActive)} active`}
-                  footer={
-                    data.jobQueue.running ? "worker running" : "worker STOPPED"
-                  }
-                  footerLevel={data.jobQueue.running ? "ok" : "critical"}
-                />
-                <HeroCard
-                  icon={<AlertTriangle className="h-4 w-4" />}
-                  label="Failed (24h)"
-                  primary={formatNumber(data.jobQueue.totalFailed24h)}
-                  primaryLevel={failedLevel}
-                  secondary={`warn > ${TOTAL_FAILED_24H_THRESHOLD.warn} · crit > ${TOTAL_FAILED_24H_THRESHOLD.critical}`}
-                />
-                <HeroCard
-                  icon={<Database className="h-4 w-4" />}
-                  label="DB latency"
-                  primary={`${data.database.latencyMs.toFixed(1)} ms`}
-                  primaryLevel={dbLatencyLevel}
-                  secondary={
-                    data.database.connected ? "connected" : "DISCONNECTED"
-                  }
-                  secondaryLevel={data.database.connected ? "ok" : "critical"}
-                />
-                <HeroCard
-                  icon={<Activity className="h-4 w-4" />}
-                  label="Throughput"
-                  primary={formatNumber(data.throughput.messagesLastHour)}
-                  primaryLevel="ok"
-                  secondary={`${formatNumber(
-                    data.throughput.messagesLast24h,
-                  )} msgs / 24h`}
-                  footer={`${formatNumber(
-                    data.throughput.conversationsLast24h,
-                  )} convos / 24h`}
-                />
-              </div>
+              {/* Hero stat band — big legible FlapTiles + status pills */}
+              <Board pad={18}>
+                <Cap style={{ marginBottom: 14 }}>System</Cap>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(min(100%, 160px), 1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <FlapTile
+                    label="Queue Depth"
+                    value={formatNumber(data.jobQueue.totalPending)}
+                    tone={levelTone(computedLevel)}
+                  />
+                  <FlapTile
+                    label="Failed · 24h"
+                    value={formatNumber(data.jobQueue.totalFailed24h)}
+                    tone={levelTone(failedLevel)}
+                  />
+                  <FlapTile
+                    label="DB Latency"
+                    value={`${data.database.latencyMs.toFixed(1)} ms`}
+                    tone={levelTone(dbLatencyLevel)}
+                  />
+                  <FlapTile
+                    label="Msgs · Last Hr"
+                    value={formatNumber(data.throughput.messagesLastHour)}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginTop: 14,
+                  }}
+                >
+                  <Pill tone={data.jobQueue.running ? "green" : "red"} dot>
+                    {data.jobQueue.running
+                      ? "Worker Running"
+                      : "Worker Stopped"}
+                  </Pill>
+                  <Pill tone={data.database.connected ? "green" : "red"} dot>
+                    {data.database.connected
+                      ? "DB Connected"
+                      : "DB Disconnected"}
+                  </Pill>
+                  <Pill tone="blue">
+                    {formatNumber(data.jobQueue.totalActive)} Active
+                  </Pill>
+                  <Pill tone="blue">
+                    {formatNumber(data.throughput.messagesLast24h)} Msgs / 24h
+                  </Pill>
+                  <Pill tone="blue">
+                    {formatNumber(data.throughput.conversationsLast24h)} Convos
+                    / 24h
+                  </Pill>
+                </div>
+              </Board>
 
               {/* Per-queue breakdown */}
-              <Card variant="outlined">
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted">
-                    Queue breakdown
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
+              <Board pad={0} style={{ overflow: "hidden" }}>
+                <div style={{ padding: "14px 16px 8px" }}>
+                  <Cap>Queue Breakdown</Cap>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="h-8 text-[11px]">Queue</TableHead>
+                      <TableHead className="h-8 text-[11px] text-right">
+                        Pending
+                      </TableHead>
+                      <TableHead className="h-8 text-[11px] text-right">
+                        Active
+                      </TableHead>
+                      <TableHead className="h-8 text-[11px] text-right">
+                        Failed 24h
+                      </TableHead>
+                      <TableHead className="h-8 text-[11px] text-right">
+                        Threshold
+                      </TableHead>
+                      <TableHead className="h-8 text-[11px] text-right">
+                        Level
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {queueRows.length === 0 && (
                       <TableRow>
-                        <TableHead className="h-8 text-[11px]">Queue</TableHead>
-                        <TableHead className="h-8 text-[11px] text-right">
-                          Pending
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] text-right">
-                          Active
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] text-right">
-                          Failed 24h
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] text-right">
-                          Threshold
-                        </TableHead>
-                        <TableHead className="h-8 text-[11px] text-right">
-                          Level
-                        </TableHead>
+                        <TableCell
+                          colSpan={6}
+                          className="text-center text-[11px] text-v2-ink-muted py-4"
+                        >
+                          No queues reported.
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {queueRows.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={6}
-                            className="text-center text-[11px] text-v2-ink-muted py-4"
-                          >
-                            No queues reported.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                      {queueRows.map((q) => (
-                        <TableRow
-                          key={q.queue}
+                    )}
+                    {queueRows.map((q) => (
+                      <TableRow
+                        key={q.queue}
+                        className={cn(
+                          q.level === "critical" &&
+                            "bg-destructive/10 dark:bg-destructive/10",
+                          q.level === "warn" &&
+                            "bg-warning/10 dark:bg-warning/10",
+                        )}
+                      >
+                        <TableCell className="py-1.5 text-xs font-mono">
+                          {q.queue}
+                        </TableCell>
+                        <TableCell
                           className={cn(
-                            q.level === "critical" &&
-                              "bg-destructive/10 dark:bg-destructive/10",
-                            q.level === "warn" &&
-                              "bg-warning/10 dark:bg-warning/10",
+                            "py-1.5 text-xs text-right font-semibold",
+                            heroNumberClass(q.level),
                           )}
                         >
-                          <TableCell className="py-1.5 text-xs font-mono">
-                            {q.queue}
-                          </TableCell>
-                          <TableCell
-                            className={cn(
-                              "py-1.5 text-xs text-right font-semibold",
-                              heroNumberClass(q.level),
-                            )}
-                          >
-                            {formatNumber(q.pending)}
-                          </TableCell>
-                          <TableCell className="py-1.5 text-xs text-right">
-                            {formatNumber(q.active)}
-                          </TableCell>
-                          <TableCell
-                            className={cn(
-                              "py-1.5 text-xs text-right",
-                              q.failed24h > 0 &&
-                                "text-destructive font-semibold",
-                            )}
-                          >
-                            {formatNumber(q.failed24h)}
-                          </TableCell>
-                          <TableCell className="py-1.5 text-[10px] text-right text-v2-ink-muted font-mono">
-                            {q.threshold.warn} / {q.threshold.critical}
-                          </TableCell>
-                          <TableCell className="py-1.5 text-right">
-                            <Badge
-                              variant={levelBadgeVariant(q.level)}
-                              size="sm"
-                              className="capitalize"
-                            >
+                          {formatNumber(q.pending)}
+                        </TableCell>
+                        <TableCell className="py-1.5 text-xs text-right">
+                          {formatNumber(q.active)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            "py-1.5 text-xs text-right",
+                            q.failed24h > 0 && "text-destructive font-semibold",
+                          )}
+                        >
+                          {formatNumber(q.failed24h)}
+                        </TableCell>
+                        <TableCell className="py-1.5 text-[11px] text-right text-v2-ink-muted font-mono">
+                          {q.threshold.warn} / {q.threshold.critical}
+                        </TableCell>
+                        <TableCell className="py-1.5 text-right">
+                          <div className="flex justify-end">
+                            <Pill tone={levelPill(q.level)} dot>
                               {q.level}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+                            </Pill>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Board>
 
               {/* Process + agents footer row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Card variant="outlined">
-                  <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
-                      <TimerReset className="h-3.5 w-3.5" />
-                      Process
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
-                    <StatPair
+                <Board pad={18}>
+                  <Cap
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <TimerReset className="h-3.5 w-3.5" />
+                    Process
+                  </Cap>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(min(100%, 120px), 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <FlapTile
+                      sm
                       label="Uptime"
                       value={formatUptime(data.process.uptimeSeconds)}
                     />
-                    <StatPair
+                    <FlapTile
+                      sm
                       label="RSS"
                       value={`${data.process.memoryUsageMb.rss} MB`}
                     />
-                    <StatPair
+                    <FlapTile
+                      sm
                       label="Heap"
                       value={`${data.process.memoryUsageMb.heapUsed}/${data.process.memoryUsageMb.heapTotal} MB`}
                     />
-                    <StatPair
+                    <FlapTile
+                      sm
                       label="Node"
                       value={data.process.nodeVersion}
-                      className="col-span-3"
+                      style={{ gridColumn: "1 / -1" }}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </Board>
 
-                <Card variant="outlined">
-                  <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" />
-                      Agents
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 grid grid-cols-3 gap-2 text-xs">
-                    <StatPair
+                <Board pad={18}>
+                  <Cap
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <Users className="h-3.5 w-3.5" />
+                    Agents
+                  </Cap>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(min(100%, 120px), 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <FlapTile
+                      sm
                       label="Total"
                       value={formatNumber(data.agents.totalAgents)}
                     />
-                    <StatPair
+                    <FlapTile
+                      sm
                       label="Active"
                       value={formatNumber(data.agents.activeAgents)}
                     />
-                    <StatPair
-                      label="Bot enabled"
+                    <FlapTile
+                      sm
+                      label="Bot Enabled"
                       value={formatNumber(data.agents.botEnabledAgents)}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </Board>
               </div>
 
               {/* Full-width timestamp footer */}
-              <div className="text-[10px] text-v2-ink-muted text-center pt-1">
+              <div className="text-[11px] text-v2-ink-muted text-center pt-1">
                 Last snapshot:{" "}
                 <span className="font-mono">
                   {new Date(data.timestamp).toLocaleString()}
@@ -461,88 +486,6 @@ export function BotHealthPage() {
         </div>
       </div>
     </SectionShell>
-  );
-}
-
-// ─── Sub-presentational components (kept local — single-use only) ──
-
-interface HeroCardProps {
-  icon: React.ReactNode;
-  label: string;
-  primary: string;
-  primaryLevel: ThresholdLevel;
-  secondary?: string;
-  secondaryLevel?: ThresholdLevel;
-  footer?: string;
-  footerLevel?: ThresholdLevel;
-}
-
-function HeroCard({
-  icon,
-  label,
-  primary,
-  primaryLevel,
-  secondary,
-  secondaryLevel,
-  footer,
-  footerLevel,
-}: HeroCardProps) {
-  return (
-    <Card variant="outlined">
-      <CardContent className="p-4 space-y-1">
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-v2-ink-muted">
-          {icon}
-          {label}
-        </div>
-        <div
-          className={cn(
-            "text-2xl font-semibold tabular-nums",
-            heroNumberClass(primaryLevel),
-          )}
-        >
-          {primary}
-        </div>
-        {secondary && (
-          <div
-            className={cn(
-              "text-[11px] text-v2-ink-muted",
-              secondaryLevel && heroNumberClass(secondaryLevel),
-            )}
-          >
-            {secondary}
-          </div>
-        )}
-        {footer && (
-          <div
-            className={cn(
-              "text-[10px] text-v2-ink-subtle",
-              footerLevel && heroNumberClass(footerLevel),
-            )}
-          >
-            {footer}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatPair({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn("flex flex-col", className)}>
-      <span className="text-[10px] uppercase tracking-[0.18em] text-v2-ink-muted">
-        {label}
-      </span>
-      <span className="font-mono text-xs text-v2-ink truncate">{value}</span>
-    </div>
   );
 }
 
