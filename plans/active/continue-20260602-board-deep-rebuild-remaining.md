@@ -108,14 +108,11 @@ though they don't use the `FlapTile` primitive — don't be fooled by a
 - **Downline Performance** (`/hierarchy/downlines`) ✓ FULL — added Downline-Totals
   FlapTile band; Card→Board table panel; empty persistency shows `—` not red 0.0%.
   Dialogs left as-is (Radix-portaled, inherit Board). (1ae66bbf, 1ae66bbf+fix)
-- **Business Tools Overview tab** (`/business-tools`) ✓ STRUCTURAL (NOT
-  screenshot-verifiable) — SummaryCards→FlapTile band, chart cards + ReviewQueue
-  →Board, dimmed chart grid. ⚠ Bodies are gated by the `business-tools-proxy`
-  edge fn which is **NOT served on local** (CORS/ERR_FAILED) → the Overview body
-  perpetually spins; verified by tsc/eslint/code only. **Remaining tabs**
-  (Transactions/Statements/Upload + their dialogs: TransactionDetail,
-  UploadResultSummary, WorkbookReview, InstitutionRequestForm) still shadcn —
-  also un-verifiable on local. (e8f0f6f4)
+- **Business Tools** (`/business-tools`) — ⛔ **OUT OF SCOPE (per user, 2026-06-02).**
+  An Overview-tab rebuild was committed then **reverted** (e8f0f6f4 → revert
+  15eb94b9) — files are back to original shadcn. Its bodies are gated by the
+  `business-tools-proxy` edge fn (not served on local, CORS/ERR_FAILED) so it
+  was never screenshot-verifiable anyway. **Do NOT redesign Business Tools.**
 - **OrgChartPage** (`/hierarchy/org-chart`) ✓ page-level loading/error/empty
   Cards→Board. Data view already charcoal via `OrgChartVisualization` (whose
   inner `<Card>`s resolve to charcoal through theme-v2 `--card` — structural-only,
@@ -157,7 +154,6 @@ For EACH page below: rebuild the page file AND walk its feature dir's
 | Bot Health (`/admin/bot-health`) | `admin/components/BotHealthPage.tsx` | inline `HeroCard`, `StatPair` helpers (same file) — make HeroCards into FlapTiles |
 | Agent Detail (`/hierarchy/agent/$id`) | `hierarchy/AgentDetailPage.tsx` | inline stat header + the AP/commission/override/policy tables; `components/EditAgentModal.tsx` |
 | Downline Performance (`/hierarchy/downlines`) | `hierarchy/components/DownlinePerformance.tsx` | inline `EditHierarchyDialog`, `DeleteAgentDialog` |
-| Business Tools (`/business-tools`) | `business-tools/BusinessToolsPage.tsx` | `business-tools/components/`: `SummaryCards`, `OverviewTab`, `CategoryChart`, `MonthlyTrendChart`, `StatementsTab`, `TransactionsTab`, `ReviewQueue`, `UploadTab`, `TransactionDetail`, `UploadResultSummary` |
 | Contracting (`/contracting`) | `contracting/components/ContractingDashboard.tsx` | `contracting/components/`: `MyCarrierContractsCard`, `ContractLevelDisplay`, `ContractingFilters`, `BulkActionToolbar`, `InlineEditableCell`, `ContractRequestDetailDialog`, `BulkStatusChangeDialog` |
 | Trainer Dashboard (`/trainer-dashboard`) | `training-hub/components/TrainerDashboard.tsx` | `training-hub/components/`: `AgencyPipelineOverview`, `ActivityTab`, `RecruitingTab`, `DocumentsTab`, `EmailTemplatesTab` |
 | My Training (`/my-training`) | `training-modules/components/learner/MyTrainingPage.tsx` | `training-modules/components/learner/` (XP/streak/progress stat blocks) |
