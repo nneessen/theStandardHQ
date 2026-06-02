@@ -49,16 +49,41 @@ class SessionState {
   jwt: string | null = null;
   conversationId: string | null = null;
 
+  // `ownerUid` is parsed from the LiveKit-signed room name (`jarvis-<uid>-<session>`).
+  // We accept an auth JWT only if its `sub` matches it — so even though the data channel
+  // hands us a bearer token, the worker can't be made to act as a *different* user
+  // (defense-in-depth that enforces the token endpoint's stated identity anchor).
+  constructor(private readonly ownerUid: string | null) {}
+
   ingestData(payload: Uint8Array): void {
     try {
       const msg = JSON.parse(new TextDecoder().decode(payload)) as {
         type?: string;
         jwt?: string;
       };
-      if (msg.type === "auth" && typeof msg.jwt === "string") this.jwt = msg.jwt;
+      if (msg.type !== "auth" || typeof msg.jwt !== "string") return;
+      // Bind to the room owner. Decode (NOT verify — the orchestrator verifies the
+      // signature) the `sub` and reject any token that isn't this room's user.
+      const sub = decodeJwtSub(msg.jwt);
+      if (this.ownerUid && sub && sub !== this.ownerUid) return; // mismatch → reject silently
+      this.jwt = msg.jwt;
     } catch {
       /* non-JSON data frames (if any) are ignored */
     }
+  }
+}
+
+/** Decode (without verifying) a JWT's `sub`. Signature verification is the orchestrator's job. */
+function decodeJwtSub(jwt: string): string | null {
+  try {
+    const payload = jwt.split(".")[1];
+    if (!payload) return null;
+    const claims = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as { sub?: string };
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
   }
 }
 
@@ -120,7 +145,13 @@ export default defineAgent({
 
   entry: async (ctx: JobContext) => {
     await ctx.connect();
-    const state = new SessionState();
+    // Rooms are minted as `jarvis-<uid>-<sessionUuid>`; pull the owner uid so we only
+    // accept that user's JWT off the data channel (see SessionState).
+    const ownerUid =
+      ctx.room.name?.match(
+        /^jarvis-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+      )?.[1] ?? null;
+    const state = new SessionState(ownerUid);
 
     // Receive the user's JWT (and refreshes) over the data channel.
     ctx.room.on("dataReceived", (payload: Uint8Array) => state.ingestData(payload));

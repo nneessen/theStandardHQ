@@ -44,12 +44,21 @@ export async function* callOrchestrator(
       apikey: cfg.anonKey,
     },
     body: JSON.stringify({ message, conversationId }),
+    // Hang-guard: without this a stuck orchestrator hangs the voice turn forever (no
+    // reply, no fallback). 45s is a turn ceiling, not a UX target — the caller catches
+    // the AbortError and speaks a graceful fallback. (A per-chunk inactivity timeout is
+    // the future refinement; this total cap is the safety net.)
+    signal: AbortSignal.timeout(45_000),
   });
 
   if (!res.ok || !res.body) {
     throw new Error(`assistant-orchestrator responded ${res.status}`);
   }
 
+  // Cap the accumulator: a stream that never emits a frame separator (hung or hostile
+  // upstream) would otherwise grow `buf` without bound and OOM a worker that hosts other
+  // users' rooms. Throw → the caller speaks the graceful fallback.
+  const MAX_SSE_BUFFER = 1_000_000;
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buf = "";
@@ -58,6 +67,9 @@ export async function* callOrchestrator(
     const { done, value } = await reader.read();
     if (done) break;
     buf += decoder.decode(value, { stream: true });
+    if (buf.length > MAX_SSE_BUFFER) {
+      throw new Error("assistant-orchestrator stream exceeded buffer ceiling");
+    }
 
     // SSE frames are separated by a blank line; emit text as `delta`s arrive.
     let sep: number;

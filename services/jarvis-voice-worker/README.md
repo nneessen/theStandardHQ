@@ -39,8 +39,14 @@ npm run dev                      # runs the worker against LiveKit Cloud in dev 
 
 Then build the **frontend client** (replace `src/features/assistant/hooks/useAssistantVoiceSession.ts`):
 fetch a token from `assistant-voice-livekit-token`, join the room with `livekit-client`,
-publish the mic, **publish the user's Supabase JWT over the data channel**, and play the
-agent's audio track.
+publish the mic, and play the agent's audio track.
+
+**Security requirement for the JWT hand-off (do not skip):** publish the user's Supabase JWT
+over the data channel **addressed to the agent participant's identity only, with reliable
+delivery** — `publishData` defaults to an unaddressed BROADCAST to all participants, so always
+pass the explicit destination. Re-publish on every ~1h token refresh (the worker swaps it).
+The worker already binds the JWT's `sub` to the room owner (`agent.ts`), but addressed
+delivery keeps the token off any other participant's wire in the first place.
 
 ## Deploy (Fly)
 

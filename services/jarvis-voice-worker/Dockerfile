@@ -4,19 +4,21 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Install deps (incl. dev for the tsc build).
-COPY package.json ./
-RUN npm install
+# Install EXACTLY the audited, committed lockfile — `npm ci` fails on any drift and honors
+# the package-lock.json we vetted with `npm audit` (reproducible; a malicious transitive
+# bump can't sneak in). Includes dev deps for the tsc build.
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Build TypeScript -> dist/.
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
-# Some @livekit/agents plugins (Silero VAD, turn-detector) fetch model weights. Bake them
-# into the image so the first turn doesn't pay a cold download. If your installed version
-# exposes the subcommand, this caches them; harmless no-op otherwise.
-RUN node dist/agent.js download-files || echo "no download-files step for this SDK version"
+# NOTE: @livekit/agents (Silero VAD / turn-detector) can pre-download model weights to avoid
+# a cold first-turn fetch. Add that step here ONCE the installed SDK's CLI subcommand is
+# confirmed AND the weights can be version-pinned/checksum-verified. Do NOT mask its failure
+# with `|| true/echo` — a swallowed error would ship a broken or tampered image silently.
 
 ENV NODE_ENV=production
 
