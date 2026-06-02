@@ -5,7 +5,11 @@ import type {
   ToolSelectBuilder,
 } from "../types.ts";
 import { getPolicyRiskAlerts } from "../getPolicyRiskAlerts.ts";
-import { queryPolicies } from "../queryPolicies.ts";
+import {
+  queryPolicies,
+  sumAllPremiums,
+  type PolicyFilters,
+} from "../queryPolicies.ts";
 import { getDailyBriefingData } from "../getDailyBriefingData.ts";
 import { getLeadPriorities } from "../getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "../getRecruitingSnapshot.ts";
@@ -78,6 +82,10 @@ function makeCtx(
       },
       limit(count) {
         call.filters.push({ op: "limit", value: count });
+        return builder;
+      },
+      range(from, to) {
+        call.filters.push({ op: "range", values: [from, to] });
         return builder;
       },
       then(onfulfilled, onrejected) {
@@ -460,6 +468,7 @@ const POLICY_ROWS = [
     policy_number: "PN-1",
     payment_frequency: "monthly",
     carriers: { name: "Acme Life" },
+    clients: { name: "Jane Client" },
     notes: "private underwriting note",
     client_id: "client-uuid-xyz",
     user_id: "some-other-user",
@@ -529,10 +538,12 @@ Deno.test(
       call?.filters.some((f) => f.op === "lte" && f.column === "submit_date"),
     );
 
-    // PII allowlist: only safe, camelCased fields — never notes/client_id/user_id.
+    // PII allowlist: the client's NAME is surfaced (owner's own book), but the raw
+    // client_id UUID and contact PII are NOT.
     const p = res.data.policies[0];
     assertEquals(p.policyNumber, "PN-1");
     assertEquals(p.carrier, "Acme Life");
+    assertEquals(p.client, "Jane Client");
     assertEquals(p.status, "pending");
     assertEquals("notes" in p, false);
     assertEquals("client_id" in p, false);
@@ -593,31 +604,52 @@ Deno.test(
 );
 
 Deno.test(
-  "queryPolicies flags truncation and sums AP/IP over the RETURNED rows only",
+  "queryPolicies flags truncation and delegates AP/IP to a second numeric-only sum pass",
   async () => {
-    // 2 rows returned but 57 match overall → truncated; sums cover the 2 shown.
+    // 2 rows returned but 6 match overall → truncated. The capped display query can only
+    // see 2 rows, so the totals come from a SECOND pass over just the premium columns.
+    // This test pins the WIRING (truncation flagged, second pass fires with the right
+    // shape, premiumsComplete surfaced); the cross-page sum ARITHMETIC is covered by the
+    // dedicated sumAllPremiums tests below (makeCtx returns one fixed page and so cannot
+    // simulate real pagination, which is exactly why the arithmetic is tested separately).
     const { ctx, selectCalls } = makeCtx(
       {},
-      { policies: { data: POLICY_ROWS, count: 57, error: null } },
+      { policies: { data: POLICY_ROWS, count: 6, error: null } },
     );
     const res = (await queryPolicies.run({ limit: 2 }, ctx)) as {
       data: {
         count: number;
         returned: number;
         truncated: boolean;
-        totalAnnualPremium: number;
-        totalMonthlyPremium: number;
+        premiumsComplete: boolean;
       };
     };
-    assertEquals(res.data.count, 57);
+    assertEquals(res.data.count, 6);
     assertEquals(res.data.returned, 2);
     assertEquals(res.data.truncated, true);
-    assertEquals(res.data.totalAnnualPremium, 2000); // 1200 + 800
-    assertEquals(res.data.totalMonthlyPremium, 170); // 100 + 70
-    const limitFilter = selectCalls
-      .find((c) => c.table === "policies")
-      ?.filters.find((f) => f.op === "limit");
-    assertEquals(limitFilter?.value, 2);
+    assertEquals(res.data.premiumsComplete, true);
+
+    const policyCalls = selectCalls.filter((c) => c.table === "policies");
+    assert(policyCalls.length >= 2, "display query + at least one sum pass");
+
+    // The display query is capped at the requested limit.
+    assertEquals(
+      policyCalls[0].filters.find((f) => f.op === "limit")?.value,
+      2,
+    );
+
+    // The sum pass selects ONLY the two premium columns, orders by the stable PK, and
+    // paginates by range (so it can walk past PostgREST's max_rows cap).
+    const sumPass = policyCalls[1];
+    assertEquals(sumPass.columns, "annual_premium, monthly_premium");
+    assert(
+      sumPass.filters.some((f) => f.op === "order" && f.column === "id"),
+      "sum pass must order by the stable id key",
+    );
+    assert(
+      sumPass.filters.some((f) => f.op === "range"),
+      "sum pass must paginate with range()",
+    );
   },
 );
 
@@ -710,5 +742,152 @@ Deno.test(
     );
     const res = (await queryPolicies.run({}, ctx)) as { available: boolean };
     assertEquals(res.available, false);
+  },
+);
+
+// --- sumAllPremiums: the cross-page accumulation arithmetic (the money path) ---------
+//
+// queryPolicies' display-query mock returns one page, so it cannot exercise the
+// multi-page walk. This focused mock returns a SEQUENCE of pages keyed by call order
+// and records every range() so we can assert the cursor never skips or double-counts.
+
+const SUM_FILTERS: PolicyFilters = {
+  scope: "team",
+  userId: "user_1",
+  statuses: null,
+  lifecycles: null,
+  products: [],
+  dateField: "submit_date",
+  startDate: null,
+  endDate: null,
+};
+
+function makePagedCtx(
+  pages: Array<Array<{ annual_premium: number | null; monthly_premium: number }>>,
+) {
+  const ranges: Array<[number, number]> = [];
+  let call = 0;
+  const builder: ToolSelectBuilder = {
+    eq: () => builder,
+    in: () => builder,
+    gte: () => builder,
+    lte: () => builder,
+    order: () => builder,
+    limit: () => builder,
+    range(from, to) {
+      ranges.push([from, to]);
+      return builder;
+    },
+    then(onfulfilled, onrejected) {
+      const data = pages[call] ?? [];
+      call += 1;
+      return Promise.resolve({ data, count: null, error: null }).then(
+        onfulfilled,
+        onrejected,
+      );
+    },
+  };
+  const db = {
+    rpc: () => Promise.resolve({ data: null, error: null }),
+    from: () => ({
+      insert: () => ({
+        select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      }),
+      select: () => builder,
+    }),
+  } as unknown as AssistantToolContext["db"];
+  const ctx = {
+    db,
+    userId: "user_1",
+    imoId: null,
+    conversationId: "c",
+    close: { getClient: () => Promise.resolve(null) },
+    underwriting: { run: () => Promise.resolve(null) },
+  } as unknown as AssistantToolContext;
+  return { ctx, ranges, callCount: () => call };
+}
+
+Deno.test(
+  "sumAllPremiums walks every page and sums all matches (no skip, no double-count at the page boundary)",
+  async () => {
+    // pageSize=2, expectedCount=5: two FULL pages then a short final page.
+    const { ctx, ranges } = makePagedCtx([
+      [
+        { annual_premium: 100, monthly_premium: 10 },
+        { annual_premium: 200, monthly_premium: 20 },
+      ],
+      [
+        { annual_premium: 300, monthly_premium: 30 },
+        { annual_premium: 400, monthly_premium: 40 },
+      ],
+      [{ annual_premium: 500, monthly_premium: 50 }],
+    ]);
+    const r = await sumAllPremiums(ctx, SUM_FILTERS, 5, 2, 1_000);
+    assertEquals(r.annual, 1500); // 100+200+300+400+500
+    assertEquals(r.monthly, 150); // 10+20+30+40+50
+    assertEquals(r.complete, true);
+    // Cursor advances by ACTUAL rows received → contiguous, non-overlapping ranges, and
+    // it stops the moment expectedCount is covered (no wasted trailing empty-page query).
+    assertEquals(ranges, [
+      [0, 1],
+      [2, 3],
+      [4, 5],
+    ]);
+  },
+);
+
+Deno.test(
+  "sumAllPremiums advances by batch length so a SHORT non-final page can never skip rows",
+  async () => {
+    // Server returns fewer rows than the requested pageSize (e.g. max_rows below
+    // pageSize). Advancing by 1 (not by pageSize=10) must still reach all 3 rows.
+    const { ctx, ranges } = makePagedCtx([
+      [{ annual_premium: 100, monthly_premium: 10 }],
+      [{ annual_premium: 200, monthly_premium: 20 }],
+      [{ annual_premium: 300, monthly_premium: 30 }],
+    ]);
+    const r = await sumAllPremiums(ctx, SUM_FILTERS, 3, 10, 1_000);
+    assertEquals(r.annual, 600);
+    assertEquals(r.complete, true);
+    assertEquals(ranges, [
+      [0, 9],
+      [1, 10],
+      [2, 11],
+    ]);
+  },
+);
+
+Deno.test(
+  "sumAllPremiums treats null annual_premium as 0 and stops on an empty page (stale count)",
+  async () => {
+    // expectedCount says 9 but only 2 rows actually exist → empty page terminates the
+    // walk (no infinite loop), and a null premium contributes 0.
+    const { ctx } = makePagedCtx([
+      [
+        { annual_premium: null, monthly_premium: 10 },
+        { annual_premium: 250, monthly_premium: 20 },
+      ],
+      [],
+    ]);
+    const r = await sumAllPremiums(ctx, SUM_FILTERS, 9, 2, 1_000);
+    assertEquals(r.annual, 250); // null → 0, + 250
+    assertEquals(r.monthly, 30);
+    assertEquals(r.complete, true);
+  },
+);
+
+Deno.test(
+  "sumAllPremiums flags premiumsComplete:false when the safety bound is hit",
+  async () => {
+    // Every page is full and expectedCount is effectively unbounded → the safety bound
+    // (safetyRows=4, pageSize=2) trips after 4 rows, returning a floor, not the total.
+    const fullPage = [
+      { annual_premium: 100, monthly_premium: 10 },
+      { annual_premium: 100, monthly_premium: 10 },
+    ];
+    const { ctx } = makePagedCtx([fullPage, fullPage, fullPage, fullPage]);
+    const r = await sumAllPremiums(ctx, SUM_FILTERS, 1_000_000, 2, 4);
+    assertEquals(r.complete, false);
+    assertEquals(r.annual, 400); // summed 4 rows (2 pages) before the bound
   },
 );

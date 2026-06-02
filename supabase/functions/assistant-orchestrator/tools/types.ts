@@ -18,6 +18,8 @@ export interface ToolSelectBuilder
   lte(column: string, value: unknown): ToolSelectBuilder;
   order(column: string, opts?: { ascending?: boolean }): ToolSelectBuilder;
   limit(count: number): ToolSelectBuilder;
+  /** Inclusive zero-based row range — used to paginate past PostgREST's max_rows cap. */
+  range(from: number, to: number): ToolSelectBuilder;
 }
 
 /** Minimal structural surface of the user-scoped supabase client that tools use. */

@@ -1,8 +1,8 @@
 // Flexible, RLS-scoped read over the `policies` table — the "no data gaps" tool.
 // Lets the assistant LIST / COUNT / FILTER an agent's (or their team's) policies by
 // application status, in-force lifecycle, product, and a date range, and returns the
-// EXACT match count, the AP/IP sums of the returned rows, and a capped list of SAFE
-// per-policy columns.
+// EXACT match count, the AP/IP sums over ALL matching policies (not just the returned
+// sample), and a capped list of SAFE per-policy columns.
 //
 // TENANCY INVARIANT (do not weaken): runs on `ctx.db` — the signed-in user's
 // RLS-scoped PostgREST client — and NEVER adminClient / a SECURITY DEFINER RPC. The
@@ -12,9 +12,13 @@
 // an explicit user_id filter. RLS is the ceiling regardless of any argument the model
 // passes; the filters below can only ever shrink the visible set, never widen it.
 //
-// PII: selects a FIXED safe-column allowlist only — never notes, cancellation_reason,
-// referral_source, client_id, lead_purchase_id, or any other user's id. The carrier
-// name is embedded read-only via the carrier_id FK.
+// PII: selects a FIXED safe-column allowlist only. The client's NAME and the carrier
+// name are embedded read-only via their FKs — the same identification the app already
+// shows the caller (mirrors getClientSnapshot), and the embed inherits the clients/
+// carriers RLS, so it can only ever surface a client the caller is already allowed to
+// see (own book; downline only if the caller's clients RLS permits). It STILL never
+// selects client_id, client contact details (email/phone/DOB), notes,
+// cancellation_reason, referral_source, lead_purchase_id, or any other user's id.
 //
 // COLUMN-NAME SAFETY: the only model-supplied COLUMN name is `dateField`, which is
 // validated against a closed allowlist before it reaches the query (column names are not
@@ -25,18 +29,24 @@
 // An empty result is a real "none" and is available:true — do NOT treat zero rows as
 // unavailable.
 
-import type { AssistantToolContext, RegisteredTool } from "./types.ts";
+import type {
+  AssistantToolContext,
+  RegisteredTool,
+  ToolSelectBuilder,
+} from "./types.ts";
 import { optionalString } from "./types.ts";
 
 const num = (v: unknown): number =>
   typeof v === "number" ? v : Number(v) || 0;
 
-// Safe, non-PII column allowlist. carriers(name) embeds the carrier via the single
-// policies_carrier_id_fkey FK (so the embed name is unambiguous).
+// Safe column allowlist. clients(name)/carriers(name) embed via the single
+// policies_client_id_fkey / policies_carrier_id_fkey FKs (so each embed name is
+// unambiguous); both inherit their table's RLS, so they only return rows the caller
+// may already see — and ONLY the name, never contact PII.
 const SAFE_COLS =
   "status, lifecycle_status, product, annual_premium, monthly_premium, " +
   "submit_date, effective_date, expiration_date, cancellation_date, " +
-  "policy_number, payment_frequency, carriers(name)";
+  "policy_number, payment_frequency, clients(name), carriers(name)";
 
 // `dateField` is a model-supplied COLUMN NAME interpolated into .gte/.lte/.order — it
 // MUST be allowlisted (an arbitrary string would error or address an unintended column).
@@ -66,6 +76,16 @@ const PRODUCT_TYPES = new Set([
 const DEFAULT_LIMIT = 50;
 const HARD_LIMIT = 200;
 
+// The AP/IP totals must cover EVERY matching policy, but the returned `policies`
+// list is capped at `limit` to keep the model payload small — so when more rows
+// match than were returned, the sums are computed by a second, numeric-only pass
+// over all matches. PostgREST caps each response at max_rows (1000), so that pass
+// paginates by a stable key. SUM_SAFETY_ROWS bounds the worst case (a pathologically
+// large book) so the tool can never run unbounded; `premiumsComplete:false` is
+// surfaced if it is ever hit.
+const SUM_PAGE = 1000;
+const SUM_SAFETY_ROWS = 50_000;
+
 /**
  * Optional string[] from model input: coerce to strings, trim, drop empties, optionally
  * normalize (e.g. lowercase). Returns null when the key is absent or yields no values, so
@@ -87,8 +107,10 @@ function optionalStringArray(
 /** Map a raw row to ONLY the safe, non-PII fields (defence in depth over SAFE_COLS). */
 function safeShape(r: Record<string, unknown>) {
   const carrier = r.carriers as { name?: unknown } | null | undefined;
+  const client = r.clients as { name?: unknown } | null | undefined;
   const str = (v: unknown) => (typeof v === "string" ? v : null);
   return {
+    client: client && typeof client === "object" ? str(client.name) : null,
     status: str(r.status),
     lifecycleStatus: str(r.lifecycle_status),
     product: str(r.product),
@@ -105,45 +127,130 @@ function safeShape(r: Record<string, unknown>) {
   };
 }
 
+/** The resolved, already-validated filter set, shared by the display and sum passes. */
+export interface PolicyFilters {
+  scope: "mine" | "team";
+  userId: string;
+  statuses: string[] | null;
+  lifecycles: string[] | null;
+  products: string[];
+  dateField: string;
+  startDate: string | null;
+  endDate: string | null;
+}
+
+/**
+ * Apply the row-matching filters (NOT order/limit/range, which differ per pass) to a
+ * select builder. Sharing this between the display query and the sum pass guarantees
+ * the AP/IP totals are summed over EXACTLY the rows the count and list describe — the
+ * two passes can never drift apart.
+ */
+function applyPolicyFilters(
+  q: ToolSelectBuilder,
+  f: PolicyFilters,
+): ToolSelectBuilder {
+  if (f.scope === "mine") q = q.eq("user_id", f.userId);
+  if (f.statuses) q = q.in("status", f.statuses);
+  if (f.lifecycles) q = q.in("lifecycle_status", f.lifecycles);
+  if (f.products.length > 0) q = q.in("product", f.products);
+  if (f.startDate) q = q.gte(f.dateField, f.startDate);
+  if (f.endDate) q = q.lte(f.dateField, f.endDate);
+  return q;
+}
+
+/**
+ * Sum annual/monthly premium over ALL matching policies (RLS-scoped), paginating past
+ * PostgREST's max_rows cap by a stable key (`id`, the unique PK) so no row is counted
+ * twice or skipped.
+ *
+ * The cursor advances by the ACTUAL rows received (`from += batch.length`), never by the
+ * requested page size — so a short page (e.g. if the server's max_rows is below pageSize)
+ * can never skip rows. Termination is driven by the already-known `expectedCount` (the
+ * display query's exact count), with an empty page as a defensive fallback if rows were
+ * deleted mid-walk. `complete:false` means the safety bound was hit (or a page errored)
+ * and the returned totals are a floor, not the exact total.
+ *
+ * pageSize / safetyRows are injectable for testing; production uses the module defaults.
+ */
+export async function sumAllPremiums(
+  ctx: AssistantToolContext,
+  filters: PolicyFilters,
+  expectedCount: number,
+  pageSize: number = SUM_PAGE,
+  safetyRows: number = SUM_SAFETY_ROWS,
+): Promise<{ annual: number; monthly: number; complete: boolean }> {
+  let annual = 0;
+  let monthly = 0;
+  let from = 0;
+  let seen = 0;
+
+  for (;;) {
+    const q = applyPolicyFilters(
+      ctx.db.from("policies").select("annual_premium, monthly_premium"),
+      filters,
+    )
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+
+    const { data, error } = await q;
+    if (error) return { annual, monthly, complete: false };
+
+    const batch = (data as Array<Record<string, unknown>>) ?? [];
+    for (const r of batch) {
+      annual += num(r.annual_premium);
+      monthly += num(r.monthly_premium);
+    }
+    seen += batch.length;
+    from += batch.length;
+
+    // Done once we've covered the known total, or the result set is exhausted (empty
+    // page — guards against a stale count if rows were deleted during the walk).
+    if (batch.length === 0 || seen >= expectedCount) {
+      return { annual, monthly, complete: true };
+    }
+    // Pathologically large book: stop and flag the totals as a floor, not the exact sum.
+    if (from >= safetyRows) return { annual, monthly, complete: false };
+  }
+}
+
 async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
   // Scope: default to the narrowest ('mine'). RLS still constrains 'team' to the
   // caller's own subtree; 'mine' adds an explicit user_id filter on top.
   const scope = input.scope === "team" ? "team" : "mine";
 
-  const statuses = optionalStringArray(input, "status", (s) => s.toLowerCase());
-  const lifecycles = optionalStringArray(
-    input,
-    "lifecycleStatus",
-    (s) => s.toLowerCase(),
-  );
-  // Allowlist product to valid enum values; a fully-invalid array → no product filter.
-  const products = (
-    optionalStringArray(input, "product", (s) => s.toLowerCase()) ?? []
-  ).filter((p) => PRODUCT_TYPES.has(p));
-
   const dateFieldRaw = optionalString(input, "dateField");
-  const dateField =
-    dateFieldRaw && DATE_FIELDS.has(dateFieldRaw)
-      ? dateFieldRaw
-      : "submit_date";
-  const startDate = optionalString(input, "startDate");
-  const endDate = optionalString(input, "endDate");
+  const filters: PolicyFilters = {
+    scope,
+    userId: ctx.userId,
+    statuses: optionalStringArray(input, "status", (s) => s.toLowerCase()),
+    lifecycles: optionalStringArray(input, "lifecycleStatus", (s) =>
+      s.toLowerCase(),
+    ),
+    // Allowlist product to valid enum values; a fully-invalid array → no product filter.
+    products: (
+      optionalStringArray(input, "product", (s) => s.toLowerCase()) ?? []
+    ).filter((p) => PRODUCT_TYPES.has(p)),
+    dateField:
+      dateFieldRaw && DATE_FIELDS.has(dateFieldRaw)
+        ? dateFieldRaw
+        : "submit_date",
+    startDate: optionalString(input, "startDate"),
+    endDate: optionalString(input, "endDate"),
+  };
 
   const limit =
     typeof input.limit === "number" && Number.isFinite(input.limit)
       ? Math.min(Math.max(1, Math.floor(input.limit)), HARD_LIMIT)
       : DEFAULT_LIMIT;
 
-  let q = ctx.db.from("policies").select(SAFE_COLS, { count: "exact" });
-  if (scope === "mine") q = q.eq("user_id", ctx.userId);
-  if (statuses) q = q.in("status", statuses);
-  if (lifecycles) q = q.in("lifecycle_status", lifecycles);
-  if (products.length > 0) q = q.in("product", products);
-  if (startDate) q = q.gte(dateField, startDate);
-  if (endDate) q = q.lte(dateField, endDate);
-  q = q.order(dateField, { ascending: false }).limit(limit);
+  const displayQuery = applyPolicyFilters(
+    ctx.db.from("policies").select(SAFE_COLS, { count: "exact" }),
+    filters,
+  )
+    .order(filters.dateField, { ascending: false })
+    .limit(limit);
 
-  const { data, count, error } = await q;
+  const { data, count, error } = await displayQuery;
   if (error) return { available: false, reason: "unavailable" };
 
   const rows = (data as Array<Record<string, unknown>>) ?? [];
@@ -151,6 +258,19 @@ async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
   // `count` is the EXACT total of all matching rows (PostgREST count:'exact'); the row
   // list itself is capped at `limit`, so the two can differ.
   const totalCount = typeof count === "number" ? count : policies.length;
+  const truncated = totalCount > policies.length;
+
+  // AP/IP totals must span ALL matches. When the list already holds every match, the
+  // page reduce IS the exact total (no extra round-trip); otherwise sum across all rows.
+  let totalAnnualPremium = policies.reduce((s, p) => s + p.annualPremium, 0);
+  let totalMonthlyPremium = policies.reduce((s, p) => s + p.monthlyPremium, 0);
+  let premiumsComplete = true;
+  if (truncated) {
+    const sums = await sumAllPremiums(ctx, filters, totalCount);
+    totalAnnualPremium = sums.annual;
+    totalMonthlyPremium = sums.monthly;
+    premiumsComplete = sums.complete;
+  }
 
   return {
     available: true,
@@ -158,12 +278,15 @@ async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
       scope,
       count: totalCount,
       returned: policies.length,
-      // The list is partial when more rows match than were returned — the AP/IP sums
-      // below cover only the returned rows, so the model must report `count` as the
-      // authoritative total when this is true.
-      truncated: totalCount > policies.length,
-      totalAnnualPremium: policies.reduce((s, p) => s + p.annualPremium, 0),
-      totalMonthlyPremium: policies.reduce((s, p) => s + p.monthlyPremium, 0),
+      // `count` is authoritative for "how many"; the `policies` list is a capped,
+      // most-recent-first sample when truncated is true.
+      truncated,
+      // Sums cover EVERY matching policy (not just the returned sample). The only
+      // exception is premiumsComplete:false — an exceptionally large book hit the
+      // aggregation safety bound, so the totals are a floor; report them as approximate.
+      totalAnnualPremium,
+      totalMonthlyPremium,
+      premiumsComplete,
       policies,
     },
   };
