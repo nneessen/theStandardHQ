@@ -9,7 +9,7 @@ import { useOrgChart } from "@/hooks/hierarchy";
 import { OrgChartVisualization } from "./components/OrgChartVisualization";
 import { AlertCircle, RefreshCw, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Board } from "@/components/board";
 import {
   Select,
   SelectContent,
@@ -111,16 +111,14 @@ export const OrgChartPage: React.FC = () => {
     return (
       <OrgChartShell>
         <OrgChartHeader subtitle="Loading organizational structure..." />
-        <Card>
-          <CardContent className="py-16">
-            <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mb-4" />
-              <p className="text-sm text-muted-foreground">
-                Loading org chart data...
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <Board pad={0}>
+          <div className="py-16 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mb-4" />
+            <p className="text-sm text-v2-ink-muted">
+              Loading org chart data...
+            </p>
+          </div>
+        </Board>
       </OrgChartShell>
     );
   }
@@ -130,29 +128,27 @@ export const OrgChartPage: React.FC = () => {
     return (
       <OrgChartShell>
         <OrgChartHeader />
-        <Card>
-          <CardContent className="py-12">
-            <div className="flex flex-col items-center justify-center text-center">
-              <AlertCircle className="h-10 w-10 text-destructive mb-3" />
-              <h3 className="font-medium text-destructive mb-1">
-                Failed to load org chart
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                {error instanceof Error
-                  ? error.message
-                  : "An unexpected error occurred"}
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => refetch()}
-                className="gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Retry
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <Board pad={0}>
+          <div className="py-12 flex flex-col items-center justify-center text-center">
+            <AlertCircle className="h-10 w-10 text-destructive mb-3" />
+            <h3 className="font-medium text-destructive mb-1">
+              Failed to load org chart
+            </h3>
+            <p className="text-sm text-v2-ink-muted mb-4 max-w-md">
+              {error instanceof Error
+                ? error.message
+                : "An unexpected error occurred"}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => refetch()}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        </Board>
       </OrgChartShell>
     );
   }
@@ -162,20 +158,18 @@ export const OrgChartPage: React.FC = () => {
     return (
       <OrgChartShell>
         <OrgChartHeader />
-        <Card>
-          <CardContent className="py-12">
-            <div className="flex flex-col items-center justify-center text-center">
-              <Building2 className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <h3 className="font-medium text-foreground mb-1">
-                No Organization Data
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-md">
-                You don't have access to any organizational hierarchy data yet.
-                This could be because you're not assigned to an IMO or agency.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <Board pad={0}>
+          <div className="py-12 flex flex-col items-center justify-center text-center">
+            <Building2 className="h-12 w-12 text-v2-ink-muted/50 mb-3" />
+            <h3 className="font-medium text-v2-ink mb-1">
+              No Organization Data
+            </h3>
+            <p className="text-sm text-v2-ink-muted max-w-md">
+              You don't have access to any organizational hierarchy data yet.
+              This could be because you're not assigned to an IMO or agency.
+            </p>
+          </div>
+        </Board>
       </OrgChartShell>
     );
   }
