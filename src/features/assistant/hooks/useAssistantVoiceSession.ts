@@ -24,12 +24,22 @@ interface UseVoiceOptions {
   onUtterance: (text: string) => Promise<string | null>;
   /** The user's voice_enabled preference; gates the on-mount availability probe. */
   enabled?: boolean;
+  /**
+   * How long (ms) of continuous silence ends an utterance. Defaults to
+   * DEFAULT_SILENCE_HOLD_MS. Lower = snappier turn-end; too low truncates slow
+   * talkers. Exposed so it can be tuned or wired to a user preference.
+   */
+  silenceHoldMs?: number;
 }
 
 // --- Voice-activity detection tuning (hands-free turn-taking) -------------------
 const SPEECH_RMS = 0.04; // amplitude above this = speech starting
 const SILENCE_RMS = 0.025; // below this = silence (hysteresis vs SPEECH_RMS)
-const SILENCE_HOLD_MS = 1100; // continuous silence this long ends the utterance
+// Continuous silence this long ends the utterance. Lowered from 1100ms — this is
+// the single largest avoidable delay per voice turn (the user waits it out every
+// time before STT even starts). Overridable via options.silenceHoldMs; don't go too
+// low or it truncates slow/pausing talkers.
+const DEFAULT_SILENCE_HOLD_MS = 800;
 const MIN_UTTERANCE_MS = 350; // discard blips shorter than this (coughs, clicks)
 const MIN_BLOB_BYTES = 1200; // discard near-empty recordings
 const VAD_INTERVAL_MS = 60;
@@ -195,6 +205,7 @@ async function playBuffered(
 export function useAssistantVoiceSession({
   onUtterance,
   enabled = false,
+  silenceHoldMs,
 }: UseVoiceOptions) {
   const [state, setState] = useState<VoiceSessionState>("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -205,6 +216,9 @@ export function useAssistantVoiceSession({
   const levelRef = useRef(0); // last mic RMS (0–1), for visualization
   const onUtteranceRef = useRef(onUtterance);
   onUtteranceRef.current = onUtterance;
+  // Always-current silence-hold, read inside the VAD tick without re-creating it.
+  const silenceHoldRef = useRef(silenceHoldMs ?? DEFAULT_SILENCE_HOLD_MS);
+  silenceHoldRef.current = silenceHoldMs ?? DEFAULT_SILENCE_HOLD_MS;
 
   // --- Spoken-reply TTS queue (sentence pipeline) --------------------------------
   // A fresh queue instance is created per utterance (resetSpeech); AssistantPage
@@ -216,9 +230,22 @@ export function useAssistantVoiceSession({
     setState(s);
   }, []);
 
+  // JWT cache: a voice turn calls authToken once for STT and again for EVERY TTS
+  // sentence (3+ getSession() round-trips per reply). getSession() reads local
+  // storage but is still async overhead on the hot path. Cache the token briefly so
+  // a turn reuses it; the window is far shorter than the token's validity, and
+  // getSession() auto-refreshes on the next miss, so a rotated token is picked up.
+  const tokenCacheRef = useRef<{ token: string; at: number } | null>(null);
+  const TOKEN_CACHE_MS = 30_000;
   const authToken = useCallback(async () => {
+    const cached = tokenCacheRef.current;
+    if (cached && performance.now() - cached.at < TOKEN_CACHE_MS) {
+      return cached.token;
+    }
     const { data } = await supabase.auth.getSession();
-    return data.session?.access_token ?? "";
+    const token = data.session?.access_token ?? "";
+    tokenCacheRef.current = { token, at: performance.now() };
+    return token;
   }, []);
 
   // --- Availability probe (no synthesis) so the orb reflects truth pre-click -----
@@ -468,7 +495,7 @@ export function useAssistantVoiceSession({
       if (rms > SPEECH_RMS) beginCapture(now);
     } else if (phase === "capturing") {
       if (rms > SILENCE_RMS) s.lastVoiceAt = now;
-      else if (now - s.lastVoiceAt > SILENCE_HOLD_MS) endCapture();
+      else if (now - s.lastVoiceAt > silenceHoldRef.current) endCapture();
     }
   }, [beginCapture, endCapture]);
 

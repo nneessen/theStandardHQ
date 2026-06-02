@@ -17545,6 +17545,17 @@ export type Database = {
         }[];
       };
       get_my_imo_id: { Args: never; Returns: string };
+      get_my_team_leaderboard: {
+        Args: { p_end_date?: string; p_limit?: number; p_start_date?: string };
+        Returns: {
+          ap_total: number;
+          ip_total: number;
+          member_id: string;
+          member_name: string;
+          policy_count: number;
+          rank_overall: number;
+        }[];
+      };
       get_my_notification_preferences: {
         Args: never;
         Returns: {

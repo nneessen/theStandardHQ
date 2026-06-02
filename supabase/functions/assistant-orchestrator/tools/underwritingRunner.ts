@@ -13,7 +13,9 @@
 
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.47.10";
 import type { Database } from "../../../../src/types/database.types.ts";
-import { computeAuthoritativeUnderwritingRun } from "../../_shared/underwriting/engine.ts";
+// NOTE: the heavy engine is imported DYNAMICALLY inside run() (see below) so its
+// module graph only parses on underwriting turns. A static import here would pull
+// the whole engine into every orchestrator cold start, taxing the other 14 agents.
 import type {
   JsonValue,
   UnderwritingRawPayload,
@@ -180,6 +182,11 @@ export function createUnderwritingRunner(
     ): Promise<UnderwritingRunResult | null> {
       const payload = buildUnderwritingPayload(input);
       if (!payload) return null;
+
+      // Dynamic import: the engine's module graph loads only now, on an actual
+      // underwriting turn — not at orchestrator cold start for every agent.
+      const { computeAuthoritativeUnderwritingRun } =
+        await import("../../_shared/underwriting/engine.ts");
 
       // May throw on a DB/engine failure — the tool catches and degrades honestly.
       const result = await computeAuthoritativeUnderwritingRun({

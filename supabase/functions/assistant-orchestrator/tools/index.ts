@@ -4,7 +4,9 @@
 import { TOOL_METADATA } from "../core/registry.ts";
 import type { RegisteredTool } from "./types.ts";
 import { getDailyBriefingData } from "./getDailyBriefingData.ts";
+import { getMyProduction } from "./getMyProduction.ts";
 import { getTeamProductionSummary } from "./getTeamProductionSummary.ts";
+import { getTeamLeaderboard } from "./getTeamLeaderboard.ts";
 import { getPolicyRiskAlerts } from "./getPolicyRiskAlerts.ts";
 import { getLeadPriorities } from "./getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "./getRecruitingSnapshot.ts";
@@ -21,7 +23,9 @@ import { getUnderwritingRecommendation } from "./getUnderwritingRecommendation.t
 
 export const TOOLS: Record<string, RegisteredTool> = {
   [getDailyBriefingData.name]: getDailyBriefingData,
+  [getMyProduction.name]: getMyProduction,
   [getTeamProductionSummary.name]: getTeamProductionSummary,
+  [getTeamLeaderboard.name]: getTeamLeaderboard,
   [getPolicyRiskAlerts.name]: getPolicyRiskAlerts,
   [getLeadPriorities.name]: getLeadPriorities,
   [getRecruitingSnapshot.name]: getRecruitingSnapshot,

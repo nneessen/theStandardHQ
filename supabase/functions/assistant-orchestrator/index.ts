@@ -10,8 +10,12 @@
 // after explicit human approval.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createSupabaseClient } from "../_shared/supabase-client.ts";
+import {
+  createSupabaseClient,
+  createSupabaseAdminClient,
+} from "../_shared/supabase-client.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit, checkRateLimit } from "../_shared/rate-limit.ts";
 import { getAnthropicClient, ORCHESTRATOR_MODEL } from "./anthropic.ts";
 import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
@@ -69,35 +73,77 @@ serve(async (req) => {
     let conversationId: string | null =
       typeof body.conversationId === "string" ? body.conversationId : null;
 
+    // Pre-flight fan-out: these five calls depend only on the verified user.id,
+    // are independent of one another, and none spends Anthropic tokens or mutates
+    // app state — so run them CONCURRENTLY (was ~5 serial round-trips). The gates
+    // they feed are still evaluated strictly IN ORDER below, before any routing,
+    // conversation INSERT, or model spend. Promise.all preserves today's behavior:
+    // a query-level error resolves to data:null (→ defaults via `??`), while a true
+    // network rejection propagates to the outer catch → 500 (same as the old serial
+    // awaits). Minor change: an access-denied user's rate-limit counters increment
+    // once before the 403 — harmless (per-user; still 403'd).
+    //   Rate buckets: Request = 30/hr per function; Token = 200k/day shared across
+    //   Anthropic functions (checked here at 0 tokens to reject if already over).
+    const adminClient = createSupabaseAdminClient();
+    const reqBucketKey = `ratelimit:req:assistant-orchestrator:${user.id}`;
+    const tokBucketKey = `ratelimit:tok:${user.id}`;
+
+    const [profileRes, reqLimit, tokLimit, imoRes, prefsRes] =
+      await Promise.all([
+        db
+          .from("user_profiles")
+          .select("is_super_admin, first_name")
+          .eq("id", user.id)
+          .single(),
+        enforceRateLimit(
+          adminClient,
+          { key: reqBucketKey, maxRequests: 30, windowSeconds: 3600 },
+          cors,
+        ),
+        enforceRateLimit(
+          adminClient,
+          {
+            key: tokBucketKey,
+            maxRequests: 2_000_000_000,
+            windowSeconds: 86400,
+            tokens: 0,
+            maxTokens: 200_000,
+          },
+          cors,
+        ),
+        db.rpc("get_my_imo_id"),
+        db
+          .from("assistant_preferences")
+          .select("assistant_name, enabled_agents")
+          .eq("user_id", user.id)
+          .single(),
+      ]);
+
     // Profile: super-admin flag (for the guard) + first name (for the greeting).
-    const { data: profile } = await db
-      .from("user_profiles")
-      .select("is_super_admin, first_name")
-      .eq("id", user.id)
-      .single();
+    const profile = profileRes.data;
     const isSuperAdmin = profile?.is_super_admin === true;
     const firstName: string | null = profile?.first_name ?? null;
 
-    // Command center is limited to Epic Life (super-admins bypass). Fail fast,
-    // before any Anthropic spend. Mirrors the frontend RouteGuard gate.
+    // GATE 1 — access. Command center is limited to Epic Life (super-admins
+    // bypass). Fail fast, before any Anthropic spend. Mirrors the frontend guard.
     if (!canAccessAssistant({ email: user.email, isSuperAdmin })) {
       return json(
         { error: "The command center isn't available for your account." },
         403,
       );
     }
+    // GATE 2 + 3 — rate limits (request bucket, then daily token budget). Both were
+    // resolved above; return the 429 here, still before routing/insert/spend.
+    if (reqLimit) return reqLimit;
+    if (tokLimit) return tokLimit;
 
     // Effective IMO (best-effort; inherits the app's current scoping).
     let imoId: string | null = null;
-    const { data: imoData } = await db.rpc("get_my_imo_id");
+    const imoData = imoRes.data;
     if (typeof imoData === "string") imoId = imoData;
 
     // Preferences (defaults if the user has none yet).
-    const { data: prefs } = await db
-      .from("assistant_preferences")
-      .select("assistant_name, enabled_agents")
-      .eq("user_id", user.id)
-      .single();
+    const prefs = prefsRes.data;
     const assistantName: string = prefs?.assistant_name ?? "Jarvis";
     const enabledAgents =
       (prefs?.enabled_agents as AgentKey[] | undefined) ?? ALL_AGENT_KEYS;
@@ -163,8 +209,30 @@ serve(async (req) => {
     const tools = buildAnthropicTools(agent.allowedToolNames);
     const anthropic = getAnthropicClient();
 
+    // Cross-turn prompt caching: mark the LAST prior-history message as a cache
+    // breakpoint so tools + system + the history prefix are read from cache on
+    // iterations 2+ and on follow-up turns within the 5-min TTL. The fresh user
+    // message stays AFTER the breakpoint so it never invalidates the cached prefix.
+    // This is the 3rd of Anthropic's 4 allowed breakpoints (system + last tool are
+    // the other two). No breakpoint is added on the first turn (empty history).
     // deno-lint-ignore no-explicit-any
-    const messages: any[] = [...history, { role: "user", content: message }];
+    const messages: any[] = [
+      ...history.map((m, i) =>
+        i === history.length - 1
+          ? {
+              role: m.role,
+              content: [
+                {
+                  type: "text",
+                  text: m.content,
+                  cache_control: { type: "ephemeral" },
+                },
+              ],
+            }
+          : m,
+      ),
+      { role: "user", content: message },
+    ];
     // deno-lint-ignore no-explicit-any
     const toolCallRows: any[] = [];
     const toolActivity: Array<{ name: string; status: string }> = [];
@@ -214,8 +282,10 @@ serve(async (req) => {
             // won't cache, no error.
             // deno-lint-ignore no-explicit-any
             const params: any = {
-              model: ORCHESTRATOR_MODEL,
-              max_tokens: MAX_TOKENS_PER_TURN,
+              // Per-agent overrides (faster model + tighter cap for draft agents);
+              // fall back to the orchestrator defaults when an agent sets neither.
+              model: agent.model ?? ORCHESTRATOR_MODEL,
+              max_tokens: agent.maxTokens ?? MAX_TOKENS_PER_TURN,
               system: [
                 {
                   type: "text",
@@ -273,67 +343,97 @@ serve(async (req) => {
             );
             if (resp.stop_reason !== "tool_use" || toolUses.length === 0) break;
 
+            // Execute the model's tool calls for THIS response CONCURRENTLY. Each
+            // task computes its own result and returns a record — it pushes to NO
+            // shared array, so there's no interleaving nondeterminism. After the
+            // batch settles we replay the records in the original toolUses order to
+            // emit chip events and append audit rows / grounding outputs / created
+            // actions / tool_result blocks — keeping all of that order-identical to
+            // the old serial loop while the actual tool .run() calls overlap.
+            // Per-tool duration_ms is measured inside each task (real concurrent
+            // timing). Each task is self-contained try/caught, so one tool failing
+            // never rejects the batch.
+            const settled = await Promise.all(
+              // deno-lint-ignore no-explicit-any
+              toolUses.map(async (tu: any) => {
+                const meta = TOOL_METADATA[tu.name];
+                const tool = TOOLS[tu.name];
+                const decision = canUseTool(meta, [], { isSuperAdmin });
+                const t0 = Date.now();
+                let output: unknown;
+                let status = "success";
+                let errorMsg: string | null = null;
+                let createdAction: {
+                  actionRequestId: string;
+                  channel: string;
+                } | null = null;
+
+                if (!decision.allowed || !tool) {
+                  status = "denied";
+                  errorMsg = decision.reason ?? "unknown_tool";
+                  output = { error: `Tool not permitted: ${errorMsg}` };
+                } else {
+                  try {
+                    output = await tool.run(
+                      (tu.input ?? {}) as Record<string, unknown>,
+                      ctx,
+                    );
+                    const o = output as Record<string, unknown> | null;
+                    if (
+                      o &&
+                      o.ok === true &&
+                      typeof o.actionRequestId === "string"
+                    ) {
+                      createdAction = {
+                        actionRequestId: o.actionRequestId,
+                        channel: String(o.channel ?? ""),
+                      };
+                    }
+                  } catch (e) {
+                    status = "error";
+                    errorMsg = e instanceof Error ? e.message : "tool_failed";
+                    output = { error: "The tool failed to run." };
+                  }
+                }
+
+                return {
+                  tu,
+                  meta,
+                  output,
+                  status,
+                  errorMsg,
+                  createdAction,
+                  durationMs: Date.now() - t0,
+                };
+              }),
+            );
+
             // deno-lint-ignore no-explicit-any
             const toolResults: any[] = [];
-            for (const tu of toolUses) {
-              const meta = TOOL_METADATA[tu.name];
-              const tool = TOOLS[tu.name];
-              const decision = canUseTool(meta, [], { isSuperAdmin });
-              const t0 = Date.now();
-              let output: unknown;
-              let status = "success";
-              let errorMsg: string | null = null;
-
-              if (!decision.allowed || !tool) {
-                status = "denied";
-                errorMsg = decision.reason ?? "unknown_tool";
-                output = { error: `Tool not permitted: ${errorMsg}` };
-              } else {
-                try {
-                  output = await tool.run(
-                    (tu.input ?? {}) as Record<string, unknown>,
-                    ctx,
-                  );
-                  const o = output as Record<string, unknown> | null;
-                  if (
-                    o &&
-                    o.ok === true &&
-                    typeof o.actionRequestId === "string"
-                  ) {
-                    createdActions.push({
-                      actionRequestId: o.actionRequestId,
-                      channel: String(o.channel ?? ""),
-                    });
-                  }
-                } catch (e) {
-                  status = "error";
-                  errorMsg = e instanceof Error ? e.message : "tool_failed";
-                  output = { error: "The tool failed to run." };
-                }
-              }
-
-              toolActivity.push({ name: tu.name, status });
-              send("tool", { name: tu.name, status });
-              groundingOutputs.push(output);
+            for (const r of settled) {
+              if (r.createdAction) createdActions.push(r.createdAction);
+              toolActivity.push({ name: r.tu.name, status: r.status });
+              send("tool", { name: r.tu.name, status: r.status });
+              groundingOutputs.push(r.output);
               toolCallRows.push({
                 conversation_id: conversationId,
                 user_id: user.id,
-                tool_name: tu.name,
-                category: meta?.category ?? null,
-                risk_level: meta?.riskLevel ?? null,
-                input_redacted: redact(tu.input ?? {}),
+                tool_name: r.tu.name,
+                category: r.meta?.category ?? null,
+                risk_level: r.meta?.riskLevel ?? null,
+                input_redacted: redact(r.tu.input ?? {}),
                 // Summarize (counts + available flags + structure), never raw row
                 // values — keeps names, premiums, DOB out of the audit log.
-                output_redacted: summarizeToolOutput(output),
-                status,
-                error: errorMsg,
-                duration_ms: Date.now() - t0,
+                output_redacted: summarizeToolOutput(r.output),
+                status: r.status,
+                error: r.errorMsg,
+                duration_ms: r.durationMs,
               });
 
               toolResults.push({
                 type: "tool_result",
-                tool_use_id: tu.id,
-                content: JSON.stringify(output),
+                tool_use_id: r.tu.id,
+                content: JSON.stringify(r.output),
               });
             }
             messages.push({ role: "user", content: toolResults });
@@ -384,6 +484,20 @@ serve(async (req) => {
           // mid-stream disconnect (the writes above are guarded and never throw
           // out of the loop). waitUntil keeps the isolate alive until it lands.
           const persist = (async () => {
+            // Record actual tokens spent this turn against the daily token bucket.
+            // Ignored if the limiter RPC errors (fail-open); the result's `allowed`
+            // field is intentionally not checked — we don't block a turn that
+            // already ran, only the NEXT one if the budget is exhausted.
+            if (tokensUsed > 0) {
+              await checkRateLimit(adminClient, {
+                key: tokBucketKey,
+                maxRequests: 2_000_000_000,
+                windowSeconds: 86400,
+                tokens: tokensUsed,
+                maxTokens: 200_000,
+              });
+            }
+
             await db.from("assistant_messages").insert([
               {
                 conversation_id: conversationId,

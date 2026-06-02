@@ -8,7 +8,10 @@ import { toSection } from "./types.ts";
 async function run(_input: Record<string, unknown>, ctx: AssistantToolContext) {
   const [team, atRisk, chargeback, recruiting, leadHeat] =
     await Promise.allSettled([
-      ctx.db.rpc("get_team_leaderboard_data", {}),
+      // Caller-scoped team aggregate (caller + downline subtree ∩ imo). Was
+      // get_team_leaderboard_data, which returned the whole IMO's teams — the
+      // "my team pulls other teams" bug.
+      ctx.db.rpc("get_command_center_summary", { p_scope: "team" }),
       ctx.db.rpc("get_at_risk_commissions", { p_user_id: ctx.userId }),
       ctx.db.rpc("get_user_commission_chargeback_summary"),
       ctx.db.rpc("get_recruiting_leads_stats", {}),
@@ -19,7 +22,10 @@ async function run(_input: Record<string, unknown>, ctx: AssistantToolContext) {
     generatedAt: new Date().toISOString(),
     note: "Each section has `available`. When available is false, tell the user that section has no data — do NOT invent figures.",
     sections: {
-      teamProduction: toSection(team, (d) => ({ teams: d })),
+      // get_command_center_summary RETURNS TABLE → an array of one aggregate row.
+      teamProduction: toSection(team, (d) => ({
+        team: (d as Array<Record<string, unknown>>)[0],
+      })),
       policyRisk: toSection(atRisk, (d) => ({ atRiskCommissions: d })),
       chargebackRisk: toSection(chargeback),
       recruiting: toSection(recruiting),

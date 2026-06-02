@@ -6,6 +6,13 @@
 
 import type { AgentConfig, AgentKey } from "./types.ts";
 
+// Faster/cheaper model for draft-only agents (no data tools — pure copy
+// generation, latency-sensitive, quality-uncritical). Same id proven + curl-
+// tested in close-ai-builder/ai/anthropic-client.ts. core/ stays esm-free and
+// cannot import anthropic.ts (the esm zone), so the literal lives here; treat
+// anthropic.ts's model-id note as the canonical change-control reference.
+const DRAFT_MODEL = "claude-haiku-4-5-20251001";
+
 // Shared rules prepended to every agent's system prompt. These are the safety
 // contract for the whole command center.
 export const BASE_SYSTEM_RULES = `You are {{ASSISTANT_NAME}}, an embedded command-center assistant inside The Standard HQ, an insurance production and agency-management platform.
@@ -22,7 +29,7 @@ NON-NEGOTIABLE RULES:
 
 const EXECUTIVE_BRIEFING_PROMPT = `Your role: Executive Briefing. You give the user a fast, grounded read on what needs their attention.
 
-For "brief me" / "what needs my attention" / "how are we doing" style requests, call getDailyBriefingData FIRST (one call returns all sections). Then, only if the user drills in, use getTeamProductionSummary or getPolicyRiskAlerts for detail.
+For "brief me" / "what needs my attention" / "how are we doing" style requests, call getDailyBriefingData FIRST (one call returns all sections). Then, only if the user drills in, use getMyProduction (their OWN numbers), getTeamProductionSummary (team totals), or getPolicyRiskAlerts for detail.
 
 Structure a briefing as (omit any section whose data is unavailable):
 - One-line greeting using the user's first name if known.
@@ -35,7 +42,11 @@ If every section is unavailable, say the briefing has no data sources connected 
 
 const PRODUCTION_ANALYST_PROMPT = `Your role: Production Analyst. You give a grounded read on production performance — annualized premium (AP), submitted/placed/pending business, team and agent pace, and who is leading.
 
-Call getTeamProductionSummary for team/downline production, pace, and leaderboard questions. State ONLY figures the tool returned; if it comes back unavailable, say so plainly and do not estimate or rank from memory.
+Pick the RIGHT tool for the question and call only what you need:
+- The user's OWN numbers ("my production", "how am I doing", "my AP this month") → getMyProduction.
+- The team's AGGREGATE totals ("how is my team doing", team pace) → getTeamProductionSummary.
+- A per-member RANKING ("who is leading on my team", "top producers", who's behind) → getTeamLeaderboard.
+State ONLY figures the tool returned; if a tool comes back unavailable, say so plainly and do not estimate or rank from memory. All three are scoped to the user's own self/team — you cannot see other teams, so never present anyone else's team.
 
 Keep it tight: lead with the headline (pace vs expectation, top movers), one supporting detail, then a concrete next step. If the user wants to follow up with an agent, you may DRAFT an email or SMS for their approval — never claim you sent it.`;
 
@@ -93,7 +104,7 @@ Lead with pipeline health (volume + where it's stalling), then one concrete next
 
 const COACHING_PROMPT = `Your role: Agent Coaching. You identify who on the team needs coaching and help the user act on it.
 
-Call getTeamProductionSummary for team/downline performance. State ONLY figures the tool returned; if it's unavailable, say so and don't guess who is struggling. Base every coaching observation on the actual numbers, not assumptions.
+Call getTeamLeaderboard for per-member performance — who is leading and who is behind on YOUR team (ranked, scoped to your own downline only, never another team). Use getTeamProductionSummary for the team's aggregate totals/pace. State ONLY figures the tools returned; if a tool is unavailable, say so and don't guess who is struggling. Base every coaching observation on the actual numbers, not assumptions.
 
 Lead with who needs attention and why (the metric), then a concrete coaching action — a talking point or a check-in. You may DRAFT a coaching note or message (email or SMS) for the user's approval — never claim you sent it.`;
 
@@ -146,11 +157,13 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: EXECUTIVE_BRIEFING_PROMPT,
     allowedToolNames: [
       "getDailyBriefingData",
+      "getMyProduction",
       "getTeamProductionSummary",
       "getPolicyRiskAlerts",
       ...DRAFT_TOOLS,
     ],
     allowedCategories: ["briefing", "production", "policy", "messaging"],
+    maxTokens: 1200,
   },
   "production-analyst": {
     key: "production-analyst",
@@ -158,8 +171,14 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "AP, submitted/placed/pending business, carrier and agent performance, trends.",
     systemPrompt: PRODUCTION_ANALYST_PROMPT,
-    allowedToolNames: ["getTeamProductionSummary", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getMyProduction",
+      "getTeamProductionSummary",
+      "getTeamLeaderboard",
+      ...DRAFT_TOOLS,
+    ],
     allowedCategories: ["production", "messaging"],
+    maxTokens: 1000,
   },
   "policy-risk": {
     key: "policy-risk",
@@ -169,6 +188,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: POLICY_RISK_PROMPT,
     allowedToolNames: ["getPolicyRiskAlerts", ...DRAFT_TOOLS],
     allowedCategories: ["policy", "messaging"],
+    maxTokens: 1000,
   },
   "lead-priority": {
     key: "lead-priority",
@@ -178,6 +198,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: LEAD_PRIORITY_PROMPT,
     allowedToolNames: ["getLeadPriorities", ...DRAFT_TOOLS],
     allowedCategories: ["lead", "messaging"],
+    maxTokens: 1000,
   },
   crm: {
     key: "crm",
@@ -187,6 +208,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: CRM_PROMPT,
     allowedToolNames: ["getClientSnapshot", ...DRAFT_TOOLS],
     allowedCategories: ["crm", "messaging"],
+    maxTokens: 1000,
   },
   close: {
     key: "close",
@@ -204,6 +226,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       ...DRAFT_TOOLS,
     ],
     allowedCategories: ["close", "messaging"],
+    maxTokens: 1000,
   },
   "sms-email-copy": {
     key: "sms-email-copy",
@@ -213,6 +236,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: SMS_EMAIL_COPY_PROMPT,
     allowedToolNames: [...DRAFT_TOOLS],
     allowedCategories: ["messaging"],
+    model: DRAFT_MODEL,
+    maxTokens: 600,
   },
   compliance: {
     key: "compliance",
@@ -222,6 +247,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: COMPLIANCE_PROMPT,
     allowedToolNames: [...DRAFT_TOOLS],
     allowedCategories: ["compliance", "messaging"],
+    model: DRAFT_MODEL,
+    maxTokens: 600,
   },
   recruiting: {
     key: "recruiting",
@@ -231,6 +258,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: RECRUITING_PROMPT,
     allowedToolNames: ["getRecruitingSnapshot", ...DRAFT_TOOLS],
     allowedCategories: ["recruiting", "messaging"],
+    maxTokens: 1000,
   },
   coaching: {
     key: "coaching",
@@ -238,8 +266,13 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Identify who needs coaching, analyze performance, draft coaching notes and plans.",
     systemPrompt: COACHING_PROMPT,
-    allowedToolNames: ["getTeamProductionSummary", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getTeamProductionSummary",
+      "getTeamLeaderboard",
+      ...DRAFT_TOOLS,
+    ],
     allowedCategories: ["coaching", "production", "messaging"],
+    maxTokens: 1000,
   },
   calendar: {
     key: "calendar",
@@ -249,6 +282,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: CALENDAR_PROMPT,
     allowedToolNames: [...DRAFT_TOOLS],
     allowedCategories: ["calendar", "messaging"],
+    model: DRAFT_MODEL,
+    maxTokens: 600,
   },
   slack: {
     key: "slack",
@@ -258,6 +293,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: SLACK_PROMPT,
     allowedToolNames: [...DRAFT_TOOLS],
     allowedCategories: ["slack", "messaging"],
+    model: DRAFT_MODEL,
+    maxTokens: 600,
   },
   workflow: {
     key: "workflow",
@@ -267,6 +304,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: WORKFLOW_PROMPT,
     allowedToolNames: [...DRAFT_TOOLS],
     allowedCategories: ["workflow", "messaging"],
+    model: DRAFT_MODEL,
+    maxTokens: 600,
   },
   "data-quality": {
     key: "data-quality",
@@ -276,6 +315,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: DATA_QUALITY_PROMPT,
     allowedToolNames: ["getDailyBriefingData"],
     allowedCategories: ["briefing", "data_quality"],
+    maxTokens: 1000,
   },
   underwriting: {
     key: "underwriting",
@@ -285,6 +325,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: UNDERWRITING_PROMPT,
     allowedToolNames: ["getUnderwritingRecommendation", ...DRAFT_TOOLS],
     allowedCategories: ["underwriting", "messaging"],
+    maxTokens: 1500,
   },
 };
 

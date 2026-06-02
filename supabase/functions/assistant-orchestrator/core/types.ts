@@ -84,6 +84,14 @@ export interface AgentConfig {
   /** Tool names this agent is allowed to call. */
   allowedToolNames: string[];
   allowedCategories: ToolCategory[];
+  /**
+   * Optional Anthropic model id for this agent. Omitted => the orchestrator's
+   * default (ORCHESTRATOR_MODEL). Draft-only agents use a faster model. Stored as
+   * a literal here (core/ stays esm-free and cannot import anthropic.ts).
+   */
+  model?: string;
+  /** Optional per-agent output cap. Omitted => MAX_TOKENS_PER_TURN default. */
+  maxTokens?: number;
 }
 
 export interface GuardDecision {

@@ -15,10 +15,30 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getMyProduction: {
+    name: "getMyProduction",
+    description:
+      "Personal production snapshot for the CURRENT user ONLY (their own book): annualized premium submitted in range, issued-paid premium (approved + effective in range), approved policy count, plus their current prospect and lead-scored counts. Read-only, scoped server-side to auth.uid() (the user cannot widen it). Returns `available`/`data`; an all-zero result means no production this period (still available). Use for 'my production', 'how am I doing', 'my AP this month', or any question about the user's OWN numbers (not the team's).",
+    category: "production",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   getTeamProductionSummary: {
     name: "getTeamProductionSummary",
     description:
-      "Get production/AP figures for the current user's team (downline) and the user's own recent daily submissions. Read-only and scoped by the app's hierarchy + RLS. Returns `available`/`data`. Use for questions about team production, who is leading, or pace.",
+      "AGGREGATE production totals for the current user's OWN team — the user plus their downline subtree (AP, issued-paid premium, approved policy count, prospects, leads scored). Read-only, scoped server-side to the caller's hierarchy + IMO (never another team). Returns `available`/`data`; all-zero means no team production this period (still available). Use for 'how is my team doing' / team totals / pace. For a per-member ranked breakdown ('who is leading', coaching) use getTeamLeaderboard. For the user's OWN numbers use getMyProduction.",
+    category: "production",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
+  getTeamLeaderboard: {
+    name: "getTeamLeaderboard",
+    description:
+      "Per-member production leaderboard for the current user's OWN team (the user + their downline subtree): each member's name, issued-paid premium, AP, approved policy count, and rank. Read-only, scoped server-side to auth.uid() + the caller's IMO — it can NEVER show another team's members. This is a TOP-N leaderboard (plus the caller's own row), NOT the full roster, so its member rows may not sum to the team total from getTeamProductionSummary — present it as a ranking, do not reconcile the two. Returns `available`/`data`. Use for 'who is leading on my team', 'top producers on my team', or coaching 'who needs attention' questions.",
     category: "production",
     riskLevel: "read",
     requiredPermissions: [],
