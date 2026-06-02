@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SectionShell } from "@/components/v2";
+import { Board, Cap, FlapTile, Pill } from "@/components/board";
 import {
   Table,
   TableBody,
@@ -504,46 +505,18 @@ export function AgentDetailPage() {
 
               <div className="h-3 w-px bg-muted" />
 
-              {/* Inline compact stats */}
-              <div className="flex items-center gap-3 text-[11px]">
-                <Badge
-                  variant="outline"
-                  className="text-[11px] h-5 px-1.5 border-border "
-                >
-                  Level {agentData.contract_level || 80}%
-                </Badge>
+              {/* Status pills (numbers moved to the FlapTile band below) */}
+              <div className="flex items-center gap-2">
+                <Pill tone="blue">Level {agentData.contract_level || 80}%</Pill>
                 {agentData.approval_status === "approved" ? (
-                  <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[11px] h-5 px-1.5">
+                  <Pill tone="green" dot>
                     Active
-                  </Badge>
+                  </Pill>
                 ) : (
-                  <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[11px] h-5 px-1.5">
+                  <Pill tone="amber" dot>
                     {agentData.approval_status}
-                  </Badge>
+                  </Pill>
                 )}
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <FileCheck className="h-3 w-3 text-muted-foreground" />
-                  <span className="font-medium text-foreground">
-                    {mtdMetrics.policies}
-                  </span>
-                  <span className="text-muted-foreground">MTD</span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-success" />
-                  <span className="font-medium text-foreground">
-                    {formatCurrency(mtdMetrics.premium)}
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-muted" />
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-info" />
-                  <span className="font-medium text-foreground">
-                    {ytdMetrics.policies}
-                  </span>
-                  <span className="text-muted-foreground">YTD</span>
-                </div>
               </div>
             </div>
 
@@ -572,6 +545,38 @@ export function AgentDetailPage() {
               </Button>
             </div>
           </div>
+
+          {/* Production stat band — big & clean */}
+          <Board pad={18}>
+            <Cap style={{ marginBottom: 14 }}>Production</Cap>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+                gap: 10,
+              }}
+            >
+              <FlapTile
+                label="MTD Policies"
+                value={mtdMetrics.policies.toLocaleString()}
+              />
+              <FlapTile
+                label="MTD Premium"
+                value={formatCurrency(mtdMetrics.premium)}
+                tone="green"
+              />
+              <FlapTile
+                label="YTD Policies"
+                value={ytdMetrics.policies.toLocaleString()}
+              />
+              <FlapTile
+                label="YTD Premium"
+                value={formatCurrency(ytdMetrics.premium)}
+                tone="blue"
+              />
+            </div>
+          </Board>
 
           {/* Compact tabs */}
           <div className="flex items-center gap-0.5 bg-background rounded-md p-0.5 w-fit">
