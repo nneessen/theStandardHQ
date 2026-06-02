@@ -112,6 +112,10 @@ function makeDraftCtx(opts: {
             },
           };
         },
+        // Close draft tools only insert; a SELECT here is a bug, so fail loudly.
+        select(): never {
+          throw new Error("Close draft tools must not SELECT");
+        },
       };
     },
   };

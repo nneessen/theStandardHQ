@@ -55,6 +55,16 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  queryPolicies: {
+    name: "queryPolicies",
+    description:
+      "List, count, or filter INDIVIDUAL policies from the policies table for the caller ('mine', default) or their whole team ('team' = caller + downline subtree). Read-only, RLS-scoped server-side — it can never return another team's or IMO's policies. Filter by application `status` (approved | pending | withdrawn | denied), in-force `lifecycleStatus` (active | cancelled | lapsed), `product` (the product_type enum — use exact values like term_life, whole_life, indexed_universal_life), and a date range (startDate/endDate, YYYY-MM-DD) on a chosen `dateField`: submit_date = written/submitted (default), effective_date = in-force as of, expiration_date = expiring, cancellation_date = cancelled/lapsed when. IMPORTANT: 'pending' is an APPLICATION status, NOT a lifecycle state — don't conflate them. Returns the EXACT `count` of all matches, the `returned` row count, a `truncated` flag, the AP/IP sums OF THE RETURNED ROWS, and a capped list (default 50, max 200) of safe per-policy fields (status, lifecycle, product, premiums, dates, policy number, payment frequency, carrier name — no client PII). When `truncated` is true, `count` is the authoritative total and the AP/IP sums cover only the rows shown — report it that way or narrow the filter; never present a truncated sum as the full total. Use this to answer 'how many pending policies did I write in the last two weeks', 'list my team's cancelled term_life policies', 'what's expiring next month'. For a single personal AGGREGATE (total AP/IP this month) prefer getMyProduction; for a ranked team leaderboard use getTeamLeaderboard.",
+    category: "policy",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   getLeadPriorities: {
     name: "getLeadPriorities",
     description:

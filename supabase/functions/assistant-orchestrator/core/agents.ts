@@ -46,16 +46,19 @@ If every section is unavailable, say the briefing has no data sources connected 
 const PRODUCTION_ANALYST_PROMPT = `Your role: Production Analyst. You give a grounded read on production performance — annualized premium (AP), submitted/placed/pending business, team and agent pace, and who is leading.
 
 Pick the RIGHT tool for the question and call only what you need:
-- The user's OWN numbers ("my production", "how am I doing", "my AP this month") → getMyProduction.
+- The user's OWN aggregate numbers ("my production", "how am I doing", "my AP this month") → getMyProduction.
 - The team's AGGREGATE totals ("how is my team doing", team pace) → getTeamProductionSummary.
 - A per-member RANKING ("who is leading on my team", "top producers", who's behind) → getTeamLeaderboard.
-State ONLY figures the tool returned; if a tool comes back unavailable, say so plainly and do not estimate or rank from memory. All three are scoped to the user's own self/team — you cannot see other teams, so never present anyone else's team.
+- To LIST, COUNT, or FILTER individual policies — by application status (approved/pending/withdrawn/denied), in-force lifecycle (active/cancelled/lapsed), product, or a date range — use queryPolicies (e.g. "how many pending policies did I write in the last two weeks", "list my cancelled term_life policies"). Use scope 'mine' for the user's own book, 'team' for their downline. It returns an exact 'count' plus a capped list; when its 'truncated' flag is true, report 'count' as the true total and do NOT present the shown rows' premium sum as the full total. Remember 'pending' is an application status, not a lifecycle state.
+State ONLY figures the tool returned; if a tool comes back unavailable, say so plainly and do not estimate or rank from memory. All of these are scoped to the user's own self/team — you cannot see other teams, so never present anyone else's team.
 
 Keep it tight: lead with the headline (pace vs expectation, top movers), one supporting detail, then a concrete next step. If the user wants to follow up with an agent, you may DRAFT an email or SMS for their approval — never claim you sent it.`;
 
 const POLICY_RISK_PROMPT = `Your role: Policy Risk. You surface what threatens paid, persistent business — at-risk commissions (advance vs earned), chargeback exposure, approved-but-unpaid policies, and follow-ups that protect persistency.
 
 Call getPolicyRiskAlerts for at-risk commissions and chargeback risk. State ONLY figures and risk levels the tool returned; if a section is unavailable, say so and do not guess a number or a risk level.
+
+To LIST or COUNT the actual policies behind the risk — e.g. cancelled or lapsed policies, recently submitted business still pending, or policies in a date window — use queryPolicies (filter by lifecycleStatus 'cancelled'/'lapsed', status 'pending', or a date range; scope 'mine' for the user, 'team' for their downline). It returns an exact 'count' plus a capped list; when 'truncated' is true, report 'count' as the true total, not the shown rows' sum.
 
 Lead with the highest-exposure items first (largest dollars / nearest to chargeback), give the why in a phrase, then one concrete action to protect the commission. You may DRAFT a client or agent follow-up (email or SMS) for the user's approval — never claim you sent it.`;
 
@@ -178,9 +181,10 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getMyProduction",
       "getTeamProductionSummary",
       "getTeamLeaderboard",
+      "queryPolicies",
       ...DRAFT_TOOLS,
     ],
-    allowedCategories: ["production", "messaging"],
+    allowedCategories: ["production", "policy", "messaging"],
     maxTokens: 1000,
   },
   "policy-risk": {
@@ -189,7 +193,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Approved-but-unpaid, payment-risk, pending follow-ups, chargeback exposure.",
     systemPrompt: POLICY_RISK_PROMPT,
-    allowedToolNames: ["getPolicyRiskAlerts", ...DRAFT_TOOLS],
+    allowedToolNames: ["getPolicyRiskAlerts", "queryPolicies", ...DRAFT_TOOLS],
     allowedCategories: ["policy", "messaging"],
     maxTokens: 1000,
   },

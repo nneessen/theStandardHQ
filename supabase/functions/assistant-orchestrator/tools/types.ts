@@ -3,6 +3,23 @@
 // The orchestrator (index.ts) creates the real user-scoped supabase client and casts
 // it to ToolDbClient at the boundary.
 
+/**
+ * Chainable, awaitable SELECT builder — a structural subset of PostgREST's
+ * PostgrestFilterBuilder. Awaiting it resolves to the supabase result shape
+ * (`{ data, count, error }`); the real client already satisfies this, so the tool
+ * layer can type-check against it offline while index.ts force-casts the concrete
+ * client at the boundary. Read-only: only filter/order/limit, never write verbs.
+ */
+export interface ToolSelectBuilder
+  extends PromiseLike<{ data: unknown; count: number | null; error: unknown }> {
+  eq(column: string, value: unknown): ToolSelectBuilder;
+  in(column: string, values: readonly unknown[]): ToolSelectBuilder;
+  gte(column: string, value: unknown): ToolSelectBuilder;
+  lte(column: string, value: unknown): ToolSelectBuilder;
+  order(column: string, opts?: { ascending?: boolean }): ToolSelectBuilder;
+  limit(count: number): ToolSelectBuilder;
+}
+
 /** Minimal structural surface of the user-scoped supabase client that tools use. */
 export interface ToolDbClient {
   rpc(
@@ -15,6 +32,10 @@ export interface ToolDbClient {
         single(): PromiseLike<{ data: { id: string } | null; error: unknown }>;
       };
     };
+    select(
+      columns?: string,
+      opts?: { count?: "exact" | "planned" | "estimated" },
+    ): ToolSelectBuilder;
   };
 }
 

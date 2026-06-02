@@ -1,6 +1,11 @@
 import { assert, assertEquals, assertRejects } from "jsr:@std/assert@1";
-import type { AssistantToolContext, ToolDbClient } from "../types.ts";
+import type {
+  AssistantToolContext,
+  ToolDbClient,
+  ToolSelectBuilder,
+} from "../types.ts";
 import { getPolicyRiskAlerts } from "../getPolicyRiskAlerts.ts";
+import { queryPolicies } from "../queryPolicies.ts";
 import { getDailyBriefingData } from "../getDailyBriefingData.ts";
 import { getLeadPriorities } from "../getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "../getRecruitingSnapshot.ts";
@@ -18,12 +23,70 @@ interface InsertCall {
   table: string;
   values: Record<string, unknown>;
 }
+interface SelectFilter {
+  op: string;
+  column?: string;
+  value?: unknown;
+  values?: readonly unknown[];
+}
+interface SelectCall {
+  table: string;
+  columns?: string;
+  opts?: { count?: string };
+  filters: SelectFilter[];
+}
+
+type SelectResult = { data: unknown; count: number | null; error: unknown };
 
 function makeCtx(
   rpcResults: Record<string, { data: unknown; error: unknown }> = {},
+  selectResults: Record<string, SelectResult> = {},
 ) {
   const rpcCalls: RpcCall[] = [];
   const inserts: InsertCall[] = [];
+  const selectCalls: SelectCall[] = [];
+
+  // Chainable, awaitable SELECT builder mirroring PostgREST: each filter records
+  // itself and returns the SAME builder; `then` resolves to a plain
+  // { data, count, error } (never another thenable, so awaiting can't recurse).
+  const makeSelectBuilder = (call: SelectCall): ToolSelectBuilder => {
+    const result = selectResults[call.table] ?? {
+      data: null,
+      count: null,
+      error: null,
+    };
+    const builder: ToolSelectBuilder = {
+      eq(column, value) {
+        call.filters.push({ op: "eq", column, value });
+        return builder;
+      },
+      in(column, values) {
+        call.filters.push({ op: "in", column, values });
+        return builder;
+      },
+      gte(column, value) {
+        call.filters.push({ op: "gte", column, value });
+        return builder;
+      },
+      lte(column, value) {
+        call.filters.push({ op: "lte", column, value });
+        return builder;
+      },
+      order(column, opts) {
+        call.filters.push({ op: "order", column, value: opts });
+        return builder;
+      },
+      limit(count) {
+        call.filters.push({ op: "limit", value: count });
+        return builder;
+      },
+      then(onfulfilled, onrejected) {
+        return Promise.resolve(result).then(onfulfilled, onrejected);
+      },
+    };
+    return builder;
+  };
+
   const db: ToolDbClient = {
     rpc(fn, args) {
       rpcCalls.push({ fn, args });
@@ -46,6 +109,11 @@ function makeCtx(
             },
           };
         },
+        select(columns, opts) {
+          const call: SelectCall = { table, columns, opts, filters: [] };
+          selectCalls.push(call);
+          return makeSelectBuilder(call);
+        },
       };
     },
   };
@@ -64,7 +132,7 @@ function makeCtx(
       },
     },
   };
-  return { ctx, rpcCalls, inserts };
+  return { ctx, rpcCalls, inserts, selectCalls };
 }
 
 Deno.test("read tool (getPolicyRiskAlerts) performs NO writes", async () => {
@@ -369,6 +437,278 @@ Deno.test(
     const res = (await getTeamLeaderboard.run({}, ctx)) as {
       available: boolean;
     };
+    assertEquals(res.available, false);
+  },
+);
+
+// --- queryPolicies: flexible RLS-scoped policy queries ----------------------
+
+// Raw PostgREST-shaped rows. Row 0 deliberately carries PII columns (notes,
+// client_id, user_id) the tool must NEVER surface, even though they aren't in
+// SAFE_COLS, to prove safeShape is a hard allowlist.
+const POLICY_ROWS = [
+  {
+    status: "pending",
+    lifecycle_status: null,
+    product: "term_life",
+    annual_premium: 1200,
+    monthly_premium: 100,
+    submit_date: "2026-05-20",
+    effective_date: "2026-06-01",
+    expiration_date: null,
+    cancellation_date: null,
+    policy_number: "PN-1",
+    payment_frequency: "monthly",
+    carriers: { name: "Acme Life" },
+    notes: "private underwriting note",
+    client_id: "client-uuid-xyz",
+    user_id: "some-other-user",
+    cancellation_reason: "should never surface",
+  },
+  {
+    status: "pending",
+    lifecycle_status: "active",
+    product: "whole_life",
+    annual_premium: 800,
+    monthly_premium: 70,
+    submit_date: "2026-05-18",
+    effective_date: "2026-05-25",
+    expiration_date: null,
+    cancellation_date: null,
+    policy_number: "PN-2",
+    payment_frequency: "monthly",
+    carriers: { name: "Beta Mutual" },
+  },
+];
+
+Deno.test(
+  "queryPolicies lists policies with an exact count, applies filters, writes nothing, and leaks no PII",
+  async () => {
+    const { ctx, inserts, selectCalls } = makeCtx(
+      {},
+      { policies: { data: POLICY_ROWS, count: 2, error: null } },
+    );
+    const res = (await queryPolicies.run(
+      {
+        scope: "mine",
+        status: ["Pending"], // mixed-case: tool lowercases before .in()
+        dateField: "submit_date",
+        startDate: "2026-05-15",
+        endDate: "2026-05-31",
+      },
+      ctx,
+    )) as {
+      available: boolean;
+      data: {
+        count: number;
+        returned: number;
+        truncated: boolean;
+        policies: Array<Record<string, unknown>>;
+      };
+    };
+
+    assertEquals(inserts.length, 0); // read-only
+    assertEquals(res.available, true);
+    assertEquals(res.data.count, 2);
+    assertEquals(res.data.returned, 2);
+    assertEquals(res.data.truncated, false);
+
+    const call = selectCalls.find((c) => c.table === "policies");
+    assert(call, "should SELECT from policies");
+    assertEquals(call?.opts?.count, "exact");
+    // status filter lowercased + applied as .in
+    const statusIn = call?.filters.find(
+      (f) => f.op === "in" && f.column === "status",
+    );
+    assertEquals(statusIn?.values, ["pending"]);
+    // date range bound to submit_date
+    assert(
+      call?.filters.some((f) => f.op === "gte" && f.column === "submit_date"),
+    );
+    assert(
+      call?.filters.some((f) => f.op === "lte" && f.column === "submit_date"),
+    );
+
+    // PII allowlist: only safe, camelCased fields — never notes/client_id/user_id.
+    const p = res.data.policies[0];
+    assertEquals(p.policyNumber, "PN-1");
+    assertEquals(p.carrier, "Acme Life");
+    assertEquals(p.status, "pending");
+    assertEquals("notes" in p, false);
+    assertEquals("client_id" in p, false);
+    assertEquals("user_id" in p, false);
+    assertEquals("cancellation_reason" in p, false);
+  },
+);
+
+Deno.test(
+  "queryPolicies scope 'mine' narrows to the caller's user_id; 'team' relies on RLS only",
+  async () => {
+    const mine = makeCtx({}, { policies: { data: [], count: 0, error: null } });
+    await queryPolicies.run({ scope: "mine" }, mine.ctx);
+    const mineCall = mine.selectCalls.find((c) => c.table === "policies");
+    assert(
+      mineCall?.filters.some(
+        (f) => f.op === "eq" && f.column === "user_id" && f.value === "user_1",
+      ),
+      "scope 'mine' must add user_id = caller",
+    );
+
+    const team = makeCtx({}, { policies: { data: [], count: 0, error: null } });
+    await queryPolicies.run({ scope: "team" }, team.ctx);
+    const teamCall = team.selectCalls.find((c) => c.table === "policies");
+    assertEquals(
+      teamCall?.filters.some((f) => f.op === "eq" && f.column === "user_id"),
+      false,
+      "scope 'team' must NOT add a user_id filter (RLS scopes the subtree)",
+    );
+
+    // Default scope (no arg) behaves as 'mine'.
+    const def = makeCtx({}, { policies: { data: [], count: 0, error: null } });
+    await queryPolicies.run({}, def.ctx);
+    const defCall = def.selectCalls.find((c) => c.table === "policies");
+    assert(
+      defCall?.filters.some((f) => f.op === "eq" && f.column === "user_id"),
+      "default scope must behave as 'mine'",
+    );
+  },
+);
+
+Deno.test(
+  "queryPolicies treats zero matches as available:true (a real 'none', not unavailable)",
+  async () => {
+    const { ctx } = makeCtx(
+      {},
+      { policies: { data: [], count: 0, error: null } },
+    );
+    const res = (await queryPolicies.run({}, ctx)) as {
+      available: boolean;
+      data: { count: number; returned: number; truncated: boolean };
+    };
+    assertEquals(res.available, true);
+    assertEquals(res.data.count, 0);
+    assertEquals(res.data.returned, 0);
+    assertEquals(res.data.truncated, false);
+  },
+);
+
+Deno.test(
+  "queryPolicies flags truncation and sums AP/IP over the RETURNED rows only",
+  async () => {
+    // 2 rows returned but 57 match overall → truncated; sums cover the 2 shown.
+    const { ctx, selectCalls } = makeCtx(
+      {},
+      { policies: { data: POLICY_ROWS, count: 57, error: null } },
+    );
+    const res = (await queryPolicies.run({ limit: 2 }, ctx)) as {
+      data: {
+        count: number;
+        returned: number;
+        truncated: boolean;
+        totalAnnualPremium: number;
+        totalMonthlyPremium: number;
+      };
+    };
+    assertEquals(res.data.count, 57);
+    assertEquals(res.data.returned, 2);
+    assertEquals(res.data.truncated, true);
+    assertEquals(res.data.totalAnnualPremium, 2000); // 1200 + 800
+    assertEquals(res.data.totalMonthlyPremium, 170); // 100 + 70
+    const limitFilter = selectCalls
+      .find((c) => c.table === "policies")
+      ?.filters.find((f) => f.op === "limit");
+    assertEquals(limitFilter?.value, 2);
+  },
+);
+
+Deno.test("queryPolicies clamps an oversized limit to the 200 hard cap", async () => {
+  const { ctx, selectCalls } = makeCtx(
+    {},
+    { policies: { data: [], count: 0, error: null } },
+  );
+  await queryPolicies.run({ limit: 9999 }, ctx);
+  const limitFilter = selectCalls
+    .find((c) => c.table === "policies")
+    ?.filters.find((f) => f.op === "limit");
+  assertEquals(limitFilter?.value, 200);
+});
+
+Deno.test(
+  "queryPolicies allowlists the product enum — a typo'd value never reaches .in()",
+  async () => {
+    // "term" is invalid (the enum is term_life); only the valid value survives.
+    const { ctx, selectCalls } = makeCtx(
+      {},
+      { policies: { data: [], count: 0, error: null } },
+    );
+    await queryPolicies.run({ product: ["term", "whole_life"] }, ctx);
+    const call = selectCalls.find((c) => c.table === "policies");
+    const productIn = call?.filters.find(
+      (f) => f.op === "in" && f.column === "product",
+    );
+    assert(productIn, "the valid product value should still filter");
+    assertEquals(productIn?.values, ["whole_life"]);
+
+    // When EVERY product value is invalid, omit the filter rather than match nothing.
+    const allBad = makeCtx(
+      {},
+      { policies: { data: [], count: 0, error: null } },
+    );
+    await queryPolicies.run({ product: ["term", "bogus"] }, allBad.ctx);
+    const badCall = allBad.selectCalls.find((c) => c.table === "policies");
+    assertEquals(
+      badCall?.filters.some((f) => f.op === "in" && f.column === "product"),
+      false,
+    );
+  },
+);
+
+Deno.test(
+  "queryPolicies allowlists dateField — an unknown column never reaches the query",
+  async () => {
+    const { ctx, selectCalls } = makeCtx(
+      {},
+      { policies: { data: [], count: 0, error: null } },
+    );
+    await queryPolicies.run(
+      { dateField: "notes", startDate: "2026-01-01" },
+      ctx,
+    );
+    const call = selectCalls.find((c) => c.table === "policies");
+    // The unknown column is rejected; gte + ordering fall back to submit_date.
+    assertEquals(
+      call?.filters.find((f) => f.op === "gte")?.column,
+      "submit_date",
+    );
+    assertEquals(
+      call?.filters.find((f) => f.op === "order")?.column,
+      "submit_date",
+    );
+    assert(!call?.filters.some((f) => f.column === "notes"));
+
+    // A valid dateField passes through.
+    const ok = makeCtx({}, { policies: { data: [], count: 0, error: null } });
+    await queryPolicies.run(
+      { dateField: "effective_date", endDate: "2026-06-30" },
+      ok.ctx,
+    );
+    assertEquals(
+      ok.selectCalls
+        .find((c) => c.table === "policies")
+        ?.filters.find((f) => f.op === "lte")?.column,
+      "effective_date",
+    );
+  },
+);
+
+Deno.test(
+  "queryPolicies returns available:false on a query error (no fabrication)",
+  async () => {
+    const { ctx } = makeCtx(
+      {},
+      { policies: { data: null, count: null, error: { message: "boom" } } },
+    );
+    const res = (await queryPolicies.run({}, ctx)) as { available: boolean };
     assertEquals(res.available, false);
   },
 );

@@ -8,6 +8,7 @@ import { getMyProduction } from "./getMyProduction.ts";
 import { getTeamProductionSummary } from "./getTeamProductionSummary.ts";
 import { getTeamLeaderboard } from "./getTeamLeaderboard.ts";
 import { getPolicyRiskAlerts } from "./getPolicyRiskAlerts.ts";
+import { queryPolicies } from "./queryPolicies.ts";
 import { getLeadPriorities } from "./getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "./getRecruitingSnapshot.ts";
 import { getClientSnapshot } from "./getClientSnapshot.ts";
@@ -27,6 +28,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [getTeamProductionSummary.name]: getTeamProductionSummary,
   [getTeamLeaderboard.name]: getTeamLeaderboard,
   [getPolicyRiskAlerts.name]: getPolicyRiskAlerts,
+  [queryPolicies.name]: queryPolicies,
   [getLeadPriorities.name]: getLeadPriorities,
   [getRecruitingSnapshot.name]: getRecruitingSnapshot,
   [getClientSnapshot.name]: getClientSnapshot,

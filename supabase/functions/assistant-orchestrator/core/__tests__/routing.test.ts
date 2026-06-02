@@ -40,6 +40,35 @@ Deno.test("classifyIntent maps explicit intents", () => {
   assertEquals(classifyIntent("hello there"), null);
 });
 
+Deno.test(
+  "classifyIntent routes policy list/count/filter asks to production-analyst (queryPolicies home)",
+  () => {
+    // The exact complaint that motivated queryPolicies MUST reach an agent that has
+    // the tool — previously it fell through to executive-briefing (no queryPolicies).
+    assertEquals(
+      classifyIntent("find my pending policies in the last two weeks"),
+      "production-analyst",
+    );
+    assertEquals(
+      classifyIntent("list my cancelled policies"),
+      "production-analyst",
+    );
+    assertEquals(
+      classifyIntent("how many policies did I write this month?"),
+      "production-analyst",
+    );
+    // Guard: risk-specific policy asks still go to policy-risk (matched earlier).
+    assertEquals(
+      classifyIntent("which policies are at risk of chargeback?"),
+      "policy-risk",
+    );
+    // Guard: book/policyholder asks still go to crm — crm is matched first, and the
+    // word boundary in polic(y|ies) excludes "policyholder" anyway.
+    assertEquals(classifyIntent("summarize my policyholders"), "crm");
+    assertEquals(classifyIntent("my book of business"), "crm");
+  },
+);
+
 Deno.test("classifyIntent maps the remaining specialists", () => {
   assertEquals(classifyIntent("how is my recruiting pipeline?"), "recruiting");
   assertEquals(classifyIntent("summarize my book of business"), "crm");

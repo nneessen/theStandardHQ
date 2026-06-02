@@ -141,9 +141,14 @@ export function classifyIntent(message: string): AgentKey | null {
     return "crm";
   }
 
-  // 14. Production performance.
+  // 14. Production performance — incl. listing/counting an agent's own or team's
+  // policies. "polic(y|ies)" lands here (Production Analyst owns queryPolicies); the
+  // risk-specific policy asks ("policies at risk", lapse, chargeback) already matched
+  // policy-risk at #8, and "policyholders"/"my book" matched crm at #13, so only
+  // generic policy list/count/filter questions reach this rule. \b after "policy"/
+  // "policies" means "policyholder" does NOT trip it.
   if (
-    /\b(production|annualized premium|ap|submitted|placed|pending business|carrier performance|leaderboard|who('?s| is) leading|pace|written premium)\b/.test(
+    /\b(production|annualized premium|ap|submitted|placed|pending business|carrier performance|leaderboard|who('?s| is) leading|pace|written premium|polic(y|ies))\b/.test(
       m,
     )
   ) {
