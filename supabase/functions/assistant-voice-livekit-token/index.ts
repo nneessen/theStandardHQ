@@ -46,7 +46,12 @@ serve(async (req) => {
   }
 
   const userId = auth.caller.userId;
-  const room = `jarvis-${userId}`;
+  // Per-SESSION room (not per-user). The participant identity stays = userId, so the
+  // agent worker still trusts exactly who it serves — but minting a unique room per
+  // token means the SAME user opening a second tab gets a DISTINCT room instead of a
+  // duplicate (identity, room) pair, which LiveKit resolves by EVICTING the first tab
+  // (identity is unique per room). One agent is auto-dispatched per session room.
+  const room = `jarvis-${userId}-${crypto.randomUUID()}`;
 
   const at = new AccessToken(apiKey, apiSecret, {
     identity: userId,

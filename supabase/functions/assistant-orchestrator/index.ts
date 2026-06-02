@@ -161,6 +161,7 @@ serve(async (req) => {
         .eq("conversation_id", conversationId)
         .eq("role", "assistant")
         .order("created_at", { ascending: false })
+        .order("id", { ascending: false }) // deterministic tiebreak on equal timestamps
         .limit(1)
         .maybeSingle();
       const prev = (lastMsg as { agent_key?: string } | null)?.agent_key;

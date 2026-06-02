@@ -160,8 +160,17 @@ function applyPolicyFilters(
 
 /**
  * Sum annual/monthly premium over ALL matching policies (RLS-scoped), paginating past
- * PostgREST's max_rows cap by a stable key (`id`, the unique PK) so no row is counted
- * twice or skipped.
+ * PostgREST's max_rows cap. Ordered by `id` and walked with OFFSET (`.range`); the cursor
+ * advances by the ACTUAL rows received (`from += batch.length`), never the requested page
+ * size — so a short page can never skip rows UNDER A STABLE SNAPSHOT.
+ *
+ * KNOWN LIMITATION (code-review 2026-06-02): `policies.id` is a random UUID, so OFFSET
+ * pagination is NOT concurrency-stable — a concurrent in-scope INSERT/DELETE during the
+ * multi-page walk can shift offsets and skip or double-count a row, silently biasing the
+ * total. Only reachable at scope:'team' with >1000 matches + a write mid-walk (not a factor
+ * at current scale). Robust fix = KEYSET (`.gt("id", lastId)`); deferred so it migrates in
+ * one pass with this money-path's offset-based test suite. Until then `premiumsComplete`
+ * does NOT detect this skew.
  *
  * The cursor advances by the ACTUAL rows received (`from += batch.length`), never by the
  * requested page size — so a short page (e.g. if the server's max_rows is below pageSize)
