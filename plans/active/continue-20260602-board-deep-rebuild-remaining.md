@@ -94,6 +94,57 @@ toggle), **Lead Intelligence** (Market Pulse), **Overrides**.
 though they don't use the `FlapTile` primitive — don't be fooled by a
 "no FlapTile" grep.)
 
+### Session 2026-06-02 progress (verified by screenshot unless noted)
+- **VISUAL LOOP FIXED** (commit 730880f2). The screenshots were all silently the
+  LOGIN page: `board-shots.py` used `get_by_label("Email"/"Password")` but the
+  login inputs are placeholder-only → filled nothing. Now selects
+  `input[type=email]/[type=password]` and ABORTS loudly if still on `/login`.
+  Also the dev server hits **LOCAL** Supabase (127.0.0.1:54321) and `.env.local`
+  `E2E_PASSWORD` didn't match the local seed → reset local `auth.users` pw via
+  `crypt()` to match (local-only, reversible). Login now → /policies. Memory:
+  `project_board_visual_loop_creds`.
+- **Bot Health** (`/admin/bot-health`) ✓ FULL — HeroCards→SYSTEM FlapTile band +
+  status-Pill strip; queue/process/agents Cards→Board panels; Badges→Pills. (730880f2)
+- **Downline Performance** (`/hierarchy/downlines`) ✓ FULL — added Downline-Totals
+  FlapTile band; Card→Board table panel; empty persistency shows `—` not red 0.0%.
+  Dialogs left as-is (Radix-portaled, inherit Board). (1ae66bbf, 1ae66bbf+fix)
+- **Business Tools Overview tab** (`/business-tools`) ✓ STRUCTURAL (NOT
+  screenshot-verifiable) — SummaryCards→FlapTile band, chart cards + ReviewQueue
+  →Board, dimmed chart grid. ⚠ Bodies are gated by the `business-tools-proxy`
+  edge fn which is **NOT served on local** (CORS/ERR_FAILED) → the Overview body
+  perpetually spins; verified by tsc/eslint/code only. **Remaining tabs**
+  (Transactions/Statements/Upload + their dialogs: TransactionDetail,
+  UploadResultSummary, WorkbookReview, InstitutionRequestForm) still shadcn —
+  also un-verifiable on local. (e8f0f6f4)
+- **OrgChartPage** (`/hierarchy/org-chart`) ✓ page-level loading/error/empty
+  Cards→Board. Data view already charcoal via `OrgChartVisualization` (whose
+  inner `<Card>`s resolve to charcoal through theme-v2 `--card` — structural-only,
+  deferred). (51fcfc56)
+
+### ⚠️ KEY TRIAGE LESSON (use this to prioritize remaining work)
+Not every shadcn surface is a "looks the same" offender. Two classes:
+- **LIGHT shadcn = REAL offender → convert:** `<Card variant="outlined">`,
+  `<Card>`, `bg-card`, `bg-background`. These render the global light/Slate card
+  and visibly clash. (Bot Health was this.)
+- **Already-charcoal → LOW payoff, defer:** `bg-v2-card` / `rounded-v2-*` and
+  shadcn `<Card>` *inside `.theme-v2`* (whose `--card` token is charcoal). These
+  already look Board; converting to `<Board>` only adds the gradient/rivets/hairline.
+  (Contracting + OrgChartVisualization + My-Training inner are this — visible but
+  already dark.)
+**Inventory command (do this FIRST per page):**
+`grep -rlnE '<Card |<Card>|variant="outlined"|bg-card\b|bg-background\b' src/features/<dir>`
+→ that's the LIGHT-offender worklist. "Done" = empty. Then spend leftover budget
+on the charcoal-but-shadcn polish only if time allows.
+
+### Remaining Tier-1, ranked by LIGHT-offender count (verifiable on local):
+- **AgentDetailPage** (`/hierarchy/agent/$id`) — **15 light Cards, 1368 ln** — the
+  biggest real offender; users see it. Get an `$id` from the org chart (e.g. click
+  a node) or `select id from auth.users`. Stat header→FlapTiles + AP/commission/
+  override/policy tables→Board panels + EditAgentModal.
+- **TrainerDashboard** (`/trainer-dashboard`) — 8 light Cards (mixed w/ 16 v2).
+- **TeamOverviewPage** roadmap (4), **RoadmapListPage** (2), **HierarchyManagement**
+  (2), then My-Training inner (charcoal-ish, lower payoff).
+
 ---
 
 ## 🟡 REMAINING — shell+header only, BODIES + INNER COMPONENTS still old
