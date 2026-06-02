@@ -16,6 +16,7 @@ import {
   createClient,
   SupabaseClient,
 } from "https://esm.sh/@supabase/supabase-js@2.47.10";
+import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 import { decrypt } from "../_shared/encryption.ts";
 import {
   createEmailTemplate,
@@ -633,10 +634,24 @@ async function handleGenerateEmail(ctx: ActionContext): Promise<Response> {
   if (!prompt) return json({ error: "prompt is required" }, 400, ctx.req);
   const options = (ctx.body.options as EmailPromptOptions) ?? {};
 
+  // Postgres-backed rate limits (req + token buckets).
+  const svcClient = getServiceClient();
+  const aiCors = corsHeaders(ctx.req);
+  const limited = await enforceAiRateLimits(
+    svcClient,
+    "close-ai-builder",
+    ctx.user.id,
+    aiCors,
+  );
+  if (limited) return limited;
+
   const rateLimited = await enforceGenerationRateLimit(ctx);
   if (rateLimited) return rateLimited;
 
   const result = await generateEmailTemplate(prompt, options);
+  // Record actual token spend after Anthropic returns.
+  const emailTokens = (result.input_tokens ?? 0) + (result.output_tokens ?? 0);
+  await recordAiTokens(svcClient, ctx.user.id, emailTokens);
   const generationId = await insertGeneration(ctx.userClient, {
     userId: ctx.user.id,
     generationType: "email",
@@ -668,10 +683,24 @@ async function handleGenerateSms(ctx: ActionContext): Promise<Response> {
   if (!prompt) return json({ error: "prompt is required" }, 400, ctx.req);
   const options = (ctx.body.options as SmsPromptOptions) ?? {};
 
+  // Postgres-backed rate limits (req + token buckets).
+  const svcClient = getServiceClient();
+  const aiCors = corsHeaders(ctx.req);
+  const limited = await enforceAiRateLimits(
+    svcClient,
+    "close-ai-builder",
+    ctx.user.id,
+    aiCors,
+  );
+  if (limited) return limited;
+
   const rateLimited = await enforceGenerationRateLimit(ctx);
   if (rateLimited) return rateLimited;
 
   const result = await generateSmsTemplate(prompt, options);
+  // Record actual token spend after Anthropic returns.
+  const smsTokens = (result.input_tokens ?? 0) + (result.output_tokens ?? 0);
+  await recordAiTokens(svcClient, ctx.user.id, smsTokens);
   const generationId = await insertGeneration(ctx.userClient, {
     userId: ctx.user.id,
     generationType: "sms",
@@ -703,10 +732,24 @@ async function handleGenerateSequence(ctx: ActionContext): Promise<Response> {
   if (!prompt) return json({ error: "prompt is required" }, 400, ctx.req);
   const options = (ctx.body.options as SequencePromptOptions) ?? {};
 
+  // Postgres-backed rate limits (req + token buckets).
+  const svcClient = getServiceClient();
+  const aiCors = corsHeaders(ctx.req);
+  const limited = await enforceAiRateLimits(
+    svcClient,
+    "close-ai-builder",
+    ctx.user.id,
+    aiCors,
+  );
+  if (limited) return limited;
+
   const rateLimited = await enforceGenerationRateLimit(ctx);
   if (rateLimited) return rateLimited;
 
   const result = await generateSequence(prompt, options);
+  // Record actual token spend after Anthropic returns.
+  const seqTokens = (result.input_tokens ?? 0) + (result.output_tokens ?? 0);
+  await recordAiTokens(svcClient, ctx.user.id, seqTokens);
   const generationId = await insertGeneration(ctx.userClient, {
     userId: ctx.user.id,
     generationType: "sequence",

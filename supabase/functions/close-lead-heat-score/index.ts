@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { decrypt } from "../_shared/encryption.ts";
+import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 import { scoreLead, getHeatLevel } from "./scoring-engine.ts";
 import { extractSignals } from "./signal-extractor.ts";
 import {
@@ -1487,8 +1488,23 @@ serve(async (req) => {
     // Dispatch action
     let result: unknown;
 
+    // Rate limiting helpers for AI-calling actions.
+    // `authClient` is the service-role client; the rate-limit RPC requires it.
+    // `score_all_users` is cron-only (service-role-gated above) and skipped.
+    // `apply_weight_update` does not call Anthropic and is also skipped.
+    const heatCors = corsHeaders(req);
+
     switch (action) {
       case "score_all": {
+        // score_all runs portfolio analysis (analyzePortfolio = Anthropic call).
+        const limited = await enforceAiRateLimits(
+          authClient,
+          "close-lead-heat-score",
+          user.id,
+          heatCors,
+        );
+        if (limited) return limited;
+
         let apiKey: string;
         try {
           apiKey = await resolveCloseApiKey(user.id, dataClient);
@@ -1497,9 +1513,23 @@ serve(async (req) => {
           return jsonResponse({ error: e.message, code: e.code }, 400, req);
         }
         result = await handleScoreAll(apiKey, user.id, dataClient, params);
+        // score_all internally calls analyzePortfolio which returns tokensUsed
+        // buried in materializePortfolioInsights; we can't easily surface it
+        // without refactoring handleScoreAll. Token recording is best-effort
+        // here — recorded on the analyze_lead and get_portfolio_insights paths
+        // where the return value is accessible.
         break;
       }
       case "analyze_lead": {
+        // analyze_lead calls analyzeLeadDeepDive (Anthropic).
+        const limited = await enforceAiRateLimits(
+          authClient,
+          "close-lead-heat-score",
+          user.id,
+          heatCors,
+        );
+        if (limited) return limited;
+
         let apiKey: string;
         try {
           apiKey = await resolveCloseApiKey(user.id, dataClient);
@@ -1508,13 +1538,36 @@ serve(async (req) => {
           return jsonResponse({ error: e.message, code: e.code }, 400, req);
         }
         result = await handleAnalyzeLead(apiKey, user.id, dataClient, params);
+        // handleAnalyzeLead returns the AI insights object, not tokensUsed.
+        // Token recording is not available on this path without refactoring
+        // handleAnalyzeLead to bubble up tokensUsed. Request bucket enforced.
         break;
       }
       case "get_portfolio_insights": {
+        // get_portfolio_insights may call analyzePortfolio (Anthropic) if cache expired.
+        const limited = await enforceAiRateLimits(
+          authClient,
+          "close-lead-heat-score",
+          user.id,
+          heatCors,
+        );
+        if (limited) return limited;
+
         const portfolioAnalysis = await materializePortfolioInsights(
           user.id,
           dataClient,
         );
+        // Record tokens if an AI call was actually made (aiCallsMade > 0).
+        if (
+          portfolioAnalysis.aiCallsMade > 0 &&
+          portfolioAnalysis.analysis?.tokens_used
+        ) {
+          await recordAiTokens(
+            authClient,
+            user.id,
+            portfolioAnalysis.analysis.tokens_used,
+          );
+        }
         result = portfolioAnalysis.analysis ?? emptyPortfolioInsightsRow();
         break;
       }

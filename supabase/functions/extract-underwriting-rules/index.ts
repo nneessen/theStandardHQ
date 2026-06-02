@@ -17,6 +17,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
+import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -202,6 +203,21 @@ serve(async (req) => {
     const imoId = profile.imo_id as string;
     const userId = profile.id as string;
 
+    // Rate limiting — enforced before any Anthropic spend.
+    // NOTE: This function processes guides in chunks (one Anthropic call per
+    // invocation). A large guide can produce 30+ chunks, so the 30 req/hr cap
+    // may stall a legitimate admin extraction mid-run. The function is
+    // admin-role-gated so abuse risk is low; the cap is applied as requested
+    // and flagged here for awareness.
+    const exCors = { ...corsHeaders, "Content-Type": "application/json" };
+    const limited = await enforceAiRateLimits(
+      supabase,
+      "extract-underwriting-rules",
+      userId,
+      exCors,
+    );
+    if (limited) return limited;
+
     // Parse + validate request
     const body: ExtractionRequest = await req.json();
     const { guideId, productId } = body;
@@ -327,6 +343,11 @@ serve(async (req) => {
       messages: [{ role: "user", content: userPrompt }],
     });
     const aiDurationMs = Date.now() - aiStart;
+
+    // Record actual Anthropic token spend against the daily token bucket.
+    const totalTokensThisChunk =
+      (response.usage.input_tokens ?? 0) + (response.usage.output_tokens ?? 0);
+    await recordAiTokens(supabase, userId, totalTokensThisChunk);
 
     const aiText =
       response.content[0]?.type === "text" ? response.content[0].text : "";

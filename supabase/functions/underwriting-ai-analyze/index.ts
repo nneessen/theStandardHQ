@@ -4,6 +4,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
+import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 import {
   evaluateDecisionTree,
   buildEvaluationContext,
@@ -340,6 +341,18 @@ serve(async (req) => {
         },
       );
     }
+
+    // Rate limiting — enforced after quota check, before any Anthropic spend.
+    // The service-role `supabase` client (already created above) is used to
+    // call the SECURITY DEFINER check_rate_limit function.
+    const uwCors = { ...corsHeaders, "Content-Type": "application/json" };
+    const limited = await enforceAiRateLimits(
+      supabase,
+      "underwriting-ai-analyze",
+      user.id,
+      uwCors,
+    );
+    if (limited) return limited;
 
     // Validate required fields
     if (!client || !client.age || !client.gender || !client.state) {
@@ -887,6 +900,14 @@ serve(async (req) => {
 
     // Update analysis result with merged recommendations
     analysisResult.recommendations = mergedRecommendations;
+
+    // Record actual Anthropic token spend against the daily token bucket.
+    // Fire-and-forget (await but don't block the response on it); result is
+    // intentionally ignored — we don't retroactively block a completed call.
+    const totalTokensThisCall =
+      (response.usage?.input_tokens ?? 0) +
+      (response.usage?.output_tokens ?? 0);
+    await recordAiTokens(supabase, user.id, totalTokensThisCall);
 
     // ==========================================================================
     // INCREMENT USAGE - Track this run for billing/quota purposes
