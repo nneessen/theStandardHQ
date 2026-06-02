@@ -539,6 +539,19 @@ export function useAssistantVoiceSession({
     }
 
     const audioCtx = new AudioCtx();
+    // An AudioContext created AFTER an await (getUserMedia above) is outside the
+    // original user-gesture window, so Chrome starts it "suspended". A suspended
+    // context doesn't process the graph — the analyser then reads flat silence,
+    // RMS stays 0, the VAD never sees speech, and the session is stuck in
+    // "listening" forever. Resume it before we start monitoring. No-op when the
+    // context is already running (e.g. Safari).
+    if (audioCtx.state === "suspended") {
+      try {
+        await audioCtx.resume();
+      } catch {
+        /* best-effort — most browsers resume fine inside the start() gesture */
+      }
+    }
     const sourceNode = audioCtx.createMediaStreamSource(stream);
     const analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
