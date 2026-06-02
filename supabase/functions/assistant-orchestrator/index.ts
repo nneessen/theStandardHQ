@@ -205,7 +205,27 @@ serve(async (req) => {
       underwriting: createUnderwritingRunner(db),
     };
 
-    const systemPrompt = buildSystemPrompt(agent, assistantName);
+    // Ground the model in the REAL current date (in the business timezone) so it
+    // resolves "yesterday" / "this month" / "MTD" correctly and passes the right
+    // YYYY-MM-DD ranges to tools — instead of inventing a date (it once reported
+    // "July 13" for "yesterday"). Edge isolates run in UTC, so compute the date in
+    // ASSISTANT_TIMEZONE (default US Eastern, the business TZ) via Intl.
+    const tz = Deno.env.get("ASSISTANT_TIMEZONE") ?? "America/New_York";
+    const nowDate = new Date();
+    const nowLong = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(nowDate);
+    // en-CA renders YYYY-MM-DD; the timeZone option pins it to the business day.
+    const nowIso = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(
+      nowDate,
+    );
+    const nowContext = `CURRENT DATE: Today is ${nowLong} (${nowIso}, ${tz}). Resolve every relative date from this and pass explicit YYYY-MM-DD ranges to date-scoped tools. Never invent or assume a date.`;
+
+    const systemPrompt = buildSystemPrompt(agent, assistantName, nowContext);
     const tools = buildAnthropicTools(agent.allowedToolNames);
     const anthropic = getAnthropicClient();
 

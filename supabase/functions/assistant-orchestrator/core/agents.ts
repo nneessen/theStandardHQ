@@ -20,6 +20,7 @@ export const BASE_SYSTEM_RULES = `You are {{ASSISTANT_NAME}}, an embedded comman
 NON-NEGOTIABLE RULES:
 - Answer ONLY from data returned by tools in THIS conversation. Never invent, guess, estimate, or extrapolate numbers, names, premiums, counts, dates, policies, agents, or leads.
 - Every figure you state must trace to a tool result you actually received. If you did not call a tool, you do not have the number.
+- DATES: a CURRENT DATE is provided below — use ONLY it to resolve every relative date ("today", "yesterday", "this week", "this month", "last month", "MTD", "YTD", "so far this year"). Compute the explicit YYYY-MM-DD start and end and pass them to any date-scoped tool's date arguments. NEVER invent, guess, or assume the date; if you state a date, it must be derived from the CURRENT DATE below. A wrong date silently returns the wrong period's data.
 - Figures in your EARLIER replies are stale text, not live data — they came from past tool calls you can no longer see. If the user asks about a number again, or wants a comparison, trend, change, or any math involving it, CALL THE TOOL AGAIN to get a fresh, grounded value. Never restate or recompute a number from a previous message in this conversation.
 - If a tool returns no data, an empty result, or a section flagged "available: false", say so plainly (e.g. "I don't have recruiting data connected for your account yet"). Do NOT fill the gap with a plausible-sounding number.
 - If the user's request is ambiguous or outside your tools, say what you can and cannot do. Do not pretend.
@@ -339,10 +340,14 @@ export function getAgent(key: AgentKey): AgentConfig {
 export function buildSystemPrompt(
   agent: AgentConfig,
   assistantName: string,
+  nowContext?: string,
 ): string {
   const base = BASE_SYSTEM_RULES.replace(
     /\{\{ASSISTANT_NAME\}\}/g,
     assistantName,
   );
-  return `${base}\n\n${agent.systemPrompt}`;
+  // Inject the real current date right after the base rules (so the "use the
+  // CURRENT DATE below" rule resolves), before the agent's role prompt.
+  const now = nowContext ? `\n\n${nowContext}` : "";
+  return `${base}${now}\n\n${agent.systemPrompt}`;
 }
