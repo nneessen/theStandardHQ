@@ -340,13 +340,17 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
           />
           <FlapTile
             label="Avg Persistency"
-            value={`${totals.persistency.toFixed(1)}%`}
+            value={
+              totals.policies > 0 ? `${totals.persistency.toFixed(1)}%` : "—"
+            }
             tone={
-              totals.persistency >= 90
-                ? "green"
-                : totals.persistency >= 80
-                  ? "amber"
-                  : "red"
+              totals.policies === 0
+                ? "default"
+                : totals.persistency >= 90
+                  ? "green"
+                  : totals.persistency >= 80
+                    ? "amber"
+                    : "red"
             }
           />
         </div>
