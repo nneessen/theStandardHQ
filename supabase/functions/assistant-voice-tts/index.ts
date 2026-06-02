@@ -11,6 +11,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { authorizeVoiceCaller } from "../_shared/assistant-voice-auth.ts";
 import { toSpokenText } from "./spoken-text.ts";
+import {
+  createSupabaseAdminClient,
+} from "../_shared/supabase-client.ts";
+import { enforceRateLimit } from "../_shared/rate-limit.ts";
 
 // Default voice: ElevenLabs "Rachel" (overridable via ELEVENLABS_VOICE_ID secret
 // or a per-request voiceId). eleven_turbo_v2_5 is the low-latency, lower-cost
@@ -42,6 +46,21 @@ serve(async (req) => {
 
   const auth = await authorizeVoiceCaller(req);
   if (!auth.ok) return json({ error: auth.error }, auth.status);
+
+  // Request-only rate limit (30 req/hr per user). Token tracking is not
+  // applicable here — TTS uses ElevenLabs, not Anthropic; character count is
+  // not a proxy for Anthropic token budget.
+  const adminClient = createSupabaseAdminClient();
+  const reqLimit = await enforceRateLimit(
+    adminClient,
+    {
+      key: `ratelimit:req:assistant-voice-tts:${auth.caller.userId}`,
+      maxRequests: 30,
+      windowSeconds: 3600,
+    },
+    cors,
+  );
+  if (reqLimit) return reqLimit;
 
   const apiKey = Deno.env.get("ELEVENLABS_API_KEY");
 
@@ -84,17 +103,19 @@ serve(async (req) => {
 
   // Speaking pace (ElevenLabs accepts 0.7–1.2; >1 is faster). Default a touch
   // quick for a snappier assistant; tunable via secret without a redeploy.
-  const speedRaw = Number.parseFloat(Deno.env.get("ELEVENLABS_SPEED") ?? "1.1");
+  const speedRaw = Number.parseFloat(Deno.env.get("ELEVENLABS_SPEED") ?? "1.15");
   const speed = Number.isFinite(speedRaw)
     ? Math.min(1.2, Math.max(0.7, speedRaw))
     : 1.1;
 
   let resp: Response;
   try {
-    // optimize_streaming_latency trades a little quality for a much faster first
-    // byte (0–4; 3 is a good balance) so playback can begin sooner.
+    // optimize_streaming_latency trades quality for a faster first byte (0–4). At
+    // level 3 ElevenLabs turns its TEXT NORMALIZER OFF, which mispronounces numbers
+    // and dates ("3594" read digit-by-digit, garbled-sounding output). Use 2 — still
+    // strong latency savings, but the normalizer stays on so speech is intelligible.
     resp = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?optimize_streaming_latency=3`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?optimize_streaming_latency=2`,
       {
         method: "POST",
         headers: {
