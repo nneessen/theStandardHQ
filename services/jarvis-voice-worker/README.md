@@ -17,24 +17,27 @@ browser sends that user's **Supabase JWT** over the LiveKit **data channel**
 orchestrator with **that JWT**, so `ctx.db` stays RLS-scoped exactly like the typed path
 and the `revocation_deny` kill switch keeps working. (`src/orchestrator-bridge.ts`.)
 
-## Status — scaffold (this commit)
+## Status — type-checks against @livekit/agents 1.4.5 (not yet runtime-verified)
 
 - ✅ `src/orchestrator-bridge.ts` — SSE bridge to `assistant-orchestrator` (final, SDK-agnostic).
-- ✅ `src/agent.ts` — worker entrypoint + pipeline wiring + JWT/data-channel store.
-- ⚠️ **The `@livekit/agents` symbol/API specifics are written to the AgentSession pattern
-  and must be verified after `npm install`** (this framework's Node API moves between minor
-  versions). `npm run typecheck` will surface any renamed symbols — reconcile against the
-  resolved types in `node_modules/@livekit/agents`. The bridge + auth flow are not affected.
+- ✅ `src/agent.ts` — worker entrypoint + pipeline + JWT/data-channel store, **reconciled to
+  the real `@livekit/agents@1.4.5` API**: bridges via a `voice.Agent` `llmNode()` override
+  (returns a `ReadableStream<string>` of the orchestrator's deltas — 1.x `LLMStream` has no
+  public text adapter), `ChatContext.items`, `ServerOptions`, Deepgram `nova-3`.
+  `npm ci` → 0 vulns; `npm run typecheck` → 0 errors; `npm run build` → emits `dist/`.
+- ⚠️ **Not runtime-verified.** Type-checking ≠ running — the worker needs a live LiveKit room
+  + the frontend client publishing the JWT over the data channel + a real STT→brain→TTS turn.
+  That smoke can't happen until the frontend client + Fly deploy land.
 
 ## Next steps (the path to first audio)
 
+Done: ✅ `npm ci` (0 vulns) · ✅ `npm run typecheck` (0 errors) · ✅ `npm run build`. Remaining:
+
 ```bash
 cd services/jarvis-voice-worker
-npm install                      # pins @livekit/agents + plugins; creates package-lock
-npm run typecheck                # reconcile any SDK symbol drift in src/agent.ts
 cp .env.example .env.local       # fill from the repo-root .env.local (LIVEKIT_*, DEEPGRAM,
                                  # ELEVENLABS, SUPABASE_URL, SUPABASE_ANON_KEY)
-npm run dev                      # runs the worker against LiveKit Cloud in dev mode
+npm run dev                      # run the worker against LiveKit Cloud (first RUNTIME smoke)
 ```
 
 Then build the **frontend client** (replace `src/features/assistant/hooks/useAssistantVoiceSession.ts`):
