@@ -83,7 +83,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
         <CartesianGrid
           strokeDasharray="3 3"
           vertical={false}
-          stroke="rgba(255,255,255,0.07)"
+          stroke="#e4e4e7"
         />
         <XAxis
           dataKey="month"

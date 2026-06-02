@@ -2,7 +2,6 @@
 // Dashboard overview with summary cards, charts, and review queue
 
 import { Loader2, AlertTriangle } from "lucide-react";
-import { Board, Cap } from "@/components/board";
 import { useSummary } from "../hooks/useBusinessTools";
 import { SummaryCards } from "./SummaryCards";
 import { CategoryChart } from "./CategoryChart";
@@ -70,19 +69,23 @@ export function OverviewTab({ onSwitchTab }: OverviewTabProps) {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <Board pad={16}>
-          <Cap style={{ marginBottom: 10 }}>Income & Expenses by Category</Cap>
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <h3 className="text-[11px] font-medium text-v2-ink-muted mb-2">
+            Income & Expenses by Category
+          </h3>
           <div className="h-[260px]">
             <CategoryChart data={summary.by_category} />
           </div>
-        </Board>
+        </div>
 
-        <Board pad={16}>
-          <Cap style={{ marginBottom: 10 }}>Monthly Income vs Expenses</Cap>
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <h3 className="text-[11px] font-medium text-v2-ink-muted mb-2">
+            Monthly Income vs Expenses
+          </h3>
           <div className="h-[260px]">
             <MonthlyTrendChart data={summary.by_month} />
           </div>
-        </Board>
+        </div>
       </div>
 
       {/* Review Queue */}
