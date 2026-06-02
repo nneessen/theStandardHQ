@@ -1,0 +1,27 @@
+{
+  "name": "jarvis-voice-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LiveKit Agents worker for Jarvis realtime voice — Deepgram STT + ElevenLabs TTS + Silero turn-detection, bridged to the Claude assistant-orchestrator (M1 of the voice rebuild).",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "node --import tsx --env-file=.env.local ./src/agent.ts dev",
+    "start": "node ./dist/agent.js start"
+  },
+  "dependencies": {
+    "@livekit/agents": "^0.7.0",
+    "@livekit/agents-plugin-deepgram": "^0.7.0",
+    "@livekit/agents-plugin-elevenlabs": "^0.7.0",
+    "@livekit/agents-plugin-silero": "^0.7.0",
+    "@livekit/rtc-node": "^0.13.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^20.14.0"
+  }
+}
