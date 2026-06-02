@@ -117,6 +117,26 @@ though they don't use the `FlapTile` primitive — don't be fooled by a
   Cards→Board. Data view already charcoal via `OrgChartVisualization` (whose
   inner `<Card>`s resolve to charcoal through theme-v2 `--card` — structural-only,
   deferred). (51fcfc56)
+- **AgentDetailPage** (`/hierarchy/agent/$id`) ✓ FULL — **all 4 tabs** now have
+  big-&-clean FlapTile bands: Production (header), Commissions, Override Earnings
+  (+2 detail panels), Team. Level/status Badges→Pills. Each tab verified by a
+  tab-click screenshot (`/tmp/tab-shot.py <route> <TabName> <out>`). EditAgentModal
+  is a Radix form dialog → already charcoal, left as-is. (96331738, e09f9c71, +overrides)
+
+### ‼️ CRITICAL TRIAGE CORRECTION (supersedes the light-vs-charcoal note below)
+The earlier "LIGHT shadcn `bg-card` = offender" heuristic was **WRONG**. Inside
+`.theme-v2`, `index.css` overrides `--card:#161617`, `--background:#0d0d0e`,
+`--border: cream hairline`, `--muted:#222224`. So **`bg-card`, `<Card>`,
+`bg-background`, `border-border` ALL render CHARCOAL already** — they are NOT light
+offenders. The `grep -c "<Card|bg-card"` "light count" is meaningless for pages
+already inside the `dashboard-canvas`/`.theme-v2` shell (AgentDetail's "15 light
+Cards" were all charcoal). The ONLY genuinely-light surfaces are pages NOT yet
+wrapped in the shell at all (none remain in Tier-1).
+**So the real remaining work is NOT charcoal-ifying — it's the "big & clean"
+FlapTile treatment.** The user's "looks the same as always" = pages whose stat
+strips are still cramped `text-[11px]` `key: value` rows with `·`/`|` dividers
+(charcoal but generic), instead of `<Board>` bands of big-Archivo `<FlapTile>`s.
+**Find the real work with:** `grep -rnE 'text-\[(9|10|11)px\].*(font-semibold|text-success|formatCurrency)' src/features/<dir>` and look for inline divider strips (`h-3 w-px bg-muted`). Convert those → FlapTile bands. Ignore the `bg-card` count.
 
 ### ⚠️ KEY TRIAGE LESSON (use this to prioritize remaining work)
 Not every shadcn surface is a "looks the same" offender. Two classes:
@@ -133,14 +153,17 @@ Not every shadcn surface is a "looks the same" offender. Two classes:
 → that's the LIGHT-offender worklist. "Done" = empty. Then spend leftover budget
 on the charcoal-but-shadcn polish only if time allows.
 
-### Remaining Tier-1, ranked by LIGHT-offender count (verifiable on local):
-- **AgentDetailPage** (`/hierarchy/agent/$id`) — **15 light Cards, 1368 ln** — the
-  biggest real offender; users see it. Get an `$id` from the org chart (e.g. click
-  a node) or `select id from auth.users`. Stat header→FlapTiles + AP/commission/
-  override/policy tables→Board panels + EditAgentModal.
-- **TrainerDashboard** (`/trainer-dashboard`) — 8 light Cards (mixed w/ 16 v2).
-- **TeamOverviewPage** roadmap (4), **RoadmapListPage** (2), **HierarchyManagement**
-  (2), then My-Training inner (charcoal-ish, lower payoff).
+### Remaining Tier-1 (find cramped `text-[11px]` stat strips → FlapTile bands):
+Per the triage correction above, hunt **inline divider stat strips**, not `bg-card`.
+- **TrainerDashboard** (`/trainer-dashboard`) — check for KPI stat strips.
+- **TeamOverviewPage** + **RoadmapListPage** (roadmap) — progress/XP stat blocks.
+- **HierarchyManagement** (`/hierarchy/manage`) — inline dialogs.
+- **My-Training** inner (`training-modules/.../learner/`) — XP/streak/progress
+  blocks (already charcoal; only worth it if they're cramped key:value strips).
+- **Get an agent `$id`** from local: `nickneessen@thestandardhq.com` =
+  `d0d3edea-af6d-4990-80b8-1765ba829896` (it's the test login = "own profile", so
+  the "Your Overrides from This Agent" panel is hidden — view a DOWNLINE's id to
+  see it).
 
 ---
 
