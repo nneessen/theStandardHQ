@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Board, Cap } from "@/components/board";
 
 interface TeamGeographicAnalysisProps {
   data: TeamGeographicBreakdown[];
@@ -26,14 +27,12 @@ export function TeamGeographicAnalysis({
 }: TeamGeographicAnalysisProps) {
   if (isLoading) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Premium by State
-        </div>
+      <Board pad={16}>
+        <Cap style={{ marginBottom: 10 }}>Team Premium by State</Cap>
         <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
-      </div>
+      </Board>
     );
   }
 
@@ -57,11 +56,16 @@ export function TeamGeographicAnalysis({
   const _avgPremiumPerState = data.length > 0 ? totalPremium / data.length : 0;
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Premium by State
-        </div>
+    <Board pad={16}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <Cap>Team Premium by State</Cap>
         <span className="text-[11px] text-v2-ink-subtle">
           {data.length} states • Top 10
         </span>
@@ -145,6 +149,6 @@ export function TeamGeographicAnalysis({
           </span>
         </div>
       )}
-    </div>
+    </Board>
   );
 }

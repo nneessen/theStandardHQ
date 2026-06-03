@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTeamAnalyticsData } from "@/hooks/analytics";
+import { Board } from "@/components/board";
 import {
   TeamCarriersProductsBreakdown,
   TeamProductMatrix,
@@ -69,16 +70,16 @@ export function TeamAnalyticsDashboard({
 
   if (isError) {
     return (
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
+      <Board pad={12}>
         <div className="text-center text-[12px] text-destructive">
           Failed to load team analytics. Please try again.
         </div>
-      </div>
+      </Board>
     );
   }
 
   return (
-    <div className="bg-v2-card rounded-lg border border-v2-ring">
+    <Board pad={0}>
       {/* Collapsible Header */}
       <div
         className="flex items-center justify-between px-3 py-2 border-b border-v2-ring cursor-pointer hover:bg-v2-canvas"
@@ -120,7 +121,7 @@ export function TeamAnalyticsDashboard({
               Loading team analytics...
             </div>
           ) : (
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
               {/* 1. Carriers & Products Breakdown */}
               <TeamCarriersProductsBreakdown
                 data={carrierBreakdown}
@@ -159,6 +160,6 @@ export function TeamAnalyticsDashboard({
           </div>
         </div>
       )}
-    </div>
+    </Board>
   );
 }

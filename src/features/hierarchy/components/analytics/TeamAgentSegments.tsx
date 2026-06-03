@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Trophy, TrendingUp, AlertTriangle } from "lucide-react";
+import { Board, Cap } from "@/components/board";
 
 interface TeamAgentSegmentsProps {
   data: AgentSegmentationSummary | null;
@@ -27,14 +28,12 @@ interface TeamAgentSegmentsProps {
 export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   if (isLoading || !data) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Agent Segments
-        </div>
+      <Board pad={16}>
+        <Cap style={{ marginBottom: 10 }}>Agent Segments</Cap>
         <div className="p-3 text-center text-[12px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
-      </div>
+      </Board>
     );
   }
 
@@ -94,13 +93,11 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+    <Board pad={16}>
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-            Agent Segments
-          </div>
+          <Cap>Agent Segments</Cap>
           <div className="text-[11px] text-v2-ink-subtle">
             {data.totalAgents} agents • {formatCurrency(data.totalTeamAP)} total
             AP
@@ -184,9 +181,7 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
 
         return (
           <>
-            <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-1">
-              Top 5 Agents
-            </div>
+            <Cap style={{ marginBottom: 4 }}>Top 5 Agents</Cap>
             <Table className="text-[12px]">
               <TableHeader>
                 <TableRow className="h-7 border-b border-v2-ring">
@@ -247,6 +242,6 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
           </>
         );
       })()}
-    </div>
+    </Board>
   );
 }

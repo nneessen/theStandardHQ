@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import type { TeamPolicyStatusBreakdown as TeamPolicyStatusBreakdownType } from "@/types/team-analytics.types";
+import { Board, Cap } from "@/components/board";
 
 interface TeamPolicyStatusBreakdownProps {
   data: TeamPolicyStatusBreakdownType | null;
@@ -21,14 +22,12 @@ export function TeamPolicyStatusBreakdown({
 }: TeamPolicyStatusBreakdownProps) {
   if (isLoading || !data) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Policy Status
-        </div>
+      <Board pad={16}>
+        <Cap style={{ marginBottom: 10 }}>Team Policy Status</Cap>
         <div className="p-3 text-center text-[12px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
-      </div>
+      </Board>
     );
   }
 
@@ -108,13 +107,11 @@ export function TeamPolicyStatusBreakdown({
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+    <Board pad={16}>
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-            Team Policy Status
-          </div>
+          <Cap>Team Policy Status</Cap>
           <div className="text-[11px] text-v2-ink-subtle">
             {data.total.count} total policies
           </div>
@@ -183,6 +180,6 @@ export function TeamPolicyStatusBreakdown({
           {formatCurrency(data.total.premium)}
         </span>
       </div>
-    </div>
+    </Board>
   );
 }

@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Board, Cap } from "@/components/board";
 
 interface TeamProductMatrixProps {
   data: TeamCarrierBreakdown[];
@@ -28,14 +29,12 @@ interface TeamProductMatrixProps {
 export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
   if (isLoading) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Product Mix
-        </div>
+      <Board pad={16}>
+        <Cap style={{ marginBottom: 10 }}>Team Product Mix</Cap>
         <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
-      </div>
+      </Board>
     );
   }
 
@@ -101,11 +100,16 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Product Mix
-        </div>
+    <Board pad={16}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <Cap>Team Product Mix</Cap>
         <span className="text-[11px] text-v2-ink-subtle">
           {products.length} products
         </span>
@@ -186,6 +190,6 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
           No product data available
         </div>
       )}
-    </div>
+    </Board>
   );
 }

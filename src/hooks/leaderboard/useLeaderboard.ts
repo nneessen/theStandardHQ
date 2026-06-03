@@ -13,30 +13,12 @@ import type {
 } from "../../types/leaderboard.types";
 
 interface UseLeaderboardOptions {
-  /**
-   * Filter configuration for the leaderboard query
-   */
   filters: LeaderboardFilters;
-  /**
-   * Whether the query is enabled
-   * @default true
-   */
   enabled?: boolean;
-  /**
-   * Time in ms before data is considered stale
-   * @default 60000 (1 minute)
-   */
   staleTime?: number;
-  /**
-   * Time in ms to keep unused data in cache
-   * @default 300000 (5 minutes)
-   */
   gcTime?: number;
 }
 
-/**
- * Hook to fetch individual agent leaderboard data
- */
 export const useAgentLeaderboard = (options: UseLeaderboardOptions) => {
   const {
     filters,

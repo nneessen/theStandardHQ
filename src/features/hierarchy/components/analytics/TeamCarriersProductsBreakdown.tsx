@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Board, Cap } from "@/components/board";
 
 interface TeamCarriersProductsBreakdownProps {
   data: TeamCarrierBreakdown[];
@@ -26,14 +27,12 @@ export function TeamCarriersProductsBreakdown({
 }: TeamCarriersProductsBreakdownProps) {
   if (isLoading) {
     return (
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Carriers & Products
-        </div>
+      <Board pad={16}>
+        <Cap style={{ marginBottom: 10 }}>Team Carriers &amp; Products</Cap>
         <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
-      </div>
+      </Board>
     );
   }
 
@@ -90,11 +89,16 @@ export function TeamCarriersProductsBreakdown({
   });
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
-          Team Carriers & Products
-        </div>
+    <Board pad={16}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <Cap>Team Carriers &amp; Products</Cap>
         <span className="text-[11px] text-v2-ink-subtle">
           {data.length} carriers
         </span>
@@ -159,6 +163,6 @@ export function TeamCarriersProductsBreakdown({
           No carrier data available
         </div>
       )}
-    </div>
+    </Board>
   );
 }

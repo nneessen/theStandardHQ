@@ -124,9 +124,6 @@ export function NickCustomLayout({
                 Recruiting Now
               </span>
               <span className="hidden sm:block w-10 h-px bg-[var(--landing-border)]" />
-              <span className="hidden sm:inline text-eyebrow-lg">
-                Exclusive Agent Opportunity
-              </span>
             </div>
 
             {/* Display headline — two-line stack, light weight like public hero */}

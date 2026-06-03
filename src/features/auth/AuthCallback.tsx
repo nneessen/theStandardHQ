@@ -187,11 +187,6 @@ export const AuthCallback: React.FC = () => {
     <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full px-4">
         <div className="bg-gradient-to-br from-card to-muted/10 rounded-2xl shadow-2xl p-8 text-center">
-          {/* Logo */}
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground text-2xl font-bold mb-6 shadow-lg">
-            CT
-          </div>
-
           {/* Status Icon */}
           {status === "loading" && (
             <div className="flex justify-center mb-6">

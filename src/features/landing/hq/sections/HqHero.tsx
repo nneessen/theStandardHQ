@@ -13,10 +13,6 @@ export function HqHero({ reducedMotion }: { reducedMotion: boolean }) {
     <header className="hero" id="top">
       {!reducedMotion && <HeroShaderCanvasLazy className="hero-shader" />}
       <div className="wrap">
-        <span className="hero-tag">
-          <span className="pulse" /> Recruiting Now · Exclusive Agent
-          Opportunity
-        </span>
         <h1 className="hero-title">
           <span data-scramble="THE STANDARD">THE STANDARD</span>
           <br />
