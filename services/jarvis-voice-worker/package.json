@@ -11,7 +11,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "node --import tsx --env-file=.env.local ./src/agent.ts dev",
-    "start": "node ./dist/agent.js start"
+    "start": "node ./dist/agent.js start",
+    "test": "node --import tsx --test ./src/reply-stream.test.ts"
   },
   "dependencies": {
     "@livekit/agents": "^1.4.5",

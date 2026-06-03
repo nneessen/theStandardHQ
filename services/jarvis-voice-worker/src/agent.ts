@@ -38,6 +38,7 @@ import {
   callOrchestrator,
   type OrchestratorConfig,
 } from "./orchestrator-bridge.js";
+import { buildReplyStream } from "./reply-stream.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -185,54 +186,33 @@ class JarvisAgent extends voice.Agent {
     });
   }
 
-  // Override the LLM node. The default implementation drives `this.llm`; we have none, so
-  // we stream the orchestrator's text deltas instead. Params are annotated explicitly
-  // (TS doesn't infer override param types under `strict`); `override` makes signature
-  // drift across SDK bumps fail loudly. Return type unions `ChatChunk | string` to match
-  // the base contract — we only ever enqueue `string` deltas.
+  // Override the LLM node. The default implementation drives `this.llm` (our stub, which
+  // never runs); instead we stream the orchestrator's text deltas. `override` makes any
+  // signature drift across SDK bumps fail loudly. Return type unions `ChatChunk | string` to
+  // match the base contract — we only ever emit `string` deltas. The stream construction +
+  // barge-in-safe teardown live in buildReplyStream (see reply-stream.ts); the orchestrator
+  // call is injected so cancellation aborts the in-flight fetch.
   override async llmNode(
     chatCtx: llm.ChatContext,
     _toolCtx: llm.ToolContext,
     _modelSettings: voice.ModelSettings,
   ): Promise<ReadableStream<llm.ChatChunk | string> | null> {
     const authState = this.authState;
+    const jwt = authState.jwt;
     const text = latestUserText(chatCtx);
-
-    return new ReadableStream<llm.ChatChunk | string>({
-      async start(controller) {
-        console.log(
-          `[jarvis] llmNode invoked; jwt=${authState.jwt ? "PRESENT" : "MISSING"}; text="${text}"`,
-        );
-        if (!authState.jwt) {
-          controller.enqueue(
-            "I'm not connected to your account yet — please reopen the assistant.",
-          );
-          controller.close();
-          return;
-        }
-        try {
-          let deltas = 0;
-          for await (const delta of callOrchestrator(
-            ORCHESTRATOR,
-            authState.jwt,
-            text,
-            authState.conversationId,
-            (id) => (authState.conversationId = id),
-          )) {
-            deltas += 1;
-            controller.enqueue(delta);
-          }
-          console.log(`[jarvis] orchestrator stream done; ${deltas} delta(s)`);
-        } catch (e) {
-          console.log(
-            `[jarvis] orchestrator ERROR: ${e instanceof Error ? e.message : String(e)}`,
-          );
-          controller.enqueue(
-            "Sorry — I hit a problem reaching your data just now. Try again in a moment.",
-          );
-        }
-        controller.close();
-      },
+    return buildReplyStream({
+      jwt,
+      text,
+      stream: (signal) =>
+        callOrchestrator(
+          ORCHESTRATOR,
+          // Non-null: buildReplyStream only invokes `stream` when `jwt` is present.
+          jwt as string,
+          text,
+          authState.conversationId,
+          (id) => (authState.conversationId = id),
+          signal,
+        ),
     });
   }
 }

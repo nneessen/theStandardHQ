@@ -34,7 +34,14 @@ export async function* callOrchestrator(
   message: string,
   conversationId: string | null,
   onConversationId: (id: string) => void,
+  // Caller's cancel signal (barge-in / turn interruption). Combined with the 45s hang-guard
+  // so an abandoned turn tears the fetch down immediately instead of streaming to a dead
+  // consumer. Optional so existing callers/tests keep working.
+  externalSignal?: AbortSignal,
 ): AsyncGenerator<string> {
+  const signal = externalSignal
+    ? anySignal([AbortSignal.timeout(45_000), externalSignal])
+    : AbortSignal.timeout(45_000);
   const res = await fetch(cfg.url, {
     method: "POST",
     headers: {
@@ -48,11 +55,9 @@ export async function* callOrchestrator(
       "x-jarvis-surface": "voice",
     },
     body: JSON.stringify({ message, conversationId }),
-    // Hang-guard: without this a stuck orchestrator hangs the voice turn forever (no
-    // reply, no fallback). 45s is a turn ceiling, not a UX target — the caller catches
-    // the AbortError and speaks a graceful fallback. (A per-chunk inactivity timeout is
-    // the future refinement; this total cap is the safety net.)
-    signal: AbortSignal.timeout(45_000),
+    // Hang-guard (45s turn ceiling) OR'd with the caller's cancel signal — the caller
+    // catches the AbortError and speaks a graceful fallback (or, on barge-in, stays silent).
+    signal,
   });
 
   if (!res.ok || !res.body) {
@@ -78,7 +83,9 @@ export async function* callOrchestrator(
       if (done) break;
       buf += decoder.decode(value, { stream: true });
       if (buf.length > MAX_SSE_BUFFER) {
-        throw new Error("assistant-orchestrator stream exceeded buffer ceiling");
+        throw new Error(
+          "assistant-orchestrator stream exceeded buffer ceiling",
+        );
       }
 
       // SSE frames are separated by a blank line; emit text as `delta`s arrive.
@@ -120,4 +127,21 @@ function parseSseFrame(frame: string): SseFrame | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Abort when ANY of the given signals aborts. (`AbortSignal.any` is not in our ES2022 lib
+ * target, so combine manually with an AbortController — available everywhere.)
+ */
+function anySignal(signals: AbortSignal[]): AbortSignal {
+  const ac = new AbortController();
+  const onAbort = () => ac.abort();
+  for (const s of signals) {
+    if (s.aborted) {
+      ac.abort();
+      break;
+    }
+    s.addEventListener("abort", onAbort, { once: true });
+  }
+  return ac.signal;
 }
