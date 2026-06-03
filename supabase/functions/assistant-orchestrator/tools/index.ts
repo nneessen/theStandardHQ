@@ -22,6 +22,7 @@ import { draftEmailMessage } from "./draftEmailMessage.ts";
 import { draftSmsMessage } from "./draftSmsMessage.ts";
 import { getUnderwritingRecommendation } from "./getUnderwritingRecommendation.ts";
 import { getWeather } from "./getWeather.ts";
+import { resolveContact } from "./resolveContact.ts";
 
 export const TOOLS: Record<string, RegisteredTool> = {
   [getDailyBriefingData.name]: getDailyBriefingData,
@@ -43,6 +44,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [draftSmsMessage.name]: draftSmsMessage,
   [getUnderwritingRecommendation.name]: getUnderwritingRecommendation,
   [getWeather.name]: getWeather,
+  [resolveContact.name]: resolveContact,
 };
 
 export interface AnthropicToolDef {

@@ -170,6 +170,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getPolicyRiskAlerts",
       "queryPolicies",
       "getWeather",
+      "resolveContact",
       ...DRAFT_TOOLS,
     ],
     allowedCategories: [
@@ -225,7 +226,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Summarize book of business and draft client follow-ups (after approval).",
     systemPrompt: CRM_PROMPT,
-    allowedToolNames: ["getClientSnapshot", ...DRAFT_TOOLS],
+    allowedToolNames: ["getClientSnapshot", "resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["crm", "messaging"],
     maxTokens: 1000,
   },
@@ -253,7 +254,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft natural, non-robotic outreach for mortgage protection, final expense, recruiting, and follow-ups.",
     systemPrompt: SMS_EMAIL_COPY_PROMPT,
-    allowedToolNames: [...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -264,7 +265,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Review drafts for risky wording, unsupported claims, and TCPA concerns; suggest safer alternatives.",
     systemPrompt: COMPLIANCE_PROMPT,
-    allowedToolNames: [...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["compliance", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -299,7 +300,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft scheduling messages for calls and meetings (no live calendar connection).",
     systemPrompt: CALENDAR_PROMPT,
-    allowedToolNames: [...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["calendar", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -310,7 +311,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft scoreboard updates, announcements, and motivational messages (no Slack connection).",
     systemPrompt: SLACK_PROMPT,
-    allowedToolNames: [...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["slack", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -321,7 +322,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Outline SMS/email sequences for hot leads, aged leads, and recruiting (no automation engine).",
     systemPrompt: WORKFLOW_PROMPT,
-    allowedToolNames: [...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
     allowedCategories: ["workflow", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,

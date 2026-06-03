@@ -185,6 +185,17 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  resolveContact: {
+    name: "resolveContact",
+    description:
+      "Resolve a person's NAME to masked contact candidates (which 'Bob'?) from the user's OWN clients, recruiting leads, and team — scoped server-side by RLS. Returns each candidate's display name, contact kind (client/recruiting_lead/team_member), and a MASKED phone/email (e.g. '***-1234'), never the raw value. Read-only. Use BEFORE drafting an SMS/email to confirm WHO the user means and that a contact exists; the user still enters/confirms the actual number when they approve the send.",
+    category: "crm",
+    riskLevel: "read",
+    actionClass: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   getWeather: {
     name: "getWeather",
     description:
