@@ -25,7 +25,11 @@ import {
 import * as deepgram from "@livekit/agents-plugin-deepgram";
 import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
 import * as silero from "@livekit/agents-plugin-silero";
-import { BackgroundVoiceCancellation } from "@livekit/noise-cancellation-node";
+import {
+  BackgroundVoiceCancellation,
+  NoiseCancellation,
+} from "@livekit/noise-cancellation-node";
+import type { NoiseCancellationOptions } from "@livekit/rtc-node";
 import { fileURLToPath } from "node:url";
 import { ReadableStream } from "node:stream/web";
 import {
@@ -37,6 +41,24 @@ function requireEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`Missing required env: ${name}`);
   return v;
+}
+
+// Runtime-toggled inbound noise cancellation (env `NOISE_CANCELLATION`, restart to change):
+//   "bvc" → Krisp Background Voice Cancellation (removes background HUMAN voices, e.g. a TV)
+//   "nc"  → Krisp noise cancellation (stationary noise only)
+//   unset/anything else → OFF (raw mic straight to VAD/STT)
+// Both Krisp modes need the feature enabled on the LiveKit Cloud project; if it isn't, the
+// inbound AudioStream can stall (frames consumed, none emitted) → VAD/STT hear silence and
+// the agent never responds. Kept as a kill-switch so we can A/B it without a rebuild.
+function resolveNoiseCancellation(): NoiseCancellationOptions | undefined {
+  switch (process.env.NOISE_CANCELLATION) {
+    case "bvc":
+      return BackgroundVoiceCancellation();
+    case "nc":
+      return NoiseCancellation();
+    default:
+      return undefined;
+  }
 }
 
 const SUPABASE_URL = requireEnv("SUPABASE_URL");
@@ -68,12 +90,21 @@ class SessionState {
         type?: string;
         jwt?: string;
       };
-      if (msg.type !== "auth" || typeof msg.jwt !== "string") return;
+      if (msg.type !== "auth" || typeof msg.jwt !== "string") {
+        console.log(`[jarvis] data frame ignored (type=${msg.type ?? "?"})`);
+        return;
+      }
       // Bind to the room owner. Decode (NOT verify — the orchestrator verifies the
       // signature) the `sub` and reject any token that isn't this room's user.
       const sub = decodeJwtSub(msg.jwt);
-      if (this.ownerUid && sub && sub !== this.ownerUid) return; // mismatch → reject silently
+      if (this.ownerUid && sub && sub !== this.ownerUid) {
+        console.log(
+          `[jarvis] auth REJECTED: sub=${sub} != owner=${this.ownerUid}`,
+        );
+        return; // mismatch → reject silently
+      }
       this.jwt = msg.jwt;
+      console.log(`[jarvis] auth JWT stored (sub=${sub ?? "?"})`);
     } catch {
       /* non-JSON data frames (if any) are ignored */
     }
@@ -111,10 +142,36 @@ function latestUserText(chatCtx: llm.ChatContext): string {
 }
 
 /**
- * The Jarvis voice agent. We don't give the AgentSession an `llm`; instead we override the
- * `llmNode` — the stage the session pipes the recognized user turn through on its way to
- * TTS — and bridge it to the Claude orchestrator with the user's JWT. Returning a
- * `ReadableStream` of text deltas lets TTS start speaking before the full reply is ready.
+ * Stub LLM that exists ONLY to satisfy @livekit/agents@1.4.5's reply-pipeline guards.
+ * `onUserTurnCompleted` returns early when `this.llm === undefined` and `generateReply`
+ * throws "trying to generate reply without an LLM model" — so with NO `llm` the session
+ * transcribes speech but never generates a reply (our `llmNode` is never called). We use no
+ * real model — generation is bridged to the Claude orchestrator in `JarvisAgent.llmNode()` —
+ * but the session must still be handed an `llm instanceof LLM` so the pipeline runs. The
+ * plain-LLM reply path routes through `pipelineReplyTask → agent.llmNode` (verified in
+ * agent_activity.js), so `chat()` below is never reached; `capabilities` is read only for a
+ * RealtimeModel, so a plain LLM needs nothing more than `label()` + `chat()`.
+ */
+class BridgeLLM extends llm.LLM {
+  label(): string {
+    return "jarvis.BridgeLLM";
+  }
+
+  // Never invoked — llmNode handles generation. Throw loudly so an SDK change that ever
+  // routes generation through chat() surfaces as a clear error instead of silent dead air.
+  chat(): llm.LLMStream {
+    throw new Error(
+      "BridgeLLM.chat() should never be called — JarvisAgent.llmNode bridges to the orchestrator instead",
+    );
+  }
+}
+
+/**
+ * The Jarvis voice agent. The AgentSession is handed a stub `llm` (BridgeLLM) purely to
+ * unlock the reply pipeline; real generation happens HERE — we override `llmNode` (the stage
+ * the session pipes the recognized user turn through on its way to TTS) and bridge it to the
+ * Claude orchestrator with the user's JWT. Returning a `ReadableStream` of text deltas lets
+ * TTS start speaking before the full reply is ready.
  */
 class JarvisAgent extends voice.Agent {
   // NOTE: must NOT be named `session` — `voice.Agent` already exposes `get session()`
@@ -141,6 +198,9 @@ class JarvisAgent extends voice.Agent {
 
     return new ReadableStream<llm.ChatChunk | string>({
       async start(controller) {
+        console.log(
+          `[jarvis] llmNode invoked; jwt=${authState.jwt ? "PRESENT" : "MISSING"}; text="${text}"`,
+        );
         if (!authState.jwt) {
           controller.enqueue(
             "I'm not connected to your account yet — please reopen the assistant.",
@@ -149,6 +209,7 @@ class JarvisAgent extends voice.Agent {
           return;
         }
         try {
+          let deltas = 0;
           for await (const delta of callOrchestrator(
             ORCHESTRATOR,
             authState.jwt,
@@ -156,9 +217,14 @@ class JarvisAgent extends voice.Agent {
             authState.conversationId,
             (id) => (authState.conversationId = id),
           )) {
+            deltas += 1;
             controller.enqueue(delta);
           }
-        } catch (_e) {
+          console.log(`[jarvis] orchestrator stream done; ${deltas} delta(s)`);
+        } catch (e) {
+          console.log(
+            `[jarvis] orchestrator ERROR: ${e instanceof Error ? e.message : String(e)}`,
+          );
           controller.enqueue(
             "Sorry — I hit a problem reaching your data just now. Try again in a moment.",
           );
@@ -192,6 +258,9 @@ export default defineAgent({
 
     const session = new voice.AgentSession({
       vad: ctx.proc.userData.vad as silero.VAD,
+      // Stub LLM — unlocks the reply pipeline so our llmNode override is actually called.
+      // See BridgeLLM. Real generation goes to the orchestrator in JarvisAgent.llmNode().
+      llm: new BridgeLLM(),
       stt: new deepgram.STT({
         // `nova-2-general` (not `nova-2`, which isn't a valid model id): Nova-2 is the
         // model family that honors the weighted `keywords` boost below. Nova-3 ignores
@@ -220,21 +289,28 @@ export default defineAgent({
       // Barge-in is on by default in AgentSession; turn-detection model is auto-wired.
     });
 
+    // Inbound noise cancellation is env-gated (see resolveNoiseCancellation): when enabled,
+    // Krisp BVC strips background HUMAN voices (a TV, other people) before VAD/STT/turn-
+    // detection — the browser's generic WebRTC noiseSuppression only kills stationary noise.
+    // Shipped OFF by default while we confirm the base audio path; flip with the
+    // NOISE_CANCELLATION fly secret + restart (no rebuild).
     await session.start({
       agent: new JarvisAgent(state),
       room: ctx.room,
-      // Krisp Background Voice Cancellation strips background HUMAN voices (a TV, other
-      // people in the room) from the inbound mic stream BEFORE VAD / STT / turn-detection
-      // and barge-in ever see it. The browser's generic WebRTC noiseSuppression (on by
-      // default) only removes STATIONARY noise (fans, hum) — it leaves speech intact, so a
-      // TV would otherwise trigger false turns and interrupt the agent. BVC runs via
-      // LiveKit Cloud's Krisp integration, authenticated by the worker's existing LiveKit
-      // credentials (no extra secret); `BackgroundVoiceCancellation()` is the background-
-      // speaker model (vs plain `NoiseCancellation()` which only handles ambient noise).
       inputOptions: {
-        noiseCancellation: BackgroundVoiceCancellation(),
+        noiseCancellation: resolveNoiseCancellation(),
       },
     });
+
+    // Greet immediately. Beyond being decent UX (audible confirmation the agent is live),
+    // this exercises the entire OUTBOUND plane — ElevenLabs TTS synthesis + agent→client
+    // media — with zero dependence on the inbound mic/STT path. If the user hears this, the
+    // outbound side works and any "no response" is purely an inbound problem; if they hear
+    // nothing, the media plane is broken and STT is a red herring. Not awaited: `say()`
+    // enqueues speech on the session and the job stays alive until the participant leaves.
+    void session.say(
+      "Hey, this is Jarvis. I can hear you — go ahead and ask your question.",
+    );
   },
 });
 
