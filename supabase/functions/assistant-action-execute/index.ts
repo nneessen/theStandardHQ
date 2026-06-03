@@ -149,7 +149,8 @@ serve(async (req) => {
     // auth.uid() + imo := get_my_imo_id() server-side, so it MUST NOT use the admin
     // client (that would null auth.uid() and misattribute the row). Best-effort — an
     // audit-write failure must never change the send outcome. Vocabulary mirrors the
-    // orchestrator's (decision ∈ success|denied|error).
+    // master-plan spec: surface ∈ text|voice|desktop|system (the executor is a
+    // backend, non-UI actor => "system"); decision ∈ success|denied|error.
     const audit = async (
       event: string,
       decision: string,
@@ -158,7 +159,7 @@ serve(async (req) => {
     ) => {
       try {
         await db.rpc("log_assistant_audit", {
-          p_surface: "executor",
+          p_surface: "system",
           p_event: event,
           p_tool_name: row.tool_name,
           p_action_class: "outbound",
