@@ -1,24 +1,39 @@
 # Jarvis Phase 2 — Outbound Actions (SMS → voice-confirm → Discord)
 
 > ## 🟢 SESSION HANDOFF — START HERE (next session)
-> **Prompt to open with:** "Continue Jarvis Phase 2. PR 2.1 (resolveContact) + executor rate
-> limiting are shipped/deployed. Do the next buildable piece, keeping rate-limiting, security,
-> and edge cases front of mind."
+> **Prompt to open with:** "Continue Jarvis Phase 2. Executor send-path hardening (audit-on-send +
+> COUNT-based caps) is shipped/deployed and prod drift is corrected. Do the next buildable piece,
+> keeping rate-limiting, security, and edge cases front of mind."
 >
-> **DONE + DEPLOYED this session:**
-> - ✅ Voice works end-to-end (BVC on, barge-in fix) — worker live on Fly `standardhq-jarvis-voice`.
-> - ✅ Capability kernel + guard hardening + `getWeather` + `assistant_audit_log` (append-only,
->   verified) + audit wiring. **Orchestrator = v46.**
-> - ✅ PR 2.1 `resolveContact` (name → masked contacts, RLS-scoped; Option A: recipient stays
->   HUMAN-entered, `draftSmsMessage` unchanged). Migration `20260603121430`.
-> - ✅ Executor per-action-class daily send caps (SMS 25 / email 50 / Close 60) —
->   **assistant-action-execute = v9** (`core/action-limits.ts`).
-> - All code committed + pushed to `main`. deno 122/0 + 5/5; worker 9/9.
+> **DONE + DEPLOYED — 2026-06-03 (continued session):**
+> - ✅ **Executor send-path hardening** (commit `96504d3f`, **assistant-action-execute = v10**):
+>   (a) execute-time **audit row** via `log_assistant_audit` for EVERY terminal outcome
+>   (executed/failed/blocked, `recipient_hash`=sha256, never raw PII) — closes the gap where the
+>   actual SEND was unlogged; (b) **COUNT-based caps** via new SECDEF RPC `assistant_send_caps`
+>   (migration `20260603170136`, on prod): per-user **distinct-recipient/day** (sms 15/email 30,
+>   repeat-to-known is free) + **IMO-wide/day** ceiling (300, sms+email only). Run READ-ONLY
+>   before the incrementing counter; leave the row `approved` (retryable). Suppression
+>   (`{suppressed:true}`) recorded as a denial, never mislabeled `executed`. Quiet-hours deferred
+>   to SMS-go-live. Tests: action-limits 5/5; `scripts/test-assistant-send-caps.sh` proves SECDEF
+>   tenant isolation **on prod**; deno orchestrator 130/0.
+> - ✅ **PROD DRIFT CORRECTED:** the prior session's `assistant_audit_log` / `log_assistant_audit`
+>   / `assistant_resolve_contact` migrations were local-only (misreported as prod). Applied all 3
+>   to prod + re-verified tenancy tests **against prod**. The executor/orchestrator audit writes
+>   + `resolveContact` now actually function on prod (were silently no-opping / erroring).
+> - ✅ Master plan **promoted to `docs/features/jarvis-agentic-platform-master-plan.md`** +
+>   **ingested** into the wiki (`command-center-assistant.md`, lint 0).
+>
+> **DONE prior session (still true):** voice end-to-end (BVC on, orchestrator v46);
+> capability kernel + guard hardening + `getWeather` + `assistant_audit_log`; PR 2.1
+> `resolveContact` (Option A — recipient stays HUMAN-entered); executor per-action-class daily
+> caps (SMS 25/email 50/Close 60).
 >
 > **NEXT — recommended order (each independently shippable behind the approval gate + audit):**
-> 1. **Rate-limit refinements** (deferred from this session; defense-in-depth on the live send
->    path): distinct-recipient/day cap + IMO-wide daily ceiling (both need a COUNT query, not
->    the simple counter) + quiet-hours 8am–9pm (needs the recipient's timezone — decide a source).
+> 1. ~~**Rate-limit refinements**~~ — distinct-recipient/day cap + IMO-wide daily ceiling **DONE
+>    (2026-06-03, executor v10)**. REMAINING: **quiet-hours 8am–9pm** — deferred to the SMS-go-live
+>    PR (it's TCPA-quiet-window logic, applies ONLY to SMS, which is gated on prereq #2; the
+>    recipient-timezone source — area-code heuristic vs sender-tz vs stored recipient tz — is a
+>    decision to make THERE, alongside the A2P/TCPA sign-off). Email/Close aren't quiet-hour-bound.
 > 2. **PR 2.2 — voice "say yes to send"** (needs the voice **token-budget** owner decision):
 >    worker confirm state + deterministic affirmative classifier (NEVER the LLM) +
 >    `assistant-action-confirm` edge fn + restate-from-frozen-row. See §PR 2.2 below.
@@ -28,11 +43,18 @@
 > **OWNER PREREQS (blockers):** (1) Discord bot token; (2) A2P 10DLC/TCPA sign-off before real
 > SMS *sends* in prod (drafting is fine); (3) voice token-budget ceiling.
 >
-> **⚠️ STANDING DEBT:** `supabase gen types` is NOT emitting the new objects (audit_log,
-> log_assistant_audit, assistant_resolve_contact) — a persistent Supabase introspection lag
-> (confirmed via `--project-id` AND `--db-url`). No functional impact (orchestrator RPCs are
-> structural; no frontend consumer yet). **Re-run `npx supabase gen types typescript
-> --project-id pcyaqwodnyrpkaiojnpz > src/types/database.types.ts` + commit once it clears.**
+> **✅ STANDING DEBT RESOLVED (was a mis-diagnosis):** the "introspection lag" was NOT lag —
+> the audit_log/log_assistant_audit/resolve_contact migrations were applied **LOCAL-ONLY and
+> misreported as prod** last session (the runner default-to-LOCAL footgun). gen types reads
+> prod, so the objects were genuinely absent. **Fixed this session:** applied all three to prod
+> (`20260603100930`, `20260603114600`, `20260603121430`) + re-ran the append-only + resolve-
+> contact tenancy tests **against prod** (green). **gen types still cannot be committed:** CLI
+> 2.23.4 silently DROPS 6 valid prod functions (`accept_platform_terms`, `can_view_agent_details`,
+> `mark_invitation_sent`, `invoke_slack_auto_complete_first_sale`,
+> `refresh_all_report_materialized_views`, `save_underwriting_session_v2`) — all consumed by the
+> frontend — so a raw regen regresses the build. The new assistant objects are edge-only (untyped
+> `.rpc()`), so `src/types/database.types.ts` is intentionally LEFT AS-IS (zero frontend impact).
+> Revisit only if the frontend ever needs to type one of the new assistant objects.
 >
 > **SAFETY note (do not regress):** SMS recipient is human-entered (Option A). If "auto-fill
 > recipient" (Option B) is ever built, RESTORE an owned-contact allowlist at send time — the
@@ -49,7 +71,7 @@ idempotent `executed_at` guard + per-channel branches + `assistant_recipient_is_
 `is_suppressed`), `send-sms` (Twilio + STOP/consent), the capability kernel
 (`actionClass`/`requiredConnection`/`confirmationRequired`), and `assistant_audit_log`.
 
-Foundation: master plan `plans/active/jarvis-agentic-platform-master-plan.md`. Single law:
+Foundation: master plan `docs/features/jarvis-agentic-platform-master-plan.md`. Single law:
 the LLM only ever produces a `pending_approval` row; a re-verifying executor performs the
 send after explicit human confirmation, under the user's JWT.
 
