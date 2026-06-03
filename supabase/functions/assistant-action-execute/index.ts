@@ -170,37 +170,87 @@ serve(async (req) => {
           p_result_redacted: result ? redact(result) : null,
           p_recipient_hash: recipientHash,
         });
-      } catch {
-        /* best-effort: never break execution on an audit-write failure */
+      } catch (e) {
+        // Best-effort: never break execution on an audit-write failure — but DO log it,
+        // so the gap this change set out to close (an un-audited REAL send) is observable
+        // instead of silent.
+        console.error(
+          "assistant-action-execute: log_assistant_audit failed",
+          e instanceof Error ? e.message : String(e),
+        );
       }
     };
 
-    // COUNT-based caps (committed-send based; external channels only). READ-ONLY, so
-    // they run BEFORE the incrementing per-call counter below — a cap rejection here
-    // must NOT consume a daily-counter slot. Both leave the row `approved` (retryable
-    // once the 24h window rolls). Uses the USER-scoped `db` client: assistant_send_caps
-    // is SECURITY DEFINER and resolves auth.uid()/get_my_imo_id() server-side.
+    // Pre-send policy gates for external channels (sms/email). ALL read-only and run
+    // BEFORE the claim, so a rejection leaves the row `approved` (retryable) and never
+    // burns the incrementing per-call counter below. ORDER MATTERS: the recipient
+    // allowlist is the strongest signal (a non-contact is NEVER allowed), so it runs
+    // first — otherwise a non-contact send while at a cap would return a misleading
+    // "try tomorrow" cap message and audit the wrong reason. Checking pre-claim is safe:
+    // the content-freeze trigger makes recipient immutable once the row is approved, so
+    // this is exactly the recipient that will be sent. (Close note/task carry no
+    // recipient and use the per-user-key boundary instead, so they skip this block.)
     if (channel === "sms" || channel === "email") {
+      if (!recipient) {
+        await audit("action_blocked", "denied", "no_recipient");
+        return json(
+          {
+            error: "No recipient was provided for this action.",
+            status: row.status,
+          },
+          400,
+        );
+      }
+
+      // M2 recipient authorization: only send to a client, recruiting lead, or team
+      // member. assistant_recipient_is_allowed is SECURITY INVOKER, so RLS defines the
+      // allowed set (mirrors the read tools' scope).
+      const { data: allowed, error: authErr } = await db.rpc(
+        "assistant_recipient_is_allowed",
+        { p_channel: channel, p_recipient: recipient },
+      );
+      if (authErr) {
+        await audit("action_failed", "error", "recipient_check_error");
+        return json({ error: "Could not verify the recipient." }, 502);
+      }
+      if (allowed !== true) {
+        await audit("action_blocked", "denied", "recipient_not_allowed");
+        return json(
+          {
+            error:
+              "The recipient isn't one of your contacts, leads, or team members, so the assistant won't send to them.",
+            status: row.status,
+          },
+          403,
+        );
+      }
+
+      // COUNT-based caps (committed-send based). Uses the USER-scoped `db` client:
+      // assistant_send_caps is SECURITY DEFINER and resolves auth.uid()/get_my_imo_id()
+      // server-side.
       const { data: capsData, error: capsErr } = await db
         .rpc("assistant_send_caps", {
           p_channel: channel,
-          p_recipient: recipient || null,
+          p_recipient: recipient,
         })
         .maybeSingle();
-      // Cast: assistant_send_caps is newer than the committed generated types
-      // (introspection lag), so PostgREST returns it untyped here.
+      // Cast: assistant_send_caps is newer than the committed generated types, so
+      // PostgREST returns it untyped here.
       const caps = capsData as {
         distinct_recipients_24h?: number | null;
         recipient_already_24h?: boolean | null;
         imo_sends_24h?: number | null;
       } | null;
-      if (capsErr) {
-        // Fail-open on a limiter fault (consistent with check_rate_limit), but record it.
+      if (capsErr || !caps) {
+        // Fail-open on a limiter fault (consistent with check_rate_limit), but write a
+        // ledger row so the window in which BOTH COUNT caps were inert is reconstructable
+        // — otherwise a cap-RPC outage silently disables the whole new defense layer.
         console.error(
-          "assistant-action-execute: assistant_send_caps error",
-          capsErr.message,
+          "assistant-action-execute: assistant_send_caps unavailable",
+          capsErr?.message ?? "no row returned",
         );
-      } else if (caps) {
+        await audit("cap_check_error", "error", "caps_unavailable");
+      } else {
         const distinctCap = distinctRecipientDailyCap(channel);
         const distinctUsed = Number(caps.distinct_recipients_24h ?? 0);
         const recipientAlready = caps.recipient_already_24h === true;
@@ -223,6 +273,10 @@ serve(async (req) => {
             429,
           );
         }
+        // IMO-wide ceiling. NOTE: when get_my_imo_id() is NULL (a tenantless caller —
+        // e.g. a super-admin with no imo_id), assistant_send_caps returns imo_sends_24h=0
+        // so this never trips. Intentional: there is no tenant to aggregate, and such a
+        // caller is still bounded by the per-user distinct cap + the per-call counter.
         if (imoUsed >= imoCeiling) {
           await audit("action_blocked", "denied", "imo_send_ceiling");
           return json(
@@ -291,8 +345,8 @@ serve(async (req) => {
           result_redacted: opts?.result ? redact(opts.result) : null,
         })
         .eq("id", actionRequestId);
-      // A "blocked" fail (recipient not allowed, suppressed/STOP) is a policy denial,
-      // not a transport error — record it as such so the ledger distinguishes them.
+      // A "blocked" fail (e.g. suppressed/STOP) is a policy denial, not a transport
+      // error — record it as such so the ledger distinguishes them.
       await audit(
         opts?.blocked ? "action_blocked" : "action_failed",
         opts?.blocked ? "denied" : "error",
@@ -306,8 +360,8 @@ serve(async (req) => {
     // These act with the caller's OWN Close key against a lead in their OWN Close
     // org, so the email/phone recipient + allowed-set check does NOT apply (the
     // boundary is the per-user key, and the human approved this exact lead+text,
-    // which the content-freeze trigger has made immutable since approval). Branch
-    // BEFORE the recipient guard below — Close rows have no recipient.
+    // which the content-freeze trigger has made immutable since approval). Close rows
+    // carry no recipient, so they are never gated by the sms/email pre-claim block above.
     if (row.channel === "close_note" || row.channel === "close_task") {
       const leadId =
         typeof payload.leadId === "string" ? payload.leadId.trim() : "";
@@ -376,24 +430,9 @@ serve(async (req) => {
       }
     }
 
-    if (!recipient)
-      return await fail("No recipient was provided for this action.");
-
-    // M2: only send to someone the caller actually works with — a client,
-    // recruiting lead, or team member. assistant_recipient_is_allowed is
-    // SECURITY INVOKER, so the same RLS that scopes the read tools defines the
-    // allowed set. Pairs with the DB content-freeze (recipient/draft_payload are
-    // immutable post-approval), so this is exactly the recipient the human approved.
-    const { data: allowed, error: authErr } = await db.rpc(
-      "assistant_recipient_is_allowed",
-      { p_channel: row.channel, p_recipient: recipient },
-    );
-    if (authErr) return await fail("Could not verify the recipient.");
-    if (allowed !== true)
-      return await fail(
-        "The recipient isn't one of your contacts, leads, or team members, so the assistant won't send to them.",
-        { blocked: true, reason: "recipient_not_allowed" },
-      );
+    // (recipient presence + M2 allowlist were verified PRE-CLAIM above for sms/email;
+    // content-freeze keeps `recipient` immutable from approval onward, so the pre-claim
+    // check is exactly the recipient sent here. Close rows never reach this point.)
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
