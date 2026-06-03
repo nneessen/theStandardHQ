@@ -249,7 +249,7 @@ A single PR that builds the **governance-kernel foundation + the first read-only
 
 ## Open Decisions (owner must choose)
 
-1. **Discord "send as me" is impossible by policy** — confirm the owner accepts "Jarvis-the-bot posts to authorized channels" instead of impersonation. *This changes the demo; resolve before building `discord_connections`.* (Both designers + feasibility review flag this as a product-expectation risk, not a technical one.)
+1. ✅ **RESOLVED (owner, 2026-06-03): Discord = bot-posts-to-authorized-channels, NOT impersonation.** The owner explicitly dropped "send as me" (no access to others' Discord; self-token impersonation is a ToS-ban risk regardless). Deliverable: Jarvis-the-bot posts to channels the user authorizes via OAuth-link. Build `discord_connections` on the bot-primary model.
 2. **Encryption strategy before adding providers beyond Discord** — keep the single shared `EMAIL_ENCRYPTION_KEY`, or move to per-row/envelope (pgsodium) / a separate key? (Security review [C3]: single shared key = single point of total compromise, with unresolved `app_config` rotation debt.)
 3. **Local-action table** — the capability-framework design suggested reusing `assistant_action_requests`; the security review [C1] and the desktop designer's own open question conclude a **sibling `assistant_local_actions`** table. *This plan adopts the sibling table* — confirm.
 4. **Companion transport default** — Realtime-first with poll fallback, or poll-first for corporate-network reliability then upgrade?
