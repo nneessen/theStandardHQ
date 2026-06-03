@@ -7,7 +7,16 @@
 // functions. Result is logged (redacted) and the row is set executed|failed.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createSupabaseClient } from "../_shared/supabase-client.ts";
+import {
+  createSupabaseClient,
+  createSupabaseAdminClient,
+} from "../_shared/supabase-client.ts";
+import { checkRateLimit } from "../_shared/rate-limit.ts";
+import {
+  actionDailyCap,
+  actionRateKey,
+  ACTION_RATE_WINDOW_SECONDS,
+} from "../assistant-orchestrator/core/action-limits.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
 import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
@@ -95,6 +104,29 @@ serve(async (req) => {
         { error: "Action is not approved or has expired", status: row.status },
         409,
       );
+    }
+
+    // Per-action-class daily send cap (defense-in-depth — sends run out-of-band of the
+    // orchestrator's buckets). Checked BEFORE the claim so a capped send stays `approved`
+    // and is retryable once the 24h window resets. The limiter RPC is service_role-only,
+    // so use the admin client.
+    const dailyCap = actionDailyCap(String(row.channel));
+    if (dailyCap !== null) {
+      const rl = await checkRateLimit(createSupabaseAdminClient(), {
+        key: actionRateKey(String(row.channel), user.id),
+        maxRequests: dailyCap,
+        windowSeconds: ACTION_RATE_WINDOW_SECONDS,
+      });
+      if (!rl.allowed) {
+        return json(
+          {
+            error: `Daily ${row.channel} send limit reached (${dailyCap}/day). Try again later.`,
+            retry_after_seconds: rl.retryAfterSeconds,
+            status: row.status,
+          },
+          429,
+        );
+      }
     }
 
     // Race-safe transition approved -> executing (conditional on still being
