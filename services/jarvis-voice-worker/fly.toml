@@ -2,7 +2,7 @@
 # It connects OUT to LiveKit Cloud (persistent WebSocket) and serves NO public HTTP — so
 # there is intentionally no [http_service]. It must NOT scale to zero (a stopped worker =
 # no voice), so keep ≥1 machine running: `fly scale count 1` (raise for concurrency).
-app = "jarvis-voice-worker"
+app = "standardhq-jarvis-voice"
 primary_region = "iad" # set to the region nearest your users / LiveKit project
 
 [build]
