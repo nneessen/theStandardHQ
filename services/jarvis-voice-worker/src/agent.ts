@@ -2,17 +2,19 @@
 //
 // Pipeline:  mic ─▶ Silero VAD + turn-detection ─▶ Deepgram STT ─▶ (Claude brain via
 // assistant-orchestrator, using the USER's JWT) ─▶ ElevenLabs TTS ─▶ speaker, with
-// barge-in. The worker keeps NO model of its own — instead of an `llm.LLM`, we subclass
-// `voice.Agent` and override its `llmNode()` to bridge each user turn straight to the
-// existing orchestrator (src/orchestrator-bridge.ts), so all tools, grounding, and
-// RLS-scoped data access are reused unchanged.
+// barge-in. The worker runs no real model — generation is bridged to the existing
+// orchestrator (src/orchestrator-bridge.ts) by overriding `JarvisAgent.llmNode()`, so all
+// tools, grounding, and RLS-scoped data access are reused unchanged.
 //
 // SDK pinned to @livekit/agents@1.4.5. The LLM bridge lives in `llmNode()` (the node the
 // AgentSession pipes STT→TTS through) rather than a custom `llm.LLM`/`LLMStream`, because
 // in 1.x `LLMStream` is an abstract class with no public text-stream adapter — overriding
-// `llmNode` to return a `ReadableStream<string>` is the idiomatic, type-clean bridge. The
-// orchestrator bridge + the JWT / data-channel flow (the parts that carry the security
-// model) are SDK-agnostic and final.
+// `llmNode` to return a `ReadableStream<string>` is the idiomatic, type-clean bridge.
+// IMPORTANT: the session must STILL be handed an `llm` (see BridgeLLM) — in 1.4.5 the reply
+// pipeline short-circuits when `this.llm === undefined` (it returns before ever calling
+// `llmNode`), so a stub LLM is required to unlock the pipeline that then invokes our
+// override. The orchestrator bridge + the JWT / data-channel flow (the parts that carry the
+// security model) are SDK-agnostic and final.
 
 import {
   type JobContext,
