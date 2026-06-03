@@ -503,7 +503,8 @@ serve(async (req) => {
                 p_decision: r.status, // success | denied | error
                 p_decision_reason: r.errorMsg ?? null,
                 p_action_request_id: r.createdAction?.actionRequestId ?? null,
-                p_imo_id: imoId,
+                // imo_id is derived server-side in log_assistant_audit (get_my_imo_id()),
+                // not passed by the caller — anti-forgery + write/read consistency.
               });
 
               toolResults.push({
