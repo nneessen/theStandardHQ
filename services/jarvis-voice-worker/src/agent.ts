@@ -25,9 +25,13 @@ import {
 import * as deepgram from "@livekit/agents-plugin-deepgram";
 import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
 import * as silero from "@livekit/agents-plugin-silero";
+import { BackgroundVoiceCancellation } from "@livekit/noise-cancellation-node";
 import { fileURLToPath } from "node:url";
 import { ReadableStream } from "node:stream/web";
-import { callOrchestrator, type OrchestratorConfig } from "./orchestrator-bridge.js";
+import {
+  callOrchestrator,
+  type OrchestratorConfig,
+} from "./orchestrator-bridge.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -182,7 +186,9 @@ export default defineAgent({
     const state = new SessionState(ownerUid);
 
     // Receive the user's JWT (and refreshes) over the data channel.
-    ctx.room.on("dataReceived", (payload: Uint8Array) => state.ingestData(payload));
+    ctx.room.on("dataReceived", (payload: Uint8Array) =>
+      state.ingestData(payload),
+    );
 
     const session = new voice.AgentSession({
       vad: ctx.proc.userData.vad as silero.VAD,
@@ -203,13 +209,31 @@ export default defineAgent({
         ],
       }),
       // No `llm` here — JarvisAgent.llmNode() bridges to the orchestrator instead.
-      tts: new elevenlabs.TTS({ model: "eleven_turbo_v2_5" }),
+      tts: new elevenlabs.TTS({
+        // The ElevenLabs plugin's env fallback looks for ELEVEN_API_KEY, but our Fly secret
+        // is named ELEVENLABS_API_KEY — pass it explicitly so the names don't have to match
+        // (otherwise `new TTS()` throws "ElevenLabs API key is required"). Deepgram's plugin
+        // already reads DEEPGRAM_API_KEY, which matches our secret, so STT needs no override.
+        apiKey: requireEnv("ELEVENLABS_API_KEY"),
+        model: "eleven_turbo_v2_5",
+      }),
       // Barge-in is on by default in AgentSession; turn-detection model is auto-wired.
     });
 
     await session.start({
       agent: new JarvisAgent(state),
       room: ctx.room,
+      // Krisp Background Voice Cancellation strips background HUMAN voices (a TV, other
+      // people in the room) from the inbound mic stream BEFORE VAD / STT / turn-detection
+      // and barge-in ever see it. The browser's generic WebRTC noiseSuppression (on by
+      // default) only removes STATIONARY noise (fans, hum) — it leaves speech intact, so a
+      // TV would otherwise trigger false turns and interrupt the agent. BVC runs via
+      // LiveKit Cloud's Krisp integration, authenticated by the worker's existing LiveKit
+      // credentials (no extra secret); `BackgroundVoiceCancellation()` is the background-
+      // speaker model (vs plain `NoiseCancellation()` which only handles ambient noise).
+      inputOptions: {
+        noiseCancellation: BackgroundVoiceCancellation(),
+      },
     });
   },
 });
