@@ -4,6 +4,18 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# @livekit/rtc-node's native (Rust/reqwest) engine verifies TLS against the SYSTEM CA store
+# when ctx.connect() does its LiveKit-Cloud `/settings/regions` lookup. node:20-slim ships
+# NO ca-certificates, so that HTTPS call fails with "failed to retrieve region info: error
+# sending request for url" and the agent never joins the room — even though worker
+# REGISTRATION succeeds, because that path uses Node's own bundled CA roots, not the system
+# store. Install the trust store so the engine can complete its TLS handshake. (apt-get
+# update works without certs — Debian mirrors are plain HTTP — so there is no bootstrap
+# chicken-and-egg.)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 # Install EXACTLY the audited, committed lockfile — `npm ci` fails on any drift and honors
 # the package-lock.json we vetted with `npm audit` (reproducible; a malicious transitive
 # bump can't sneak in). Includes dev deps for the tsc build.
