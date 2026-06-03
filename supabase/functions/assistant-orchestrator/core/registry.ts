@@ -185,6 +185,18 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getWeather: {
+    name: "getWeather",
+    description:
+      "Current conditions and a short-range forecast (today, tomorrow, or the week) for a place — city, 'City, State', or region. Returns resolved location, current temp/feels-like/condition/humidity/wind, and a per-day high/low/condition/precip-chance list, with the unit labels. Read-only, no account needed. Use for any 'what's the weather' / 'will it rain' / 'how hot tomorrow' question.",
+    category: "general",
+    riskLevel: "read",
+    actionClass: "read",
+    target: "cloud",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
 };
 
 export function getToolMetadata(name: string): ToolMetadata | undefined {

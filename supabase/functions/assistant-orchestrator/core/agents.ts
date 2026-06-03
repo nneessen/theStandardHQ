@@ -169,9 +169,16 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getTeamProductionSummary",
       "getPolicyRiskAlerts",
       "queryPolicies",
+      "getWeather",
       ...DRAFT_TOOLS,
     ],
-    allowedCategories: ["briefing", "production", "policy", "messaging"],
+    allowedCategories: [
+      "briefing",
+      "production",
+      "policy",
+      "messaging",
+      "general",
+    ],
     maxTokens: 1200,
   },
   "production-analyst": {
