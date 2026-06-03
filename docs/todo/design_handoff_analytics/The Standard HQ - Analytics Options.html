@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Standard HQ — Analytics · Three Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#120f08; --panel:#19140b; --panel2:#1d1810; --tile:#221b10;
+    --line:rgba(236,226,205,0.10); --line2:rgba(236,226,205,0.18);
+    --ink:#f1e9d6; --cream:#ece2cd; --mut:rgba(236,226,205,0.55); --mut2:rgba(236,226,205,0.36);
+    --blue:#5b9bff; --cyan:#46d8f5; --amber:#f4b43a; --red:#ff6a5d; --green:#5fd08a;
+    --disp:"Archivo",system-ui,sans-serif; --body:"Hanken Grotesk",system-ui,sans-serif; --mono:"Space Mono",monospace;
+    --rail:84px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{background:var(--bg); background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 3px);
+    color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; min-height:100vh;}
+  .shell{display:flex; min-height:100vh;}
+
+  /* rail */
+  .rail{width:var(--rail); flex-shrink:0; position:sticky; top:0; align-self:flex-start; height:100vh;
+    display:flex; flex-direction:column; align-items:center; gap:5px; padding:18px 0 20px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel)); border-right:1px solid var(--line2); z-index:10;}
+  .rail-burger{width:46px; height:46px; border-radius:12px; display:grid; place-items:center; color:var(--mut);
+    border:1px solid var(--line); background:rgba(0,0,0,0.25); cursor:pointer; margin-bottom:6px;}
+  .rail-avatar{width:54px; height:54px; border-radius:50%; display:grid; place-items:center;
+    background:radial-gradient(circle at 35% 30%, rgba(70,216,245,0.18), rgba(70,216,245,0.02));
+    border:1px solid rgba(70,216,245,0.4); box-shadow:0 0 18px rgba(70,216,245,0.16); color:var(--cyan); margin-bottom:10px;}
+  .rail-icons{display:flex; flex-direction:column; align-items:center; gap:3px; flex:1;}
+  .rail-btn{width:50px; height:50px; border-radius:13px; display:grid; place-items:center; color:var(--mut); cursor:pointer; transition:.15s;}
+  .rail-btn:hover{color:var(--ink); background:rgba(236,226,205,0.06);}
+  .rail-btn.active{color:var(--blue); background:rgba(91,155,255,0.12); box-shadow:inset 0 0 0 1px rgba(91,155,255,0.4), 0 0 16px rgba(91,155,255,0.12);}
+  .rail-sep{width:36px; height:1px; background:var(--line2); margin:9px 0;}
+  .rail-btn.logout{color:var(--red);}
+
+  .main{flex:1; min-width:0;}
+
+  /* switcher bar */
+  .switchbar{position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding:16px 48px; background:rgba(18,15,8,0.86); backdrop-filter:blur(10px); border-bottom:1px solid var(--line2); flex-wrap:wrap;}
+  .switchbar .lead{font:700 12px var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--mut2);}
+  .switchbar .lead b{color:var(--ink); display:block; font:800 17px var(--disp); letter-spacing:.02em; margin-top:5px;}
+  .opts{display:flex; gap:5px; padding:5px; border-radius:14px; background:var(--panel); border:1px solid var(--line2);}
+  .opts button{font:700 13px var(--mono); letter-spacing:.04em; color:var(--mut); padding:11px 18px; border-radius:10px; border:none; background:transparent; cursor:pointer; transition:.15s; text-align:left;}
+  .opts button small{display:block; font:600 10px var(--body); letter-spacing:.02em; color:var(--mut2); margin-top:3px; text-transform:none;}
+  .opts button:hover{color:var(--ink);}
+  .opts button.on{background:rgba(91,155,255,0.14); color:var(--blue); box-shadow:inset 0 0 0 1px rgba(91,155,255,0.35);}
+  .opts button.on small{color:rgba(91,155,255,0.7);}
+
+  .content{padding:40px 48px 64px; max-width:1820px;}
+  .opt{display:none;} .opt.on{display:block;}
+
+  /* grids */
+  .g3{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; align-items:start; margin-bottom:24px;}
+  .g2{display:grid; grid-template-columns:repeat(2,1fr); gap:24px; align-items:start; margin-bottom:24px;}
+  .sp2{grid-column:span 2;}
+  /* bento 12-col */
+  .bento{display:grid; grid-template-columns:repeat(12,1fr); gap:18px; align-items:start;}
+  .c3{grid-column:span 3;} .c4{grid-column:span 4;} .c5{grid-column:span 5;}
+  .c6{grid-column:span 6;} .c7{grid-column:span 7;} .c8{grid-column:span 8;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- constant rail -->
+  <nav class="rail">
+    <div class="rail-burger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+    <div class="rail-avatar"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2a9 9 0 0 0-9 9c0 3 1 5 1 7m16-7a9 9 0 0 0-5-8M12 6a5 5 0 0 0-5 5c0 2 .5 3 .5 5m9-10a5 5 0 0 1 1.5 6M12 10a1.5 1.5 0 0 0-1.5 1.5c0 1 0 2 .5 4"/></svg></div>
+    <div class="rail-icons">
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 4.3L18 8l-3 3 .7 4.5L12 13l-3.7 2.5L9 11 6 8l4.1-.7L12 3Z"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 21v-7h6v7"/></svg></div>
+      <div class="rail-btn active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 3v6h6"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 11h20"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3.2"/><path d="M22 19v-2a4 4 0 0 0-3-3.8"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4M18 9h2a2 2 0 0 0 2-2V5h-4M6 5h12v4a6 6 0 0 1-12 0Z"/><path d="M9 19h6M12 15v4"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7L22 6"/></svg></div>
+      <div class="rail-sep"></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7Z"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8M4.6 9a1.6 1.6 0 0 0-.3-1.8"/></svg></div>
+      <div class="rail-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4M12 17h.01"/></svg></div>
+    </div>
+    <div class="rail-btn logout"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+  </nav>
+
+  <div class="main">
+    <div class="switchbar">
+      <div class="lead">Analytics Redesign<b>Three directions · pick one</b></div>
+      <div class="opts" id="opts">
+        <button data-opt="a" class="on">Option A<small>Verdict-first command</small></button>
+        <button data-opt="b">Option B<small>Bento wall</small></button>
+        <button data-opt="c">Option C<small>Carousel / focus</small></button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="opt acx on" id="opt-a"></div>
+      <div class="opt acx" id="opt-b"></div>
+      <div class="opt acx" id="opt-c"></div>
+    </div>
+  </div>
+</div>
+
+<script src="analytics-charts.js"></script>
+<script src="analytics-data.js"></script>
+<script src="analytics-panels.js"></script>
+<script>
+  // ---- compose the three options from the shared panel library ----
+  function buildA(){
+    return P.header('Lead with the verdict — are you on pace — then the plan, then the detail.')
+      + P.heroBand()
+      + `<div class="g3"><div>${P.actionFeed()}</div><div class="sp2">${P.trendPanel()}</div></div>`
+      + `<div class="g3"><div>${P.growthPanel()}</div><div class="sp2">${P.agentsPanel()}</div></div>`
+      + `<div class="g3">${P.funnelPanel()}${P.segmentsPanel()}${P.pipelinePanel()}</div>`
+      + `<div class="g3"><div class="sp2">${P.sparkTrends()}</div><div>${P.statesPanel()}</div></div>`
+      + `<div class="g3">${P.productsPanel()}<div class="sp2"></div></div>`
+      + P.footer();
+  }
+  function buildB(){
+    return P.header('Everything visible at once — hierarchy comes from tile size, not scrolling.')
+      + `<div class="bento">
+          <div class="c5">${P.paceTile()}</div>
+          <div class="c7">${P.trendPanel()}</div>
+          <div class="c4">${P.growthPanel()}</div>
+          <div class="c5">${P.agentsPanel()}</div>
+          <div class="c3">${P.funnelPanel()}</div>
+          <div class="c6">${P.sparkTrends()}</div>
+          <div class="c6">${P.actionFeed()}</div>
+          <div class="c4">${P.segmentsPanel()}</div>
+          <div class="c4">${P.pipelinePanel()}</div>
+          <div class="c4">${P.statesPanel()}</div>
+          <div class="c4">${P.productsPanel()}</div>
+        </div>`
+      + P.footer();
+  }
+  function buildC(){
+    return P.header('Compact KPI rail up top, then one big stage you swap — far less scrolling.')
+      + P.kpiRail()
+      + `<div class="g3"><div class="sp2">${P.chartsCarousel()}</div><div>${P.actionsCarousel()}</div></div>`
+      + `<div class="g3">${P.segmentsPanel()}${P.pipelinePanel()}${P.productsPanel()}</div>`
+      + `<div class="g3"><div>${P.statesPanel()}</div><div class="sp2">${P.sparkTrends()}</div></div>`
+      + P.footer();
+  }
+
+  const built = {a:false,b:false,c:false};
+  const builders = {a:buildA, b:buildB, c:buildC};
+  function show(opt){
+    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
+    document.querySelectorAll('#opts button').forEach(b=>b.classList.toggle('on', b.dataset.opt===opt));
+    const el = document.getElementById('opt-'+opt);
+    if(!built[opt]){ el.innerHTML = builders[opt](); built[opt]=true; }
+    el.classList.add('on');
+    AC.init(el);
+    try{ localStorage.setItem('hq-analytics-opt', opt); }catch(e){}
+    window.scrollTo(0,0);
+  }
+  document.getElementById('opts').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(b) show(b.dataset.opt);
+  });
+  const saved = (function(){ try{ return localStorage.getItem('hq-analytics-opt'); }catch(e){ return null; } })();
+  show(saved && ['a','b','c'].includes(saved) ? saved : 'a');
+</script>
+</body>
+</html>
