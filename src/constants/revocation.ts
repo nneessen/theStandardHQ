@@ -1,10 +1,15 @@
 // src/constants/revocation.ts
-// Frontend mirror of the platform-sunset lifecycle windows. The authoritative
-// copy lives in `supabase/functions/_shared/sunset-constants.ts` (Deno, can't be
-// imported here). Keep the two in sync — they describe the same policy.
-
-/** Days after revocation a straggler account is auto-purged by the daily cron. */
-export const AUTO_PURGE_AFTER_DAYS = 7;
-
-/** Days a post-wipe recovery archive is retained before the cron GCs it. */
-export const RECOVERY_TTL_DAYS = 30;
+// Frontend access point for the platform-sunset lifecycle windows.
+//
+// There is exactly ONE definition of these values, and it lives in the Deno
+// edge tree (`supabase/functions/_shared/sunset-constants.ts`) because the
+// auto-purge cron — the component that actually enforces the policy — is an
+// edge function and can't import from the Vite `@/` world. This module simply
+// re-exports those scalars so the React app reads the same numbers the cron
+// acts on. Do NOT redeclare the values here; change them at the source.
+export {
+  /** Days after revocation a straggler account is auto-purged by the daily cron. */
+  AUTO_PURGE_AFTER_DAYS,
+  /** Days a post-wipe recovery archive is retained before the cron GCs it. */
+  RECOVERY_TTL_DAYS,
+} from "../../supabase/functions/_shared/sunset-constants";

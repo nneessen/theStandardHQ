@@ -14,7 +14,7 @@ export const CHARGEBACK_THRESHOLDS = {
   GRACE_PERIOD_MONTHS: 24, // Standard chargeback grace period
   RECENT_PAYMENT_MONTHS: 6, // Considered recent payment
   FIRST_YEAR_MONTHS: 12, // First year payment threshold
-  HIGH_COMMISSION_AMOUNT: 5000, // Threshold for high commission amount
+  HIGH_COMMISSION_AMOUNT: 3500, // Threshold for high commission amount
   CRITICAL_RATE: 20, // Critical chargeback rate %
   HIGH_RATE: 15, // High chargeback rate %
   MODERATE_RATE: 10, // Moderate chargeback rate %
@@ -53,8 +53,8 @@ export const RISK_LEVELS = {
 
 // Analytics Constants
 export const ANALYTICS_CONSTANTS = {
-  RENEWAL_RATE_MULTIPLIER: 0.25, // 25% of first year commission for renewals
-  DEFAULT_AVG_COMMISSION_FALLBACK: 1125, // $1500 avg premium × 75% commission rate
+  RENEWAL_RATE_MULTIPLIER: 0.025, // 2.5% of first year commission for renewals
+  DEFAULT_AVG_COMMISSION_FALLBACK: 1000, // $1500 avg premium × 75% commission rate
   DEFAULT_ADVANCE_MONTHS: 9,
   MAX_GROWTH_RATE: 1.0, // Cap annual growth at 100%
   MIN_GROWTH_RATE: -0.5, // Cap decline at -50%
