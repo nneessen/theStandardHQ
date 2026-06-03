@@ -53,7 +53,14 @@ export function canUseTool(
   // Tools flagged requiresApproval can never be invoked directly by the model;
   // they need an approved action row (executed out-of-band by
   // assistant-action-execute, not the orchestrator loop).
-  if (meta.requiresApproval && !opts.hasApproval) {
+  // Privileged classes (outbound/local/irreversible) ALWAYS require a human-confirmed
+  // approval row — independent of the legacy `requiresApproval` flag — so the actionClass
+  // guarantee stated in the docs is enforced here, not just documented. No current tool is
+  // privileged, so this is a no-op today.
+  if (
+    (meta.requiresApproval || confirmationRequired(meta)) &&
+    !opts.hasApproval
+  ) {
     return { allowed: false, reason: "requires_approval" };
   }
 

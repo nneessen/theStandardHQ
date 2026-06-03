@@ -104,6 +104,17 @@ export async function* callOrchestrator(
             (frame.data?.conversation_id as string | undefined);
           if (typeof id === "string") onConversationId(id);
           return;
+        } else if (frame.event === "error") {
+          // The orchestrator signals per-turn generation failure with an `error` event on an
+          // already-200 body, then closes. If we ignored it (as an "other event") the stream
+          // would just end with done:true and the generator would return with NO exception —
+          // so the caller's catch never fires and the user hears SILENCE instead of the
+          // graceful fallback. Throw so buildReplyStream speaks ERROR_MESSAGE.
+          const msg =
+            typeof frame.data?.message === "string"
+              ? frame.data.message
+              : "assistant-orchestrator emitted an error event";
+          throw new Error(msg);
         }
         // `tool` (chip activity) and other events carry no speakable text — ignore.
       }
@@ -136,12 +147,21 @@ function parseSseFrame(frame: string): SseFrame | null {
 function anySignal(signals: AbortSignal[]): AbortSignal {
   const ac = new AbortController();
   const onAbort = () => ac.abort();
+  // Detach our listener from the LOSING signals once the controller aborts. Without this, on
+  // the common barge-in path (externalSignal wins at ~2s) the still-pending 45s timeout signal
+  // keeps `onAbort` — and the whole closure — retained until its timer fires, needless
+  // per-turn retention in a worker hosting many rooms.
+  const cleanup = () => {
+    for (const s of signals) s.removeEventListener("abort", onAbort);
+  };
   for (const s of signals) {
     if (s.aborted) {
       ac.abort();
-      break;
+      cleanup();
+      return ac.signal;
     }
-    s.addEventListener("abort", onAbort, { once: true });
   }
+  for (const s of signals) s.addEventListener("abort", onAbort, { once: true });
+  ac.signal.addEventListener("abort", cleanup, { once: true });
   return ac.signal;
 }

@@ -412,6 +412,15 @@ serve(async (req) => {
               toolUses.map(async (tu: any) => {
                 const meta = TOOL_METADATA[tu.name];
                 const tool = TOOLS[tu.name];
+                // NOTE (kernel wiring, Phase 1/2): userPermissions is still [] and
+                // connectedProviders/hasApproval are not threaded here yet. That is fine for
+                // every CURRENT tool (all read/draft, empty requiredPermissions, no
+                // requiredConnection). But the FIRST tool that sets requiredPermissions (e.g.
+                // webSearch) or requiredConnection (e.g. Discord) will be denied for everyone
+                // until this call passes the user's real permissions + linked providers. Wire
+                // those before registering any permissioned/connection-gated tool. Privileged
+                // actionClasses correctly stay denied in the model loop (they run out-of-band
+                // via assistant-action-execute after human approval, never invoked directly).
                 const decision = canUseTool(meta, [], { isSuperAdmin });
                 const t0 = Date.now();
                 let output: unknown;

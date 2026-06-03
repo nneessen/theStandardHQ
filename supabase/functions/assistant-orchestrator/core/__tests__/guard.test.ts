@@ -95,15 +95,18 @@ Deno.test("guard denies a tool whose requiredConnection is not linked", () => {
 Deno.test(
   "super-admin does NOT bypass permissions for privileged classes",
   () => {
-    // outbound/local/irreversible must be explicitly granted regardless of role.
+    // outbound/local/irreversible must be explicitly granted regardless of role. Pass
+    // hasApproval:true so we get PAST the approval gate and actually exercise the PERMISSION
+    // gate (the approval gate is covered by the next test).
     const outbound: ToolMetadata = {
       ...readMeta,
       actionClass: "outbound",
       requiredPermissions: ["sms.send"],
     };
-    assertFalse(canUseTool(outbound, [], { isSuperAdmin: true }).allowed);
+    const sa = { isSuperAdmin: true, hasApproval: true };
+    assertFalse(canUseTool(outbound, [], sa).allowed);
     assertEquals(
-      canUseTool(outbound, [], { isSuperAdmin: true }).reason,
+      canUseTool(outbound, [], sa).reason,
       "missing_permissions:sms.send",
     );
     // ...but a super-admin still bypasses read/draft tools (unchanged behavior).
@@ -113,7 +116,26 @@ Deno.test(
       requiredPermissions: ["x"],
     };
     assert(canUseTool(draft, [], { isSuperAdmin: true }).allowed);
-    // an explicitly-granted super-admin can use the privileged tool.
-    assert(canUseTool(outbound, ["sms.send"], { isSuperAdmin: true }).allowed);
+    // an explicitly-granted + approved super-admin can use the privileged tool.
+    assert(canUseTool(outbound, ["sms.send"], sa).allowed);
+  },
+);
+
+Deno.test(
+  "privileged actionClass requires approval even when requiresApproval is false",
+  () => {
+    // The docs promise outbound/local/irreversible 'require a human-confirmed approval row';
+    // the guard must enforce that from actionClass, not only from the legacy flag.
+    const outbound: ToolMetadata = {
+      ...readMeta,
+      actionClass: "outbound",
+      requiresApproval: false,
+    };
+    assertEquals(canUseTool(outbound, []).reason, "requires_approval");
+    assertFalse(canUseTool(outbound, [], { isSuperAdmin: true }).allowed);
+    assert(canUseTool(outbound, [], { hasApproval: true }).allowed);
+    // read/draft never require approval from actionClass.
+    assert(canUseTool(readMeta, []).allowed);
+    assert(canUseTool({ ...readMeta, riskLevel: "draft" }, []).allowed);
   },
 );

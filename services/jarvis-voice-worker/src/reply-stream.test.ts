@@ -46,7 +46,7 @@ test("no jwt → speaks the not-connected message and never calls the orchestrat
   assert.deepEqual(chunks, [_internal.NO_AUTH_MESSAGE]);
 });
 
-test("orchestrator error → emits partial output then the fallback, no throw", async () => {
+test("orchestrator error AFTER deltas → keeps the partial, NO appended apology", async () => {
   async function* boom(): AsyncGenerator<string> {
     yield "partial";
     throw new Error("upstream 500");
@@ -54,7 +54,20 @@ test("orchestrator error → emits partial output then the fallback, no throw", 
   const chunks = await readAll(
     buildReplyStream({ jwt: "jwt", text: "hi", stream: () => boom() }),
   );
-  assert.deepEqual(chunks, ["partial", _internal.ERROR_MESSAGE]);
+  // Once a real delta was spoken, do NOT tack on "Sorry…" (avoids half-answer + apology).
+  assert.deepEqual(chunks, ["partial"]);
+});
+
+test("orchestrator error with NO prior delta → speaks the fallback", async () => {
+  // An `async function*` is an async generator even with no reachable yield.
+  // eslint-disable-next-line require-yield
+  async function* boomFirst(): AsyncGenerator<string> {
+    throw new Error("upstream 500");
+  }
+  const chunks = await readAll(
+    buildReplyStream({ jwt: "jwt", text: "hi", stream: () => boomFirst() }),
+  );
+  assert.deepEqual(chunks, [_internal.ERROR_MESSAGE]);
 });
 
 test("barge-in: cancel mid-stream aborts the fetch and never throws 'Controller is already closed'", async () => {

@@ -23,6 +23,17 @@ export function classifyIntent(message: string): AgentKey | null {
     return "executive-briefing";
   }
 
+  // 1b. Weather — getWeather lives on the executive-briefing (general) agent. Route here
+  // explicitly so a weather question mid-conversation doesn't stick to the previous
+  // specialist (which doesn't expose getWeather).
+  if (
+    /\b(weather|forecast|temperature|how (hot|cold|warm)|will it (rain|snow)|is it (raining|snowing|hot|cold))\b/.test(
+      m,
+    )
+  ) {
+    return "executive-briefing";
+  }
+
   // 2. Compliance review of copy.
   if (
     /\b(compliance|compliant|tcpa|consent issue|review (this|my) (draft|message|copy|email|text|sms|wording)|is this (ok|okay|safe|compliant) to send|risky (wording|language)|unsupported claims?|missing discl[oa]sure)\b/.test(
@@ -180,7 +191,8 @@ export function routeToAgent(
   // default agent strips away the specialist's tools + context — e.g. a "yes"
   // after a per-policy answer would land on Executive Briefing, which lacks
   // queryPolicies, and the model can neither reproduce nor refresh the detail.
-  if (previousAgent && enabledAgents.includes(previousAgent)) return previousAgent;
+  if (previousAgent && enabledAgents.includes(previousAgent))
+    return previousAgent;
   if (enabledAgents.includes(DEFAULT_AGENT)) return DEFAULT_AGENT;
   return enabledAgents[0] ?? DEFAULT_AGENT;
 }

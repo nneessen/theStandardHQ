@@ -22,6 +22,98 @@ interface GeoResult {
   admin1?: string;
 }
 
+// US state/territory abbreviations -> full names. Open-Meteo's geocoder matches the city
+// token against the admin1 FULL name, never a "City, ST" string, so "Austin, TX" must become
+// city "Austin" + region "Texas".
+const US_STATE_ABBR: Record<string, string> = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+  DC: "District of Columbia",
+};
+
+/** Split "Austin, TX" / "Paris, France" into a city token + an optional region hint. */
+export function parseLocation(location: string): {
+  city: string;
+  region: string | null;
+} {
+  const idx = location.indexOf(",");
+  if (idx === -1) return { city: location.trim(), region: null };
+  const city = location.slice(0, idx).trim();
+  const region = location.slice(idx + 1).trim();
+  return { city: city || location.trim(), region: region || null };
+}
+
+/** Pick the geocode result best matching a region hint (state name/abbrev or country). */
+export function pickGeo(
+  results: GeoResult[],
+  region: string | null,
+): GeoResult | undefined {
+  if (results.length === 0) return undefined;
+  if (!region) return results[0];
+  const r = region.toLowerCase();
+  const full = (US_STATE_ABBR[region.toUpperCase()] ?? "").toLowerCase();
+  const match = results.find((g) => {
+    const admin1 = (g.admin1 ?? "").toLowerCase();
+    const country = (g.country ?? "").toLowerCase();
+    return (
+      admin1 === r ||
+      (full !== "" && admin1 === full) ||
+      (r.length >= 3 && admin1.startsWith(r)) ||
+      country === r ||
+      (r.length >= 3 && country.startsWith(r))
+    );
+  });
+  return match ?? results[0];
+}
+
 // WMO weather-code -> plain text (the subset Open-Meteo emits).
 const WEATHER_CODE_TEXT: Record<number, string> = {
   0: "clear sky",
@@ -142,17 +234,25 @@ async function run(input: Record<string, unknown>, _ctx: AssistantToolContext) {
   const units: Units =
     optionalString(input, "units") === "metric" ? "metric" : "imperial";
 
+  const { city, region } = parseLocation(location);
+  // ONE shared 8s deadline for both fetches — a stalled Open-Meteo connection otherwise hangs
+  // run() (and, on the text surface, the whole orchestrator turn) indefinitely; the outer
+  // try/catch only catches thrown errors, and a connected-but-silent socket never throws.
+  const signal = AbortSignal.timeout(8000);
+
   try {
     const geoParams = new URLSearchParams({
-      name: location,
-      count: "1",
+      name: city,
+      // Pull a few candidates when a region is given so pickGeo can disambiguate (e.g. the
+      // many "Austin"s) by matching admin1/country; otherwise the single best match.
+      count: region ? "5" : "1",
       language: "en",
       format: "json",
     });
-    const geoRes = await fetch(`${GEOCODE_URL}?${geoParams}`);
+    const geoRes = await fetch(`${GEOCODE_URL}?${geoParams}`, { signal });
     if (!geoRes.ok) return { available: false, reason: "unavailable" };
     const geoJson = (await geoRes.json()) as { results?: GeoResult[] };
-    const geo = geoJson.results?.[0];
+    const geo = pickGeo(geoJson.results ?? [], region);
     if (!geo) return { available: false, reason: "location_not_found" };
 
     const fcParams = new URLSearchParams({
@@ -168,7 +268,7 @@ async function run(input: Record<string, unknown>, _ctx: AssistantToolContext) {
       timezone: "auto",
       forecast_days: "7",
     });
-    const fcRes = await fetch(`${FORECAST_URL}?${fcParams}`);
+    const fcRes = await fetch(`${FORECAST_URL}?${fcParams}`, { signal });
     if (!fcRes.ok) return { available: false, reason: "unavailable" };
     const forecast = (await fcRes.json()) as Record<string, unknown>;
 

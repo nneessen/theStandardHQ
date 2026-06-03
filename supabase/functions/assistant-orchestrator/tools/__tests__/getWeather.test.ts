@@ -1,6 +1,8 @@
 import { assert, assertEquals } from "jsr:@std/assert@1";
 import {
   getWeather,
+  parseLocation,
+  pickGeo,
   summarizeWeather,
   weatherCodeText,
 } from "../getWeather.ts";
@@ -139,3 +141,86 @@ Deno.test("getWeather.run happy path: geocode then forecast", async () => {
     globalThis.fetch = original;
   }
 });
+
+Deno.test("parseLocation splits 'City, Region' and leaves bare cities", () => {
+  assertEquals(parseLocation("Austin, TX"), { city: "Austin", region: "TX" });
+  assertEquals(parseLocation("Boston"), { city: "Boston", region: null });
+  assertEquals(parseLocation("Paris, France"), {
+    city: "Paris",
+    region: "France",
+  });
+});
+
+Deno.test(
+  "pickGeo matches a state abbreviation against admin1, else first",
+  () => {
+    const austins = [
+      {
+        name: "Austin",
+        admin1: "Indiana",
+        country: "United States",
+        latitude: 1,
+        longitude: 2,
+      },
+      {
+        name: "Austin",
+        admin1: "Texas",
+        country: "United States",
+        latitude: 30.27,
+        longitude: -97.74,
+      },
+    ];
+    assertEquals(pickGeo(austins, "TX")?.admin1, "Texas");
+    assertEquals(pickGeo(austins, null)?.admin1, "Indiana"); // first when no hint
+    assertEquals(pickGeo(austins, "ZZ")?.admin1, "Indiana"); // no match -> first
+    assertEquals(pickGeo([], "TX"), undefined);
+  },
+);
+
+Deno.test(
+  "getWeather.run resolves 'Austin, TX' to the Texas match",
+  async () => {
+    const original = globalThis.fetch;
+    const austins = {
+      results: [
+        {
+          name: "Austin",
+          admin1: "Indiana",
+          country: "United States",
+          latitude: 1,
+          longitude: 2,
+        },
+        {
+          name: "Austin",
+          admin1: "Texas",
+          country: "United States",
+          latitude: 30.27,
+          longitude: -97.74,
+        },
+      ],
+    };
+    globalThis.fetch = (async (url: string | URL | Request) => {
+      const u = String(url);
+      if (u.includes("geocoding-api")) {
+        // the city token "Austin" is sent, NOT the raw "Austin, TX"
+        assert(u.includes("name=Austin") && !u.includes("TX"));
+        return new Response(JSON.stringify(austins), { status: 200 });
+      }
+      return new Response(JSON.stringify(FORECAST), { status: 200 });
+    }) as typeof fetch;
+    try {
+      const r = (await getWeather.run(
+        { location: "Austin, TX" },
+        ctx,
+      )) as Record<
+        string,
+        // deno-lint-ignore no-explicit-any
+        any
+      >;
+      assert(r.available);
+      assertEquals(r.data.location, "Austin, Texas, United States");
+    } finally {
+      globalThis.fetch = original;
+    }
+  },
+);

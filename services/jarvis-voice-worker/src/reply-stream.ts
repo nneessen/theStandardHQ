@@ -65,8 +65,8 @@ export function buildReplyStream(turn: ReplyTurn): ReadableStream<string> {
         return;
       }
 
+      let deltas = 0;
       try {
-        let deltas = 0;
         for await (const delta of turn.stream(abort.signal)) {
           if (cancelled) break;
           deltas += 1;
@@ -77,13 +77,14 @@ export function buildReplyStream(turn: ReplyTurn): ReadableStream<string> {
         );
       } catch (e) {
         // A cancel aborts the fetch, which surfaces here as an AbortError — that is expected
-        // teardown, not a failure, so stay silent and do not try to speak a fallback into a
-        // dead stream.
+        // teardown, not a failure, so stay silent.
         if (!cancelled) {
           console.log(
-            `[jarvis] orchestrator ERROR: ${e instanceof Error ? e.message : String(e)}`,
+            `[jarvis] orchestrator ERROR (after ${deltas} delta(s)): ${e instanceof Error ? e.message : String(e)}`,
           );
-          enqueue(ERROR_MESSAGE);
+          // Only speak the fallback if NOTHING real was said yet — otherwise the user would
+          // hear a half-finished answer immediately followed by an apology in the same turn.
+          if (deltas === 0) enqueue(ERROR_MESSAGE);
         }
       }
       close();
