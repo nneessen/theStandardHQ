@@ -1,10 +1,17 @@
-// File: /home/nneessen/projects/commissionTracker/supabase/functions/send-automated-email/index.ts
+// File: supabase/functions/send-automated-email/index.ts
 // Send Automated Email Edge Function
 // Sends automated emails using Mailgun API
-// This function is for system-generated emails (workflows, notifications) not user emails
+// This function handles both system-generated emails (workflows, notifications) AND
+// marketing emails. Pass isMarketing: true for bulk/promotional sends to enable
+// CAN-SPAM compliance: suppression gate, unsubscribe footer, List-Unsubscribe header.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
+import {
+  appendComplianceFooter,
+  buildListUnsubscribeHeader,
+  isEmailSuppressed,
+} from "../_shared/email-compliance.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +26,10 @@ interface SendEmailRequest {
   text?: string;
   from?: string;
   replyTo?: string;
+  /** Set true for marketing/bulk/promotional sends.
+   *  Enables: suppression check (skip if suppressed), compliance footer,
+   *  and List-Unsubscribe header. Never set for transactional mail. */
+  isMarketing?: boolean;
 }
 
 serve(async (req) => {
@@ -29,7 +40,8 @@ serve(async (req) => {
 
   try {
     const body: SendEmailRequest = await req.json();
-    const { to, subject, html, text, replyTo } = body;
+    const { to, subject, text, replyTo, isMarketing } = body;
+    let { html } = body;
 
     if (!to || !subject || !html) {
       return new Response(
@@ -41,6 +53,31 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+
+    // ── Marketing-only: suppression gate + compliance footer ─────────────────
+    if (isMarketing) {
+      const adminSupabase = createSupabaseAdminClient();
+      const suppressed = await isEmailSuppressed(adminSupabase, to);
+      if (suppressed) {
+        console.log(
+          `[send-automated-email] Skipping suppressed address: ${to}`,
+        );
+        return new Response(
+          JSON.stringify({
+            success: true,
+            skipped: true,
+            reason: "suppressed",
+            message: "Recipient is suppressed; email not sent",
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      // Append CAN-SPAM footer
+      html = await appendComplianceFooter(html, to);
     }
 
     // Get Mailgun credentials
@@ -61,9 +98,8 @@ serve(async (req) => {
 
       // Log to database for debugging
       const adminSupabase = createSupabaseAdminClient();
-      await adminSupabase
-        .from("email_logs")
-        .insert({
+      try {
+        await adminSupabase.from("email_logs").insert({
           to,
           subject,
           body_html: html,
@@ -71,11 +107,11 @@ serve(async (req) => {
           status: "simulated",
           provider: "none",
           created_at: new Date().toISOString(),
-        })
-        .catch((_err) => {
-          // Ignore if table doesn't exist
-          console.log("Could not log to email_logs table");
         });
+      } catch (_err) {
+        // Ignore if table doesn't exist
+        console.log("Could not log to email_logs table");
+      }
 
       return new Response(
         JSON.stringify({
@@ -115,13 +151,20 @@ serve(async (req) => {
     // Add Message-ID header
     form.append("h:Message-Id", messageId);
 
+    // Marketing-only: List-Unsubscribe header (RFC 2369 / CAN-SPAM best practice)
+    if (isMarketing) {
+      const listUnsubscribe = await buildListUnsubscribeHeader(to);
+      form.append("h:List-Unsubscribe", listUnsubscribe);
+      form.append("h:List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
+    }
+
     // Enable tracking for automated emails
     form.append("o:tracking", "yes");
     form.append("o:tracking-clicks", "yes");
     form.append("o:tracking-opens", "yes");
 
     // Tag for analytics
-    form.append("o:tag", "automated");
+    form.append("o:tag", isMarketing ? "marketing" : "automated");
 
     console.log("Sending automated email via Mailgun:", {
       to,

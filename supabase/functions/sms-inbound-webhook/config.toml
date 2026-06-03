@@ -1,0 +1,4 @@
+# supabase/functions/sms-inbound-webhook/config.toml
+# Twilio posts inbound SMS without a Supabase JWT — we verify Twilio's own
+# HMAC-SHA1 signature instead (X-Twilio-Signature header).
+verify_jwt = false

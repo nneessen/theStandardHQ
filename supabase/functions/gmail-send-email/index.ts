@@ -118,6 +118,63 @@ serve(async (req) => {
       );
     }
 
+    // =========================================================================
+    // AUTHORIZATION — dual gate
+    // (a) Internal edge-to-edge callers (e.g. process-workflow) pass the
+    //     service-role key as a Bearer token — trusted, may send as any user.
+    // (b) Otherwise require a valid user JWT and FORCE caller.id === body.userId
+    //     so a user can only ever send email as themselves (no impersonation).
+    // =========================================================================
+    const authHeader = req.headers.get("Authorization");
+    const bearer = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+
+    if (!bearer) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Authorization required" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const isServiceRole = bearer === SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!isServiceRole) {
+      // User-JWT path: verify the token and require it match body.userId.
+      const authClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: authData, error: authErr } =
+        await authClient.auth.getUser(bearer);
+
+      if (authErr || !authData?.user) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Invalid or expired token" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      if (authData.user.id !== userId) {
+        console.error(
+          "[gmail-send-email] Forbidden: caller may only send as themselves",
+        );
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Forbidden: you may only send email as yourself",
+          }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+    }
+
     if (!to || to.length === 0) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing 'to' recipients" }),
@@ -229,7 +286,7 @@ serve(async (req) => {
 
       // Attempt to refresh the token
       const refreshResult = await refreshAccessToken(
-        supabase,
+        supabase as unknown as ReturnType<typeof createClient>,
         gmailIntegration,
         GOOGLE_CLIENT_ID,
         GOOGLE_CLIENT_SECRET,
@@ -576,7 +633,12 @@ function base64UrlEncode(str: string): string {
  */
 function safeDecodeEntity(codePoint: number): string {
   // Block ASCII control characters (except tab, newline, carriage return)
-  if (codePoint < 32 && codePoint !== 9 && codePoint !== 10 && codePoint !== 13) {
+  if (
+    codePoint < 32 &&
+    codePoint !== 9 &&
+    codePoint !== 10 &&
+    codePoint !== 13
+  ) {
     return "";
   }
   // Block DEL character
@@ -598,7 +660,7 @@ function safeDecodeEntity(codePoint: number): string {
     codePoint === 0x200b || // Zero-width space
     codePoint === 0x200c || // Zero-width non-joiner
     codePoint === 0x200d || // Zero-width joiner
-    codePoint === 0xfeff    // Zero-width no-break space (BOM)
+    codePoint === 0xfeff // Zero-width no-break space (BOM)
   ) {
     return "";
   }
@@ -619,34 +681,38 @@ function safeDecodeEntity(codePoint: number): string {
 }
 
 function stripHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<\/div>/gi, "\n")
-    .replace(/<[^>]*>/g, "")
-    // Named entities (order matters: &amp; must be decoded last to handle double-encoding)
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#8217;/g, "'") // Right single quotation mark (')
-    .replace(/&#8216;/g, "'") // Left single quotation mark (')
-    .replace(/&rsquo;/g, "'")
-    .replace(/&lsquo;/g, "'")
-    .replace(/&#8220;/g, '"') // Left double quotation mark (")
-    .replace(/&#8221;/g, '"') // Right double quotation mark (")
-    .replace(/&ldquo;/g, '"')
-    .replace(/&rdquo;/g, '"')
-    // Decode remaining numeric entities with validation
-    .replace(/&#(\d+);/g, (_, dec) => safeDecodeEntity(parseInt(dec, 10)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => safeDecodeEntity(parseInt(hex, 16)))
-    // Decode &amp; last to handle double-encoded entities like &amp;#39;
-    .replace(/&amp;/g, "&")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return (
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<\/div>/gi, "\n")
+      .replace(/<[^>]*>/g, "")
+      // Named entities (order matters: &amp; must be decoded last to handle double-encoding)
+      .replace(/&nbsp;/g, " ")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'")
+      .replace(/&#x27;/g, "'")
+      .replace(/&#8217;/g, "'") // Right single quotation mark (')
+      .replace(/&#8216;/g, "'") // Left single quotation mark (')
+      .replace(/&rsquo;/g, "'")
+      .replace(/&lsquo;/g, "'")
+      .replace(/&#8220;/g, '"') // Left double quotation mark (")
+      .replace(/&#8221;/g, '"') // Right double quotation mark (")
+      .replace(/&ldquo;/g, '"')
+      .replace(/&rdquo;/g, '"')
+      // Decode remaining numeric entities with validation
+      .replace(/&#(\d+);/g, (_, dec) => safeDecodeEntity(parseInt(dec, 10)))
+      .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
+        safeDecodeEntity(parseInt(hex, 16)),
+      )
+      // Decode &amp; last to handle double-encoded entities like &amp;#39;
+      .replace(/&amp;/g, "&")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
 // =========================================================================

@@ -8,6 +8,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { authorizeVoiceCaller } from "../_shared/assistant-voice-auth.ts";
+import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
+import { enforceRateLimit } from "../_shared/rate-limit.ts";
 
 // Bound a single utterance. Whisper accepts up to 25MB; a hands-free turn is far
 // smaller. Reject anything larger to cap cost and abuse.
@@ -32,6 +34,21 @@ serve(async (req) => {
 
   const auth = await authorizeVoiceCaller(req);
   if (!auth.ok) return json({ error: auth.error }, auth.status);
+
+  // Request-only rate limit (30 req/hr per user). Token tracking is not
+  // applicable here — STT uses OpenAI Whisper, not Anthropic; no token count
+  // is returned in a format we can record against the Anthropic token budget.
+  const adminClient = createSupabaseAdminClient();
+  const reqLimit = await enforceRateLimit(
+    adminClient,
+    {
+      key: `ratelimit:req:assistant-voice-stt:${auth.caller.userId}`,
+      maxRequests: 30,
+      windowSeconds: 3600,
+    },
+    cors,
+  );
+  if (reqLimit) return reqLimit;
 
   const apiKey = Deno.env.get("OPENAI_API_KEY");
   if (!apiKey) {

@@ -53,6 +53,70 @@ serve(async (req) => {
   const adminSupabase = createSupabaseAdminClient();
 
   try {
+    // =====================================================================
+    // AUTHORIZATION — dual gate.
+    // (a) Edge-to-edge callers (trigger-workflow-event, process-pending-
+    //     workflows) pass the service-role key → trusted, no tenant scoping.
+    // (b) The browser also invokes this directly for manual + test runs
+    //     (workflowService.ts invokeWorkflowProcessor at lines 231 & 390),
+    //     carrying a USER JWT — so a pure service-role gate would break those
+    //     live paths. For the user-JWT path we verify the token and require
+    //     the workflow's imo_id match the caller's imo_id (tenant ownership),
+    //     so a user can't drive the admin client against another tenant's
+    //     workflow/run by guessing ids.
+    // =====================================================================
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+      "SUPABASE_SERVICE_ROLE_KEY",
+    )!;
+    const authHeader = req.headers.get("Authorization");
+    const bearer = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+
+    if (!bearer) {
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const isServiceRole = bearer === SUPABASE_SERVICE_ROLE_KEY;
+    // null means "no tenant scoping" (service-role); otherwise the caller's imo.
+    let callerImoId: string | null = null;
+
+    if (!isServiceRole) {
+      const { data: authData, error: authErr } =
+        await adminSupabase.auth.getUser(bearer);
+
+      if (authErr || !authData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const { data: callerProfile } = await adminSupabase
+        .from("user_profiles")
+        .select("imo_id")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      if (!callerProfile?.imo_id) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden: caller has no IMO" }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      callerImoId = callerProfile.imo_id;
+    }
+
     const body: ProcessWorkflowRequest = await req.json();
     const { runId, workflowId, isTest } = body;
 
@@ -79,6 +143,19 @@ serve(async (req) => {
 
     if (workflowError || !workflow) {
       throw new Error(`Workflow not found: ${workflowId}`);
+    }
+
+    // Tenant-ownership enforcement for the user-JWT path: the caller may only
+    // process workflows belonging to their own IMO. Service-role callers
+    // (callerImoId === null) bypass this.
+    if (callerImoId !== null && workflow.imo_id !== callerImoId) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: workflow belongs to another IMO" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Get workflow run context
@@ -115,7 +192,7 @@ serve(async (req) => {
           action,
           run.context,
           workflow,
-          isTest,
+          isTest ?? false,
           adminSupabase,
         );
         actionsExecuted.push({
@@ -473,15 +550,26 @@ async function executeSendEmail(
 
   for (const recipientEmail of recipientEmails) {
     try {
-      console.log("Sending to:", recipientEmail, "Subject:", processedSubject, "via:", provider);
+      console.log(
+        "Sending to:",
+        recipientEmail,
+        "Subject:",
+        processedSubject,
+        "via:",
+        provider,
+      );
 
       if (useGmail) {
         // Send via gmail-send-email edge function
         const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-        const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+          "SUPABASE_SERVICE_ROLE_KEY",
+        );
 
         if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-          throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for Gmail send");
+          throw new Error(
+            "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for Gmail send",
+          );
         }
 
         const gmailResponse = await fetch(
@@ -512,30 +600,39 @@ async function executeSendEmail(
 
         // gmail-send-email handles its own logging and quota tracking,
         // but we still record for workflow rate limiting
-        await supabase
-          .rpc("record_workflow_email", {
-            p_workflow_id: workflowId,
-            p_user_id: ownerProfile.id,
-            p_recipient_email: recipientEmail,
-            p_recipient_type: recipientType,
-            p_success: true,
-            p_error_message: null,
-          })
-          .catch((err) =>
-            console.log("Rate tracking record failed (non-critical):", err),
+        {
+          const { error: rateErr } = await supabase.rpc(
+            "record_workflow_email",
+            {
+              p_workflow_id: workflowId,
+              p_user_id: ownerProfile.id,
+              p_recipient_email: recipientEmail,
+              p_recipient_type: recipientType,
+              p_success: true,
+              p_error_message: null,
+            },
           );
+          if (rateErr) {
+            console.log("Rate tracking record failed (non-critical):", rateErr);
+          }
+        }
       } else {
         // Fallback: Send via Mailgun using the send-email edge function
         const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-        const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+          "SUPABASE_SERVICE_ROLE_KEY",
+        );
 
         if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-          throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for Mailgun send");
+          throw new Error(
+            "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for Mailgun send",
+          );
         }
 
-        const ownerName = [ownerProfile.first_name, ownerProfile.last_name]
-          .filter(Boolean)
-          .join(" ") || "The Standard HQ";
+        const ownerName =
+          [ownerProfile.first_name, ownerProfile.last_name]
+            .filter(Boolean)
+            .join(" ") || "The Standard HQ";
         const fromAddress = `${ownerName} <noreply@updates.thestandardhq.com>`;
 
         const mailgunResponse = await fetch(
@@ -582,18 +679,25 @@ async function executeSendEmail(
         });
 
         // Record for rate limiting tracking
-        await supabase
-          .rpc("record_workflow_email", {
-            p_workflow_id: workflowId,
-            p_user_id: ownerProfile.id,
-            p_recipient_email: recipientEmail,
-            p_recipient_type: recipientType,
-            p_success: true,
-            p_error_message: null,
-          })
-          .catch((err) =>
-            console.log("Rate tracking record failed (non-critical):", err),
+        {
+          const { error: rateErr2 } = await supabase.rpc(
+            "record_workflow_email",
+            {
+              p_workflow_id: workflowId,
+              p_user_id: ownerProfile.id,
+              p_recipient_email: recipientEmail,
+              p_recipient_type: recipientType,
+              p_success: true,
+              p_error_message: null,
+            },
           );
+          if (rateErr2) {
+            console.log(
+              "Rate tracking record failed (non-critical):",
+              rateErr2,
+            );
+          }
+        }
 
         // Increment email quota
         const today = new Date().toISOString().split("T")[0];
@@ -624,19 +728,23 @@ async function executeSendEmail(
       failedEmails.push(recipientEmail);
 
       // Record failed email for tracking
-      await supabase
-        .rpc("record_workflow_email", {
-          p_workflow_id: workflowId,
-          p_user_id: ownerProfile.id,
-          p_recipient_email: recipientEmail,
-          p_recipient_type: recipientType,
-          p_success: false,
-          p_error_message:
-            sendError instanceof Error ? sendError.message : "Unknown error",
-        })
-        .catch((err) =>
-          console.log("Rate tracking record failed (non-critical):", err),
+      {
+        const { error: rateErr3 } = await supabase.rpc(
+          "record_workflow_email",
+          {
+            p_workflow_id: workflowId,
+            p_user_id: ownerProfile.id,
+            p_recipient_email: recipientEmail,
+            p_recipient_type: recipientType,
+            p_success: false,
+            p_error_message:
+              sendError instanceof Error ? sendError.message : "Unknown error",
+          },
         );
+        if (rateErr3) {
+          console.log("Rate tracking record failed (non-critical):", rateErr3);
+        }
+      }
     }
   }
 

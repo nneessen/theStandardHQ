@@ -119,7 +119,16 @@ async function verifyWebhookSignature(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  return computedSignature === signature;
+  // Constant-time comparison (XOR-accumulate) — replaces the prior `===`
+  // which short-circuits on the first mismatched byte and leaks how many
+  // leading bytes match (timing oracle).  Length mismatch is a fast-fail;
+  // leaking the digest length (always 64 hex chars) is acceptable.
+  if (computedSignature.length !== signature.length) return false;
+  let result = 0;
+  for (let i = 0; i < computedSignature.length; i++) {
+    result |= computedSignature.charCodeAt(i) ^ signature.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 // Extract email address from "Name <email@domain.com>" format

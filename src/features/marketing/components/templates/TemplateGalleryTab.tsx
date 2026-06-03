@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Loader2,
@@ -115,7 +116,10 @@ function SavedTemplateCard({
   deleting,
   duplicating,
 }: SavedTemplateCardProps) {
-  const previewHtml = template.body_html ?? "";
+  const previewHtml = useMemo(
+    () => sanitizeHtml(template.body_html ?? ""),
+    [template.body_html],
+  );
 
   return (
     <div className="flex flex-col gap-1.5 rounded border border-border bg-card p-2">

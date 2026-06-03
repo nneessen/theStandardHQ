@@ -1,0 +1,2 @@
+# No JWT required — this endpoint is hit directly from an email link.
+verify_jwt = false

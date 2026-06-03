@@ -39,17 +39,77 @@ serve(async (req) => {
   const adminSupabase = createSupabaseAdminClient();
 
   try {
+    // =====================================================================
+    // AUTHORIZATION — dual gate.
+    // (a) Internal edge-to-edge callers pass the service-role key → trusted,
+    //     no tenant scoping (system-wide event matching).
+    // (b) Otherwise require a valid user JWT. The tenant is derived from the
+    //     authenticated caller's profile (NEVER from the request body) and we
+    //     only fire workflows whose imo_id matches the caller's imo_id.
+    // The only known caller is the browser (workflowEventEmitter.emit) on the
+    // user-JWT path; the service-role branch is defensive parity for future
+    // internal callers.
+    // =====================================================================
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+      "SUPABASE_SERVICE_ROLE_KEY",
+    )!;
+    const authHeader = req.headers.get("Authorization");
+    const bearer = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+
+    if (!bearer) {
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const isServiceRole = bearer === SUPABASE_SERVICE_ROLE_KEY;
+    // null means "no tenant scoping" (service-role); otherwise the caller's imo.
+    let callerImoId: string | null = null;
+
+    if (!isServiceRole) {
+      const { data: authData, error: authErr } =
+        await adminSupabase.auth.getUser(bearer);
+
+      if (authErr || !authData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const { data: callerProfile } = await adminSupabase
+        .from("user_profiles")
+        .select("imo_id")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      if (!callerProfile?.imo_id) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden: caller has no IMO" }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      callerImoId = callerProfile.imo_id;
+    }
+
     const body: TriggerEventRequest = await req.json();
     const { eventName, context } = body;
 
     if (!eventName) {
-      return new Response(
-        JSON.stringify({ error: "Missing eventName" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ error: "Missing eventName" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log(`[trigger-workflow-event] Processing event: ${eventName}`);
@@ -96,10 +156,14 @@ serve(async (req) => {
       );
     }
 
-    // Additional filter to confirm event name match
+    // Additional filter to confirm event name match. On the user-JWT path also
+    // scope strictly to the caller's tenant so a user can never fire (or probe)
+    // another IMO's workflows.
     const matchingWorkflows = (workflows || []).filter((w) => {
       const trigger = w.config?.trigger;
-      return trigger?.eventName === eventName;
+      if (trigger?.eventName !== eventName) return false;
+      if (callerImoId !== null && w.imo_id !== callerImoId) return false;
+      return true;
     });
 
     console.log(
@@ -249,11 +313,13 @@ serve(async (req) => {
 
     // Update event record with actual triggered count
     if (eventRecordId) {
-      await adminSupabase
+      const { error: updateErr } = await adminSupabase
         .from("workflow_events")
         .update({ workflows_triggered: triggeredCount })
-        .eq("id", eventRecordId)
-        .catch(() => {});
+        .eq("id", eventRecordId);
+      if (updateErr) {
+        console.log("workflow_events update failed (non-critical):", updateErr);
+      }
     }
 
     return new Response(
@@ -306,10 +372,7 @@ function evaluateConditions(
 function getNestedValue(obj: unknown, path: string): unknown {
   return path
     .split(".")
-    .reduce(
-      (current, key) => (current as Record<string, unknown>)?.[key],
-      obj,
-    );
+    .reduce((current, key) => (current as Record<string, unknown>)?.[key], obj);
 }
 
 function evaluateCondition(

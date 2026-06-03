@@ -2,6 +2,7 @@
 // Temporary debug function to check/remove domain from Vercel
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 
 const VERCEL_API_BASE = "https://api.vercel.com";
 
@@ -18,6 +19,55 @@ serve(async (req) => {
   }
 
   try {
+    // =====================================================================
+    // AUTHORIZATION — super-admin only.
+    // This debug endpoint performs privileged Vercel domain operations
+    // (read / remove / activate). It must never be reachable without a
+    // verified super-admin JWT. It has no production callers.
+    // =====================================================================
+    const authHeader = req.headers.get("Authorization");
+    const bearer = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+
+    if (!bearer) {
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    const { data: authData, error: authErr } =
+      await supabaseAdmin.auth.getUser(bearer);
+
+    if (authErr || !authData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const { data: callerProfile } = await supabaseAdmin
+      .from("user_profiles")
+      .select("is_super_admin")
+      .eq("id", authData.user.id)
+      .maybeSingle();
+
+    if (!callerProfile?.is_super_admin) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: super-admin required" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const token = Deno.env.get("VERCEL_API_TOKEN");
     const projectId = Deno.env.get("VERCEL_PROJECT_ID");
 

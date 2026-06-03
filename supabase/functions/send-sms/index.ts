@@ -81,6 +81,32 @@ serve(async (req) => {
   try {
     console.log("[send-sms] Function invoked");
 
+    // Build a service-role admin client early — needed for both auth verification
+    // and the TCPA suppression check before sending.
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Server configuration error",
+        } as SendSmsResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+      },
+    );
+
     // ========== AUTH CHECK ==========
     // Two valid callers:
     // 1. service_role: edge-to-edge calls (e.g. slack-policy-notification) — verify by exact key match
@@ -100,33 +126,11 @@ serve(async (req) => {
     }
     const bearerToken = authHeader.slice(7);
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
     if (bearerToken === SUPABASE_SERVICE_ROLE_KEY) {
       // Exact match against the known service_role key — trusted server-to-server call
       console.log("[send-sms] Auth: service_role verified");
     } else {
       // Must be a valid authenticated user session
-      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "Server configuration error",
-          } as SendSmsResponse),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
-      }
-      const supabaseAdmin = createClient(
-        SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: { autoRefreshToken: false, persistSession: false },
-        },
-      );
       // getUser() verifies the JWT signature server-side against Supabase's signing key
       const { data: userData, error: userError } =
         await supabaseAdmin.auth.getUser(bearerToken);
@@ -255,6 +259,42 @@ serve(async (req) => {
         },
       );
     }
+
+    // ========== TCPA SUPPRESSION GATE ==========
+    // Check suppression list BEFORE sending. Fail-open on RPC errors (infra faults
+    // should not block all SMS), but fail-closed when suppressed=true.
+    {
+      const { data: suppressed, error: suppressionError } =
+        await supabaseAdmin.rpc("is_suppressed", {
+          p_channel: "sms",
+          p_contact: toNumber,
+        });
+
+      if (suppressionError) {
+        // Infra fault — log and fail-open (continue to send)
+        console.warn(
+          "[send-sms] Suppression check RPC error (fail-open):",
+          suppressionError.message,
+        );
+      } else if (suppressed === true) {
+        console.log(
+          "[send-sms] Recipient is suppressed (TCPA opt-out), blocking send:",
+          { toNumber },
+        );
+        return new Response(
+          JSON.stringify({
+            success: false,
+            suppressed: true,
+            error: "Recipient has opted out of SMS (STOP)",
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+    }
+    // ========== END SUPPRESSION GATE ==========
 
     // Build Twilio API request
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;

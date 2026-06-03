@@ -1,6 +1,7 @@
 // src/features/workflows/components/WorkflowActionsBuilder.tsx
 
 import { useState } from "react";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import {
   Plus,
   Mail,
@@ -813,9 +814,11 @@ export default function WorkflowActionsBuilder({
                       <div className="prose prose-sm dark:prose-invert max-w-none">
                         <div
                           dangerouslySetInnerHTML={{
-                            __html: template.body_html.replace(
-                              /{{(.*?)}}/g,
-                              '<span class="px-1 py-0.5 bg-warning/20 text-warning rounded text-xs font-mono">{{$1}}</span>',
+                            __html: sanitizeHtml(
+                              template.body_html.replace(
+                                /{{(.*?)}}/g,
+                                '<span class="px-1 py-0.5 bg-warning/20 text-warning rounded text-xs font-mono">{{$1}}</span>',
+                              ),
                             ),
                           }}
                         />

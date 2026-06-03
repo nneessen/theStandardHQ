@@ -325,11 +325,122 @@ function buildResponseAndLog(
   return jsonResponse({ ok: true, ...result }, 200);
 }
 
+// ─── Webhook Signature Verification ──────────────────────────────
+
+/**
+ * Verify a Close.com webhook signature.
+ *
+ * Close signs webhooks with HMAC-SHA256.  The signing scheme used here is:
+ *   HMAC-SHA256(secret, timestamp + raw_body)
+ * where timestamp is the value of the "Close-Sig-Timestamp" header and
+ * raw_body is the raw (pre-parse) request body string.
+ *
+ * ASSUMPTION: The exact concatenation order (timestamp then body, no
+ * separator) is inferred from the Close.com webhook documentation and
+ * community examples as of 2026.  Verify against
+ * https://developer.close.com/topics/webhooks before deploying.
+ *
+ * Env var required: CLOSE_WEBHOOK_SECRET
+ * Headers read:     Close-Sig-Hash, Close-Sig-Timestamp
+ */
+async function verifyCloseSignature(
+  rawBody: string,
+  sigHeader: string | null,
+  timestampHeader: string | null,
+  secret: string,
+): Promise<{ ok: boolean; reason?: string }> {
+  if (!sigHeader || !timestampHeader) {
+    return {
+      ok: false,
+      reason: "missing Close-Sig-Hash or Close-Sig-Timestamp header",
+    };
+  }
+
+  // Replay-attack guard: reject webhooks older than 300 seconds.
+  const ts = parseInt(timestampHeader, 10);
+  if (!Number.isFinite(ts)) {
+    return { ok: false, reason: "non-numeric Close-Sig-Timestamp" };
+  }
+  const ageSec = Math.floor(Date.now() / 1000) - ts;
+  if (ageSec > 300 || ageSec < -60) {
+    return {
+      ok: false,
+      reason: `timestamp outside freshness window (age=${ageSec}s)`,
+    };
+  }
+
+  const encoder = new TextEncoder();
+  // Close's `signature_key` is a HEX string; the HMAC key is its DECODED BYTES, not the
+  // UTF-8 string. Per Close docs ("the key is converted from hex"). Encoding the raw string
+  // here would make every legitimate webhook fail verification.
+  const keyBytes = new Uint8Array(
+    (secret.match(/.{1,2}/g) ?? []).map((h) => parseInt(h, 16)),
+  );
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+
+  const message = timestampHeader + rawBody;
+  const sigBuf = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
+  const computed = Array.from(new Uint8Array(sigBuf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Constant-time comparison (XOR-accumulate; length mismatch leaks length
+  // only, which is acceptable for a fixed-length hex digest).
+  if (computed.length !== sigHeader.length) {
+    return { ok: false, reason: "signature length mismatch" };
+  }
+  let diff = 0;
+  for (let i = 0; i < computed.length; i++) {
+    diff |= computed.charCodeAt(i) ^ sigHeader.charCodeAt(i);
+  }
+  if (diff !== 0) {
+    return { ok: false, reason: "signature mismatch" };
+  }
+  return { ok: true };
+}
+
 // ─── Main Handler ─────────────────────────────────────────────────
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders() });
+  }
+
+  // ── Signature verification (BEFORE any DB access or Close API calls) ──
+  //
+  // Env var: CLOSE_WEBHOOK_SECRET  (set in Supabase dashboard → Edge Functions
+  //   → close-webhook-handler → Secrets).  Value is the webhook signing secret
+  //   from Close.com Settings → Webhooks.
+  const CLOSE_WEBHOOK_SECRET = Deno.env.get("CLOSE_WEBHOOK_SECRET");
+  if (!CLOSE_WEBHOOK_SECRET) {
+    console.error(
+      "[close-webhook-handler] CLOSE_WEBHOOK_SECRET not configured",
+    );
+    return jsonResponse({ error: "Webhook secret not configured" }, 500);
+  }
+
+  // Read the raw body now so we can both verify the signature and parse JSON.
+  const rawBody = await req.text();
+
+  const sigCheck = await verifyCloseSignature(
+    rawBody,
+    req.headers.get("Close-Sig-Hash"),
+    req.headers.get("Close-Sig-Timestamp"),
+    CLOSE_WEBHOOK_SECRET,
+  );
+
+  if (!sigCheck.ok) {
+    console.error(
+      "[close-webhook-handler] Signature rejected:",
+      sigCheck.reason,
+    );
+    return jsonResponse({ error: "Invalid signature" }, 401);
   }
 
   // Build clients up front so even early-return paths can be logged.
@@ -362,7 +473,7 @@ serve(async (req: Request) => {
   };
 
   try {
-    const rawBody = await req.text();
+    // rawBody was already read above for signature verification; parse it now.
     const payload = JSON.parse(rawBody);
     const event = payload.event;
 

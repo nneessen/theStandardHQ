@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { Check, ChevronDown, Eye, FileText, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,20 @@ import {
 } from "@/components/ui/popover";
 import { useEmailTemplates } from "../hooks/useEmailTemplates";
 import type { EmailTemplate } from "@/types/email.types";
+
+function PreviewBody({ template }: { template: EmailTemplate | null }) {
+  const sanitizedPreview = useMemo(
+    () => sanitizeHtml(template?.body_html ?? ""),
+    [template?.body_html],
+  );
+
+  return (
+    <div
+      className="prose prose-sm max-w-none text-sm"
+      dangerouslySetInnerHTML={{ __html: sanitizedPreview }}
+    />
+  );
+}
 
 interface TemplatePickerProps {
   onSelect: (template: EmailTemplate) => void;
@@ -214,12 +229,7 @@ export function TemplatePicker({
           </DialogHeader>
           {/* Body capped at 40vh so header + footer always stay in viewport */}
           <div className="overflow-y-auto border rounded-md bg-card p-3 max-h-[40vh]">
-            <div
-              className="prose prose-sm max-w-none text-sm"
-              dangerouslySetInnerHTML={{
-                __html: previewTemplate?.body_html ?? "",
-              }}
-            />
+            <PreviewBody template={previewTemplate} />
           </div>
           <div className="flex justify-between items-center border-t pt-2">
             {previewTemplate?.variables &&

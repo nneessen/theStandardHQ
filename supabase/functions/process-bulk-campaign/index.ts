@@ -2,12 +2,15 @@
 // Reads pending recipients for a campaign, renders HTML per-recipient with variable
 // substitution, sends via send-automated-email (Mailgun), and updates statuses.
 // Requires super-admin authentication. Processes in batches of 50.
+// CAN-SPAM: suppressed recipients are marked 'skipped'; isMarketing:true is passed
+// to send-automated-email so it appends the compliance footer + List-Unsubscribe header.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   createSupabaseAdminClient,
   createSupabaseClient,
 } from "../_shared/supabase-client.ts";
+import { isEmailSuppressed } from "../_shared/email-compliance.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -170,9 +173,30 @@ serve(async (req) => {
 
     let sentCount = 0;
     let failedCount = 0;
+    let skippedCount = 0;
 
     for (const recipient of recipients) {
       try {
+        // ── CAN-SPAM: skip suppressed addresses ──────────────────────────────
+        const suppressed = await isEmailSuppressed(
+          adminSupabase,
+          recipient.email_address,
+        );
+        if (suppressed) {
+          console.log(
+            `[bulk-campaign] Skipping suppressed: ${recipient.email_address}`,
+          );
+          await adminSupabase
+            .from("bulk_email_recipients")
+            .update({
+              status: "skipped",
+              error_message: "suppressed",
+            })
+            .eq("id", recipient.id);
+          skippedCount++;
+          continue;
+        }
+
         // Build per-recipient variables from the JSONB variables column
         const variables: Record<string, string> =
           typeof recipient.variables === "object" && recipient.variables
@@ -188,7 +212,8 @@ serve(async (req) => {
         const personalizedSubject = replaceVariables(subject, variables);
         const personalizedHtml = replaceVariables(html, variables);
 
-        // Send via send-automated-email edge function
+        // Send via send-automated-email — isMarketing:true triggers CAN-SPAM
+        // compliance (footer, List-Unsubscribe header) inside the primitive.
         const { error: sendError } = await adminSupabase.functions.invoke(
           "send-automated-email",
           {
@@ -196,6 +221,7 @@ serve(async (req) => {
               to: recipient.email_address,
               subject: personalizedSubject,
               html: personalizedHtml,
+              isMarketing: true,
             },
           },
         );
@@ -279,7 +305,7 @@ serve(async (req) => {
       .eq("id", campaign_id);
 
     console.log(
-      `Batch complete: ${sentCount} sent, ${failedCount} failed, ${remaining} remaining (${Date.now() - startTime}ms)`,
+      `Batch complete: ${sentCount} sent, ${failedCount} failed, ${skippedCount} skipped, ${remaining} remaining (${Date.now() - startTime}ms)`,
     );
 
     return new Response(
@@ -288,6 +314,7 @@ serve(async (req) => {
         processed: recipients.length,
         sentCount,
         failedCount,
+        skippedCount,
         remaining,
         durationMs: Date.now() - startTime,
       }),
