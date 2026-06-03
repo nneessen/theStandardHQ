@@ -8,5 +8,4 @@ export { FileDownloadItem } from "./FileDownloadItem";
 export { ExternalLinkItem } from "./ExternalLinkItem";
 export { QuizItem } from "./QuizItem";
 export { VideoEmbedItem } from "./VideoEmbedItem";
-export { SignatureRequiredItem } from "./SignatureRequiredItem";
 export { CarrierContractingItem } from "./CarrierContractingItem";

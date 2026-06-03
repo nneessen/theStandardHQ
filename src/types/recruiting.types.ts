@@ -239,7 +239,6 @@ export type ChecklistItemType =
   | "training_module"
   | "manual_approval"
   | "automated_check"
-  | "signature_required"
   | "scheduling_booking"
   | "video_embed"
   // Interactive types
@@ -502,7 +501,6 @@ export const CHECKLIST_ITEM_TYPE_DISPLAY_NAMES: Record<
   training_module: "Training Module",
   manual_approval: "Manual Approval",
   automated_check: "Automated Check",
-  signature_required: "Signature Required",
   scheduling_booking: "Schedule Booking",
   video_embed: "Video Embed",
   boolean_question: "Yes/No Question",
@@ -1041,21 +1039,6 @@ export interface VideoEmbedResponse {
   fully_watched?: boolean;
 }
 
-export interface SignatureResponse {
-  submission_id: string;
-  submission_status:
-    | "pending"
-    | "in_progress"
-    | "completed"
-    | "declined"
-    | "expired"
-    | "voided";
-  initiated_at: string;
-  completed_at?: string;
-  signers_completed: number;
-  signers_total: number;
-}
-
 export interface CarrierContractingResponse {
   carriers_completed: number;
   carriers_total: number;
@@ -1089,7 +1072,6 @@ export const CHECKLIST_ITEM_TYPE_LABELS: Record<ChecklistItemType, string> = {
   training_module: "Training Module",
   manual_approval: "Manual Approval",
   automated_check: "Automated Check",
-  signature_required: "Signature Required",
   scheduling_booking: "Schedule Meeting",
   video_embed: "Watch Video",
   boolean_question: "Yes/No Question",
@@ -1111,7 +1093,6 @@ export const CHECKLIST_ITEM_TYPE_DESCRIPTIONS: Record<
   training_module: "Complete a training module",
   manual_approval: "Requires approval from upline or admin",
   automated_check: "System-verified condition",
-  signature_required: "Electronic signature collection",
   scheduling_booking: "Book an appointment or meeting",
   video_embed: "Watch an embedded video",
   boolean_question: "Answer a yes/no or true/false question",
@@ -1137,7 +1118,6 @@ export const CHECKLIST_TYPES_REQUIRING_METADATA: ChecklistItemType[] = [
   "file_download",
   "external_link",
   "quiz",
-  "signature_required",
   "carrier_contracting",
 ];
 
@@ -1153,7 +1133,6 @@ export const INTERACTIVE_CHECKLIST_TYPES: ChecklistItemType[] = [
   "file_download",
   "external_link",
   "quiz",
-  "signature_required",
   "carrier_contracting",
 ];
 

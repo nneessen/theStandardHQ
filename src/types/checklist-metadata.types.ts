@@ -12,7 +12,6 @@ import type {
   QuizMetadata,
   CarrierContractingMetadata,
 } from "./recruiting.types";
-import type { SignatureRequiredMetadata } from "./signature.types";
 
 // =============================================================================
 // Discriminated Union Types
@@ -32,7 +31,6 @@ export type ChecklistMetadata =
   | (FileDownloadMetadata & { _type: "file_download" })
   | (ExternalLinkMetadata & { _type: "external_link" })
   | (QuizMetadata & { _type: "quiz" })
-  | (SignatureRequiredMetadata & { _type: "signature_required" })
   | (CarrierContractingMetadata & { _type: "carrier_contracting" })
   | null;
 
@@ -160,19 +158,6 @@ export function isQuizMetadata(
 }
 
 /**
- * Type guard for signature required metadata
- */
-export function isSignatureRequiredMetadata(
-  metadata: ChecklistMetadata,
-): metadata is SignatureRequiredMetadata & { _type: "signature_required" } {
-  return (
-    metadata !== null &&
-    "_type" in metadata &&
-    metadata._type === "signature_required"
-  );
-}
-
-/**
  * Type guard for carrier contracting metadata
  */
 export function isCarrierContractingMetadata(
@@ -271,15 +256,6 @@ export function createQuizMetadata(
 }
 
 /**
- * Factory function to create type-safe signature required metadata
- */
-export function createSignatureRequiredMetadata(
-  data: SignatureRequiredMetadata,
-): SignatureRequiredMetadata & { _type: "signature_required" } {
-  return { ...data, _type: "signature_required" };
-}
-
-/**
  * Factory function to create type-safe carrier contracting metadata
  */
 export function createCarrierContractingMetadata(
@@ -331,7 +307,6 @@ export const METADATA_TYPE_GUARDS: Record<
   file_download: isFileDownloadMetadata,
   external_link: isExternalLinkMetadata,
   quiz: isQuizMetadata,
-  signature_required: isSignatureRequiredMetadata,
   carrier_contracting: isCarrierContractingMetadata,
 };
 

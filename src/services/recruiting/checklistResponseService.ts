@@ -15,10 +15,8 @@ import type {
   BooleanQuestionMetadata,
   VideoEmbedResponse,
   VideoEmbedMetadata,
-  SignatureResponse,
   CarrierContractingResponse,
 } from "@/types/recruiting.types";
-import type { SubmissionStatus } from "@/types/signature.types";
 
 // =============================================================================
 // Types
@@ -33,7 +31,6 @@ export type ChecklistResponse =
   | ExternalLinkResponse
   | QuizResponse
   | VideoEmbedResponse
-  | SignatureResponse
   | CarrierContractingResponse;
 
 export interface SubmitResponseResult {
@@ -635,89 +632,6 @@ export function validateMultipleChoiceSelection(
 }
 
 // =============================================================================
-// Signature Response Handlers
-// =============================================================================
-
-/**
- * Initialize a signature response (when submission is created)
- */
-export async function initializeSignatureResponse(
-  progressId: string,
-  submissionId: string,
-  signersTotal: number,
-): Promise<SubmitResponseResult> {
-  const response: SignatureResponse = {
-    submission_id: submissionId,
-    submission_status: "pending",
-    initiated_at: new Date().toISOString(),
-    signers_completed: 0,
-    signers_total: signersTotal,
-  };
-
-  const { error } = await supabase
-    .from("recruit_checklist_progress")
-    .update({
-      response_data: response,
-      status: "in_progress",
-    })
-    .eq("id", progressId);
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, autoComplete: false };
-}
-
-/**
- * Update signature response status (called when signature status changes)
- */
-export async function updateSignatureResponse(
-  progressId: string,
-  submissionStatus: SubmissionStatus,
-  signersCompleted: number,
-  signersTotal: number,
-): Promise<SubmitResponseResult> {
-  // Get existing response
-  const { data: existing } = await supabase
-    .from("recruit_checklist_progress")
-    .select("response_data")
-    .eq("id", progressId)
-    .single();
-
-  const existingResponse = existing?.response_data as SignatureResponse | null;
-  if (!existingResponse) {
-    return { success: false, error: "No existing signature response found" };
-  }
-
-  const isCompleted = submissionStatus === "completed";
-  const response: SignatureResponse = {
-    ...existingResponse,
-    submission_status: submissionStatus,
-    signers_completed: signersCompleted,
-    signers_total: signersTotal,
-    ...(isCompleted && { completed_at: new Date().toISOString() }),
-  };
-
-  const { error } = await supabase
-    .from("recruit_checklist_progress")
-    .update({
-      response_data: response,
-      ...(isCompleted && {
-        status: "completed",
-        completed_at: new Date().toISOString(),
-      }),
-    })
-    .eq("id", progressId);
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, autoComplete: isCompleted };
-}
-
-// =============================================================================
 // Carrier Contracting Response Handler
 // =============================================================================
 
@@ -767,8 +681,6 @@ export const checklistResponseService = {
   completeExternalLink,
   submitQuizAttempt,
   submitVideoWatchResponse,
-  initializeSignatureResponse,
-  updateSignatureResponse,
   submitCarrierContractingResponse,
   getChecklistResponse,
   getPhaseResponses,

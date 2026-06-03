@@ -13,7 +13,6 @@ import type {
   QuizMetadata,
   CarrierContractingMetadata,
 } from "@/types/recruiting.types";
-import type { SignatureRequiredMetadata } from "@/types/signature.types";
 import { SchedulingItemConfig } from "./SchedulingItemConfig";
 import { VideoItemConfig } from "./VideoItemConfig";
 import { BooleanQuestionConfig } from "./BooleanQuestionConfig";
@@ -23,7 +22,6 @@ import { MultipleChoiceConfig } from "./MultipleChoiceConfig";
 import { FileDownloadConfig } from "./FileDownloadConfig";
 import { ExternalLinkConfig } from "./ExternalLinkConfig";
 import { QuizConfig } from "./QuizConfig";
-import { SignatureRequiredConfig } from "./SignatureRequiredConfig";
 import { CarrierContractingConfig } from "./CarrierContractingConfig";
 
 interface MetadataConfigSelectorProps {
@@ -51,9 +49,6 @@ interface MetadataConfigSelectorProps {
     | (ExternalLinkMetadata & { _type: "external_link" })
     | null;
   quizMetadata: (QuizMetadata & { _type: "quiz" }) | null;
-  signatureRequiredMetadata:
-    | (SignatureRequiredMetadata & { _type: "signature_required" })
-    | null;
   carrierContractingMetadata:
     | (CarrierContractingMetadata & { _type: "carrier_contracting" })
     | null;
@@ -82,9 +77,6 @@ interface MetadataConfigSelectorProps {
     metadata: ExternalLinkMetadata & { _type: "external_link" },
   ) => void;
   onQuizChange: (metadata: QuizMetadata & { _type: "quiz" }) => void;
-  onSignatureRequiredChange: (
-    metadata: SignatureRequiredMetadata & { _type: "signature_required" },
-  ) => void;
   onCarrierContractingChange: (
     metadata: CarrierContractingMetadata & { _type: "carrier_contracting" },
   ) => void;
@@ -105,7 +97,6 @@ export function MetadataConfigSelector({
   fileDownloadMetadata,
   externalLinkMetadata,
   quizMetadata,
-  signatureRequiredMetadata,
   carrierContractingMetadata,
   onSchedulingChange,
   onVideoChange,
@@ -116,7 +107,6 @@ export function MetadataConfigSelector({
   onFileDownloadChange,
   onExternalLinkChange,
   onQuizChange,
-  onSignatureRequiredChange,
   onCarrierContractingChange,
 }: MetadataConfigSelectorProps) {
   switch (itemType) {
@@ -175,13 +165,6 @@ export function MetadataConfigSelector({
       );
     case "quiz":
       return <QuizConfig metadata={quizMetadata} onChange={onQuizChange} />;
-    case "signature_required":
-      return (
-        <SignatureRequiredConfig
-          metadata={signatureRequiredMetadata}
-          onChange={onSignatureRequiredChange}
-        />
-      );
     case "carrier_contracting":
       return (
         <CarrierContractingConfig

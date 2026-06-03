@@ -12,7 +12,7 @@
 // The core assertions are pure-static (no DB). Optional live-catalog checks
 // (column existence + FK-drift) run only under RUN_DB_TESTS=1.
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -23,13 +23,43 @@ import {
   WIPE_ONLY_TABLES,
 } from "../../../../supabase/functions/_shared/owned-tables";
 
-const WIPE_SQL_PATH = fileURLToPath(
-  new URL(
-    "../../../../supabase/migrations/20260527060621_wipe_user_business_data_fn.sql",
-    import.meta.url,
-  ),
+// The wipe function is recreated (CREATE OR REPLACE) in successive migrations.
+// Always validate the LATEST definition of the SQL arrays, not a pinned file —
+// otherwise this test silently checks stale SQL after the next recreation.
+// Identify candidates by requiring BOTH the function definition AND the
+// c_explicit_tables declaration in the same file; pick the highest timestamp
+// (filenames are YYYYMMDDHHMMSS_*, so lexical max === newest).
+//
+// Performance: pre-filter by filename (must contain "wipe") so only the handful
+// of wipe-related migrations are read, not all ~600 files.
+// Robustness: both patterns must match (a comment-only mention won't qualify).
+const MIGRATIONS_DIR = fileURLToPath(
+  new URL("../../../../supabase/migrations/", import.meta.url),
 );
-const wipeSql = readFileSync(WIPE_SQL_PATH, "utf8");
+const WIPE_FN_DECL =
+  /CREATE\s+OR\s+REPLACE\s+FUNCTION\b[^(]*wipe_user_business_data/i;
+const WIPE_ARRAY_DECL = /c_explicit_tables\s+text\[\]\s*:=\s*ARRAY\[/;
+
+function loadLatestWipeSql(): string {
+  const candidates = readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith(".sql") && f.includes("wipe"))
+    .filter((f) => {
+      const content = readFileSync(MIGRATIONS_DIR + f, "utf8");
+      return WIPE_FN_DECL.test(content) && WIPE_ARRAY_DECL.test(content);
+    })
+    .sort();
+  if (candidates.length === 0) {
+    throw new Error(
+      "no migration defining wipe_user_business_data's c_explicit_tables array found",
+    );
+  }
+  return readFileSync(
+    MIGRATIONS_DIR + candidates[candidates.length - 1],
+    "utf8",
+  );
+}
+
+const wipeSql = loadLatestWipeSql();
 
 // Extract a `<name> text[] := ARRAY[ ... ]` literal's single-quoted tokens.
 // Array literals contain no nested brackets, so [^\]]* is safe; SQL line

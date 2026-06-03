@@ -1045,8 +1045,6 @@ export function RecruitDetailPage() {
                   viewedPhaseId={viewingPhaseId}
                   isAdmin={isStaff}
                   onPhaseComplete={() => {}}
-                  recruitEmail={recruit.email || ""}
-                  recruitName={displayName}
                   documents={documents || []}
                 />
               ) : (

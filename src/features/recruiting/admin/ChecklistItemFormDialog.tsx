@@ -39,7 +39,6 @@ import type {
 } from "@/types/recruiting.types";
 import { CHECKLIST_ITEM_TYPE_LABELS } from "@/types/recruiting.types";
 import type { SchedulingChecklistMetadata } from "@/types/integration.types";
-import type { SignatureRequiredMetadata } from "@/types/signature.types";
 import {
   isSchedulingMetadata,
   isVideoMetadata,
@@ -50,7 +49,6 @@ import {
   isFileDownloadMetadata,
   isExternalLinkMetadata,
   isQuizMetadata,
-  isSignatureRequiredMetadata,
   isCarrierContractingMetadata,
 } from "@/types/checklist-metadata.types";
 import { MetadataConfigSelector } from "./MetadataConfigSelector";
@@ -75,10 +73,6 @@ const ITEM_TYPES: { value: ChecklistItemType; label: string }[] = [
   {
     value: "automated_check",
     label: CHECKLIST_ITEM_TYPE_LABELS.automated_check,
-  },
-  {
-    value: "signature_required",
-    label: CHECKLIST_ITEM_TYPE_LABELS.signature_required,
   },
   {
     value: "scheduling_booking",
@@ -198,9 +192,6 @@ function ChecklistItemFormDialogComponent({
   const [quizMetadata, setQuizMetadata] = useState<
     (QuizMetadata & { _type: "quiz" }) | null
   >(null);
-  const [signatureRequiredMetadata, setSignatureRequiredMetadata] = useState<
-    (SignatureRequiredMetadata & { _type: "signature_required" }) | null
-  >(null);
   const [carrierContractingMetadata, setCarrierContractingMetadata] = useState<
     (CarrierContractingMetadata & { _type: "carrier_contracting" }) | null
   >(null);
@@ -217,7 +208,6 @@ function ChecklistItemFormDialogComponent({
     setFileDownloadMetadata(null);
     setExternalLinkMetadata(null);
     setQuizMetadata(null);
-    setSignatureRequiredMetadata(null);
     setCarrierContractingMetadata(null);
 
     if (!item.metadata) return;
@@ -313,16 +303,6 @@ function ChecklistItemFormDialogComponent({
           });
         }
         break;
-      case "signature_required":
-        if (isSignatureRequiredMetadata(item.metadata)) {
-          setSignatureRequiredMetadata(item.metadata);
-        } else {
-          setSignatureRequiredMetadata({
-            ...(item.metadata as unknown as SignatureRequiredMetadata),
-            _type: "signature_required",
-          });
-        }
-        break;
       case "carrier_contracting":
         if (isCarrierContractingMetadata(item.metadata)) {
           setCarrierContractingMetadata(item.metadata);
@@ -362,7 +342,6 @@ function ChecklistItemFormDialogComponent({
       setFileDownloadMetadata(null);
       setExternalLinkMetadata(null);
       setQuizMetadata(null);
-      setSignatureRequiredMetadata(null);
       setCarrierContractingMetadata(null);
       editingItemIdRef.current = null;
     }
@@ -394,8 +373,6 @@ function ChecklistItemFormDialogComponent({
           return externalLinkMetadata;
         case "quiz":
           return quizMetadata;
-        case "signature_required":
-          return signatureRequiredMetadata;
         case "carrier_contracting":
           return carrierContractingMetadata;
         default:
@@ -412,7 +389,6 @@ function ChecklistItemFormDialogComponent({
       fileDownloadMetadata,
       externalLinkMetadata,
       quizMetadata,
-      signatureRequiredMetadata,
       carrierContractingMetadata,
     ],
   );
@@ -587,7 +563,6 @@ function ChecklistItemFormDialogComponent({
           fileDownloadMetadata={fileDownloadMetadata}
           externalLinkMetadata={externalLinkMetadata}
           quizMetadata={quizMetadata}
-          signatureRequiredMetadata={signatureRequiredMetadata}
           carrierContractingMetadata={carrierContractingMetadata}
           onSchedulingChange={setSchedulingMetadata}
           onVideoChange={setVideoMetadata}
@@ -598,7 +573,6 @@ function ChecklistItemFormDialogComponent({
           onFileDownloadChange={setFileDownloadMetadata}
           onExternalLinkChange={setExternalLinkMetadata}
           onQuizChange={setQuizMetadata}
-          onSignatureRequiredChange={setSignatureRequiredMetadata}
           onCarrierContractingChange={setCarrierContractingMetadata}
         />
 

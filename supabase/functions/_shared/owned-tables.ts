@@ -571,13 +571,6 @@ export const WIPE_ONLY_TABLES: OwnedTable[] = [
     note: "OAuth tokens",
   },
   {
-    table: "signature_submitters",
-    ownerColumn: "user_id",
-    export: false,
-    wipe: "explicit",
-    note: "user_id FK is SET NULL",
-  },
-  {
     table: "uw_wizard_usage",
     ownerColumn: "user_id",
     export: false,

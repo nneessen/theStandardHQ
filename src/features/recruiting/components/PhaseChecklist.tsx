@@ -55,10 +55,8 @@ import type {
   FileDownloadResponse,
   ExternalLinkResponse,
   QuizResponse,
-  SignatureResponse,
   CarrierContractingResponse,
 } from "@/types/recruiting.types";
-import type { SignatureRequiredMetadata } from "@/types/signature.types";
 import {
   BooleanQuestionItem,
   AcknowledgmentItem,
@@ -68,7 +66,6 @@ import {
   ExternalLinkItem,
   QuizItem,
   VideoEmbedItem,
-  SignatureRequiredItem,
   CarrierContractingItem,
 } from "./interactive";
 import {
@@ -89,9 +86,6 @@ interface PhaseChecklistProps {
   viewedPhaseId?: string;
   isAdmin?: boolean;
   onPhaseComplete?: () => void;
-  // Recruit info for signature items
-  recruitEmail?: string;
-  recruitName?: string;
   // Documents for upline view (to allow viewing uploaded files)
   documents?: UserDocument[];
 }
@@ -106,7 +100,6 @@ const INTERACTIVE_ITEM_TYPES = new Set([
   "file_download",
   "external_link",
   "quiz",
-  "signature_required",
   "carrier_contracting",
 ]);
 
@@ -120,8 +113,6 @@ export function PhaseChecklist({
   viewedPhaseId,
   isAdmin = false,
   onPhaseComplete: _onPhaseComplete,
-  recruitEmail,
-  recruitName,
   documents,
 }: PhaseChecklistProps) {
   const updateItemStatus = useUpdateChecklistItemStatus();
@@ -677,41 +668,6 @@ export function PhaseChecklist({
             onComplete={onComplete}
           />
         );
-      case "signature_required": {
-        const signatureMetadata =
-          item.metadata as SignatureRequiredMetadata | null;
-        // Guard against null/incomplete metadata
-        if (
-          !signatureMetadata ||
-          !signatureMetadata.template_id ||
-          !signatureMetadata.required_signer_roles
-        ) {
-          return (
-            <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
-              <div className="flex items-center gap-2 text-warning">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">
-                  Signature item not configured
-                </span>
-              </div>
-              <p className="text-xs text-warning mt-1">
-                This item requires admin configuration before it can be used.
-              </p>
-            </div>
-          );
-        }
-        return (
-          <SignatureRequiredItem
-            progressId={progress.id}
-            metadata={signatureMetadata}
-            existingResponse={responseData as SignatureResponse | null}
-            recruitId={userId}
-            recruitEmail={recruitEmail || ""}
-            recruitName={recruitName || ""}
-            onComplete={() => handleMarkInProgress(item.id)}
-          />
-        );
-      }
       case "carrier_contracting": {
         const contractingMetadata =
           item.metadata as CarrierContractingMetadata | null;

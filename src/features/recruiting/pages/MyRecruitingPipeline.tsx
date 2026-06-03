@@ -501,8 +501,6 @@ export function MyRecruitingPipeline() {
                   if (el)
                     el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                recruitEmail={profile.email}
-                recruitName={recruitName}
                 documents={documents || []}
               />
             )}

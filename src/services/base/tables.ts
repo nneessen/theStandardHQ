@@ -90,11 +90,6 @@ export const TABLES = {
   USER_ACTIVITY_LOG: "user_activity_log",
   SYSTEM_AUDIT_LOG: "system_audit_log",
   USAGE_TRACKING: "usage_tracking",
-
-  // Signatures (DocuSeal)
-  SIGNATURE_TEMPLATES: "signature_templates",
-  SIGNATURE_SUBMISSIONS: "signature_submissions",
-  SIGNATURE_SUBMITTERS: "signature_submitters",
 } as const;
 
 export type TableName = (typeof TABLES)[keyof typeof TABLES];
