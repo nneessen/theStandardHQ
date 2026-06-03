@@ -20,7 +20,7 @@ import { getAnthropicClient, ORCHESTRATOR_MODEL } from "./anthropic.ts";
 import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
-import { canUseTool } from "./core/guard.ts";
+import { canUseTool, effectiveActionClass } from "./core/guard.ts";
 import { requestRateBucket } from "./core/rateBucket.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
 import { redact, summarizeToolOutput } from "./core/redaction.ts";
@@ -289,6 +289,9 @@ serve(async (req) => {
     ];
     // deno-lint-ignore no-explicit-any
     const toolCallRows: any[] = [];
+    // Append-only governance audit args (written via log_assistant_audit in persist()).
+    // deno-lint-ignore no-explicit-any
+    const auditRows: any[] = [];
     const toolActivity: Array<{ name: string; status: string }> = [];
     // Tool outputs this turn, for the H2 no-fabrication backstop (see core/grounding.ts).
     const groundingOutputs: unknown[] = [];
@@ -492,6 +495,16 @@ serve(async (req) => {
                 error: r.errorMsg,
                 duration_ms: r.durationMs,
               });
+              auditRows.push({
+                p_surface: isVoiceSurface ? "voice" : "text",
+                p_event: r.status === "denied" ? "tool_denied" : "tool_call",
+                p_tool_name: r.tu.name,
+                p_action_class: r.meta ? effectiveActionClass(r.meta) : null,
+                p_decision: r.status, // success | denied | error
+                p_decision_reason: r.errorMsg ?? null,
+                p_action_request_id: r.createdAction?.actionRequestId ?? null,
+                p_imo_id: imoId,
+              });
 
               toolResults.push({
                 type: "tool_result",
@@ -579,6 +592,21 @@ serve(async (req) => {
             ]);
             if (toolCallRows.length > 0) {
               await db.from("assistant_tool_calls").insert(toolCallRows);
+            }
+            // Append-only governance audit. Runs here in persist() (waitUntil) so it adds
+            // ZERO user-facing latency, and best-effort (an audit failure must never break a
+            // turn). log_assistant_audit is SECURITY DEFINER and stamps actor := auth.uid()
+            // from this user-scoped `db` client, so the trail can't be forged.
+            if (auditRows.length > 0) {
+              await Promise.all(
+                auditRows.map(async (a) => {
+                  try {
+                    await db.rpc("log_assistant_audit", a);
+                  } catch {
+                    /* best-effort: never break a turn on an audit-write failure */
+                  }
+                }),
+              );
             }
             await db
               .from("assistant_conversations")
