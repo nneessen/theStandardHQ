@@ -43,6 +43,21 @@
 > **OWNER PREREQS (blockers):** (1) Discord bot token; (2) A2P 10DLC/TCPA sign-off before real
 > SMS *sends* in prod (drafting is fine); (3) voice token-budget ceiling.
 >
+> **🔎 CODE-REVIEW FOLLOW-UPS (xhigh review of the executor hardening; quick wins applied in
+> `1b298fca`-range, these two deferred):**
+> - **#1 Email has NO suppression gate (compliance).** The executor sends email via `send-email`
+>   (raw Mailgun — verified: zero `is_suppressed`/unsubscribe check), and the executor's
+>   `suppressed` detection is SMS-only (`send-sms` sets that flag). So a suppressed/unsubscribed
+>   email recipient is delivered and audited as `executed`/`success`. Pre-existing, but the new
+>   audit now gives false assurance. **Fix:** add an `is_suppressed` pre-check for email in the
+>   executor (mirror the SMS STOP gate) OR route assistant email through a suppression-aware path.
+>   Needs a compliance/product call on whether assistant email is transactional vs commercial.
+> - **#6 Recipient normalization is triplicated** (TS `hashRecipient` + SQL `assistant_send_caps`
+>   + SQL `assistant_recipient_is_allowed`) and must stay byte-identical or the same person
+>   hashes/counts differently and a cap is bypassed. **Fix:** one SQL `normalize_recipient()` +
+>   one TS util + a cross-layer fixture test asserting agreement. (Also: no shared `sha256hex`
+>   util — `bytesToHex` is hand-rolled a 5th time; promote to `_shared`.)
+>
 > **✅ STANDING DEBT RESOLVED (was a mis-diagnosis):** the "introspection lag" was NOT lag —
 > the audit_log/log_assistant_audit/resolve_contact migrations were applied **LOCAL-ONLY and
 > misreported as prod** last session (the runner default-to-LOCAL footgun). gen types reads
