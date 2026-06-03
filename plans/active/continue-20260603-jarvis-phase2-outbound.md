@@ -1,5 +1,47 @@
 # Jarvis Phase 2 — Outbound Actions (SMS → voice-confirm → Discord)
 
+> ## 🟢 SESSION HANDOFF — START HERE (next session)
+> **Prompt to open with:** "Continue Jarvis Phase 2. PR 2.1 (resolveContact) + executor rate
+> limiting are shipped/deployed. Do the next buildable piece, keeping rate-limiting, security,
+> and edge cases front of mind."
+>
+> **DONE + DEPLOYED this session:**
+> - ✅ Voice works end-to-end (BVC on, barge-in fix) — worker live on Fly `standardhq-jarvis-voice`.
+> - ✅ Capability kernel + guard hardening + `getWeather` + `assistant_audit_log` (append-only,
+>   verified) + audit wiring. **Orchestrator = v46.**
+> - ✅ PR 2.1 `resolveContact` (name → masked contacts, RLS-scoped; Option A: recipient stays
+>   HUMAN-entered, `draftSmsMessage` unchanged). Migration `20260603121430`.
+> - ✅ Executor per-action-class daily send caps (SMS 25 / email 50 / Close 60) —
+>   **assistant-action-execute = v9** (`core/action-limits.ts`).
+> - All code committed + pushed to `main`. deno 122/0 + 5/5; worker 9/9.
+>
+> **NEXT — recommended order (each independently shippable behind the approval gate + audit):**
+> 1. **Rate-limit refinements** (deferred from this session; defense-in-depth on the live send
+>    path): distinct-recipient/day cap + IMO-wide daily ceiling (both need a COUNT query, not
+>    the simple counter) + quiet-hours 8am–9pm (needs the recipient's timezone — decide a source).
+> 2. **PR 2.2 — voice "say yes to send"** (needs the voice **token-budget** owner decision):
+>    worker confirm state + deterministic affirmative classifier (NEVER the LLM) +
+>    `assistant-action-confirm` edge fn + restate-from-frozen-row. See §PR 2.2 below.
+> 3. **PR 2.3 — Discord** (needs the owner to **provision a Discord bot + token**) + PR 2.0
+>    guard-wiring (thread `connectedProviders`/`userPermissions` LAZILY here). See §PR 2.3/2.0.
+>
+> **OWNER PREREQS (blockers):** (1) Discord bot token; (2) A2P 10DLC/TCPA sign-off before real
+> SMS *sends* in prod (drafting is fine); (3) voice token-budget ceiling.
+>
+> **⚠️ STANDING DEBT:** `supabase gen types` is NOT emitting the new objects (audit_log,
+> log_assistant_audit, assistant_resolve_contact) — a persistent Supabase introspection lag
+> (confirmed via `--project-id` AND `--db-url`). No functional impact (orchestrator RPCs are
+> structural; no frontend consumer yet). **Re-run `npx supabase gen types typescript
+> --project-id pcyaqwodnyrpkaiojnpz > src/types/database.types.ts` + commit once it clears.**
+>
+> **SAFETY note (do not regress):** SMS recipient is human-entered (Option A). If "auto-fill
+> recipient" (Option B) is ever built, RESTORE an owned-contact allowlist at send time — the
+> execute-time check was relaxed to format-only in `20260528195232` *because* the model can't
+> set recipients.
+>
+> **Migration rule:** prefix `DATABASE_URL="$REMOTE_DATABASE_URL"` (runner defaults to LOCAL).
+> RLS test pattern: `scripts/test-assistant-{resolve-contact,audit-log,recipient-authz}.sh`.
+
 Execution plan turning the master plan's Phase 2 into ordered, shippable PRs. Grounds on
 what already exists (verified): the `assistant_action_requests` draft→approve→execute
 lifecycle, the `assistant-action-execute` executor (race-safe `approved→executing` claim +
