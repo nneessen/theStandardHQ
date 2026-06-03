@@ -16,6 +16,8 @@ import {
   actionDailyCap,
   actionRateKey,
   ACTION_RATE_WINDOW_SECONDS,
+  distinctRecipientDailyCap,
+  imoDailySendCeiling,
 } from "../assistant-orchestrator/core/action-limits.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
@@ -40,6 +42,31 @@ function bodyToHtml(body: string): string {
   return `<div style="font-family:system-ui,Arial,sans-serif;font-size:14px;line-height:1.5;color:#111">${escapeHtml(
     body,
   ).replace(/\n/g, "<br>")}</div>`;
+}
+
+// Stable, non-reversible recipient fingerprint for the audit ledger — the ledger
+// must never store the raw phone/email. Normalized first (last-10 digits for phone,
+// lower(trim) for email) so the same person always hashes the same regardless of
+// formatting. Mirrors assistant_recipient_is_allowed / assistant_send_caps.
+async function hashRecipient(
+  channel: string,
+  recipient: string,
+): Promise<string | null> {
+  let normalized: string;
+  if (channel === "sms") {
+    normalized = recipient.replace(/\D/g, "").slice(-10);
+    if (normalized.length < 10) return null;
+  } else {
+    normalized = recipient.trim().toLowerCase();
+    if (!normalized) return null;
+  }
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(normalized),
+  );
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 serve(async (req) => {
@@ -106,21 +133,125 @@ serve(async (req) => {
       );
     }
 
+    // Normalize identity for the audit ledger + the cap checks. recipient is empty
+    // for the Close branch (those rows carry a leadId in draft_payload, no recipient).
+    const channel = String(row.channel);
+    const recipient =
+      typeof row.recipient === "string" ? row.recipient.trim() : "";
+    const recipientHash = recipient
+      ? await hashRecipient(channel, recipient)
+      : null;
+
+    // Append-only audit of the SEND DECISION — the actual send is the most
+    // security-critical event in the system and was previously unlogged (the
+    // orchestrator only audits the DRAFT/tool-dispatch). Written via the USER-scoped
+    // `db` client: log_assistant_audit is SECURITY DEFINER and stamps actor :=
+    // auth.uid() + imo := get_my_imo_id() server-side, so it MUST NOT use the admin
+    // client (that would null auth.uid() and misattribute the row). Best-effort — an
+    // audit-write failure must never change the send outcome. Vocabulary mirrors the
+    // orchestrator's (decision ∈ success|denied|error).
+    const audit = async (
+      event: string,
+      decision: string,
+      reason: string | null,
+      result?: unknown,
+    ) => {
+      try {
+        await db.rpc("log_assistant_audit", {
+          p_surface: "executor",
+          p_event: event,
+          p_tool_name: row.tool_name,
+          p_action_class: "outbound",
+          p_decision: decision,
+          p_decision_reason: reason,
+          p_action_request_id: actionRequestId,
+          p_params_redacted: { channel },
+          p_result_redacted: result ? redact(result) : null,
+          p_recipient_hash: recipientHash,
+        });
+      } catch {
+        /* best-effort: never break execution on an audit-write failure */
+      }
+    };
+
+    // COUNT-based caps (committed-send based; external channels only). READ-ONLY, so
+    // they run BEFORE the incrementing per-call counter below — a cap rejection here
+    // must NOT consume a daily-counter slot. Both leave the row `approved` (retryable
+    // once the 24h window rolls). Uses the USER-scoped `db` client: assistant_send_caps
+    // is SECURITY DEFINER and resolves auth.uid()/get_my_imo_id() server-side.
+    if (channel === "sms" || channel === "email") {
+      const { data: capsData, error: capsErr } = await db
+        .rpc("assistant_send_caps", {
+          p_channel: channel,
+          p_recipient: recipient || null,
+        })
+        .maybeSingle();
+      // Cast: assistant_send_caps is newer than the committed generated types
+      // (introspection lag), so PostgREST returns it untyped here.
+      const caps = capsData as {
+        distinct_recipients_24h?: number | null;
+        recipient_already_24h?: boolean | null;
+        imo_sends_24h?: number | null;
+      } | null;
+      if (capsErr) {
+        // Fail-open on a limiter fault (consistent with check_rate_limit), but record it.
+        console.error(
+          "assistant-action-execute: assistant_send_caps error",
+          capsErr.message,
+        );
+      } else if (caps) {
+        const distinctCap = distinctRecipientDailyCap(channel);
+        const distinctUsed = Number(caps.distinct_recipients_24h ?? 0);
+        const recipientAlready = caps.recipient_already_24h === true;
+        const imoUsed = Number(caps.imo_sends_24h ?? 0);
+        const imoCeiling = imoDailySendCeiling();
+
+        // Distinct-recipient cap: a repeat to someone already messaged today is fine
+        // (adds no NEW distinct recipient); only a NEW recipient beyond the cap blocks.
+        if (
+          distinctCap !== null &&
+          !recipientAlready &&
+          distinctUsed >= distinctCap
+        ) {
+          await audit("action_blocked", "denied", "distinct_recipient_cap");
+          return json(
+            {
+              error: `Daily distinct-recipient limit reached for ${channel} (${distinctCap}/day). Try again tomorrow.`,
+              status: row.status,
+            },
+            429,
+          );
+        }
+        if (imoUsed >= imoCeiling) {
+          await audit("action_blocked", "denied", "imo_send_ceiling");
+          return json(
+            {
+              error: `Your organization reached its daily assistant-send ceiling (${imoCeiling}/day). Try again later.`,
+              status: row.status,
+            },
+            429,
+          );
+        }
+      }
+    }
+
     // Per-action-class daily send cap (defense-in-depth — sends run out-of-band of the
     // orchestrator's buckets). Checked BEFORE the claim so a capped send stays `approved`
     // and is retryable once the 24h window resets. The limiter RPC is service_role-only,
-    // so use the admin client.
-    const dailyCap = actionDailyCap(String(row.channel));
+    // so use the admin client. Runs AFTER the read-only COUNT caps above: this counter
+    // increments on every call, so it must be the LAST pre-claim gate.
+    const dailyCap = actionDailyCap(channel);
     if (dailyCap !== null) {
       const rl = await checkRateLimit(createSupabaseAdminClient(), {
-        key: actionRateKey(String(row.channel), user.id),
+        key: actionRateKey(channel, user.id),
         maxRequests: dailyCap,
         windowSeconds: ACTION_RATE_WINDOW_SECONDS,
       });
       if (!rl.allowed) {
+        await audit("action_blocked", "denied", "daily_cap");
         return json(
           {
-            error: `Daily ${row.channel} send limit reached (${dailyCap}/day). Try again later.`,
+            error: `Daily ${channel} send limit reached (${dailyCap}/day). Try again later.`,
             retry_after_seconds: rl.retryAfterSeconds,
             status: row.status,
           },
@@ -146,18 +277,27 @@ serve(async (req) => {
     }
 
     const payload = (row.draft_payload ?? {}) as Record<string, unknown>;
-    const recipient =
-      typeof row.recipient === "string" ? row.recipient.trim() : "";
 
-    const fail = async (message: string, result?: unknown) => {
+    const fail = async (
+      message: string,
+      opts?: { result?: unknown; reason?: string; blocked?: boolean },
+    ) => {
       await db
         .from("assistant_action_requests")
         .update({
           status: "failed",
           error: message,
-          result_redacted: result ? redact(result) : null,
+          result_redacted: opts?.result ? redact(opts.result) : null,
         })
         .eq("id", actionRequestId);
+      // A "blocked" fail (recipient not allowed, suppressed/STOP) is a policy denial,
+      // not a transport error — record it as such so the ledger distinguishes them.
+      await audit(
+        opts?.blocked ? "action_blocked" : "action_failed",
+        opts?.blocked ? "denied" : "error",
+        opts?.reason ?? null,
+        opts?.result,
+      );
       return json({ ok: false, status: "failed", error: message }, 200);
     };
 
@@ -215,6 +355,9 @@ serve(async (req) => {
           })
           .eq("id", actionRequestId);
 
+        await audit("action_executed", "success", null, {
+          closeId: created?.id ?? null,
+        });
         return json({
           ok: true,
           status: "executed",
@@ -248,6 +391,7 @@ serve(async (req) => {
     if (allowed !== true)
       return await fail(
         "The recipient isn't one of your contacts, leads, or team members, so the assistant won't send to them.",
+        { blocked: true, reason: "recipient_not_allowed" },
       );
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -266,7 +410,10 @@ serve(async (req) => {
       return { okHttp: res.ok, data };
     };
 
-    let sent: { okHttp: boolean; data: { success?: boolean; error?: string } };
+    let sent: {
+      okHttp: boolean;
+      data: { success?: boolean; error?: string; suppressed?: boolean };
+    };
 
     if (row.channel === "sms") {
       const text = typeof payload.body === "string" ? payload.body : "";
@@ -295,7 +442,16 @@ serve(async (req) => {
     }
 
     if (!sent.okHttp || sent.data?.success !== true) {
-      return await fail(sent.data?.error ?? "The send failed.", sent.data);
+      // send-sms returns 200 + {success:false, suppressed:true} for a STOP/opt-out
+      // recipient — a policy block, NOT a transport failure. Distinguish it so the
+      // row is never mislabeled "executed" (the process-bulk-campaign skipped:true
+      // swallow bug) AND the audit ledger records the opt-out as a denial.
+      const suppressed = sent.data?.suppressed === true;
+      return await fail(sent.data?.error ?? "The send failed.", {
+        result: sent.data,
+        blocked: suppressed,
+        reason: suppressed ? "suppressed" : "send_failed",
+      });
     }
 
     await db
@@ -307,6 +463,7 @@ serve(async (req) => {
       })
       .eq("id", actionRequestId);
 
+    await audit("action_executed", "success", null, sent.data);
     return json({ ok: true, status: "executed", channel: row.channel });
   } catch (e) {
     console.error("assistant-action-execute error", e);

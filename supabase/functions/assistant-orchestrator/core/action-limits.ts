@@ -25,3 +25,33 @@ export function actionRateKey(channel: string, userId: string): string {
 }
 
 export const ACTION_RATE_WINDOW_SECONDS = 86400;
+
+// ---------------------------------------------------------------------------
+// COUNT-based caps — a second, orthogonal defense to the per-call counter above.
+// Enforced in the executor via the assistant_send_caps RPC (COUNT over committed
+// sends), NOT the simple counter. Tunable; values are conservative defaults for the
+// ASSISTANT send path specifically (one-off Jarvis-drafted sends — NOT the bulk
+// campaign tools). Two axes:
+//   * distinct-recipient/day (per user, per channel): bounds fan-out. Set BELOW the
+//     per-call daily cap so the volume budget can include repeats but the number of
+//     DISTINCT people stays bounded (e.g. sms: 25 total/day across <=15 people).
+//   * IMO-wide/day (per tenant, sms+email combined): bounds aggregate org blast.
+const DISTINCT_RECIPIENT_DAILY_CAPS: Record<string, number> = {
+  sms: 15,
+  email: 30,
+};
+
+const IMO_DAILY_SEND_CEILING = 300;
+
+/**
+ * Per-user daily DISTINCT-recipient cap for a channel, or null when the channel has
+ * no distinct cap (e.g. close_note/close_task, which have no recipient).
+ */
+export function distinctRecipientDailyCap(channel: string): number | null {
+  return DISTINCT_RECIPIENT_DAILY_CAPS[channel] ?? null;
+}
+
+/** IMO-wide daily ceiling on external (sms+email) assistant sends. */
+export function imoDailySendCeiling(): number {
+  return IMO_DAILY_SEND_CEILING;
+}
