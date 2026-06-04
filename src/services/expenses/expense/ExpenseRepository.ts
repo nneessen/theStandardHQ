@@ -36,7 +36,10 @@ export class ExpenseRepository extends BaseRepository<
       user_id: dbRecord.user_id as string,
       name: dbRecord.name as string,
       description: dbRecord.description as string | null,
-      amount: dbRecord.amount as number,
+      // Postgres `numeric` is returned as a STRING by supabase-js to avoid
+      // float precision loss. The Expense type (and all `+=` arithmetic in
+      // ExpenseService.getTotals) expects a number, so coerce here.
+      amount: Number(dbRecord.amount),
       category: dbRecord.category as string,
       expense_type: dbRecord.expense_type as "personal" | "business",
       date: dbRecord.date as string,
@@ -230,7 +233,9 @@ export class ExpenseRepository extends BaseRepository<
       throw this.handleError(error, "getTotalForDateRange");
     }
 
-    return data?.reduce((sum, item) => sum + (item.amount as number), 0) || 0;
+    // `amount` is a Postgres numeric → returned as a string by supabase-js;
+    // coerce before summing, otherwise `+` concatenates strings.
+    return data?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
   }
 
   // ---------------------------------------------------------------------------

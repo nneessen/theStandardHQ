@@ -27,6 +27,9 @@ describe("ExpenseService", () => {
     date: "2025-01-15",
     is_recurring: false,
     recurring_frequency: null,
+    // A real `select("*")` always returns these columns (as null when unset).
+    recurring_group_id: null,
+    recurring_end_date: null,
     receipt_url: null,
     is_tax_deductible: true,
     notes: null,
@@ -256,25 +259,41 @@ describe("ExpenseService", () => {
 
   describe("getTotals", () => {
     it("should calculate totals correctly", async () => {
+      // `date` is required: getTotals reads expense.date for its monthly/yearly
+      // buckets (isSameMonth/isSameYear), which throw on undefined. A real
+      // `select("*")` always returns it.
       const mockExpenses = [
-        { amount: "100.00", expense_type: "business", is_tax_deductible: true },
-        { amount: "50.00", expense_type: "personal", is_tax_deductible: false },
-        { amount: "75.00", expense_type: "business", is_tax_deductible: true },
+        {
+          amount: "100.00",
+          expense_type: "business",
+          is_tax_deductible: true,
+          date: "2025-01-15",
+        },
+        {
+          amount: "50.00",
+          expense_type: "personal",
+          is_tax_deductible: false,
+          date: "2025-01-15",
+        },
+        {
+          amount: "75.00",
+          expense_type: "business",
+          is_tax_deductible: true,
+          date: "2025-01-15",
+        },
       ];
 
+      // getTotals delegates to getAllFiltered → findWithFilters, which builds
+      // `.select("*").order("date", …)`. Mock that exact chain.
       const mockFrom = vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({
-          data: mockExpenses,
-          error: null,
+        select: vi.fn().mockReturnValue({
+          order: vi.fn().mockResolvedValue({
+            data: mockExpenses,
+            error: null,
+          }),
         }),
       });
       (supabase.from as ReturnType<typeof vi.fn>) = mockFrom;
-
-      // Mock getByDateRange for monthly calculation - now returns ServiceResponse
-      vi.spyOn(expenseService, "getByDateRange").mockResolvedValue({
-        success: true,
-        data: [mockExpense],
-      });
 
       const result = await expenseService.getTotals();
 

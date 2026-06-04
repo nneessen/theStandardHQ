@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Mock Supabase - using hoisted mock
 vi.mock("../../base/supabase", () => {
   const mockFrom = vi.fn();
+  const mockRpc = vi.fn();
   const mockAuth = {
     getUser: vi.fn(),
   };
@@ -13,6 +14,7 @@ vi.mock("../../base/supabase", () => {
   return {
     supabase: {
       from: mockFrom,
+      rpc: mockRpc,
       auth: mockAuth,
     },
     TABLES: {
@@ -51,6 +53,8 @@ function createMockChain() {
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.in = vi.fn().mockReturnValue(chain);
+  chain.is = vi.fn().mockReturnValue(chain);
+  chain.not = vi.fn().mockReturnValue(chain);
   chain.like = vi.fn().mockReturnValue(chain);
   chain.or = vi.fn().mockReturnValue(chain);
   chain.gte = vi.fn().mockReturnValue(chain);
@@ -423,13 +427,12 @@ describe("HierarchyService", () => {
   });
 
   describe("validateHierarchyChange", () => {
+    // validateHierarchyChange now uses supabase.rpc("validate_hierarchy_change")
     it("should allow setting upline to null", async () => {
-      const chain = createMockChain();
-      chain.single.mockResolvedValue({
-        data: { id: "agent-1", hierarchy_path: "root.agent-1" },
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { valid: true, errors: [], warnings: [] },
         error: null,
-      });
-      vi.mocked(supabase.from).mockReturnValue(chain as never);
+      } as never);
 
       const result = await service.validateHierarchyChange({
         agent_id: "agent-1",
@@ -441,21 +444,16 @@ describe("HierarchyService", () => {
     });
 
     it("should reject circular reference", async () => {
-      const chain = createMockChain();
-
-      // First call returns agent
-      chain.single
-        .mockResolvedValueOnce({
-          data: { id: "agent-1", hierarchy_path: "agent-1" },
-          error: null,
-        })
-        // Second call returns proposed upline (which is in agent's downline tree)
-        .mockResolvedValueOnce({
-          data: { id: "downline-1", hierarchy_path: "agent-1.downline-1" },
-          error: null,
-        });
-
-      vi.mocked(supabase.from).mockReturnValue(chain as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: {
+          valid: false,
+          errors: [
+            "Cannot set upline to one of your downlines (would create circular reference)",
+          ],
+          warnings: [],
+        },
+        error: null,
+      } as never);
 
       const result = await service.validateHierarchyChange({
         agent_id: "agent-1",
@@ -469,12 +467,14 @@ describe("HierarchyService", () => {
     });
 
     it("should return error when agent not found", async () => {
-      const chain = createMockChain();
-      chain.single.mockResolvedValue({
-        data: null,
-        error: { code: "PGRST116", message: "Not found" },
-      });
-      vi.mocked(supabase.from).mockReturnValue(chain as never);
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: {
+          valid: false,
+          errors: ["Agent not found"],
+          warnings: [],
+        },
+        error: null,
+      } as never);
 
       const result = await service.validateHierarchyChange({
         agent_id: "nonexistent",
@@ -491,7 +491,7 @@ describe("HierarchyService", () => {
       const request = {
         agent_id: "downline-1",
         new_upline_id: "user-2",
-        reason: "Organizational restructure",
+        reason: "Organisational restructure",
       };
 
       const updatedProfile = {
@@ -501,21 +501,15 @@ describe("HierarchyService", () => {
         hierarchy_depth: 1,
       };
 
+      // validateHierarchyChange uses rpc
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { valid: true, errors: [], warnings: [] },
+        error: null,
+      } as never);
+
+      // updateUpline uses from chain
       const chain = createMockChain();
-
-      // Validation calls
-      chain.single
-        .mockResolvedValueOnce({
-          data: { id: "downline-1", hierarchy_path: "user-1.downline-1" },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: "user-2", hierarchy_path: "user-2" },
-          error: null,
-        })
-        // Update call
-        .mockResolvedValueOnce({ data: updatedProfile, error: null });
-
+      chain.single.mockResolvedValue({ data: updatedProfile, error: null });
       vi.mocked(supabase.from).mockReturnValue(chain as never);
 
       const result = await service.updateAgentHierarchy(request);
@@ -537,15 +531,15 @@ describe("HierarchyService", () => {
         hierarchy_depth: 0,
       };
 
+      // validateHierarchyChange uses rpc
+      vi.mocked(supabase.rpc).mockResolvedValue({
+        data: { valid: true, errors: [], warnings: [] },
+        error: null,
+      } as never);
+
+      // updateUpline uses from chain
       const chain = createMockChain();
-
-      chain.single
-        .mockResolvedValueOnce({
-          data: { id: "downline-1", hierarchy_path: "user-1.downline-1" },
-          error: null,
-        })
-        .mockResolvedValueOnce({ data: updatedProfile, error: null });
-
+      chain.single.mockResolvedValue({ data: updatedProfile, error: null });
       vi.mocked(supabase.from).mockReturnValue(chain as never);
 
       const result = await service.updateAgentHierarchy(request);

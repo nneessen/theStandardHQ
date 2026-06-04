@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -66,10 +67,14 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => (
     <a href={to}>{children}</a>
   ),
+  useNavigate: () => vi.fn(),
 }));
 
+// Comprehensive mock covering all exports from @/features/chat-bot used across
+// VoiceAgentPage and its sub-components (including transitively imported ones).
 vi.mock("@/features/chat-bot", () => ({
   ChatBotApiError: MockChatBotApiErrorClass,
+  // Core bot agent hooks
   useChatBotAgent: (...args: unknown[]) => mockUseChatBotAgent(...args),
   useChatBotVoiceSetupState: (...args: unknown[]) =>
     mockUseChatBotVoiceSetupState(...args),
@@ -77,15 +82,53 @@ vi.mock("@/features/chat-bot", () => ({
     mockUseChatBotVoiceEntitlement(...args),
   useChatBotVoiceUsage: (...args: unknown[]) =>
     mockUseChatBotVoiceUsage(...args),
+  useChatBotVoiceCloneStatus: () => ({
+    data: null,
+    error: null,
+    isLoading: false,
+  }),
+  useChatBotCloseLeadStatuses: () => ({
+    data: null,
+    error: null,
+    isLoading: false,
+  }),
+  // Voice clone lifecycle hooks
+  useDeactivateVoiceClone: () => ({ mutate: vi.fn(), isPending: false }),
+  useActivateVoiceClone: () => ({ mutate: vi.fn(), isPending: false }),
+  useCancelVoiceClone: () => ({ mutate: vi.fn(), isPending: false }),
+  useStartVoiceClone: () => ({ mutate: vi.fn(), isPending: false }),
+  useSubmitVoiceClone: () => ({ mutate: vi.fn(), isPending: false }),
+  useVoiceCloneSession: () => ({ data: null, error: null, isLoading: false }),
+  // Config / mutation hooks
+  useUpdateBotConfig: () => ({ mutate: vi.fn(), isPending: false }),
   useCreateVoiceAgent: (...args: unknown[]) => mockUseCreateVoiceAgent(...args),
   useStartVoiceTrial: () => ({ mutate: vi.fn(), isPending: false }),
   useConnectClose: (...args: unknown[]) => mockUseConnectClose(...args),
   useDisconnectClose: (...args: unknown[]) => mockUseDisconnectClose(...args),
+  // Retell hooks
   useChatBotRetellRuntime: (...args: unknown[]) =>
     mockUseChatBotRetellRuntime(...args),
   useChatBotRetellLlm: (...args: unknown[]) => mockUseChatBotRetellLlm(...args),
   useChatBotRetellVoices: (...args: unknown[]) =>
     mockUseChatBotRetellVoices(...args),
+  // Query keys
+  chatBotKeys: {
+    voiceCloneStatus: () => ["chatbot", "voice-clone-status"],
+    agent: () => ["chatbot", "agent"],
+  },
+  // Component exports
+  BlockedLeadStatusSelector: () => null,
+  ConnectionCard: ({
+    title,
+    connected,
+  }: {
+    title: string;
+    connected: boolean;
+  }) => (
+    <div data-testid="connection-card">
+      {title}:{connected ? "connected" : "not-connected"}
+    </div>
+  ),
 }));
 
 vi.mock("@/features/chat-bot/components/ConnectionCard", () => ({
@@ -232,6 +275,18 @@ function buildSetupState({
   };
 }
 
+function makeWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+}
+
 describe("VoiceAgentPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -320,7 +375,7 @@ describe("VoiceAgentPage", () => {
       isRefetching: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
     // Setup tab is locked (cursor-not-allowed) — not HTML disabled
     const setupTab = screen.getByRole("button", { name: /setup/i });
@@ -354,7 +409,7 @@ describe("VoiceAgentPage", () => {
       isRefetching: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
     const setupTab = screen.getByRole("button", { name: /setup/i });
     expect(setupTab).toBeEnabled();
@@ -366,7 +421,9 @@ describe("VoiceAgentPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps the shared agent query disabled on overview and enables it on setup", () => {
+  // The agent query (shouldLoadAgent) is enabled on: overview, setup, stats, admin.
+  // It is disabled only on the "plans" tab. This test verifies that boundary.
+  it("keeps the shared agent query disabled on plans and enables it on setup", () => {
     mockUseChatBotAgent.mockReturnValue({
       data: buildAgent({ closeConnected: true, retellConnected: true }),
       error: null,
@@ -387,12 +444,14 @@ describe("VoiceAgentPage", () => {
       isRefetching: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
+    // Navigate to Plans tab — agent query should be disabled (false)
+    fireEvent.click(screen.getByRole("button", { name: /plans/i }));
     expect(mockUseChatBotAgent).toHaveBeenLastCalledWith(false);
 
+    // Navigate to Setup tab — agent query should be enabled (true)
     fireEvent.click(screen.getByRole("button", { name: /setup/i }));
-
     expect(mockUseChatBotAgent).toHaveBeenLastCalledWith(true);
   });
 
@@ -417,7 +476,7 @@ describe("VoiceAgentPage", () => {
       isRefetching: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
     fireEvent.click(screen.getByRole("button", { name: /setup/i }));
     fireEvent.click(screen.getByRole("button", { name: /4\. advanced/i }));
@@ -443,7 +502,7 @@ describe("VoiceAgentPage", () => {
       isLoading: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
     // Navigate to Plans tab where the warning is displayed via VoiceAgentLanding
     fireEvent.click(screen.getByRole("button", { name: /plans/i }));
@@ -474,7 +533,7 @@ describe("VoiceAgentPage", () => {
       isRefetching: false,
     });
 
-    render(<VoiceAgentPage />);
+    render(<VoiceAgentPage />, { wrapper: makeWrapper() });
 
     // Navigate to Plans tab, then click the primary action that redirects to setup > launch
     fireEvent.click(screen.getByRole("button", { name: /plans/i }));

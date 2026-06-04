@@ -17,9 +17,49 @@ const {
 
 vi.mock("../hooks/useCloseKpiDashboard", () => ({
   closeKpiKeys: {
+    all: ["close-kpi"],
     prebuiltWidgets: () => ["close-kpi", "prebuilt-widget"],
     closeMetadata: () => ["close-kpi", "close-metadata"],
     leadHeat: () => ["close-kpi", "lead-heat"],
+    leadHeatScoreCount: (userId: string) => [
+      "close-kpi",
+      "lead-heat",
+      "score-count",
+      userId,
+    ],
+    leadHeatRunsStatus: (userId: string) => [
+      "close-kpi",
+      "lead-heat",
+      "runs-status",
+      userId,
+    ],
+    leadHeatStatus: (userId: string) => [
+      "close-kpi",
+      "lead-heat",
+      "status",
+      userId,
+    ],
+    leadHeatWidgets: () => ["close-kpi", "lead-heat", "widgets"],
+    teamSnapshot: (userId: string, scope: unknown) => [
+      "close-kpi",
+      "team-snapshot",
+      userId,
+      scope,
+    ],
+    teamVisibility: (userId: string) => [
+      "close-kpi",
+      "team-visibility",
+      userId,
+    ],
+    templates: () => ["close-kpi", "templates"],
+    widgetCacheRoot: () => ["close-kpi", "widget-cache"],
+    widgetCacheGroup: (group: string) => ["close-kpi", "widget-cache", group],
+    connectionStatus: (userId: string) => [
+      "close-kpi",
+      "connection-status",
+      userId,
+    ],
+    dashboard: (userId: string) => ["close-kpi", "dashboard", userId],
   },
   useCloseConnectionStatus: (...args: unknown[]) =>
     mockUseCloseConnectionStatus(...args),
@@ -28,6 +68,24 @@ vi.mock("../hooks/useCloseKpiDashboard", () => ({
   useLeadHeatCompletedRuns: (...args: unknown[]) =>
     mockUseLeadHeatCompletedRuns(...args),
   useLeadHeatRescore: (...args: unknown[]) => mockUseLeadHeatRescore(...args),
+}));
+
+vi.mock("../hooks/useTeamPipelineSnapshot", () => ({
+  useCanViewTeamTab: () => ({
+    data: false,
+    isLoading: false,
+  }),
+  useTeamPipelineSnapshot: () => ({
+    data: null,
+    isLoading: false,
+  }),
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "user-test-123", email: "test@example.com" },
+    supabaseUser: { id: "user-test-123", email: "test@example.com" },
+  }),
 }));
 
 vi.mock("@/features/chat-bot", () => ({

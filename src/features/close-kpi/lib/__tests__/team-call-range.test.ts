@@ -129,11 +129,16 @@ describe("buildTeamCallRange", () => {
       const customFrom = "2026-01-01T00:00:00-05:00";
       const customTo = "2026-01-31T23:59:59-05:00";
       const range = buildTeamCallRange("custom", customFrom, customTo, NOW);
-      // The implementation re-runs the dates through toLocalIso, so the
-      // OUTPUT will be in the test runner's local timezone — but it represents
-      // the same moment. We assert the date portion matches at minimum.
-      expect(range.from.slice(0, 10)).toMatch(/^2026-01-0[01]$/);
-      expect(range.to.slice(0, 10)).toMatch(/^2026-01-3[01]$/);
+      // The implementation re-runs the dates through toLocalIso, so the OUTPUT
+      // is rendered in the test runner's local timezone. The date-slice would
+      // shift across tz boundaries (e.g. a runner west of -05:00 renders
+      // 2026-01-01T00:00:00-05:00 as the prior calendar day), so assert the
+      // tz-independent invariant: the same MOMENT is preserved, not the same
+      // wall-clock date string.
+      expect(new Date(range.from).getTime()).toBe(
+        new Date(customFrom).getTime(),
+      );
+      expect(new Date(range.to).getTime()).toBe(new Date(customTo).getTime());
       expect(range.preset).toBe("custom");
     });
 
