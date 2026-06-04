@@ -1,8 +1,9 @@
 // src/features/the-standard-team/components/WritingNumbersMatrixView.tsx
 
 import { useMemo, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, LayoutGrid } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Cap, EmptyState, T } from "@/components/board";
 import { useActiveCarriers } from "@/hooks/carriers";
 import type { TheStandardAgent } from "../hooks/useTheStandardAgents";
 import {
@@ -56,15 +57,45 @@ export function WritingNumbersMatrixView({
   const isLoading = carriersLoading || numbersLoading;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="px-3 py-2 border-b border-border flex flex-wrap items-center gap-2">
-        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          {agents.length} agent{agents.length === 1 ? "" : "s"} ·{" "}
-          {visibleCarriers.length} of {carriers.length} carriers
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: 0,
+      }}
+    >
+      {/* toolbar */}
+      <div
+        style={{
+          padding: "12px 18px",
+          borderBottom: `1px solid ${T.line}`,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <Cap>Coverage Matrix</Cap>
+          <div
+            style={{
+              font: `700 11px ${T.mono}`,
+              color: T.mut2,
+              letterSpacing: "0.08em",
+              marginTop: 3,
+            }}
+          >
+            {agents.length} AGENT{agents.length === 1 ? "" : "S"} ·{" "}
+            {visibleCarriers.length}/{carriers.length} CARRIERS
+          </div>
         </div>
-        <div className="flex-1" />
-        <div className="relative">
-          <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
+        <div style={{ flex: 1 }} />
+        <div style={{ position: "relative" }}>
+          <Search
+            className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2"
+            style={{ color: T.mut2 }}
+          />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -72,7 +103,17 @@ export function WritingNumbersMatrixView({
             className="h-8 pl-7 text-xs w-56"
           />
         </div>
-        <label className="flex items-center gap-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer select-none">
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            font: `500 12px ${T.data}`,
+            color: T.mut,
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
           <input
             type="checkbox"
             checked={missingOnly}
@@ -83,16 +124,30 @@ export function WritingNumbersMatrixView({
         </label>
       </div>
 
-      <div className="flex-1 min-h-0">
+      {/* matrix */}
+      <div style={{ flex: 1, minHeight: 0 }}>
         {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Loading matrix...
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 128,
+              gap: 8,
+              font: `500 12px ${T.data}`,
+              color: T.mut,
+            }}
+          >
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading matrix…
           </div>
         ) : visibleCarriers.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            No carriers match the current filter.
-          </div>
+          <EmptyState
+            icon={<LayoutGrid size={20} />}
+            title="No carriers match"
+            hint="Adjust the search or the “has missing” filter."
+            pad={40}
+          />
         ) : (
           <WritingNumbersTable
             agents={agents}

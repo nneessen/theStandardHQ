@@ -1,11 +1,10 @@
 // src/features/the-standard-team/components/TeamWritingNumbersOverview.tsx
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Search, Loader2 } from "lucide-react";
+import { ArrowRight, Search, Loader2, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Bar, Cap, FlapTile, EmptyState, Pill, T } from "@/components/board";
 import { useActiveCarriers } from "@/hooks/carriers";
 import type { TheStandardAgent } from "../hooks/useTheStandardAgents";
 import { useAgentWritingNumbers } from "../hooks/useAgentWritingNumbers";
@@ -52,6 +51,7 @@ export function TeamWritingNumbersOverview({
     (acc, agent) => acc + (fillByAgent.get(agent.id) ?? 0),
     0,
   );
+  const slotCoverage = totalSlots === 0 ? 0 : totalFilled / totalSlots;
 
   const rows = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -67,7 +67,7 @@ export function TeamWritingNumbersOverview({
       })
       .map((agent) => {
         const filled = fillByAgent.get(agent.id) ?? 0;
-        const pct = totalCarriers === 0 ? 0 : (filled / totalCarriers) * 100;
+        const pct = totalCarriers === 0 ? 0 : filled / totalCarriers;
         return { agent, filled, pct };
       })
       .sort((a, b) => a.pct - b.pct);
@@ -77,34 +77,113 @@ export function TeamWritingNumbersOverview({
 
   if (downlineAgents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-        <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
-          No downlines yet
-        </p>
-        <p className="mt-1 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle max-w-md">
-          Once you have approved downline agents, you&apos;ll see their writing
-          number coverage here.
-        </p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+        }}
+      >
+        <EmptyState
+          icon={<Users size={20} />}
+          title="No downlines yet"
+          hint="Once you have approved downline agents, their writing-number coverage appears here."
+          pad={40}
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="px-3 py-2 border-b border-border flex flex-wrap items-center gap-2">
-        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          <span className="font-medium text-v2-ink dark:text-v2-ink">
-            {downlineAgents.length}
-          </span>{" "}
-          agent{downlineAgents.length === 1 ? "" : "s"} ·{" "}
-          <span className="font-medium text-v2-ink dark:text-v2-ink">
-            {totalFilled}
-          </span>{" "}
-          of {totalSlots} slots filled
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: 0,
+      }}
+    >
+      {/* snapshot band */}
+      <div
+        style={{
+          padding: "16px 18px",
+          borderBottom: `1px solid ${T.line}`,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <Cap>Team Coverage</Cap>
+          <span
+            style={{
+              font: `700 11px ${T.mono}`,
+              color: T.mut2,
+              letterSpacing: "0.08em",
+            }}
+          >
+            {totalFilled}/{totalSlots} SLOTS FILLED
+          </span>
         </div>
-        <div className="flex-1" />
-        <div className="relative">
-          <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+            gap: 10,
+          }}
+        >
+          <FlapTile
+            sm
+            label="Agents"
+            value={downlineAgents.length}
+            tone="blue"
+          />
+          <FlapTile sm label="Slots Filled" value={totalFilled} tone="green" />
+          <FlapTile
+            sm
+            label="Coverage"
+            value={`${Math.round(slotCoverage * 100)}%`}
+          />
+        </div>
+        <Bar
+          pct={slotCoverage}
+          tone={
+            slotCoverage >= 0.8
+              ? "green"
+              : slotCoverage >= 0.4
+                ? "amber"
+                : "red"
+          }
+          height={8}
+        />
+      </div>
+
+      {/* toolbar */}
+      <div
+        style={{
+          padding: "10px 18px",
+          borderBottom: `1px solid ${T.line}`,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ position: "relative" }}>
+          <Search
+            className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2"
+            style={{ color: T.mut2 }}
+          />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -114,65 +193,111 @@ export function TeamWritingNumbersOverview({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-auto">
+      {/* list */}
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
         {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Loading team coverage...
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 128,
+              gap: 8,
+              font: `500 12px ${T.data}`,
+              color: T.mut,
+            }}
+          >
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading team coverage…
           </div>
         ) : rows.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            No agents match this search.
-          </div>
+          <EmptyState
+            icon={<Search size={20} />}
+            title="No agents match"
+            hint="Adjust the search to find a downline agent."
+            pad={40}
+          />
         ) : (
-          <ul className="divide-y divide-border">
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {rows.map(({ agent, filled, pct }) => {
               const fullName =
                 [agent.first_name, agent.last_name].filter(Boolean).join(" ") ||
                 agent.email;
-              const tone =
-                pct >= 80
-                  ? "bg-success"
-                  : pct >= 40
-                    ? "bg-warning"
-                    : "bg-destructive";
+              const tone = pct >= 0.8 ? "green" : pct >= 0.4 ? "amber" : "red";
               const depth = agent.hierarchy_depth ?? 0;
 
               return (
                 <li
                   key={agent.id}
-                  className="px-3 py-2 hover:bg-muted/40 flex items-center gap-3"
+                  className="hover:bg-white/[0.03]"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 18px",
+                    borderBottom: `1px solid ${T.line}`,
+                  }}
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink truncate">
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      <span
+                        style={{
+                          font: `600 13px ${T.data}`,
+                          color: T.ink,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {fullName}
-                      </p>
-                      {depth <= 1 ? (
-                        <Badge variant="secondary" size="sm">
-                          Direct
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" size="sm">
-                          L{depth}
-                        </Badge>
-                      )}
+                      </span>
+                      <Pill
+                        tone={depth <= 1 ? "blue" : "amber"}
+                        style={{ padding: "3px 8px", fontSize: 10 }}
+                      >
+                        {depth <= 1 ? "Direct" : `L${depth}`}
+                      </Pill>
                     </div>
-                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                    <div
+                      style={{
+                        font: `500 11px ${T.data}`,
+                        color: T.mut2,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        marginTop: 2,
+                      }}
+                    >
                       {agent.email}
-                    </p>
+                    </div>
                   </div>
 
-                  <div className="hidden sm:flex flex-col items-end gap-1 w-48">
-                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", tone)}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <div
+                    className="hidden sm:flex"
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: 5,
+                      width: 192,
+                    }}
+                  >
+                    <Bar
+                      pct={pct}
+                      tone={tone}
+                      height={6}
+                      style={{ width: "100%" }}
+                    />
+                    <span
+                      style={{
+                        font: `700 10px ${T.mono}`,
+                        color: T.mut,
+                        letterSpacing: "0.06em",
+                      }}
+                    >
                       {filled}/{totalCarriers}
-                    </p>
+                    </span>
                   </div>
 
                   <Button

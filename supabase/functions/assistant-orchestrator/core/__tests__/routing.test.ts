@@ -69,6 +69,34 @@ Deno.test(
   },
 );
 
+Deno.test(
+  "classifyIntent routes writing-number / carrier-appointment asks to production-analyst (getWritingNumberCoverage home)",
+  () => {
+    assertEquals(
+      classifyIntent("which carriers do I have writing numbers with?"),
+      "production-analyst",
+    );
+    assertEquals(
+      classifyIntent("what carrier appointments am I missing?"),
+      "production-analyst",
+    );
+    assertEquals(
+      classifyIntent("am I appointed with Mutual of Omaha?"),
+      "production-analyst",
+    );
+    assertEquals(
+      classifyIntent("which of my agents are missing writing numbers?"),
+      "production-analyst",
+    );
+    // Guard: a genuine underwriting "which carrier would approve" ask still wins
+    // (matched at #12, after this rule, because this rule needs appointment language).
+    assertEquals(
+      classifyIntent("which carriers would approve this client?"),
+      "underwriting",
+    );
+  },
+);
+
 Deno.test("classifyIntent maps the remaining specialists", () => {
   assertEquals(classifyIntent("how is my recruiting pipeline?"), "recruiting");
   assertEquals(classifyIntent("summarize my book of business"), "crm");

@@ -34,6 +34,22 @@ export function classifyIntent(message: string): AgentKey | null {
     return "executive-briefing";
   }
 
+  // 1c. Carrier writing numbers / appointments / licensing coverage. Production
+  // Analyst owns getWritingNumberCoverage. Placed EARLY — before calendar (whose
+  // "appointments?" would otherwise grab "carrier appointments") and before
+  // underwriting (whose carrier+context rule must not grab "which carriers do I
+  // have writing numbers with") — because these are carrier-APPOINTMENT questions,
+  // not scheduling or approval questions. "carrier" alone never triggers it; it
+  // needs explicit writing-number / appointment / licensing-coverage language, so it
+  // can't steal a legitimate scheduling, production, or underwriting ask.
+  if (
+    /\b(writing numbers?|writing #|carrier appointments?|appointed (with|to|carriers?)|am i appointed|which carriers? (do i|am i|i am|i'?ve|i have)|carriers? i(?:'?m| am)? (?:appointed|contracted)|missing (?:carrier|writing) (?:numbers?|appointments?|coverage)|missing writing numbers?)\b/.test(
+      m,
+    )
+  ) {
+    return "production-analyst";
+  }
+
   // 2. Compliance review of copy.
   if (
     /\b(compliance|compliant|tcpa|consent issue|review (this|my) (draft|message|copy|email|text|sms|wording)|is this (ok|okay|safe|compliant) to send|risky (wording|language)|unsupported claims?|missing discl[oa]sure)\b/.test(

@@ -1,10 +1,17 @@
 // src/features/the-standard-team/components/MyWritingNumbersView.tsx
 
 import { useMemo, useState } from "react";
-import { Check, Pencil, Search, X, Loader2 } from "lucide-react";
+import { Check, Pencil, Search, X, Loader2, IdCard } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Bar,
+  Cap,
+  FlapTile,
+  EmptyState,
+  StatusDot,
+  T,
+} from "@/components/board";
 import { useActiveCarriers } from "@/hooks/carriers";
 import {
   useAgentWritingNumbers,
@@ -53,7 +60,11 @@ export function MyWritingNumbersView({
   }, [carriers, numberByCarrier, search, missingOnly]);
 
   const filledCount = numberByCarrier.size;
-  const missingCount = Math.max(0, carriers.length - filledCount);
+  const totalCarriers = carriers.length;
+  const missingCount = Math.max(0, totalCarriers - filledCount);
+  const coverage = totalCarriers === 0 ? 0 : filledCount / totalCarriers;
+  const coverageTone =
+    coverage >= 0.8 ? "green" : coverage >= 0.4 ? "amber" : "red";
 
   const startEdit = (carrierId: string, currentValue: string) => {
     setEditingCarrierId(carrierId);
@@ -85,24 +96,82 @@ export function MyWritingNumbersView({
   const isLoading = carriersLoading || numbersLoading;
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="px-3 py-2 border-b border-border flex flex-wrap items-center gap-2">
-        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          <span className="font-medium text-v2-ink dark:text-v2-ink">
-            {filledCount}
-          </span>{" "}
-          saved ·{" "}
-          <span className="font-medium text-v2-ink dark:text-v2-ink">
-            {missingCount}
-          </span>{" "}
-          missing
-          {agentLabel ? (
-            <span className="ml-2 text-v2-ink-subtle">— {agentLabel}</span>
-          ) : null}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: 0,
+      }}
+    >
+      {/* snapshot band */}
+      <div
+        style={{
+          padding: "16px 18px",
+          borderBottom: `1px solid ${T.line}`,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <Cap>
+            {agentLabel ? `Coverage — ${agentLabel}` : "Carrier Coverage"}
+          </Cap>
+          <span
+            style={{
+              font: `700 11px ${T.mono}`,
+              color: T.mut2,
+              letterSpacing: "0.08em",
+            }}
+          >
+            {filledCount}/{totalCarriers} CARRIERS
+          </span>
         </div>
-        <div className="flex-1" />
-        <div className="relative">
-          <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+            gap: 10,
+          }}
+        >
+          <FlapTile sm label="Saved" value={filledCount} tone="green" />
+          <FlapTile
+            sm
+            label="Missing"
+            value={missingCount}
+            tone={missingCount > 0 ? "amber" : "default"}
+          />
+          <FlapTile sm label="Carriers" value={totalCarriers} />
+        </div>
+        <Bar pct={coverage} tone={coverageTone} height={8} />
+      </div>
+
+      {/* toolbar */}
+      <div
+        style={{
+          padding: "10px 18px",
+          borderBottom: `1px solid ${T.line}`,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ position: "relative" }}>
+          <Search
+            className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2"
+            style={{ color: T.mut2 }}
+          />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -110,7 +179,17 @@ export function MyWritingNumbersView({
             className="h-8 pl-7 text-xs w-56"
           />
         </div>
-        <label className="flex items-center gap-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer select-none">
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            font: `500 12px ${T.data}`,
+            color: T.mut,
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
           <input
             type="checkbox"
             checked={missingOnly}
@@ -121,20 +200,40 @@ export function MyWritingNumbersView({
         </label>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-auto">
+      {/* list */}
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
         {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            Loading carriers...
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 128,
+              gap: 8,
+              font: `500 12px ${T.data}`,
+              color: T.mut,
+            }}
+          >
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading carriers…
           </div>
         ) : rows.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
-            {missingOnly
-              ? "All carriers have writing numbers saved."
-              : "No carriers match the current filter."}
-          </div>
+          <EmptyState
+            icon={<IdCard size={20} />}
+            title={
+              missingOnly
+                ? "All carriers have writing numbers"
+                : "No carriers match"
+            }
+            hint={
+              missingOnly
+                ? "Every active carrier has a writing number saved."
+                : "Adjust the search to find a carrier."
+            }
+            pad={40}
+          />
         ) : (
-          <ul className="divide-y divide-border">
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {rows.map((carrier) => {
               const existing = numberByCarrier.get(carrier.id);
               const isEditing = editingCarrierId === carrier.id;
@@ -143,21 +242,38 @@ export function MyWritingNumbersView({
               return (
                 <li
                   key={carrier.id}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-muted/40"
+                  className="hover:bg-white/[0.03]"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 18px",
+                    borderBottom: `1px solid ${T.line}`,
+                  }}
                 >
-                  <span
-                    className={cn(
-                      "h-2 w-2 rounded-full shrink-0",
-                      existing ? "bg-success" : "bg-muted-foreground/40",
-                    )}
-                    aria-hidden
+                  <StatusDot
+                    color={existing ? T.green : T.mut2}
+                    size={8}
+                    glow={!!existing}
                   />
-                  <span className="flex-1 min-w-0 text-[12px] font-medium text-v2-ink dark:text-v2-ink truncate">
+                  <span
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      font: `600 13px ${T.data}`,
+                      color: T.ink,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {carrier.name}
                   </span>
 
                   {isEditing ? (
-                    <div className="flex items-center gap-1">
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 4 }}
+                    >
                       <Input
                         value={draftValue}
                         onChange={(e) => setDraftValue(e.target.value)}
@@ -178,7 +294,10 @@ export function MyWritingNumbersView({
                         disabled={upsert.isPending || !draftValue.trim()}
                         aria-label="Save"
                       >
-                        <Check className="h-3.5 w-3.5 text-success" />
+                        <Check
+                          className="h-3.5 w-3.5"
+                          style={{ color: T.green }}
+                        />
                       </Button>
                       <Button
                         type="button"
@@ -188,18 +307,18 @@ export function MyWritingNumbersView({
                         onClick={cancelEdit}
                         aria-label="Cancel"
                       >
-                        <X className="h-3.5 w-3.5 text-destructive" />
+                        <X className="h-3.5 w-3.5" style={{ color: T.red }} />
                       </Button>
                     </div>
                   ) : (
                     <>
                       <span
-                        className={cn(
-                          "text-[12px] font-mono tabular-nums",
-                          existing
-                            ? "text-v2-ink dark:text-v2-ink"
-                            : "text-v2-ink-subtle italic",
-                        )}
+                        style={{
+                          font: `700 13px ${T.mono}`,
+                          fontVariantNumeric: "tabular-nums",
+                          color: existing ? T.cream : T.mut2,
+                          fontStyle: existing ? "normal" : "italic",
+                        }}
                       >
                         {existing?.writing_number ?? "—"}
                       </span>

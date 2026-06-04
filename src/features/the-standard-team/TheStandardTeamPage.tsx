@@ -3,16 +3,14 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Loader2, UserSquare2, Users, LayoutGrid } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, UserSquare2, Users, LayoutGrid, IdCard } from "lucide-react";
 import { UpgradePrompt } from "@/components/subscription";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import { useTheStandardAgents } from "./hooks/useTheStandardAgents";
 import { SectionShell } from "@/components/v2";
-import { Cap, T } from "@/components/board";
+import { Board, Cap, EmptyState, Pill, T } from "@/components/board";
 import {
   LICENSING_WORKSPACE_PAID_FEATURE,
   LICENSING_WORKSPACE_TRIAL_DAYS,
@@ -48,14 +46,32 @@ export function TheStandardTeamRoutePage() {
 
   if (access.isLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] p-3">
-        <div className="h-full rounded-lg border border-border bg-card flex items-center justify-center">
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Checking workspace access...
-          </div>
+      <SectionShell className="dashboard-canvas">
+        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+          <Board
+            pad={0}
+            style={{
+              height: "calc(100vh - 8rem)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                font: `500 12px ${T.data}`,
+                color: T.mut,
+              }}
+            >
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Checking workspace access…
+            </div>
+          </Board>
         </div>
-      </div>
+      </SectionShell>
     );
   }
 
@@ -63,38 +79,77 @@ export function TheStandardTeamRoutePage() {
     const trialEndedOn = formatAccessDate(access.trialEndsAt);
 
     return (
-      <div className="h-[calc(100vh-4rem)] p-3">
-        <div className="h-full rounded-lg border border-border bg-card p-4 md:p-6 overflow-auto">
+      <SectionShell className="dashboard-canvas">
+        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
           <div className="max-w-2xl mx-auto flex flex-col gap-4">
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
+            <Board pad={20}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
                 <div>
-                  <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-foreground">
-                    Writing Numbers Workspace
+                  <Cap>Licensing Workspace</Cap>
+                  <h1
+                    style={{
+                      font: `800 24px ${T.disp}`,
+                      color: T.ink,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.03em",
+                      margin: "6px 0 0",
+                    }}
+                  >
+                    Writing Numbers
                   </h1>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p
+                    style={{
+                      font: `500 12px ${T.data}`,
+                      color: T.mut,
+                      marginTop: 6,
+                    }}
+                  >
                     Free for {LICENSING_WORKSPACE_TRIAL_DAYS} days, then
                     requires a Pro or Team plan.
                   </p>
                 </div>
-                <Badge variant="outline" size="sm">
-                  Trial Ended
-                </Badge>
+                <Pill tone="amber">Trial Ended</Pill>
               </div>
-              <div className="mt-3 text-[11px] text-muted-foreground space-y-1">
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  font: `500 12px ${T.data}`,
+                  color: T.mut,
+                }}
+              >
                 {trialEndedOn && (
-                  <p>Your free workspace access ended on {trialEndedOn}.</p>
+                  <p style={{ margin: 0 }}>
+                    Your free workspace access ended on {trialEndedOn}.
+                  </p>
                 )}
-                <p>
+                <p style={{ margin: 0 }}>
                   Free carrier contract toggles are still available in Settings
                   &rarr; Profile.
                 </p>
-                <p>
+                <p style={{ margin: 0 }}>
                   Pro/Team unlocks the team writing-numbers view so you can see
                   carrier coverage across your downlines at a glance.
                 </p>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
                 <Link to="/settings" search={{ tab: "profile" }}>
                   <Button type="button" variant="outline" size="sm">
                     Go to Settings Profile
@@ -108,7 +163,7 @@ export function TheStandardTeamRoutePage() {
                   </Link>
                 )}
               </div>
-            </div>
+            </Board>
 
             <UpgradePrompt
               feature={LICENSING_WORKSPACE_PAID_FEATURE}
@@ -118,7 +173,7 @@ export function TheStandardTeamRoutePage() {
             />
           </div>
         </div>
-      </div>
+      </SectionShell>
     );
   }
 
@@ -175,7 +230,10 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
   return (
     <SectionShell className="dashboard-canvas">
       <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
-        <div className="flex flex-col gap-4">
+        <div
+          className="flex flex-col gap-4"
+          style={{ height: "calc(100vh - 8rem)", minHeight: 0 }}
+        >
           {/* header */}
           <header
             style={{
@@ -187,7 +245,7 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
             }}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <Cap>DIRECTORY</Cap>
+              <Cap>Licensing Workspace</Cap>
               <h1
                 style={{
                   font: `800 26px ${T.disp}`,
@@ -197,12 +255,22 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
                   margin: 0,
                 }}
               >
-                The Standard Team
+                Writing Numbers
               </h1>
             </div>
             {/* View mode switcher on the right */}
             {view !== "agent-detail" && (
-              <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 3,
+                  background: T.tile,
+                  borderRadius: 9,
+                  padding: 3,
+                  boxShadow: "inset 0 1px 2px rgba(0,0,0,0.5)",
+                }}
+              >
                 <ViewModeButton
                   active={view === "my"}
                   onClick={() => setView("my")}
@@ -230,23 +298,52 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
           </header>
 
           {trialBanner && (
-            <div className="rounded-md border border-border border-l-4 border-l-warning bg-card px-3 py-2">
-              <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" size="sm">
-                      7-Day Trial
-                    </Badge>
-                    <Badge variant="outline" size="sm">
+            <Board
+              pad={14}
+              rivets={false}
+              style={{ borderLeft: `3px solid ${T.amber}` }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Pill tone="amber">7-Day Trial</Pill>
+                    <Pill tone="amber" style={{ background: "transparent" }}>
                       {trialBanner.daysRemaining} day
                       {trialBanner.daysRemaining === 1 ? "" : "s"} left
-                    </Badge>
+                    </Pill>
                   </div>
-                  <p className="mt-1 text-[11px] font-medium text-foreground">
+                  <p
+                    style={{
+                      font: `600 12px ${T.data}`,
+                      color: T.ink,
+                      marginTop: 8,
+                    }}
+                  >
                     Try the team writing-numbers workspace while your trial is
                     active.
                   </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  <p
+                    style={{
+                      font: `500 11px ${T.data}`,
+                      color: T.mut,
+                      marginTop: 3,
+                    }}
+                  >
                     See your team&apos;s coverage at a glance, drill into a
                     single agent, or compare side-by-side. After the trial
                     {trialEndsOn ? ` (ends ${trialEndsOn})` : ""}, this requires
@@ -254,7 +351,14 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
                     Settings &rarr; Profile.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexShrink: 0,
+                  }}
+                >
                   <Link to="/billing">
                     <Button
                       type="button"
@@ -266,22 +370,49 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
                   </Link>
                 </div>
               </div>
-            </div>
+            </Board>
           )}
 
-          <section className="flex-1 min-h-0 bg-card rounded-lg border border-border overflow-hidden flex flex-col">
+          <Board
+            pad={0}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             {agentsLoading ? (
-              <div className="h-full flex items-center justify-center p-4">
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading agents...
-                </div>
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  font: `500 12px ${T.data}`,
+                  color: T.mut,
+                }}
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading agents…
               </div>
             ) : agentsError ? (
-              <div className="h-full flex items-center justify-center p-4">
-                <p className="text-[11px] text-destructive">
-                  Failed to load agents: {agentsError.message}
-                </p>
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <EmptyState
+                  icon={<IdCard size={20} />}
+                  title="Failed to load agents"
+                  hint={agentsError.message}
+                  pad={40}
+                />
               </div>
             ) : view === "my" && currentProfile?.id ? (
               <MyWritingNumbersView agentId={currentProfile.id} />
@@ -300,13 +431,20 @@ export function TheStandardTeamPage({ trialBanner }: TheStandardTeamPageProps) {
             ) : view === "compare" ? (
               <WritingNumbersMatrixView agents={agents} />
             ) : (
-              <div className="h-full flex items-center justify-center p-4">
-                <p className="text-[11px] text-muted-foreground">
-                  Select a view above to get started.
-                </p>
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  font: `500 12px ${T.data}`,
+                  color: T.mut,
+                }}
+              >
+                Select a view above to get started.
               </div>
             )}
-          </section>
+          </Board>
         </div>
       </div>
     </SectionShell>
@@ -330,12 +468,21 @@ function ViewModeButton({
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        "flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded transition-all",
-        active
-          ? "bg-background shadow-sm text-foreground"
-          : "text-muted-foreground hover:text-foreground",
-      )}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 12px",
+        borderRadius: 7,
+        border: "none",
+        cursor: "pointer",
+        font: `700 12px ${T.mono}`,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        background: active ? "rgba(91,155,255,0.16)" : "transparent",
+        color: active ? T.blue : T.mut,
+        transition: "background 0.15s, color 0.15s",
+      }}
     >
       <Icon className="h-3.5 w-3.5" />
       {label}

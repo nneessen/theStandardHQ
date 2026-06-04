@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { T } from "@/components/board";
 import type { TheStandardAgent } from "../hooks/useTheStandardAgents";
 import type { Carrier } from "@/types/carrier.types";
 import type { Database } from "@/types/database.types";
@@ -25,6 +26,23 @@ interface WritingNumbersTableProps {
     existingId?: string;
   }) => void;
 }
+
+// Charcoal "Board" table tokens.
+const HEADER_BG = T.panel2;
+const ROW_EVEN = T.panel;
+const ROW_ODD = "#141415";
+const CELL_BORDER = `1px solid ${T.line}`;
+const SELECTED_BG = "rgba(91,155,255,0.12)";
+
+const headerCellStyle: React.CSSProperties = {
+  font: `700 10px ${T.mono}`,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  color: T.mut2,
+  padding: "8px 10px",
+  borderBottom: CELL_BORDER,
+  whiteSpace: "nowrap",
+};
 
 export function WritingNumbersTable({
   agents,
@@ -108,21 +126,33 @@ export function WritingNumbersTable({
     const isEditing =
       editingCell?.agentId === agentId && editingCell?.carrierId === carrierId;
     const writingNumber = getWritingNumber(agentId, carrierId);
+    const isSelectedCol = agentId === selectedAgentId;
 
     return (
       <td
         key={`${agentId}-${carrierId}`}
         className={cn(
-          "text-[11px] text-center px-1 py-1 border-b border-v2-ring dark:border-v2-ring align-top",
+          "text-center align-top",
           widthClass,
-          !isEditing &&
-            "cursor-pointer hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong/50",
-          agentId === selectedAgentId && "bg-info/10",
+          !isEditing && "cursor-pointer hover:bg-white/[0.05]",
         )}
+        style={{
+          font: `600 11px ${T.mono}`,
+          padding: "5px 4px",
+          borderBottom: CELL_BORDER,
+          background: isSelectedCol ? SELECTED_BG : undefined,
+        }}
         onClick={() => !isEditing && handleCellClick(agentId, carrierId)}
       >
         {isEditing ? (
-          <div className="flex items-center gap-1 px-1">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "0 4px",
+            }}
+          >
             <Input
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
@@ -131,31 +161,32 @@ export function WritingNumbersTable({
               autoFocus
             />
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleSave();
               }}
-              className="p-0.5 rounded hover:bg-success/20 dark:hover:bg-success/50"
+              className="p-0.5 rounded hover:bg-white/10"
             >
-              <Check className="h-3.5 w-3.5 text-success" />
+              <Check className="h-3.5 w-3.5" style={{ color: T.green }} />
             </button>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 handleCancel();
               }}
-              className="p-0.5 rounded hover:bg-destructive/20 dark:hover:bg-destructive/50"
+              className="p-0.5 rounded hover:bg-white/10"
             >
-              <X className="h-3.5 w-3.5 text-destructive" />
+              <X className="h-3.5 w-3.5" style={{ color: T.red }} />
             </button>
           </div>
         ) : (
           <span
-            className={cn(
-              writingNumber?.writing_number
-                ? "text-v2-ink dark:text-v2-ink"
-                : "text-v2-ink-subtle dark:text-v2-ink-muted",
-            )}
+            style={{
+              color: writingNumber?.writing_number ? T.cream : T.mut2,
+              fontVariantNumeric: "tabular-nums",
+            }}
           >
             {writingNumber?.writing_number || "—"}
           </span>
@@ -166,7 +197,10 @@ export function WritingNumbersTable({
 
   if (layout === "agents-rows") {
     return (
-      <div className="h-full w-full min-w-0 overflow-auto overscroll-x-contain">
+      <div
+        className="h-full w-full min-w-0 overflow-auto overscroll-x-contain"
+        style={{ background: T.panel }}
+      >
         <div className="inline-block min-w-full align-top">
           <table
             className="w-max min-w-full border-collapse"
@@ -176,14 +210,18 @@ export function WritingNumbersTable({
             }}
           >
             <thead className="sticky top-0 z-10">
-              <tr className="bg-v2-card-tinted dark:bg-v2-card-tinted">
-                <th className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-left px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[160px] w-[160px]">
+              <tr style={{ background: HEADER_BG }}>
+                <th
+                  className="sticky left-0 z-20 text-left min-w-[160px] w-[160px]"
+                  style={{ ...headerCellStyle, background: HEADER_BG }}
+                >
                   Agent
                 </th>
                 {carriers.map((carrier) => (
                   <th
                     key={carrier.id}
-                    className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[100px] w-[100px] whitespace-nowrap"
+                    className="text-center min-w-[100px] w-[100px]"
+                    style={headerCellStyle}
                   >
                     {carrier.name}
                   </th>
@@ -191,35 +229,38 @@ export function WritingNumbersTable({
               </tr>
             </thead>
             <tbody>
-              {agents.map((agent, idx) => (
-                <tr
-                  key={agent.id}
-                  className={cn(
-                    "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50",
-                    idx % 2 === 0
-                      ? "bg-v2-card"
-                      : "bg-v2-canvas/50 dark:bg-v2-card/50",
-                    agent.id === selectedAgentId &&
-                      "bg-info/10 hover:bg-info/20",
-                  )}
-                >
-                  <td
-                    className={cn(
-                      "sticky left-0 z-10 bg-inherit text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring",
-                      agent.id === selectedAgentId && "text-info",
+              {agents.map((agent, idx) => {
+                const rowBg =
+                  agent.id === selectedAgentId
+                    ? SELECTED_BG
+                    : idx % 2 === 0
+                      ? ROW_EVEN
+                      : ROW_ODD;
+                return (
+                  <tr key={agent.id} style={{ background: rowBg }}>
+                    <td
+                      className="sticky left-0 z-10"
+                      style={{
+                        background: rowBg,
+                        font: `600 11px ${T.data}`,
+                        color: agent.id === selectedAgentId ? T.blue : T.ink,
+                        padding: "6px 12px",
+                        borderBottom: CELL_BORDER,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {agent.first_name} {agent.last_name}
+                    </td>
+                    {carriers.map((carrier) =>
+                      renderEditingCell(
+                        agent.id,
+                        carrier.id,
+                        "min-w-[110px] w-[110px]",
+                      ),
                     )}
-                  >
-                    {agent.first_name} {agent.last_name}
-                  </td>
-                  {carriers.map((carrier) =>
-                    renderEditingCell(
-                      agent.id,
-                      carrier.id,
-                      "min-w-[110px] w-[110px]",
-                    ),
-                  )}
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -228,7 +269,10 @@ export function WritingNumbersTable({
   }
 
   return (
-    <div className="h-full w-full min-w-0 overflow-auto overscroll-x-contain">
+    <div
+      className="h-full w-full min-w-0 overflow-auto overscroll-x-contain"
+      style={{ background: T.panel }}
+    >
       <div className="inline-block min-w-full align-top">
         <table
           className="w-max min-w-full border-collapse"
@@ -238,17 +282,23 @@ export function WritingNumbersTable({
           }}
         >
           <thead className="sticky top-0 z-10">
-            <tr className="bg-v2-card-tinted dark:bg-v2-card-tinted">
-              <th className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-left px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[180px] w-[180px]">
+            <tr style={{ background: HEADER_BG }}>
+              <th
+                className="sticky left-0 z-20 text-left min-w-[180px] w-[180px]"
+                style={{ ...headerCellStyle, background: HEADER_BG }}
+              >
                 Carrier
               </th>
               {agents.map((agent) => (
                 <th
                   key={agent.id}
-                  className={cn(
-                    "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[92px] w-[92px] whitespace-nowrap",
-                    agent.id === selectedAgentId && "bg-info/20 text-info",
-                  )}
+                  className="text-center min-w-[92px] w-[92px]"
+                  style={{
+                    ...headerCellStyle,
+                    background:
+                      agent.id === selectedAgentId ? SELECTED_BG : undefined,
+                    color: agent.id === selectedAgentId ? T.blue : T.mut2,
+                  }}
                   title={`${agent.first_name} ${agent.last_name}`}
                 >
                   <div className="truncate max-w-[86px]">
@@ -259,30 +309,37 @@ export function WritingNumbersTable({
             </tr>
           </thead>
           <tbody>
-            {carriers.map((carrier, idx) => (
-              <tr
-                key={carrier.id}
-                className={cn(
-                  "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50",
-                  idx % 2 === 0
-                    ? "bg-v2-card"
-                    : "bg-v2-canvas/50 dark:bg-v2-card/50",
-                )}
-              >
-                <td className="sticky left-0 z-10 bg-inherit text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring">
-                  <div className="truncate max-w-[170px]" title={carrier.name}>
-                    {carrier.name}
-                  </div>
-                </td>
-                {agents.map((agent) =>
-                  renderEditingCell(
-                    agent.id,
-                    carrier.id,
-                    "min-w-[92px] w-[92px]",
-                  ),
-                )}
-              </tr>
-            ))}
+            {carriers.map((carrier, idx) => {
+              const rowBg = idx % 2 === 0 ? ROW_EVEN : ROW_ODD;
+              return (
+                <tr key={carrier.id} style={{ background: rowBg }}>
+                  <td
+                    className="sticky left-0 z-10"
+                    style={{
+                      background: rowBg,
+                      font: `600 11px ${T.data}`,
+                      color: T.ink,
+                      padding: "6px 12px",
+                      borderBottom: CELL_BORDER,
+                    }}
+                  >
+                    <div
+                      className="truncate max-w-[170px]"
+                      title={carrier.name}
+                    >
+                      {carrier.name}
+                    </div>
+                  </td>
+                  {agents.map((agent) =>
+                    renderEditingCell(
+                      agent.id,
+                      carrier.id,
+                      "min-w-[92px] w-[92px]",
+                    ),
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -10,6 +10,7 @@ import {
   sumAllPremiums,
   type PolicyFilters,
 } from "../queryPolicies.ts";
+import { getWritingNumberCoverage } from "../getWritingNumberCoverage.ts";
 import { getDailyBriefingData } from "../getDailyBriefingData.ts";
 import { getLeadPriorities } from "../getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "../getRecruitingSnapshot.ts";
@@ -653,17 +654,20 @@ Deno.test(
   },
 );
 
-Deno.test("queryPolicies clamps an oversized limit to the 200 hard cap", async () => {
-  const { ctx, selectCalls } = makeCtx(
-    {},
-    { policies: { data: [], count: 0, error: null } },
-  );
-  await queryPolicies.run({ limit: 9999 }, ctx);
-  const limitFilter = selectCalls
-    .find((c) => c.table === "policies")
-    ?.filters.find((f) => f.op === "limit");
-  assertEquals(limitFilter?.value, 200);
-});
+Deno.test(
+  "queryPolicies clamps an oversized limit to the 200 hard cap",
+  async () => {
+    const { ctx, selectCalls } = makeCtx(
+      {},
+      { policies: { data: [], count: 0, error: null } },
+    );
+    await queryPolicies.run({ limit: 9999 }, ctx);
+    const limitFilter = selectCalls
+      .find((c) => c.table === "policies")
+      ?.filters.find((f) => f.op === "limit");
+    assertEquals(limitFilter?.value, 200);
+  },
+);
 
 Deno.test(
   "queryPolicies allowlists the product enum — a typo'd value never reaches .in()",
@@ -745,6 +749,203 @@ Deno.test(
   },
 );
 
+// --- getWritingNumberCoverage: RLS-scoped carrier-appointment coverage ---------------
+
+Deno.test(
+  "getWritingNumberCoverage scope 'mine' returns own numbers + missing carriers, filters by agent_id, writes nothing",
+  async () => {
+    const { ctx, inserts, selectCalls } = makeCtx(
+      {},
+      {
+        agent_writing_numbers: {
+          data: [
+            {
+              carrier_id: "c1",
+              writing_number: "WN-111",
+              status: "active",
+              carriers: { name: "Americo" },
+            },
+            {
+              carrier_id: "c2",
+              writing_number: "WN-222",
+              status: "active",
+              carriers: { name: "Mutual of Omaha" },
+            },
+          ],
+          count: null,
+          error: null,
+        },
+        carriers: {
+          data: [
+            { id: "c1", name: "Americo" },
+            { id: "c2", name: "Mutual of Omaha" },
+            { id: "c3", name: "Foresters" },
+          ],
+          count: null,
+          error: null,
+        },
+      },
+    );
+
+    const res = (await getWritingNumberCoverage.run(
+      { scope: "mine" },
+      ctx,
+    )) as {
+      available: boolean;
+      data: {
+        scope: string;
+        totalCarriers: number;
+        filled: number;
+        missing: number;
+        coveragePct: number | null;
+        carriers: Array<{
+          carrier: string | null;
+          writingNumber: string | null;
+        }>;
+        missingCarriers: string[];
+      };
+    };
+
+    assertEquals(inserts.length, 0); // read-only
+    assertEquals(res.available, true);
+    assertEquals(res.data.scope, "mine");
+    assertEquals(res.data.totalCarriers, 3);
+    assertEquals(res.data.filled, 2);
+    assertEquals(res.data.missing, 1);
+    assertEquals(res.data.coveragePct, 67);
+    assertEquals(res.data.missingCarriers, ["Foresters"]);
+    // The caller's OWN writing numbers ARE returned (their data).
+    assert(res.data.carriers.some((c) => c.writingNumber === "WN-111"));
+
+    // scope 'mine' MUST narrow agent_writing_numbers to the caller's own user_id.
+    const wnCall = selectCalls.find((c) => c.table === "agent_writing_numbers");
+    assert(wnCall, "should query agent_writing_numbers");
+    assert(
+      wnCall?.filters.some(
+        (f) => f.op === "eq" && f.column === "agent_id" && f.value === "user_1",
+      ),
+      "must filter agent_id = caller",
+    );
+    // Active-carrier denominator is IMO-scoped.
+    const carrierCall = selectCalls.find((c) => c.table === "carriers");
+    assert(
+      carrierCall?.filters.some(
+        (f) => f.op === "eq" && f.column === "is_active" && f.value === true,
+      ),
+      "carriers must be filtered to active",
+    );
+  },
+);
+
+Deno.test(
+  "getWritingNumberCoverage scope 'mine' treats zero rows as available:true (a real 'none')",
+  async () => {
+    const { ctx } = makeCtx(
+      {},
+      {
+        agent_writing_numbers: { data: [], count: null, error: null },
+        carriers: {
+          data: [{ id: "c1", name: "Americo" }],
+          count: null,
+          error: null,
+        },
+      },
+    );
+    const res = (await getWritingNumberCoverage.run({}, ctx)) as {
+      available: boolean;
+      data: { filled: number; missing: number };
+    };
+    assertEquals(res.available, true);
+    assertEquals(res.data.filled, 0);
+    assertEquals(res.data.missing, 1);
+  },
+);
+
+Deno.test(
+  "getWritingNumberCoverage scope 'team' aggregates per-agent coverage and NEVER leaks another agent's numbers",
+  async () => {
+    const { ctx, inserts, selectCalls } = makeCtx(
+      {},
+      {
+        agent_writing_numbers: {
+          data: [
+            {
+              agent_id: "a1",
+              carrier_id: "c1",
+              carriers: { name: "Americo" },
+              writing_number: "SECRET-1",
+              agent: { first_name: "Jane", last_name: "Doe" },
+            },
+            {
+              agent_id: "a1",
+              carrier_id: "c2",
+              carriers: { name: "Mutual of Omaha" },
+              writing_number: "SECRET-2",
+              agent: { first_name: "Jane", last_name: "Doe" },
+            },
+            {
+              agent_id: "a2",
+              carrier_id: "c1",
+              carriers: { name: "Americo" },
+              writing_number: "SECRET-3",
+              agent: { first_name: "Bob", last_name: "Smith" },
+            },
+          ],
+          count: null,
+          error: null,
+        },
+        carriers: {
+          data: [
+            { id: "c1", name: "Americo" },
+            { id: "c2", name: "Mutual of Omaha" },
+            { id: "c3", name: "Foresters" },
+          ],
+          count: null,
+          error: null,
+        },
+      },
+    );
+
+    const res = (await getWritingNumberCoverage.run(
+      { scope: "team" },
+      ctx,
+    )) as {
+      available: boolean;
+      data: {
+        scope: string;
+        agentCount: number;
+        totalCarriers: number;
+        perAgent: Array<{ agent: string; filled: number }>;
+        leastCoveredCarriers: Array<{ carrier: string; agentsCovered: number }>;
+      };
+    };
+
+    assertEquals(inserts.length, 0);
+    assertEquals(res.available, true);
+    assertEquals(res.data.scope, "team");
+    assertEquals(res.data.agentCount, 2);
+    assertEquals(res.data.totalCarriers, 3);
+    // least-covered first: Bob (1) before Jane (2).
+    assertEquals(res.data.perAgent[0].agent, "Bob Smith");
+    assertEquals(res.data.perAgent[0].filled, 1);
+    // Foresters has zero agents covered and must surface as least-covered.
+    assert(
+      res.data.leastCoveredCarriers.some(
+        (c) => c.carrier === "Foresters" && c.agentsCovered === 0,
+      ),
+    );
+    // PII guard: no individual writing-number value leaks into the team payload.
+    const serialized = JSON.stringify(res.data);
+    assert(!serialized.includes("SECRET-"), "team scope must not leak numbers");
+    // team scope must NOT add an agent_id eq filter (RLS is the only scope).
+    const wnCall = selectCalls.find((c) => c.table === "agent_writing_numbers");
+    assert(
+      !wnCall?.filters.some((f) => f.op === "eq" && f.column === "agent_id"),
+      "team scope relies on RLS, not an explicit agent_id filter",
+    );
+  },
+);
+
 // --- sumAllPremiums: the cross-page accumulation arithmetic (the money path) ---------
 //
 // queryPolicies' display-query mock returns one page, so it cannot exercise the
@@ -763,7 +964,9 @@ const SUM_FILTERS: PolicyFilters = {
 };
 
 function makePagedCtx(
-  pages: Array<Array<{ annual_premium: number | null; monthly_premium: number }>>,
+  pages: Array<
+    Array<{ annual_premium: number | null; monthly_premium: number }>
+  >,
 ) {
   const ranges: Array<[number, number]> = [];
   let call = 0;
@@ -791,7 +994,9 @@ function makePagedCtx(
     rpc: () => Promise.resolve({ data: null, error: null }),
     from: () => ({
       insert: () => ({
-        select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+        select: () => ({
+          single: () => Promise.resolve({ data: null, error: null }),
+        }),
       }),
       select: () => builder,
     }),

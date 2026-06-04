@@ -25,6 +25,7 @@ import {
   Network,
   Sparkles,
   Zap,
+  IdCard,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -111,6 +112,16 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         href: "/hierarchy",
         permission: "nav.team_dashboard",
         subscriptionFeature: "hierarchy",
+      },
+      {
+        icon: IdCard,
+        label: "Licensing",
+        href: "/the-standard-team",
+        // `public` is required so the resolver returns the item at the
+        // public branch; `requiresLicensingWorkspace` then gates it on the
+        // licensing-workspace access check (7-day trial → Pro/Team).
+        public: true,
+        requiresLicensingWorkspace: true,
       },
     ],
   },

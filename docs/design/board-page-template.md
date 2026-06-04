@@ -256,6 +256,16 @@ gating per section, export (CSV/PDF), upgrade banner.
 - [x] Metric pages: Leaderboard, Close KPIs, Expenses, Lead Intelligence (`/lead-vendors`)
 - [x] Nav pages: Settings, Admin Control Center, Workflows, Comp Guide, Contracting, The Standard Team, Billing, Business Tools, Marketing (hub+templates+campaigns tabs), Orchestrator, Recruit Detail, Lead Detail, Underwriting Guides, Training Hub, Trainer Dashboard, My Training, Roadmap List (admin), Team Progress (roadmap), Close AI Builder, Lead Drop, Auth Diagnostic, Bot Health
 
+### Correction (2026-06-04): The Standard Team / Licensing — body rebuild
+The "The Standard Team" entry above was only ever a SHELL wrap (dashboard-canvas +
+departure header); the view BODIES (`MyWritingNumbersView`, `TeamWritingNumbersOverview`,
+`AgentDetailView`, `WritingNumbersMatrixView`, `WritingNumbersTable`) were still old
+`v2-card`/shadcn — the classic wrap-only gap. Now fully rebuilt into Board tokens +
+FlapTile snapshot bands + EmptyState + charcoal matrix table, edit/upsert logic preserved
+verbatim. The page is `/the-standard-team` (sidebar label **Licensing**, re-added under the
+Business group). Verified across all 4 view modes via `scripts/shots-licensing.py`. The
+foreign `AgentCarrierContractsCard` (contracting feature) is intentionally left as-is.
+
 ### Deliberately NOT re-skinned — full-bleed / own-surface (like `/command-center`)
 These fill the viewport (chat panes, editors, players, wizards, two-pane master-detail) and would break if centered in the padded `max-w` canvas container. They already render inside the `.theme-v2` charcoal shell; they just don't get the dashboard-canvas texture + departure header. Leave them:
 `/command-center` (Jarvis), `/recruiting/my-pipeline` (recruit portal), `/chat-bot`, `/voice-agent` + `/voice-agent/clone`, `/messages` (two-pane inbox), `/slack/name-leaderboard` (centered card flow), `/underwriting/wizard` + `/underwriting/admin` (master-detail), marketing template/campaign EDITORS, training ModulePlayer/ModuleBuilder/Presentation record+detail, agent-roadmap Runner/Editor + non-admin landing. Public/auth/legal routes are out of scope.
