@@ -15,7 +15,7 @@
 // revoked user's gate-denied JWT still drives them through invoke().
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/services/base";
+import { supabase, supabaseUrl } from "@/services/base";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { FFG_IMO_ID } from "@/constants/imos";
@@ -73,8 +73,28 @@ export interface ExportBundleResult {
   exportLogId?: string;
   storagePath?: string;
   signedUrls?: Record<string, string | null>;
+  /** per-table row counts the bundle captured — drives the pre-delete preview */
+  tables?: Record<string, number>;
   reused?: boolean;
   error?: string;
+}
+
+// The export edge fn signs URLs against its OWN SUPABASE_URL, which in local dev
+// is the internal Docker host (http://kong:8000) the browser can't resolve, and
+// could differ from the browser-facing origin in any split-host setup. The signed
+// token authorizes the storage PATH, not the host, so we can safely swap the
+// origin to the client's Supabase URL without invalidating the signature.
+function toClientOrigin(signed: string | null): string | null {
+  if (!signed) return signed;
+  try {
+    const u = new URL(signed);
+    const base = new URL(supabaseUrl);
+    u.protocol = base.protocol;
+    u.host = base.host;
+    return u.toString();
+  } catch {
+    return signed;
+  }
 }
 
 /**
@@ -92,6 +112,16 @@ export function useExportBundle() {
       const result = data as ExportBundleResult;
       if (result.status === "failed") {
         throw new Error(result.error || "Export generation failed");
+      }
+      // Rewrite each signed URL onto the browser-facing Supabase origin so the
+      // download actually resolves (see toClientOrigin).
+      if (result.signedUrls) {
+        result.signedUrls = Object.fromEntries(
+          Object.entries(result.signedUrls).map(([k, v]) => [
+            k,
+            toClientOrigin(v),
+          ]),
+        );
       }
       return result;
     },

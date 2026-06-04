@@ -4,7 +4,7 @@
 // account deletion -> terminal confirmation. Copy is intentionally opaque: it
 // never references other tenants or hints the platform continues for anyone.
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -14,9 +14,25 @@ import {
   FileSpreadsheet,
   FileArchive,
   AlertTriangle,
+  Clock,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useExportBundle, useDeleteMyAccount } from "@/hooks/imo";
+import { AUTO_PURGE_AFTER_DAYS } from "@/constants/revocation";
+import { EXPORTED_TABLES } from "../../../supabase/functions/_shared/owned-tables";
+
+// table name -> friendly category label, kept in sync with the export sheets.
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  EXPORTED_TABLES.map((t) => [t.table, t.sheet ?? t.table]),
+);
+
+function prettyLabel(table: string): string {
+  return (
+    CATEGORY_LABELS[table] ??
+    table.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
 
 // Imperative download: fetch the signed URL to a Blob and click an anchor, so
 // "has downloaded" only flips after the bytes actually left the bucket (a plain
@@ -118,18 +134,37 @@ export function SunsetPage() {
               Access to your account is ending
             </h1>
             <p className="mt-1 text-sm text-slate-600">
-              Your access is being discontinued. Please download a copy of your
-              data below, then permanently close your account. After your
-              account is closed, your data cannot be recovered.
+              Your access is being discontinued. Review everything included in
+              your account below and download a copy of your data, then
+              permanently close your account. Once your data is deleted, it
+              cannot be recovered.
             </p>
           </div>
         </div>
 
-        {/* Step 1 — export */}
+        {/* Auto-purge notice */}
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>
+            <span className="font-medium">
+              If you take no action, your account and all of its data will be
+              permanently deleted automatically after {AUTO_PURGE_AFTER_DAYS}{" "}
+              days.
+            </span>{" "}
+            You can download your data and close your account now using the
+            steps below, or simply do nothing and it will be removed when the{" "}
+            {AUTO_PURGE_AFTER_DAYS}-day window ends. Either way, deleted data
+            cannot be recovered.
+          </span>
+        </div>
+
+        {/* Step 1 — review + export */}
         <section className="mt-6">
           <h2 className="text-sm font-semibold text-slate-800">
-            1. Download your data
+            1. Review &amp; download your data
           </h2>
+
+          {isReady && <DataPreview tables={result?.tables} />}
 
           {isPreparing && (
             <div className="mt-3 flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
@@ -257,6 +292,86 @@ export function SunsetPage() {
     </Shell>
   );
 }
+
+// Pre-delete validation: a per-category record-count summary built from the
+// export bundle's manifest, so the user can confirm everything is captured
+// BEFORE they download or permanently delete.
+const DataPreview: React.FC<{ tables?: Record<string, number> }> = ({
+  tables,
+}) => {
+  const { rows, total, emptyCount, errorCount } = useMemo(() => {
+    const entries = Object.entries(tables ?? {});
+    const rows = entries
+      .filter(([, n]) => n > 0)
+      .map(([table, n]) => ({ label: prettyLabel(table), count: n }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+    return {
+      rows,
+      total: rows.reduce((s, r) => s + r.count, 0),
+      emptyCount: entries.filter(([, n]) => n === 0).length,
+      errorCount: entries.filter(([, n]) => n < 0).length,
+    };
+  }, [tables]);
+
+  if (!tables) return null;
+
+  return (
+    <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
+        <ListChecks className="h-4 w-4 text-slate-500" />
+        What&apos;s included in your export
+      </div>
+
+      {rows.length > 0 ? (
+        <ul className="mt-2 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
+          {rows.map((r) => (
+            <li
+              key={r.label}
+              className="flex items-center justify-between px-3 py-1.5 text-sm"
+            >
+              <span className="text-slate-700">{r.label}</span>
+              <span className="font-medium tabular-nums text-slate-900">
+                {r.count.toLocaleString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-slate-600">
+          No records were found in your account.
+        </p>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-1 text-xs text-slate-500">
+        <span>
+          <span className="font-medium text-slate-700">
+            {total.toLocaleString()}
+          </span>{" "}
+          record{total === 1 ? "" : "s"} across {rows.length} categor
+          {rows.length === 1 ? "y" : "ies"}
+        </span>
+        {emptyCount > 0 && (
+          <span>
+            {emptyCount} categor{emptyCount === 1 ? "y has" : "ies have"} no
+            records
+          </span>
+        )}
+      </div>
+
+      {errorCount > 0 && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-700">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          {errorCount} categor{errorCount === 1 ? "y" : "ies"} could not be
+          read. Please use “Try again” before downloading.
+        </p>
+      )}
+
+      <p className="mt-2 text-xs text-slate-500">
+        Download the files below to review the full details of every record.
+      </p>
+    </div>
+  );
+};
 
 const DownloadRow: React.FC<{
   icon: React.ReactNode;
