@@ -53,14 +53,16 @@
 >   `email-unsubscribe` never recorded clicks. Fixed the params (code-only — DB was correct) +
 >   wired `isEmailSuppressed` into the executor before `send-email`. Verified via PostgREST round-
 >   trip on prod; `communication_suppression` empty (no live harm — the writes were dead).
->   **EMAIL PIPELINE NOW DEPLOYED (Jun 3):** secrets `UNSUBSCRIBE_SECRET` + `COMPANY_POSTAL_ADDRESS`
->   set on prod; deployed `email-unsubscribe` (verified live + HMAC-gated) + `send-automated-email`
->   (drift was only the TCPA commit — safe). Email opt-out works end-to-end. **STILL NOT deployed
->   (owner decision):** `process-bulk-campaign` (its drift ALSO carries Marketing-Hub commit
->   `a51b16de` → deploying it ACTIVATES bulk-campaign processing — review first) and
->   `sms-inbound-webhook` (without it, STOP texts aren't RECORDED — send-sms's check works but
->   nothing writes sms opt-outs; needs `SMS_WEBHOOK_URL` + Twilio inbound webhook + Advanced
->   Opt-Out). See `project_compliance_tcpa_canspam_20260531` memory.
+>   **FULL TCPA PIPELINE NOW DEPLOYED (Jun 3):** secrets `UNSUBSCRIBE_SECRET` +
+>   `COMPANY_POSTAL_ADDRESS` + `SMS_WEBHOOK_URL` set; deployed `email-unsubscribe`,
+>   `send-automated-email`, `process-bulk-campaign` (super-admin manual, no cron → auto-sends
+>   nothing), `sms-inbound-webhook`, and REDEPLOYED `send-sms` (its v73 @ Feb predated the
+>   suppression gate, so STOP wasn't honored; now it is — drift was the TCPA commit + a supabase-js
+>   crash-fix). All gates verified (401/403); suppression table still 0. **REMAINING = Twilio
+>   dashboard (owner, not code):** point the Twilio Messaging Service inbound webhook at
+>   `SMS_WEBHOOK_URL` and decide Advanced Opt-Out (use EITHER Twilio's built-in opt-out OR our
+>   webhook, not both). Plus standing attorney items (consent capture at forms, quiet-hours,
+>   suppression UI). See `project_compliance_tcpa_canspam_20260531` memory.
 > - **#6 Recipient normalization is triplicated** (TS `hashRecipient` + SQL `assistant_send_caps`
 >   + SQL `assistant_recipient_is_allowed`) and must stay byte-identical or the same person
 >   hashes/counts differently and a cap is bypassed. **Fix:** one SQL `normalize_recipient()` +
