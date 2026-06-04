@@ -45,13 +45,20 @@
 >
 > **🔎 CODE-REVIEW FOLLOW-UPS (xhigh review of the executor hardening; quick wins applied in
 > `1b298fca`-range, these two deferred):**
-> - **#1 Email has NO suppression gate (compliance).** The executor sends email via `send-email`
->   (raw Mailgun — verified: zero `is_suppressed`/unsubscribe check), and the executor's
->   `suppressed` detection is SMS-only (`send-sms` sets that flag). So a suppressed/unsubscribed
->   email recipient is delivered and audited as `executed`/`success`. Pre-existing, but the new
->   audit now gives false assurance. **Fix:** add an `is_suppressed` pre-check for email in the
->   executor (mirror the SMS STOP gate) OR route assistant email through a suppression-aware path.
->   Needs a compliance/product call on whether assistant email is transactional vs commercial.
+> - **#1 Email suppression — ✅ ASSISTANT GATE DONE + ROOT-CAUSE BUG FIXED (`c011fc7b`, exec v13).**
+>   Building the gate uncovered that email suppression was **broken platform-wide**: the email
+>   callers used `p_contact_type`/`p_contact_value` but the deployed RPCs are
+>   `is_suppressed(p_channel,p_contact)` / `add_suppression(...)`, so PostgREST 404'd every call →
+>   `isEmailSuppressed` (send-automated-email + process-bulk-campaign) failed OPEN and
+>   `email-unsubscribe` never recorded clicks. Fixed the params (code-only — DB was correct) +
+>   wired `isEmailSuppressed` into the executor before `send-email`. Verified via PostgREST round-
+>   trip on prod; `communication_suppression` empty (no live harm — the writes were dead).
+>   **REMAINING (owner decision):** the broader TCPA email pipeline is still NOT deployed —
+>   `send-automated-email` on prod is v83 @ 2025-12-16 (predates the suppression code) and
+>   `email-unsubscribe`/`process-bulk-campaign` aren't deployed. To make end-to-end email opt-out
+>   actually work, deploy those WITH env vars `UNSUBSCRIBE_SECRET` + real `COMPANY_POSTAL_ADDRESS`
+>   (CAN-SPAM). NB: `send-automated-email` is 6 months stale on prod — review its full drift before
+>   redeploying. See `project_compliance_tcpa_canspam_20260531` memory.
 > - **#6 Recipient normalization is triplicated** (TS `hashRecipient` + SQL `assistant_send_caps`
 >   + SQL `assistant_recipient_is_allowed`) and must stay byte-identical or the same person
 >   hashes/counts differently and a cap is bypassed. **Fix:** one SQL `normalize_recipient()` +
