@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ["./src/setupTests.ts"],
     globals: true,
     css: true,
+    // Vitest runs ONLY the Node/React tests under src/. Edge-function and worker
+    // suites (supabase/functions/**, services/jarvis-voice-worker/**, tests/**)
+    // are Deno tests — they import `jsr:@std/assert` etc. which Node/Vitest
+    // cannot load — and are run separately via `deno test`, not here.
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
   resolve: {
     alias: {
