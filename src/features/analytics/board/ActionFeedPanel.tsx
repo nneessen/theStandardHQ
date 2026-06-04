@@ -1,6 +1,5 @@
 // src/features/analytics/board/ActionFeedPanel.tsx
 import { Zap } from "lucide-react";
-import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 import { useAnalyticsData } from "@/hooks";
 import { useCalculatedTargets } from "@/hooks/targets";
 import { useExpenses } from "../../../hooks/expenses/useExpenses";
@@ -13,12 +12,9 @@ import { formatCurrency } from "@/lib/format";
 import { Board, Cap, Pill, StatusDot, EmptyState, T } from "@/components/board";
 
 export function ActionFeedPanel() {
-  const { dateRange } = useAnalyticsDateRange();
-
-  const { raw, isLoading: isAnalyticsLoading } = useAnalyticsData({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  // Period-independent: calculateGamePlan windows the full book into the
+  // current month + YTD internally, so it must receive the whole book.
+  const { raw, isLoading: isAnalyticsLoading } = useAnalyticsData();
 
   const { calculated, isLoading: isTargetsLoading } = useCalculatedTargets();
 
@@ -58,10 +54,23 @@ export function ActionFeedPanel() {
     );
   }
 
-  const periodExpenses = (allExpenses ?? [])
+  // calculateGamePlan's 4th arg is CURRENT-MONTH expenses (its `mtdExpenses`
+  // param), matching its internal current-month windowing — not the selector.
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
+  const mtdExpenses = (allExpenses ?? [])
     .filter((e) => {
       const d = new Date(e.date);
-      return d >= dateRange.startDate && d <= dateRange.endDate;
+      return d >= monthStart && d <= monthEnd;
     })
     .reduce((sum, e) => sum + e.amount, 0);
 
@@ -69,7 +78,7 @@ export function ActionFeedPanel() {
     raw.policies,
     raw.commissions,
     calculated,
-    periodExpenses,
+    mtdExpenses,
   );
 
   const smartMoves: SmartMove[] = gamePlan.smartMoves ?? [];

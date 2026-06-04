@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import {
-  ComposedChart,
-  Area,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,14 +11,11 @@ import {
 import { Activity } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
 import { useAnalyticsData } from "@/hooks";
-import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 // eslint-disable-next-line no-restricted-imports
 import {
-  getPolicyStatusSummary,
-  getMonthlyTrendData,
+  getPolicyStatusSnapshot,
+  getMonthlyPoliciesWritten,
 } from "@/services/analytics/policyStatusService";
-
-const GRADIENT_ID = "trendActiveGradient";
 
 const CustomTooltip = ({
   active,
@@ -73,74 +69,18 @@ const CustomTooltip = ({
   );
 };
 
-const CustomLegend = () => (
-  <div
-    style={{
-      display: "flex",
-      gap: 16,
-      justifyContent: "flex-end",
-      marginTop: 6,
-    }}
-  >
-    <span
-      style={{
-        font: `700 11px ${T.mono}`,
-        color: T.mut,
-        letterSpacing: "0.12em",
-        display: "flex",
-        alignItems: "center",
-        gap: 5,
-      }}
-    >
-      <span
-        style={{
-          display: "inline-block",
-          width: 8,
-          height: 8,
-          borderRadius: "50%",
-          background: T.green,
-        }}
-      />
-      ACTIVE
-    </span>
-    <span
-      style={{
-        font: `700 11px ${T.mono}`,
-        color: T.mut,
-        letterSpacing: "0.12em",
-        display: "flex",
-        alignItems: "center",
-        gap: 5,
-      }}
-    >
-      <span
-        style={{
-          display: "inline-block",
-          width: 12,
-          height: 2,
-          background: T.amber,
-          borderRadius: 1,
-        }}
-      />
-      LAPSED
-    </span>
-  </div>
-);
-
 export function TrendChartPanel() {
-  const { dateRange } = useAnalyticsDateRange();
-  const { raw, isLoading } = useAnalyticsData({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  // Period-independent: the 12-month trend + current-status snapshot always
+  // reflect the full book, not the page's period selector.
+  const { raw, isLoading } = useAnalyticsData();
 
-  const statusSummary = useMemo(
-    () => (raw?.policies ? getPolicyStatusSummary(raw.policies) : null),
+  const snapshot = useMemo(
+    () => (raw?.policies ? getPolicyStatusSnapshot(raw.policies) : null),
     [raw?.policies],
   );
 
-  const monthlyTrend = useMemo(
-    () => (raw?.policies ? getMonthlyTrendData(raw.policies) : []),
+  const monthlyWritten = useMemo(
+    () => (raw?.policies ? getMonthlyPoliciesWritten(raw.policies) : []),
     [raw?.policies],
   );
 
@@ -163,12 +103,12 @@ export function TrendChartPanel() {
   }
 
   const isEmpty =
-    !raw?.policies?.length ||
-    monthlyTrend.every((m) => m.active === 0 && m.lapsed === 0);
+    !raw?.policies?.length || monthlyWritten.every((m) => m.written === 0);
 
-  const activeCount = statusSummary?.active?.count ?? 0;
-  const lapsedCount = statusSummary?.lapsed?.count ?? 0;
-  const cancelledCount = statusSummary?.cancelled?.count ?? 0;
+  const activeCount = snapshot?.active ?? 0;
+  const lapsedCount = snapshot?.lapsed ?? 0;
+  const cancelledCount = snapshot?.cancelled ?? 0;
+  const pendingCount = snapshot?.pending ?? 0;
 
   return (
     <Board
@@ -193,7 +133,7 @@ export function TrendChartPanel() {
               marginTop: 4,
             }}
           >
-            12-Month Trend
+            Written · Last 12 Months
           </div>
         </div>
         {!isEmpty && (
@@ -225,7 +165,7 @@ export function TrendChartPanel() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: "repeat(4, 1fr)",
               gap: 10,
               marginBottom: 16,
             }}
@@ -233,25 +173,16 @@ export function TrendChartPanel() {
             <FlapTile label="Active" value={activeCount} tone="green" sm />
             <FlapTile label="Lapsed" value={lapsedCount} tone="amber" sm />
             <FlapTile label="Cancelled" value={cancelledCount} tone="red" sm />
+            <FlapTile label="Pending" value={pendingCount} tone="blue" sm />
           </div>
 
-          {/* Chart */}
+          {/* Chart — policies written per month (production histogram) */}
           <div style={{ flex: 1, minHeight: 250 }}>
             <ResponsiveContainer width="100%" height={250}>
-              <ComposedChart
-                data={monthlyTrend}
+              <BarChart
+                data={monthlyWritten}
                 margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
               >
-                <defs>
-                  <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={T.green} stopOpacity={0.32} />
-                    <stop
-                      offset="100%"
-                      stopColor={T.green}
-                      stopOpacity={0.02}
-                    />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid
                   strokeDasharray="4 4"
                   stroke={T.line}
@@ -269,6 +200,7 @@ export function TrendChartPanel() {
                   interval={1}
                 />
                 <YAxis
+                  allowDecimals={false}
                   tick={{
                     fontSize: 11,
                     fill: T.mut,
@@ -277,33 +209,21 @@ export function TrendChartPanel() {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="active"
-                  name="Active"
-                  stroke={T.green}
-                  strokeWidth={2}
-                  fill={`url(#${GRADIENT_ID})`}
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: T.line, opacity: 0.4 }}
+                />
+                <Bar
+                  dataKey="written"
+                  name="Written"
+                  fill={T.green}
+                  radius={[3, 3, 0, 0]}
                   isAnimationActive
                   animationDuration={1100}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="lapsed"
-                  name="Lapsed"
-                  stroke={T.amber}
-                  strokeWidth={2}
-                  strokeDasharray="5 4"
-                  dot={false}
-                  isAnimationActive
-                  animationDuration={1100}
-                />
-              </ComposedChart>
+              </BarChart>
             </ResponsiveContainer>
           </div>
-
-          <CustomLegend />
         </>
       )}
     </Board>
