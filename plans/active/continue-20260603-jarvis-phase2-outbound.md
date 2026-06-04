@@ -53,12 +53,14 @@
 >   `email-unsubscribe` never recorded clicks. Fixed the params (code-only — DB was correct) +
 >   wired `isEmailSuppressed` into the executor before `send-email`. Verified via PostgREST round-
 >   trip on prod; `communication_suppression` empty (no live harm — the writes were dead).
->   **REMAINING (owner decision):** the broader TCPA email pipeline is still NOT deployed —
->   `send-automated-email` on prod is v83 @ 2025-12-16 (predates the suppression code) and
->   `email-unsubscribe`/`process-bulk-campaign` aren't deployed. To make end-to-end email opt-out
->   actually work, deploy those WITH env vars `UNSUBSCRIBE_SECRET` + real `COMPANY_POSTAL_ADDRESS`
->   (CAN-SPAM). NB: `send-automated-email` is 6 months stale on prod — review its full drift before
->   redeploying. See `project_compliance_tcpa_canspam_20260531` memory.
+>   **EMAIL PIPELINE NOW DEPLOYED (Jun 3):** secrets `UNSUBSCRIBE_SECRET` + `COMPANY_POSTAL_ADDRESS`
+>   set on prod; deployed `email-unsubscribe` (verified live + HMAC-gated) + `send-automated-email`
+>   (drift was only the TCPA commit — safe). Email opt-out works end-to-end. **STILL NOT deployed
+>   (owner decision):** `process-bulk-campaign` (its drift ALSO carries Marketing-Hub commit
+>   `a51b16de` → deploying it ACTIVATES bulk-campaign processing — review first) and
+>   `sms-inbound-webhook` (without it, STOP texts aren't RECORDED — send-sms's check works but
+>   nothing writes sms opt-outs; needs `SMS_WEBHOOK_URL` + Twilio inbound webhook + Advanced
+>   Opt-Out). See `project_compliance_tcpa_canspam_20260531` memory.
 > - **#6 Recipient normalization is triplicated** (TS `hashRecipient` + SQL `assistant_send_caps`
 >   + SQL `assistant_recipient_is_allowed`) and must stay byte-identical or the same person
 >   hashes/counts differently and a cap is bypassed. **Fix:** one SQL `normalize_recipient()` +
