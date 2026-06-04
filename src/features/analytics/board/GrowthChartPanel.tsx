@@ -11,7 +11,6 @@ import {
 import { TrendingUp } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
 import { useAnalyticsData } from "@/hooks";
-import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 
 const GRADIENT_ID = "growthCommissionGradient";
 
@@ -139,11 +138,9 @@ function formatYAxis(value: number): string {
 }
 
 export function GrowthChartPanel() {
-  const { dateRange } = useAnalyticsDateRange();
-  const { forecast, isLoading } = useAnalyticsData({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  // Period-independent: growth forecast + renewal projection are inherently
+  // 12-month / forward views computed from the full book.
+  const { forecast, isLoading } = useAnalyticsData();
 
   const growth = useMemo(() => forecast?.growth ?? [], [forecast?.growth]);
   const renewals = useMemo(

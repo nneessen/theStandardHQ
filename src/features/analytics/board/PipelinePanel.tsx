@@ -1,6 +1,5 @@
 // src/features/analytics/board/PipelinePanel.tsx
 import { Clock, TrendingUp } from "lucide-react";
-import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 import { useAnalyticsData } from "@/hooks";
 import { formatCurrency } from "@/lib/format";
 import { parseLocalDate } from "@/lib/date";
@@ -14,12 +13,9 @@ import {
 } from "@/components/board";
 
 export function PipelinePanel() {
-  const { dateRange } = useAnalyticsDateRange();
-
-  const { raw, isLoading } = useAnalyticsData({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  // Period-independent: pending pipeline + trailing-90-day paid are forward
+  // cash-flow views that must read the full commission set.
+  const { raw, isLoading } = useAnalyticsData();
 
   if (isLoading) {
     return (
@@ -87,7 +83,8 @@ export function PipelinePanel() {
     }
   });
 
-  // Quarterly projection from historical paid commissions (last 90 days)
+  // Trailing 90-day paid commissions (~one quarter of realized cash) — the
+  // baseline the pending pipeline is measured against.
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
   const paidLast90 = raw.commissions
     .filter((c) => {
@@ -99,15 +96,11 @@ export function PipelinePanel() {
     })
     .reduce((sum, c) => sum + (c.amount ?? 0), 0);
 
-  const projectedQuarterly = (paidLast90 / 90) * 90;
-
   const allBucketsEmpty = bucket30 === 0 && bucket60 === 0 && bucket90 === 0;
   const isEmpty = totalPending === 0 && allBucketsEmpty;
 
   const pipelinePct =
-    projectedQuarterly > 0
-      ? Math.round((totalPending / projectedQuarterly) * 100)
-      : 0;
+    paidLast90 > 0 ? Math.round((totalPending / paidLast90) * 100) : 0;
 
   const pillTone =
     totalPending > 50000 ? "green" : totalPending > 25000 ? "amber" : "red";
@@ -160,7 +153,7 @@ export function PipelinePanel() {
             <AnimatedNumber value={totalPending} prefix="$" size="lg" />
           </div>
 
-          {/* Quarterly projection */}
+          {/* Trailing 90-day paid */}
           <div
             style={{
               font: `500 12px ${T.data}`,
@@ -168,10 +161,8 @@ export function PipelinePanel() {
               marginBottom: 20,
             }}
           >
-            Quarterly projection &middot;{" "}
-            <span style={{ color: T.cream }}>
-              {formatCurrency(projectedQuarterly)}
-            </span>
+            Last 90 days paid &middot;{" "}
+            <span style={{ color: T.cream }}>{formatCurrency(paidLast90)}</span>
           </div>
 
           {/* Divider */}
@@ -243,14 +234,14 @@ export function PipelinePanel() {
             <Pill tone={pillTone} dot>
               {pillLabel}
             </Pill>
-            {projectedQuarterly > 0 && (
+            {paidLast90 > 0 && (
               <span
                 style={{
                   font: `500 12px ${T.data}`,
                   color: T.green,
                 }}
               >
-                {pipelinePct}% of quarterly target booked
+                {pipelinePct}% of last-90-day paid
               </span>
             )}
           </div>

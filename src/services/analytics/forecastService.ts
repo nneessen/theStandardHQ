@@ -277,10 +277,32 @@ export function projectGrowth(
     }
   }
 
-  const avgGrowthRate =
-    growthRates.length > 0
-      ? growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length
-      : 5; // Default to 5% if no historical data
+  // Use the MEDIAN month-over-month rate, not the mean — a single ramp month
+  // (e.g. 18 → 190 policies) dominates the mean and inflates the entire
+  // projection. The median reflects a typical month and ignores that outlier.
+  const sortedRates = [...growthRates].sort((a, b) => a - b);
+  const medianGrowthRate =
+    sortedRates.length === 0
+      ? 5 // Default when there is no usable history
+      : sortedRates.length % 2 === 1
+        ? sortedRates[(sortedRates.length - 1) / 2]
+        : (sortedRates[sortedRates.length / 2 - 1] +
+            sortedRates[sortedRates.length / 2]) /
+          2;
+
+  // Final safety net: bound the (already-robust) rate so pathological history
+  // still can't compound into an absurd projection. Per-month band derived from
+  // the documented annual caps (MIN −0.5 = −50%/yr, MAX 1.0 = +100%/yr) keeps
+  // the 12-month compound within [0.5×, 2×]. (Caps were defined but never
+  // applied before this.)
+  const monthlyGrowthCap =
+    (Math.pow(1 + ANALYTICS_CONSTANTS.MAX_GROWTH_RATE, 1 / 12) - 1) * 100;
+  const monthlyGrowthFloor =
+    (Math.pow(1 + ANALYTICS_CONSTANTS.MIN_GROWTH_RATE, 1 / 12) - 1) * 100;
+  const cappedGrowthRate = Math.max(
+    monthlyGrowthFloor,
+    Math.min(monthlyGrowthCap, medianGrowthRate),
+  );
 
   // Project next 12 months
   for (let i = 1; i <= 12; i++) {
@@ -289,7 +311,7 @@ export function projectGrowth(
     const projectionMonthLabel = format(projectionMonth, "MMM yyyy");
 
     // Apply growth rate with some variance
-    const growthMultiplier = 1 + avgGrowthRate / 100;
+    const growthMultiplier = 1 + cappedGrowthRate / 100;
     const compoundGrowth = Math.pow(growthMultiplier, i);
 
     const projectedPolicies = Math.round(avgPolicies * compoundGrowth);
@@ -307,7 +329,7 @@ export function projectGrowth(
       projectedRevenue,
       projectedCommission,
       confidence,
-      growthRate: avgGrowthRate,
+      growthRate: cappedGrowthRate,
     });
   }
 

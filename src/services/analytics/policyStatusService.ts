@@ -51,8 +51,12 @@ export function getPolicyStatusSummary(
     };
   }
 
-  const activeCount = policies.filter((p) => p.lifecycleStatus === "active").length;
-  const lapsedCount = policies.filter((p) => p.lifecycleStatus === "lapsed").length;
+  const activeCount = policies.filter(
+    (p) => p.lifecycleStatus === "active",
+  ).length;
+  const lapsedCount = policies.filter(
+    (p) => p.lifecycleStatus === "lapsed",
+  ).length;
   const cancelledCount = policies.filter(
     (p) => p.lifecycleStatus === "cancelled",
   ).length;
@@ -118,6 +122,83 @@ export function getMonthlyTrendData(policies: Policy[]): MonthlyTrendData[] {
   }
 
   return months;
+}
+
+export interface MonthlyWrittenData {
+  month: string; // e.g., "Jan 2025"
+  written: number; // policies written (submitted) in that month
+}
+
+/**
+ * Policies written per month over the last 12 months.
+ *
+ * Counts new business by the month of `submitDate` (falling back to
+ * `effectiveDate`) — the same date convention the analytics hook uses. Unlike
+ * the legacy `getMonthlyTrendData`, this does NOT paint each policy's CURRENT
+ * lifecycle status onto every prior month, so the result is an honest
+ * production histogram rather than a cumulative ramp.
+ */
+export function getMonthlyPoliciesWritten(
+  policies: Policy[],
+): MonthlyWrittenData[] {
+  const now = new Date();
+  const months: MonthlyWrittenData[] = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const monthDate = subMonths(now, i);
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+
+    const written = policies.filter((p) => {
+      const d = parseLocalDate(p.submitDate || p.effectiveDate);
+      return d.getFullYear() === year && d.getMonth() === month;
+    }).length;
+
+    months.push({ month: format(monthDate, "MMM yyyy"), written });
+  }
+
+  return months;
+}
+
+export interface PolicyStatusSnapshot {
+  active: number; // in force
+  lapsed: number;
+  cancelled: number;
+  pending: number; // application still in underwriting (status === "pending")
+  total: number; // active + lapsed + cancelled + pending
+}
+
+/**
+ * Point-in-time snapshot of the book by current status.
+ *
+ * Issued policies are bucketed by `lifecycleStatus`; applications still in
+ * underwriting (`status === "pending"`, which carry a null lifecycleStatus) are
+ * surfaced as `pending` instead of silently vanishing from the counts. Terminal
+ * non-issued applications (withdrawn/denied) are intentionally excluded — they
+ * belong to the conversion funnel, not the policy-status view.
+ */
+export function getPolicyStatusSnapshot(
+  policies: Policy[],
+): PolicyStatusSnapshot {
+  let active = 0;
+  let lapsed = 0;
+  let cancelled = 0;
+  let pending = 0;
+
+  for (const p of policies) {
+    if (p.lifecycleStatus === "active") active++;
+    else if (p.lifecycleStatus === "lapsed") lapsed++;
+    else if (p.lifecycleStatus === "cancelled") cancelled++;
+    else if (p.status === "pending") pending++;
+  }
+
+  return {
+    active,
+    lapsed,
+    cancelled,
+    pending,
+    total: active + lapsed + cancelled + pending,
+  };
 }
 
 /**

@@ -28,6 +28,7 @@ import type { CreateExpenseData } from "../../types/expense.types";
 import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency, formatCompactCurrency } from "@/lib/format";
+import { resolveGoalAvgAP } from "@/lib/goal";
 
 import { DetailsTable } from "./components/DetailsTable";
 import { OrgMetricsSection } from "./components/OrgMetricsSection";
@@ -393,19 +394,13 @@ export const DashboardHome: React.FC = () => {
 
   const periodCommTotal =
     (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0);
-  // Avg AP for the Premium hero target: take the HIGHEST of all known
-  // signals so the dashboard frames the goal aspirationally rather than
-  // anchoring to whichever number happens to be lowest.
-  // - constants.avgAP: org-set baseline
-  // - agency mean / median: stable cohort signal
-  // - personal mean / median: the user's own book, if higher than agency
-  const dashboardAvgAP = Math.max(
-    constants?.avgAP ?? 0,
-    historicalAverages.avgPolicyPremium ?? 0,
-    historicalAverages.medianPolicyPremium ?? 0,
-    historicalAverages.personalAvgPolicyPremium ?? 0,
-    historicalAverages.personalMedianPolicyPremium ?? 0,
-  );
+  // Avg AP for the Premium hero target: a single, stable average premium
+  // (shared with the Analytics hero via resolveGoalAvgAP). This previously took
+  // the MAX of all signals to frame the goal "aspirationally", but that biased
+  // the goal high and made pace read "behind"; it now prefers the configured
+  // avgAP, then the agent's own median, then team figures. To restore the old
+  // aspirational framing, swap back to Math.max of the same signals.
+  const dashboardAvgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages);
   const premiumTarget =
     dashboardAvgAP > 0 && policyTarget > 0 ? dashboardAvgAP * policyTarget : 0;
 

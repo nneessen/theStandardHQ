@@ -65,9 +65,9 @@ function pctChange(cur: number, prev: number): number {
   return ((cur - prev) / prev) * 100;
 }
 
-function DeltaBadge({ pct }: { pct: number }) {
-  const isUp = pct > 0;
-  const isDown = pct < 0;
+function DeltaBadge({ pct, isNew = false }: { pct: number; isNew?: boolean }) {
+  const isUp = isNew || pct > 0;
+  const isDown = !isNew && pct < 0;
   const color = isUp ? T.green : isDown ? T.red : T.mut;
   const bg = isUp
     ? "rgba(95,208,138,0.12)"
@@ -90,8 +90,8 @@ function DeltaBadge({ pct }: { pct: number }) {
         whiteSpace: "nowrap",
       }}
     >
-      {isUp ? "▲" : isDown ? "▼" : "—"}
-      {isUp || isDown ? `${Math.abs(Math.round(pct))}%` : ""}
+      {isNew ? "NEW" : isUp ? "▲" : isDown ? "▼" : "—"}
+      {!isNew && (isUp || isDown) ? `${Math.abs(Math.round(pct))}%` : ""}
     </span>
   );
 }
@@ -322,7 +322,7 @@ export function TrendComparisonPanel() {
                   >
                     {m.label}
                   </span>
-                  <DeltaBadge pct={delta} />
+                  <DeltaBadge pct={delta} isNew={m.prev === 0 && m.cur > 0} />
                 </div>
                 {/* Big value */}
                 <Num text={fmtValue(m.cur, m.fmt)} size="sm" color={T.cream} />

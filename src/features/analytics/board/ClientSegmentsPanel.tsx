@@ -1,17 +1,12 @@
 // src/features/analytics/board/ClientSegmentsPanel.tsx
 import { Users } from "lucide-react";
-import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 import { useAnalyticsData } from "@/hooks";
 import { formatCurrency } from "@/lib/format";
 import { Board, Cap, AnimatedNumber, EmptyState, T } from "@/components/board";
 
 export function ClientSegmentsPanel() {
-  const { dateRange } = useAnalyticsDateRange();
-
-  const { segmentation, isLoading } = useAnalyticsData({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  // Period-independent: client value tiers are a whole-book segmentation.
+  const { segmentation, isLoading } = useAnalyticsData();
 
   if (isLoading) {
     return (

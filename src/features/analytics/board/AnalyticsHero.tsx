@@ -28,6 +28,7 @@ import { useAnalyticsData, useConstants, useCalculatedTargets } from "@/hooks";
 // Relative import: useHistoricalAverages is not in the targets barrel index.
 import { useHistoricalAverages } from "../../../hooks/targets/useHistoricalAverages";
 import { formatCurrency, formatCompactCurrency } from "@/lib/format";
+import { resolveGoalAvgAP } from "@/lib/goal";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Skeletons
@@ -97,32 +98,34 @@ export function AnalyticsHero() {
   const projectedAP =
     daysElapsed > 0 ? (premiumWritten / daysElapsed) * daysTotal : 0;
 
-  // — Monthly AP goal (mirrors DashboardHome exactly) —
-  const dashboardAvgAP = Math.max(
-    constants?.avgAP ?? 0,
-    historicalAverages.avgPolicyPremium ?? 0,
-    historicalAverages.medianPolicyPremium ?? 0,
-    historicalAverages.personalAvgPolicyPremium ?? 0,
-    historicalAverages.personalMedianPolicyPremium ?? 0,
-  );
+  // — Monthly AP goal —
+  // Single, stable average premium (shared with DashboardHome via
+  // resolveGoalAvgAP) rather than the old aspirational MAX-of-5 that biased the
+  // goal high.
+  const avgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages);
   const policyTarget =
     calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
       ? calculatedTargets.realisticMonthlyAppsToWrite
       : 0;
-  const goal =
-    dashboardAvgAP > 0 && policyTarget > 0 ? dashboardAvgAP * policyTarget : 0;
+  const goal = avgAP > 0 && policyTarget > 0 ? avgAP * policyTarget : 0;
 
   // — Derived pace metrics —
   const noGoal = goal <= 0;
   const pctMonth = noGoal ? 0 : Math.min(premiumWritten / goal, 1);
   const pctProjected = noGoal ? 0 : projectedAP / goal;
+  // Actual remaining requirement — drives the stat tiles.
   const gap = noGoal ? 0 : Math.max(0, goal - premiumWritten);
   const needDay = !noGoal && daysLeft > 0 ? gap / daysLeft : 0;
   const isBehind = !noGoal && gap > 0;
+  // Projected month-end pace — drives the ring + verdict: at the current daily
+  // rate, are we on track to CLEAR the goal by close?
+  const projectedShort = noGoal ? 0 : Math.max(0, goal - projectedAP);
+  const willMiss = !noGoal && projectedShort > 0;
 
   // Display strings
-  const pctProjectedRounded = Math.round(pctProjected * 100);
-  const ringTone = pctMonth >= 1 ? "green" : pctMonth >= 0.8 ? "blue" : "amber";
+  const pctMonthRounded = Math.round(pctMonth * 100);
+  const ringTone =
+    pctProjected >= 1 ? "green" : pctProjected >= 0.8 ? "blue" : "amber";
 
   // Month label for eyebrow, e.g. "JUNE 2026"
   const monthLabel = now
@@ -153,11 +156,11 @@ export function AnalyticsHero() {
         {/* ── 1. Radial ring ── */}
         <div style={{ flexShrink: 0 }}>
           <RadialProgress
-            pct={pctMonth}
+            pct={pctProjected}
             size={208}
             thickness={18}
             tone={ringTone}
-            caption="OF MONTHLY GOAL"
+            caption="PROJECTED VS GOAL"
           />
         </div>
 
@@ -186,7 +189,7 @@ export function AnalyticsHero() {
             }}
           >
             <Pill tone="amber" dot>
-              {noGoal ? "PROJECTED" : `PROJECTED · ${pctProjectedRounded}%`}
+              {noGoal ? "WRITTEN" : `WRITTEN · ${pctMonthRounded}%`}
             </Pill>
           </div>
 
@@ -212,7 +215,7 @@ export function AnalyticsHero() {
             >
               Set a monthly target to pace against — push to get started.
             </p>
-          ) : isBehind ? (
+          ) : willMiss ? (
             <p
               style={{
                 font: `500 14px ${T.data}`,
@@ -221,8 +224,11 @@ export function AnalyticsHero() {
                 margin: 0,
               }}
             >
-              Behind the board&apos;s pace —{" "}
-              <b style={{ color: T.red }}>{formatCurrency(gap)} short</b> of the{" "}
+              On current pace you&apos;ll finish{" "}
+              <b style={{ color: T.red }}>
+                {formatCurrency(projectedShort)} short
+              </b>{" "}
+              of the{" "}
               <b style={{ color: T.cream }}>{formatCompactCurrency(goal)}</b>{" "}
               target at close. <b style={{ color: T.cream }}>{daysLeft} days</b>{" "}
               left to make it up.
@@ -236,13 +242,13 @@ export function AnalyticsHero() {
                 margin: 0,
               }}
             >
-              On pace —{" "}
-              <b style={{ color: T.green }}>
-                {formatCompactCurrency(premiumWritten)}
-              </b>{" "}
-              written toward the{" "}
+              On track to clear the{" "}
               <b style={{ color: T.cream }}>{formatCompactCurrency(goal)}</b>{" "}
-              target. <b style={{ color: T.cream }}>{daysLeft} days</b>{" "}
+              target — projected{" "}
+              <b style={{ color: T.green }}>
+                {formatCompactCurrency(projectedAP)}
+              </b>{" "}
+              at close. <b style={{ color: T.cream }}>{daysLeft} days</b>{" "}
               remaining.
             </p>
           )}
