@@ -20,6 +20,7 @@ import {
   imoDailySendCeiling,
 } from "../assistant-orchestrator/core/action-limits.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
+import { isEmailSuppressed } from "../_shared/email-compliance.ts";
 import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
 import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
 import { redact } from "../assistant-orchestrator/core/redaction.ts";
@@ -219,6 +220,26 @@ serve(async (req) => {
           {
             error:
               "The recipient isn't one of your contacts, leads, or team members, so the assistant won't send to them.",
+            status: row.status,
+          },
+          403,
+        );
+      }
+
+      // Email opt-out (CAN-SPAM): unlike SMS (gated inside send-sms), `send-email` has
+      // NO suppression check, so enforce it here before sending. isEmailSuppressed
+      // normalizes the address the same way the unsubscribe-write path does and uses the
+      // admin client (is_suppressed is service_role-only). Surfaced as a denial, never a
+      // silent drop.
+      if (
+        channel === "email" &&
+        (await isEmailSuppressed(createSupabaseAdminClient(), recipient))
+      ) {
+        await audit("action_blocked", "denied", "suppressed");
+        return json(
+          {
+            error:
+              "This recipient has unsubscribed from emails, so the assistant won't send to them.",
             status: row.status,
           },
           403,

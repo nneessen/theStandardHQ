@@ -89,9 +89,13 @@ export async function isEmailSuppressed(
   email: string,
 ): Promise<boolean> {
   const normalized = normalizeEmail(email);
+  // Param names MUST match the deployed signature is_suppressed(p_channel, p_contact)
+  // — PostgREST resolves RPCs by exact arg name, so the old p_contact_type/p_contact_value
+  // call 404'd (PGRST202) and this helper silently failed OPEN. (The SMS path in send-sms
+  // always used the correct names; only the email callers diverged.)
   const { data, error } = await adminClient.rpc("is_suppressed", {
-    p_contact_type: "email",
-    p_contact_value: normalized,
+    p_channel: "email",
+    p_contact: normalized,
   });
   if (error) {
     console.error("[email-compliance] is_suppressed RPC error:", error.message);

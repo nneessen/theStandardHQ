@@ -50,9 +50,12 @@ serve(async (req) => {
 
   try {
     const adminClient = createSupabaseAdminClient();
+    // Param names MUST match the deployed signature add_suppression(p_channel, p_contact, ...)
+    // — the old p_contact_type/p_contact_value call 404'd (PGRST202), so unsubscribe clicks
+    // were never recorded into communication_suppression.
     const { error } = await adminClient.rpc("add_suppression", {
-      p_contact_type: "email",
-      p_contact_value: email,
+      p_channel: "email",
+      p_contact: email,
       p_reason: "unsubscribe",
     });
 
