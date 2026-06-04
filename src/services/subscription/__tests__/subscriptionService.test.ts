@@ -193,8 +193,9 @@ describe("SubscriptionRepository", () => {
 
   describe("findByUserIdWithPlan", () => {
     it("should find subscription with plan details", async () => {
+      // Code uses .maybeSingle() not .single()
       const mockChain = createMockChain();
-      mockChain.single.mockResolvedValue({
+      mockChain.maybeSingle.mockResolvedValue({
         data: mockSubscription,
         error: null,
       });
@@ -208,10 +209,11 @@ describe("SubscriptionRepository", () => {
     });
 
     it("should return null when no subscription exists", async () => {
+      // Code uses .maybeSingle() not .single()
       const mockChain = createMockChain();
-      mockChain.single.mockResolvedValue({
+      mockChain.maybeSingle.mockResolvedValue({
         data: null,
-        error: { code: "PGRST116", message: "Not found" },
+        error: null,
       });
       vi.mocked(supabase.from).mockReturnValue(mockChain as never);
 
@@ -405,14 +407,25 @@ describe("SubscriptionService", () => {
 
   describe("getUsageStatus", () => {
     it("should calculate usage status correctly", async () => {
-      // Mock repository methods
-      const mockChain = createMockChain();
-      mockChain.maybeSingle.mockResolvedValue({ data: mockUsage, error: null });
-      mockChain.single.mockResolvedValue({
+      // getUsageStatus runs two parallel queries: getUsage (usage_tracking, maybeSingle)
+      // and getUserSubscription (user_subscriptions, maybeSingle).
+      // Branch by table name to return the right data to each.
+      const usageChain = createMockChain();
+      usageChain.maybeSingle.mockResolvedValue({
+        data: mockUsage,
+        error: null,
+      });
+
+      const subscriptionChain = createMockChain();
+      subscriptionChain.maybeSingle.mockResolvedValue({
         data: mockSubscription,
         error: null,
       });
-      vi.mocked(supabase.from).mockReturnValue(mockChain as never);
+
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === "usage_tracking") return usageChain as never;
+        return subscriptionChain as never;
+      });
 
       const result = await subscriptionService.getUsageStatus(
         "user-123",
@@ -431,16 +444,23 @@ describe("SubscriptionService", () => {
 
     it("should calculate overage correctly when over limit", async () => {
       const overLimitUsage = { ...mockUsage, count: 1200 };
-      const mockChain = createMockChain();
-      mockChain.maybeSingle.mockResolvedValue({
+
+      const usageChain = createMockChain();
+      usageChain.maybeSingle.mockResolvedValue({
         data: overLimitUsage,
         error: null,
       });
-      mockChain.single.mockResolvedValue({
+
+      const subscriptionChain = createMockChain();
+      subscriptionChain.maybeSingle.mockResolvedValue({
         data: mockSubscription,
         error: null,
       });
-      vi.mocked(supabase.from).mockReturnValue(mockChain as never);
+
+      vi.mocked(supabase.from).mockImplementation((table: string) => {
+        if (table === "usage_tracking") return usageChain as never;
+        return subscriptionChain as never;
+      });
 
       const result = await subscriptionService.getUsageStatus(
         "user-123",

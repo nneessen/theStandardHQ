@@ -594,32 +594,39 @@ function isNotProvisionedActionError(
 ): boolean {
   const normalizedMessage = message.trim().toLowerCase();
 
+  // Workspace-level signal: applies to any action. A missing/inactive bot means
+  // the whole workspace isn't provisioned yet.
   if (normalizedMessage.includes("no active chat bot")) {
     return true;
   }
 
-  // Any 404 from the edge relay (function not deployed, or "no active bot") is
-  // treated as "not provisioned" — prevents console spam in local dev where
-  // chat-bot-api isn't served.
-  if (status === 404) {
-    return true;
-  }
-
-  if (
-    normalizedMessage.includes("not found") ||
-    normalizedMessage.includes("function not found")
-  ) {
-    return true;
-  }
-
+  // For voice-agent creation, ONLY the explicit environment-gate message means
+  // "not provisioned". A real upstream 404 (e.g. "Agent not found on external
+  // platform") must surface to the user, not be masked as a missing route.
   if (action === "create_voice_agent") {
     return normalizedMessage.includes(
       "voice agent creation is not available in this environment yet.",
     );
   }
 
-  if (!OPTIONAL_NOT_PROVISIONED_ACTIONS.has(action)) {
-    return false;
+  // Optional resources (Retell runtime/LLM, calendar health, monitoring) are
+  // allowed to be absent: a 404 / "not found" / "function not found" means the
+  // feature simply isn't deployed, so callers treat it as an empty resource.
+  //
+  // For NON-optional actions (e.g. get_agent), a 404 / "function not found" is
+  // a real deployment/service error and must NOT be downgraded to "not
+  // provisioned" — otherwise a missing edge route silently masquerades as an
+  // un-provisioned workspace.
+  if (OPTIONAL_NOT_PROVISIONED_ACTIONS.has(action)) {
+    if (status === 404) {
+      return true;
+    }
+    if (
+      normalizedMessage.includes("not found") ||
+      normalizedMessage.includes("function not found")
+    ) {
+      return true;
+    }
   }
 
   return false;

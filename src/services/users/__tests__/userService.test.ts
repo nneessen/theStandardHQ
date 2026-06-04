@@ -190,7 +190,7 @@ describe("UserRepository", () => {
 
   describe("Admin RPC Operations", () => {
     describe("adminGetPendingUsers", () => {
-      it("should call admin_get_pendingusers RPC", async () => {
+      it("should call admin_get_pending_users RPC", async () => {
         const mockPendingUsers = [
           { id: "1", email: "pending1@test.com", approval_status: "pending" },
         ];
@@ -202,13 +202,13 @@ describe("UserRepository", () => {
 
         const result = await repository.adminGetPendingUsers();
 
-        expect(supabase.rpc).toHaveBeenCalledWith("admin_get_pendingusers");
+        expect(supabase.rpc).toHaveBeenCalledWith("admin_get_pending_users");
         expect(result).toEqual(mockPendingUsers);
       });
     });
 
     describe("adminApproveUser", () => {
-      it("should call admin_approveuser RPC with correct params", async () => {
+      it("should call admin_approve_user RPC with correct params", async () => {
         vi.mocked(supabase.rpc).mockResolvedValue({
           data: null,
           error: null,
@@ -216,7 +216,7 @@ describe("UserRepository", () => {
 
         await repository.adminApproveUser("target-user-id", "approver-id");
 
-        expect(supabase.rpc).toHaveBeenCalledWith("admin_approveuser", {
+        expect(supabase.rpc).toHaveBeenCalledWith("admin_approve_user", {
           target_user_id: "target-user-id",
           approver_id: "approver-id",
         });
@@ -224,7 +224,7 @@ describe("UserRepository", () => {
     });
 
     describe("adminDenyUser", () => {
-      it("should call admin_denyuser RPC with reason", async () => {
+      it("should call admin_deny_user RPC with reason", async () => {
         vi.mocked(supabase.rpc).mockResolvedValue({
           data: null,
           error: null,
@@ -236,7 +236,7 @@ describe("UserRepository", () => {
           "Test reason",
         );
 
-        expect(supabase.rpc).toHaveBeenCalledWith("admin_denyuser", {
+        expect(supabase.rpc).toHaveBeenCalledWith("admin_deny_user", {
           target_user_id: "target-id",
           approver_id: "approver-id",
           reason: "Test reason",

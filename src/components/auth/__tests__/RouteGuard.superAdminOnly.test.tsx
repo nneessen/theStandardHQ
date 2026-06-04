@@ -5,7 +5,11 @@ import { RouteGuard } from "../RouteGuard";
 import { useAuthorizationStatus } from "@/hooks/admin";
 import { usePermissionCheck } from "@/hooks/permissions";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAnyFeatureAccess, useFeatureAccess } from "@/hooks/subscription";
+import {
+  useAnyFeatureAccess,
+  useFeatureAccess,
+  useSubscription,
+} from "@/hooks/subscription";
 
 vi.mock("@/hooks/admin", () => ({
   useAuthorizationStatus: vi.fn(),
@@ -22,6 +26,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("@/hooks/subscription", () => ({
   useFeatureAccess: vi.fn(),
   useAnyFeatureAccess: vi.fn(),
+  useSubscription: vi.fn(),
 }));
 
 describe("RouteGuard superAdminOnly", () => {
@@ -58,6 +63,11 @@ describe("RouteGuard superAdminOnly", () => {
       hasAccess: true,
       isLoading: false,
     } as unknown as ReturnType<typeof useAnyFeatureAccess>);
+
+    vi.mocked(useSubscription).mockReturnValue({
+      hasManageableSubscription: true,
+      isLoading: false,
+    } as unknown as ReturnType<typeof useSubscription>);
   });
 
   it("blocks non-super-admin users for superAdminOnly routes", () => {

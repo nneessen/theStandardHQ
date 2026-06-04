@@ -7,15 +7,24 @@ import {
   useUserContractLevel,
 } from "../usePolicyCommission";
 
-// Mock supabase - batch query pattern (using .in() for product_ids)
-// Default result - can be overridden in individual tests
-let batchQueryResult = { data: [] as Array<{ product_id: string; commission_percentage: number; effective_date: string }>, error: null as unknown };
-const mockOrder = vi.fn(() => Promise.resolve(batchQueryResult));
-const mockOr = vi.fn(() => ({ order: mockOrder }));
-const mockLte = vi.fn(() => ({ or: mockOr }));
-const mockEqContractLevel = vi.fn(() => ({ lte: mockLte }));
-const mockIn = vi.fn(() => ({ eq: mockEqContractLevel }));
-const mockSelect = vi.fn(() => ({ in: mockIn }));
+// The hook fetches per-product rates through compGuideService (IMO-scoped),
+// NOT a raw supabase batch query, so mock that service. Default result is an
+// empty list; individual tests override `batchQueryResult`.
+let batchQueryResult = {
+  data: [] as Array<{
+    product_id: string;
+    commission_percentage: number;
+    effective_date: string;
+  }>,
+  error: null as unknown,
+};
+vi.mock("../../../../services/settings/comp-guide", () => ({
+  compGuideService: {
+    getCurrentRatesForProducts: vi.fn(() => Promise.resolve(batchQueryResult)),
+  },
+}));
+
+// supabase is only used here by useUserContractLevel (user_profiles lookup).
 const mockSingle = vi.fn();
 const mockEqId = vi.fn(() => ({ single: mockSingle }));
 const mockSelectProfile = vi.fn(() => ({ eq: mockEqId }));
@@ -23,9 +32,6 @@ const mockSelectProfile = vi.fn(() => ({ eq: mockEqId }));
 vi.mock("../../../../services/base/supabase", () => ({
   supabase: {
     from: vi.fn((table: string) => {
-      if (table === "comp_guide") {
-        return { select: mockSelect };
-      }
       if (table === "user_profiles") {
         return { select: mockSelectProfile };
       }
@@ -84,7 +90,7 @@ describe("usePolicyCommission", () => {
         products: [],
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     expect(result.current.commissionPercentage).toBe(0);
@@ -100,7 +106,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -126,7 +132,7 @@ describe("usePolicyCommission", () => {
           isEditMode: false,
           initialProductId: null,
         }),
-      { initialProps: { productId: "prod-1" } }
+      { initialProps: { productId: "prod-1" } },
     );
 
     await waitFor(() => {
@@ -154,7 +160,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -172,7 +178,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -194,7 +200,7 @@ describe("usePolicyCommission", () => {
         termLength: 20, // +5% modifier
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -216,7 +222,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: true,
         initialProductId: "prod-1", // Same as current
-      })
+      }),
     );
 
     // Commission should stay at initial value (0) since product didn't change
@@ -238,7 +244,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: true,
         initialProductId: "prod-1", // Different from current
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -250,8 +256,16 @@ describe("usePolicyCommission", () => {
     // Mock batch query returning rates for multiple products
     batchQueryResult = {
       data: [
-        { product_id: "prod-1", commission_percentage: 0.82, effective_date: "2024-01-01" },
-        { product_id: "prod-2", commission_percentage: 0.88, effective_date: "2024-01-01" },
+        {
+          product_id: "prod-1",
+          commission_percentage: 0.82,
+          effective_date: "2024-01-01",
+        },
+        {
+          product_id: "prod-2",
+          commission_percentage: 0.88,
+          effective_date: "2024-01-01",
+        },
       ],
       error: null,
     };
@@ -263,7 +277,7 @@ describe("usePolicyCommission", () => {
         products: mockProducts,
         isEditMode: false,
         initialProductId: null,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -282,17 +296,13 @@ describe("useUserContractLevel", () => {
   });
 
   it("returns fallback when userId is undefined", () => {
-    const { result } = renderHook(() =>
-      useUserContractLevel(undefined, 100)
-    );
+    const { result } = renderHook(() => useUserContractLevel(undefined, 100));
 
     expect(result.current).toBe(100);
   });
 
   it("returns custom fallback when specified", () => {
-    const { result } = renderHook(() =>
-      useUserContractLevel(undefined, 75)
-    );
+    const { result } = renderHook(() => useUserContractLevel(undefined, 75));
 
     expect(result.current).toBe(75);
   });
@@ -303,9 +313,7 @@ describe("useUserContractLevel", () => {
       error: null,
     });
 
-    const { result } = renderHook(() =>
-      useUserContractLevel("user-123", 100)
-    );
+    const { result } = renderHook(() => useUserContractLevel("user-123", 100));
 
     await waitFor(() => {
       expect(result.current).toBe(85);
@@ -318,9 +326,7 @@ describe("useUserContractLevel", () => {
       error: { message: "Not found" },
     });
 
-    const { result } = renderHook(() =>
-      useUserContractLevel("user-123", 100)
-    );
+    const { result } = renderHook(() => useUserContractLevel("user-123", 100));
 
     // Should remain at fallback
     expect(result.current).toBe(100);

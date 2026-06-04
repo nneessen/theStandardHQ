@@ -73,6 +73,8 @@ describe("lead heat helpers", () => {
           reason: "Converted leads skew inbound.",
         },
       ],
+      // No `weights` in the weightsRow → empty current-multipliers map.
+      currentWeights: {},
       modelVersion: 3,
       sampleSize: 18,
       analyzedAt: "2026-03-30T20:30:00.000Z",
