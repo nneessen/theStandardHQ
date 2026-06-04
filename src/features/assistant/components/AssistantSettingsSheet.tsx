@@ -18,6 +18,7 @@ import {
   useAssistantPreferences,
   useUpdateAssistantPreferences,
 } from "../hooks/useAssistantPreferences";
+import { MemoryPanel } from "./MemoryPanel";
 
 export function AssistantSettingsSheet() {
   const { data: prefs } = useAssistantPreferences();
@@ -27,6 +28,7 @@ export function AssistantSettingsSheet() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [realtimeVoice, setRealtimeVoice] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
 
   useEffect(() => {
     if (prefs && open) {
@@ -34,6 +36,7 @@ export function AssistantSettingsSheet() {
       setVoiceEnabled(prefs.voice_enabled);
       setRealtimeVoice(prefs.voice_engine === "realtime");
       setSoundEnabled(prefs.sound_enabled);
+      setMemoryEnabled(prefs.enabled_memory);
     }
   }, [prefs, open]);
 
@@ -46,6 +49,7 @@ export function AssistantSettingsSheet() {
         // otherwise re-enabling voice later would silently start a realtime session.
         voice_engine: voiceEnabled && realtimeVoice ? "realtime" : "legacy",
         sound_enabled: soundEnabled,
+        enabled_memory: memoryEnabled,
       });
       toast.success("Preferences saved.");
       setOpen(false);
@@ -135,6 +139,22 @@ export function AssistantSettingsSheet() {
               aria-label="Enable sound"
             />
           </div>
+          <div className="flex items-center justify-between rounded-md border border-border p-3">
+            <div className="pr-3">
+              <div className="text-sm font-medium">Memory</div>
+              <div className="text-xs text-muted-foreground">
+                Jarvis remembers your facts, goals, and preferences across
+                sessions. Tell it to "remember" something and it carries
+                forward.
+              </div>
+            </div>
+            <Switch
+              checked={memoryEnabled}
+              onCheckedChange={setMemoryEnabled}
+              aria-label="Enable memory"
+            />
+          </div>
+          <MemoryPanel />
         </div>
         <SheetFooter>
           <Button onClick={save} disabled={update.isPending}>

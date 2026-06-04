@@ -65,6 +65,17 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getWritingNumberCoverage: {
+    name: "getWritingNumberCoverage",
+    description:
+      "Read carrier WRITING-NUMBER (carrier-appointment) coverage for the caller ('mine', default) or their team ('team' = caller + the downline/agency agents they can see). Read-only, RLS-scoped server-side — it can never show an agent outside the caller's own team/IMO. scope 'mine' returns the caller's active-carrier count, how many they have a writing number for, their coverage %, the per-carrier list (carrier name + the actual writing number + status), and the carriers they are still MISSING. scope 'team' returns AGGREGATE coverage only: how many agents have any writing number, the active-carrier count, and a per-agent breakdown (agent name + filled count + missing + coverage %, least-covered agents first) plus the carriers the team covers LEAST (carrier + agents-covered, including zero) — it never returns another agent's actual writing-number values. Note: 'team' per-agent rows only include agents who have at least one writing number on file. Use for 'which carriers do I have writing numbers with', 'what carrier appointments am I missing', 'is my team appointed with <carrier>', or 'which of my agents are missing writing numbers'. This is about carrier APPOINTMENTS/writing numbers, NOT production/AP (use getMyProduction/queryPolicies for those) and NOT underwriting approval (use getUnderwritingRecommendation).",
+    category: "production",
+    riskLevel: "read",
+    actionClass: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   getLeadPriorities: {
     name: "getLeadPriorities",
     description:
@@ -204,6 +215,17 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     riskLevel: "read",
     actionClass: "read",
     target: "cloud",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
+  saveMemory: {
+    name: "saveMemory",
+    description:
+      "Remember a durable fact, preference, goal, or context about the user so you recall it in future sessions. Use when the user asks you to remember something, or states a lasting preference/goal worth keeping (e.g. 'remember my goal is $50k AP', 'I prefer short replies'). Writes the user's OWN memory row directly (RLS-scoped to them) — it is NOT a pending approval and has no external effect, so do NOT say it's 'pending'; confirm you'll remember it. Do NOT use this for one-off, in-conversation details or live data (numbers come from data tools, not memory).",
+    category: "general",
+    riskLevel: "draft",
+    actionClass: "draft",
     requiredPermissions: [],
     requiresApproval: false,
     implemented: true,

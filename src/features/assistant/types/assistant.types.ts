@@ -82,6 +82,8 @@ export interface AssistantPreferences {
   voice_enabled: boolean;
   voice_engine: VoiceEngine;
   sound_enabled: boolean;
+  /** Opt-in gate for Jarvis durable memory (inject saved facts + allow saveMemory). */
+  enabled_memory: boolean;
   tone: string;
   briefing_style: string;
 }

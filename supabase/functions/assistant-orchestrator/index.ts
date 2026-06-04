@@ -25,6 +25,11 @@ import { requestRateBucket } from "./core/rateBucket.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
 import { redact, summarizeToolOutput } from "./core/redaction.ts";
 import { assessGrounding } from "./core/grounding.ts";
+import {
+  formatMemoryForPrompt,
+  MAX_MEMORY_ROWS,
+  type MemoryRow,
+} from "./core/memory.ts";
 import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
@@ -98,7 +103,7 @@ serve(async (req) => {
     const reqBucket = requestRateBucket(user.id, isVoiceSurface);
     const tokBucketKey = `ratelimit:tok:${user.id}`;
 
-    const [profileRes, reqLimit, tokLimit, imoRes, prefsRes] =
+    const [profileRes, reqLimit, tokLimit, imoRes, prefsRes, memoryRes] =
       await Promise.all([
         db
           .from("user_profiles")
@@ -128,9 +133,20 @@ serve(async (req) => {
         db.rpc("get_my_imo_id"),
         db
           .from("assistant_preferences")
-          .select("assistant_name, enabled_agents")
+          .select("assistant_name, enabled_agents, enabled_memory")
           .eq("user_id", user.id)
           .single(),
+        // Durable memory (Jarvis "second brain"): the user's active rows, pinned
+        // first then most-recent. RLS-scoped; always fetched (≤25 small rows, one
+        // indexed query) and only USED when enabled_memory is on (gated below).
+        db
+          .from("jarvis_memory")
+          .select("content, kind, pinned")
+          .eq("user_id", user.id)
+          .eq("active", true)
+          .order("pinned", { ascending: false })
+          .order("updated_at", { ascending: false })
+          .limit(MAX_MEMORY_ROWS),
       ]);
 
     // Profile: super-admin flag (for the guard) + first name (for the greeting).
@@ -259,8 +275,27 @@ serve(async (req) => {
     );
     const nowContext = `CURRENT DATE: Today is ${nowLong} (${nowIso}, ${tz}). Resolve every relative date from this and pass explicit YYYY-MM-DD ranges to date-scoped tools. Never invent or assume a date.`;
 
-    const systemPrompt = buildSystemPrompt(agent, assistantName, nowContext);
-    const tools = buildAnthropicTools(agent.allowedToolNames);
+    // Durable memory: inject the user's saved facts/preferences into the system
+    // prompt so Jarvis "remembers" across sessions. Default ON (prefs row may not
+    // exist yet); empty string when disabled or the user has no memory.
+    const memoryEnabled = prefs?.enabled_memory !== false;
+    const memoryContext = memoryEnabled
+      ? formatMemoryForPrompt((memoryRes.data as MemoryRow[] | null) ?? [])
+      : "";
+
+    const systemPrompt = buildSystemPrompt(
+      agent,
+      assistantName,
+      nowContext,
+      memoryContext,
+    );
+    // When memory is disabled, also remove the saveMemory tool — otherwise the
+    // opt-out would suppress injection but still let the model WRITE rows (the gate
+    // above only controls injection). Filtering here keeps both halves consistent.
+    const allowedToolNames = memoryEnabled
+      ? agent.allowedToolNames
+      : agent.allowedToolNames.filter((n) => n !== "saveMemory");
+    const tools = buildAnthropicTools(allowedToolNames);
     const anthropic = getAnthropicClient();
 
     // Cross-turn prompt caching: mark the LAST prior-history message as a cache
