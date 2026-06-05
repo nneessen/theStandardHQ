@@ -1,9 +1,33 @@
 # Sunset / Revocation RLS Audit — 2026-06-05
 
+> ## ⚠️ CORRECTION (post-verification) — READ FIRST
+> Most queries in this report unknowingly ran against the **LOCAL dev DB**, not prod, due to a
+> runner-targeting footgun (`$REMOTE_DATABASE_URL` is unset in a fresh shell, so
+> `DATABASE_URL="$REMOTE_DATABASE_URL" ./run-sql.sh` without first `source .env` silently used
+> `.env`'s local `DATABASE_URL=127.0.0.1:54322`). Local and prod have diverged. After
+> re-verifying against **actual prod** (`source .env` first; `host(inet_server_addr())` = IPv6):
+>
+> - **Finding D (privilege escalation): CONFIRMED on prod and FIXED.** `escalated_on_prod = t`
+>   before; guard trigger `20260605080009` applied to prod and validated (escalation pinned,
+>   normal edits work). This finding stands.
+> - **Finding C (anon reads `app_config.service_role_key`): DOES NOT EXIST on prod — local-only.**
+>   Prod has only `Service role can manage config` + `revocation_deny` policies; the
+>   `"Postgres can read config"` USING(true) policy is **absent** on prod; `SET ROLE anon` returns
+>   0 rows; the June-1 drop (`20260601063530`) **is** recorded on prod. The leak persists only on
+>   LOCAL (which still carries the stale Dec-2025 policy). The "regression" / "never applied to
+>   prod" / "rotate again" claims below are **WRONG for prod** — they were local observations.
+> - Finding B (`communication_consent/suppression`) and the Section A counts were also measured on
+>   local; re-verify on prod before acting.
+> - Migrations `20260605080010` (app_config) and `20260605083542` (vault) were applied to **local
+>   only** and are **not needed for prod** (the vault one was deleted — it would fail a fresh prod
+>   replay since prod has no `service_role_key` vault secret).
+>
+> Treat everything below as a LOCAL audit except Finding D, which is confirmed + fixed on prod.
+
 Scope: confirm whether a revoked ("sunset") user — who keeps a valid, refreshable JWT
 because they must log in to run the data export — can reach data beyond their own
-account via the API, independent of the React `SunsetGate`. Audited against **prod**
-(`pcyaqwodnyrpkaiojnpz`) read-only.
+account via the API, independent of the React `SunsetGate`. **(Targeting caveat: see CORRECTION
+banner above — most of this ran against local, not prod.)**
 
 ---
 
