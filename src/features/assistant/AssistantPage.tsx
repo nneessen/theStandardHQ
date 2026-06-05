@@ -215,13 +215,14 @@ export function AssistantPage() {
     [send, play],
   );
 
-  // Keep the STT/orchestrator/TTS edge functions hot while the command center is
-  // open so a turn never eats a triple cold start. Enabled whenever the page is
-  // mounted (route is already gated to authorized users).
-  const { warm } = useKeepWarm(true);
-
   const voiceEnabled = prefs?.voice_enabled ?? false;
   const realtimeEnabled = prefs?.voice_engine === "realtime";
+
+  // Keep the voice edge functions hot while the command center is open so the first turn
+  // doesn't eat a cold start. The ORCHESTRATOR is warmed on BOTH paths (legacy and realtime
+  // both call it). The legacy STT/TTS edge functions are warmed only on the legacy path — the
+  // realtime worker does STT/TTS server-side and never touches them. Off when voice is disabled.
+  const { warm } = useKeepWarm(voiceEnabled, !realtimeEnabled);
 
   // Both hooks are called unconditionally (React hook rules); only the SELECTED one is ever
   // started. Legacy drives browser STT/TTS via onUtterance→runMessage; realtime is a LiveKit
@@ -274,7 +275,11 @@ export function AssistantPage() {
     return subscribeVoiceLaunch(launch);
   }, [booting]);
 
-  const voiceActive = VOICE_ACTIVE.has(voice.state);
+  // The agent is actually HEARING the user only in these states; gate live-mic sampling on it
+  // so the reactor never pulses to the mic while connecting/speaking — which would falsely
+  // read as "I'm listening" before it really is.
+  const voiceHearing =
+    voice.state === "listening" || voice.state === "capturing";
 
   // Pre-warm the moment speech is detected: it boots any cold isolate during the
   // 1.1s the VAD spends confirming end-of-utterance, so STT/orchestrator run hot.
@@ -282,9 +287,10 @@ export function AssistantPage() {
     if (voice.state === "capturing") void warm();
   }, [voice.state, warm]);
 
-  // Sample mic amplitude (low rate) so the background reactor pulses during voice.
+  // Sample mic amplitude (low rate) so the background reactor pulses while the agent is
+  // actually listening — held flat (0) otherwise so connecting/speaking reads as not-yet.
   useEffect(() => {
-    if (!voiceActive) {
+    if (!voiceHearing) {
       setAudioLevel(0);
       return;
     }
@@ -293,7 +299,7 @@ export function AssistantPage() {
       120,
     );
     return () => window.clearInterval(id);
-  }, [voiceActive, voice]);
+  }, [voiceHearing, voice]);
 
   const reactorMode: ReactorMode =
     voice.state === "listening" || voice.state === "capturing"

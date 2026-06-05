@@ -5,14 +5,18 @@ import {
   supabaseFunctionsUrl,
 } from "@/services/base/supabase-config";
 
-// The three edge functions in a voice turn (STT -> orchestrator -> TTS) each
-// cold-start independently on Supabase. With the command center's near-zero
-// background traffic, every turn pays that tax three times (measured at ~0.9-2.5s
-// per function). Pinging each with `x-warm: 1` boots the isolate (and loads its
-// modules, including the orchestrator's heavy Anthropic SDK import) so the next
-// real turn runs hot. Each ping returns immediately before any auth/DB/AI work.
-const WARM_TARGETS = [
-  "assistant-orchestrator",
+// The edge functions in a voice turn cold-start independently on Supabase. With the
+// command center's near-zero background traffic, every turn pays that tax (measured at
+// ~0.9-2.5s per function). Pinging each with `?warm=1` boots the isolate (and loads its
+// modules, including the orchestrator's heavy Anthropic SDK import) so the next real turn
+// runs hot. Each ping returns immediately before any auth/DB/AI work.
+//
+// The ORCHESTRATOR is on BOTH paths — the legacy browser pipeline AND the realtime worker
+// call it — so it is always warmed when voice is on. The STT/TTS edge functions are
+// LEGACY-only: the realtime worker does STT/TTS server-side via Deepgram/ElevenLabs and
+// never touches these, so they're warmed only on the legacy path (see `includeLegacyVoice`).
+const ORCHESTRATOR_TARGET = "assistant-orchestrator";
+const LEGACY_VOICE_TARGETS = [
   "assistant-voice-stt",
   "assistant-voice-tts",
 ] as const;
@@ -42,12 +46,15 @@ async function pingOne(fn: string, token: string): Promise<void> {
 /**
  * Keeps the Jarvis edge functions warm while the command center is mounted.
  *
- * @param enabled gate warming on the page being open (and, for voice, the
- *   voice_enabled preference) so we don't ping when the feature is unused.
+ * @param enabled gate warming on the page being open and voice being enabled, so we
+ *   don't ping when the feature is unused.
+ * @param includeLegacyVoice also warm the legacy STT/TTS edge functions. Pass false on
+ *   the realtime path (the worker handles STT/TTS server-side) so only the orchestrator —
+ *   which BOTH paths call — is warmed.
  * @returns `warm()` to pre-warm imperatively (e.g. the instant the mic opens,
  *   before the user finishes speaking).
  */
-export function useKeepWarm(enabled: boolean) {
+export function useKeepWarm(enabled: boolean, includeLegacyVoice = true) {
   const inFlightRef = useRef(false);
 
   const warm = useCallback(async () => {
@@ -57,11 +64,14 @@ export function useKeepWarm(enabled: boolean) {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) return;
-      await Promise.all(WARM_TARGETS.map((fn) => pingOne(fn, token)));
+      const targets = includeLegacyVoice
+        ? [ORCHESTRATOR_TARGET, ...LEGACY_VOICE_TARGETS]
+        : [ORCHESTRATOR_TARGET];
+      await Promise.all(targets.map((fn) => pingOne(fn, token)));
     } finally {
       inFlightRef.current = false;
     }
-  }, []);
+  }, [includeLegacyVoice]);
 
   useEffect(() => {
     if (!enabled) return;

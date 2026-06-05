@@ -8,15 +8,13 @@ import {
   type RemoteParticipant,
   type RemoteTrack,
 } from "livekit-client";
+import { toast } from "sonner";
 import { supabase } from "@/services/base/supabase";
 import {
   supabaseAnonKey,
   supabaseFunctionsUrl,
 } from "@/services/base/supabase-config";
-import type {
-  VoiceSessionState,
-  VoiceSessionUi,
-} from "./voiceSession.types";
+import type { VoiceSessionState, VoiceSessionUi } from "./voiceSession.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Realtime voice session — LiveKit transport.
@@ -48,8 +46,11 @@ const AGENT_STATE_ATTR = "lk.agent.state";
 const AUTH_RESEND_INTERVAL_MS = 1200;
 const AUTH_RESEND_MAX_TRIES = 8;
 
-// How long to wait for the agent worker to join before telling the user voice is down.
-const AGENT_JOIN_TIMEOUT_MS = 9000;
+// How long after start() the session has to reach a real "listening"/"speaking" state before
+// we tell the user voice is down. Covers BOTH the worker never joining AND the worker joining
+// but never publishing a ready state (crash mid-init / lost attribute) — without this watchdog
+// the UI could hang on "CONNECTING" forever. Cleared the moment a real state arrives.
+const AGENT_READY_TIMEOUT_MS = 12000;
 
 function isAgent(p: Participant): boolean {
   return p.kind === ParticipantKind.AGENT;
@@ -66,8 +67,13 @@ function mapAgentState(s: string | undefined): VoiceSessionState {
     case "initializing":
       return "checking";
     default:
-      // Connected with an agent present but no/unknown state → treat as ready/listening.
-      return "listening";
+      // Agent present but it hasn't published a real state yet (the attribute lands a beat
+      // after the participant connects). Stay "checking" — NOT "listening" — so the UI never
+      // tells the user "go ahead" before the worker's STT is actually up. A real "listening"
+      // arrives once the agent is ready (after the greeting) and flips us forward; the
+      // readiness watchdog (AGENT_READY_TIMEOUT_MS) catches a worker that joins but never
+      // becomes ready, so the UI can't hang on "CONNECTING" forever.
+      return "checking";
   }
 }
 
@@ -88,6 +94,22 @@ export function useJarvisVoiceSession({
     stateRef.current = s;
     setState(s);
   }, []);
+
+  // Surface a start()/connect failure so the user actually sees WHY voice didn't start. The
+  // immersion unmounts the instant we go "unavailable", taking its inline message with it — so
+  // historically every failure looked identical: the voice screen just vanished, no console
+  // error (the connect/mic catches are silent), no visible reason ("the screen just disappeared
+  // instantly"). A sonner toast renders at the app root and survives the unmount, so the user
+  // finally sees the specific reason. Failure mechanism reproduced via scripts/voice-repro.py
+  // (DENY_MIC=1 → screen vanishes with no message).
+  const fail = useCallback(
+    (msg: string) => {
+      setMessage(msg);
+      setPhase("unavailable");
+      toast.error(msg, { duration: 7000 });
+    },
+    [setPhase],
+  );
 
   const roomRef = useRef<Room | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
@@ -188,22 +210,33 @@ export function useJarvisVoiceSession({
       if (raw && raw !== "initializing") {
         agentActiveRef.current = true;
         stopAuthResend();
+        // A real ready state arrived → cancel the readiness watchdog.
+        if (joinTimeoutRef.current) {
+          clearTimeout(joinTimeoutRef.current);
+          joinTimeoutRef.current = null;
+        }
       }
       // Don't clobber a terminal idle/unavailable phase with a late attribute event.
       if (stateRef.current === "idle" || stateRef.current === "unavailable") {
         return;
       }
-      setPhase(mapAgentState(raw));
+      const next = mapAgentState(raw);
+      // Never regress a live session back to "checking" on a missing/unknown attribute — once
+      // the agent has been ready, an empty/garbage value is noise, not a reset to "connecting".
+      if (next === "checking" && stateRef.current !== "checking") {
+        return;
+      }
+      setPhase(next);
     },
     [setPhase, stopAuthResend],
   );
 
   const onAgentAvailable = useCallback(
     (agent: Participant) => {
-      if (joinTimeoutRef.current) {
-        clearTimeout(joinTimeoutRef.current);
-        joinTimeoutRef.current = null;
-      }
+      // NOTE: do NOT clear the readiness watchdog here — the agent JOINING isn't readiness, it
+      // may still be initializing. applyAgentState clears the watchdog once a real
+      // "listening"/"speaking" state arrives; until then it still guards a joined-but-never-
+      // ready hang (the bug where the UI sat on "CONNECTING" forever).
       agentIdentityRef.current = agent.identity;
       applyAgentState(agent.attributes?.[AGENT_STATE_ATTR]);
       void publishAuthToAgent();
@@ -295,31 +328,35 @@ export function useJarvisVoiceSession({
   const wireEvents = useCallback(
     (room: Room) => {
       room
-        .on(RoomEvent.TrackSubscribed, (track: RemoteTrack, _pub, participant) => {
-          if (track.kind !== Track.Kind.Audio || !isAgent(participant)) return;
-          let el = audioElRef.current;
-          if (!el) {
-            el = document.createElement("audio");
-            el.autoplay = true;
-            // iOS Safari needs this to play in-page rather than fullscreen.
-            (el as HTMLAudioElement & { playsInline: boolean }).playsInline =
-              true;
-            el.style.display = "none";
-            document.body.appendChild(el);
-            audioElRef.current = el;
-          }
-          // Detach any previously-attached agent track first: if the agent republishes
-          // its track (LiveKit internal reconnect), the OLD track still references `el`,
-          // and its later TrackUnsubscribed would otherwise detach the live one.
-          if (agentTrackRef.current && agentTrackRef.current !== track) {
-            agentTrackRef.current.detach(el);
-          }
-          agentTrackRef.current = track;
-          track.attach(el);
-          void el.play().catch(() => {
-            // Autoplay blocked — startAudio() + the playback-status handler recover it.
-          });
-        })
+        .on(
+          RoomEvent.TrackSubscribed,
+          (track: RemoteTrack, _pub, participant) => {
+            if (track.kind !== Track.Kind.Audio || !isAgent(participant))
+              return;
+            let el = audioElRef.current;
+            if (!el) {
+              el = document.createElement("audio");
+              el.autoplay = true;
+              // iOS Safari needs this to play in-page rather than fullscreen.
+              (el as HTMLAudioElement & { playsInline: boolean }).playsInline =
+                true;
+              el.style.display = "none";
+              document.body.appendChild(el);
+              audioElRef.current = el;
+            }
+            // Detach any previously-attached agent track first: if the agent republishes
+            // its track (LiveKit internal reconnect), the OLD track still references `el`,
+            // and its later TrackUnsubscribed would otherwise detach the live one.
+            if (agentTrackRef.current && agentTrackRef.current !== track) {
+              agentTrackRef.current.detach(el);
+            }
+            agentTrackRef.current = track;
+            track.attach(el);
+            void el.play().catch(() => {
+              // Autoplay blocked — startAudio() + the playback-status handler recover it.
+            });
+          },
+        )
         .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
           // Only detach if THIS is the live track (a stale republished track's
           // unsubscribe must not yank the element from the current one).
@@ -328,9 +365,12 @@ export function useJarvisVoiceSession({
             agentTrackRef.current = null;
           }
         })
-        .on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
-          if (isAgent(participant)) onAgentAvailable(participant);
-        })
+        .on(
+          RoomEvent.ParticipantConnected,
+          (participant: RemoteParticipant) => {
+            if (isAgent(participant)) onAgentAvailable(participant);
+          },
+        )
         .on(RoomEvent.ParticipantAttributesChanged, (_changed, participant) => {
           if (isAgent(participant)) {
             applyAgentState(participant.attributes?.[AGENT_STATE_ATTR]);
@@ -355,14 +395,14 @@ export function useJarvisVoiceSession({
 
   // --- start / stop ---------------------------------------------------------------
   const start = useCallback(async () => {
-    if (stateRef.current !== "idle" && stateRef.current !== "unavailable") return;
+    if (stateRef.current !== "idle" && stateRef.current !== "unavailable")
+      return;
     setMessage(null);
     setPhase("checking");
 
     const jwt = await accessToken();
     if (!jwt) {
-      setMessage("Please sign in again to use voice.");
-      setPhase("unavailable");
+      fail("Please sign in again to use voice.");
       return;
     }
 
@@ -386,8 +426,7 @@ export function useJarvisVoiceSession({
       token = data.token;
     } catch {
       setAvailable(false);
-      setMessage("Voice isn't available right now. Text chat still works.");
-      setPhase("unavailable");
+      fail("Voice isn't available right now. Text chat still works.");
       return;
     }
 
@@ -399,18 +438,24 @@ export function useJarvisVoiceSession({
       await room.connect(url, token);
     } catch {
       teardown();
-      setMessage("Couldn't connect to voice. Try again.");
-      setPhase("unavailable");
+      fail("Couldn't connect to voice. Try again.");
       return;
     }
 
-    // 3. Publish the mic (prompts for permission).
+    // 3. Publish the mic (prompts for permission). Explicit echoCancellation so the agent's own
+    //    TTS played on the user's speakers isn't captured by the mic and mistaken for the user
+    //    speaking — that would self-interrupt the agent now that the worker's AEC warmup window
+    //    is short (aecWarmupDuration). noiseSuppression/autoGainControl match LiveKit's defaults;
+    //    set explicitly so the capture behavior can't silently change under us.
     try {
-      await room.localParticipant.setMicrophoneEnabled(true);
+      await room.localParticipant.setMicrophoneEnabled(true, {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      });
     } catch {
       teardown();
-      setMessage("Microphone access is needed for voice.");
-      setPhase("unavailable");
+      fail("Microphone access is needed for voice.");
       return;
     }
     setupMicAnalyser(room);
@@ -433,22 +478,23 @@ export function useJarvisVoiceSession({
 
     setAvailable(true);
 
-    // 6. The agent worker may already be in the room, or join momentarily.
+    // 6. Arm the readiness watchdog, THEN wire up the agent (it may already be in the room or
+    //    join momentarily). The watchdog fires only if the session is still "checking" at the
+    //    deadline — covering BOTH "worker never dispatched" AND "worker joined but never became
+    //    ready". applyAgentState clears it the instant a real "listening"/"speaking" arrives, so
+    //    a healthy session never trips it.
+    joinTimeoutRef.current = setTimeout(() => {
+      if (stateRef.current === "checking" && roomRef.current) {
+        teardown();
+        fail("Jarvis didn't finish connecting. Try again, or use text.");
+      }
+    }, AGENT_READY_TIMEOUT_MS);
+
     const agent = findAgent(room);
-    if (agent) {
-      onAgentAvailable(agent);
-    } else {
-      // Stay in "checking" until the worker is dispatched; fail gracefully if it never is.
-      joinTimeoutRef.current = setTimeout(() => {
-        if (!agentIdentityRef.current && roomRef.current) {
-          setMessage("Assistant didn't connect. Try again or use text.");
-          teardown();
-          setPhase("unavailable");
-        }
-      }, AGENT_JOIN_TIMEOUT_MS);
-    }
+    if (agent) onAgentAvailable(agent);
   }, [
     accessToken,
+    fail,
     findAgent,
     onAgentAvailable,
     publishAuthToAgent,
