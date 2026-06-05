@@ -50,7 +50,12 @@ const AUTH_RESEND_MAX_TRIES = 8;
 // we tell the user voice is down. Covers BOTH the worker never joining AND the worker joining
 // but never publishing a ready state (crash mid-init / lost attribute) — without this watchdog
 // the UI could hang on "CONNECTING" forever. Cleared the moment a real state arrives.
-const AGENT_READY_TIMEOUT_MS = 12000;
+// 25s (was 12s): the Fly worker is a single resident machine that is NOT kept warm on this
+// path, so a fresh job's first dispatch (machine wake + model load + Deepgram/ElevenLabs +
+// LiveKit registration + the greeting) can legitimately exceed 12s and was being killed as
+// "didn't finish connecting" before it ever became ready. The overlay now shows honest
+// "waking…" progress during this window and, on timeout, surfaces a Retry instead of vanishing.
+const AGENT_READY_TIMEOUT_MS = 25000;
 
 function isAgent(p: Participant): boolean {
   return p.kind === ParticipantKind.AGENT;
@@ -385,12 +390,19 @@ export function useJarvisVoiceSession({
           }
         })
         .on(RoomEvent.Disconnected, () => {
-          // Terminal (LiveKit handles transient reconnects internally). End the session.
+          // Reaching here means an UNEXPECTED, server-initiated drop: LiveKit handles transient
+          // reconnects internally, and our own stop()/teardown removes these listeners BEFORE
+          // calling room.disconnect() — so a user-initiated end never fires this. Routing it to
+          // the persistent error view (Try again / Use text) instead of setPhase("idle") is the
+          // OTHER half of the "waves screen vanishes" fix: "idle" is not in VoiceImmersion's
+          // active set, so dropping to it would unmount the overlay and silently dump the user
+          // back on the Command Center — exactly the original complaint. fail() keeps the overlay
+          // up with a reason + a one-tap reconnect.
           teardown();
-          setPhase("idle");
+          fail("Connection dropped. Tap Try again to reconnect.");
         });
     },
-    [applyAgentState, onAgentAvailable, setPhase, teardown],
+    [applyAgentState, fail, onAgentAvailable, teardown],
   );
 
   // --- start / stop ---------------------------------------------------------------
@@ -510,6 +522,23 @@ export function useJarvisVoiceSession({
     setPhase("idle");
   }, [teardown, setPhase]);
 
+  // Recover playout when the browser blocked autoplay. The immersion's audio-blocked banner
+  // taps THIS — never stop() — so "Tap to enable audio" no longer ends the session. Best-effort:
+  // startAudio() must run inside the click gesture, which this is.
+  const resumeAudio = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    try {
+      await room.startAudio();
+      await audioElRef.current?.play().catch(() => {});
+      if (room.canPlaybackAudio) {
+        setMessage((m) => (m === "Tap to enable audio." ? null : m));
+      }
+    } catch {
+      /* the AudioPlaybackStatusChanged handler keeps the banner up if this fails */
+    }
+  }, []);
+
   useEffect(() => () => teardown(), [teardown]);
 
   // --- visualization accessors (mic-only) -----------------------------------------
@@ -539,6 +568,7 @@ export function useJarvisVoiceSession({
     available,
     start,
     stop,
+    resumeAudio,
     getFrequencyData,
     getLevel,
   };

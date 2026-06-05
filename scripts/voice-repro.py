@@ -117,7 +117,10 @@ with sync_playwright() as p:
                "Microphone access is needed", "Please sign in again",
                "Voice isn't configured", "CONNECTING", "LISTENING"]
     seen = set()
-    for _ in range(30):  # ~15s in 0.5s steps
+    # POLL_STEPS × 0.5s. Default 30 (~15s); raise past the 25s readiness watchdog to observe a
+    # cold worker actually reaching LISTENING (e.g. POLL_STEPS=80 ≈ 40s).
+    poll_steps = int(os.environ.get("POLL_STEPS", "30"))
+    for _ in range(poll_steps):
         try:
             body = page.inner_text("body", timeout=2000)
         except Exception:

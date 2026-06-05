@@ -6,7 +6,8 @@ export type SoundCue =
   | "response"
   | "toolTick"
   | "approve"
-  | "error";
+  | "error"
+  | "ready";
 
 type AudioCtor = typeof AudioContext;
 
@@ -115,6 +116,14 @@ export function useSound(enabled: boolean) {
         case "error":
           tone(ac, 0.5, [
             { freq: 300, toFreq: 150, type: "sawtooth", dur: 0.28, gain: 0.14 },
+          ]);
+          break;
+        // Bright, rising two-note "you can talk now" chime — played the instant the agent
+        // flips from connecting to listening, so readiness is audible, not just a caption.
+        case "ready":
+          tone(ac, 0.5, [
+            { freq: 660, type: "sine", dur: 0.12, gain: 0.18 },
+            { freq: 990, type: "sine", at: 0.1, dur: 0.2, gain: 0.2 },
           ]);
           break;
       }
