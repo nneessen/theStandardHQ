@@ -1,7 +1,22 @@
 # Fly config for the Jarvis voice worker.
 # It connects OUT to LiveKit Cloud (persistent WebSocket) and serves NO public HTTP — so
-# there is intentionally no [http_service]. It must NOT scale to zero (a stopped worker =
-# no voice), so keep ≥1 machine running: `fly scale count 1` (raise for concurrency).
+# there is intentionally no [http_service].
+#
+# RELIABILITY MODEL (what keeps voice up, and how each failure mode is handled):
+#   • Process crash / OOM .... [[restart]] below (on-failure, 10 retries) restarts it in place.
+#   • Host hardware failure .. Fly auto-creates a STOPPED standby machine ("standbys": [...]) that
+#                              takes over only on host failure. A stopped standby is ~free (rootfs
+#                              only). Do NOT "fix" it with `fly scale count` — it is auto-managed.
+#   • Bad deploy ............. [experimental] auto_rollback = true (below).
+#   • Clean stop / exhausted retries / process HANG (machine still "started" but not serving) ..
+#                              NOT self-healing. Detected by the external monitor: the worker pushes
+#                              a heartbeat (src/heartbeat.ts → voice-worker-heartbeat fn) and a 15-min
+#                              GitHub Action (voice-worker-health.yml → voice-worker-health-check fn)
+#                              alerts the owner (SMS + email) on stale-heartbeat OR no-machine-started.
+#
+# NOTE: there is no `min_machines_running` for this worker — that flag is tied to service
+# auto-stop, which a no-[http_service] worker doesn't have. Keep ≥1 machine running with
+# `fly scale count 1`; the restart policy + standby + monitor cover the rest.
 app = "standardhq-jarvis-voice"
 primary_region = "iad" # set to the region nearest your users / LiveKit project
 
@@ -12,7 +27,18 @@ primary_region = "iad" # set to the region nearest your users / LiveKit project
 
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "1gb" # headroom for the VAD / turn-detection models + per-room inference
+  # 1GB headroom for the VAD / turn-detection models + per-room inference. No OOM or
+  # jobMemoryWarn (500MB, set in agent.ts) has been observed. Bump to "2gb" ONLY if the
+  # logs start showing jobMemoryWarn/OOM — don't pay for it preemptively.
+  memory = "1gb"
+
+# Restart the process on crash/OOM. Codified here (rather than left to the Fly default) so the
+# behavior is intentional and survives any machine recreation. 10 retries handles transient
+# crashes; a PERSISTENT crash that exhausts them is surfaced by the monitor's alert, not by
+# raising this number (more retries just delays the silent death).
+[[restart]]
+  policy = "on-failure"
+  retries = 10 # fly.toml field is `retries` (the Machines API exposes it as max_retries)
 
 # Keep the worker resident — no auto-stop for an outbound, stateful agent process.
 [experimental]
