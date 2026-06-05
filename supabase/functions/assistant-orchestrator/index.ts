@@ -21,10 +21,15 @@ import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool, effectiveActionClass } from "./core/guard.ts";
-import { requestRateBucket } from "./core/rateBucket.ts";
+import { requestRateBucket, tokenRateBucket } from "./core/rateBucket.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
 import { redact, summarizeToolOutput } from "./core/redaction.ts";
 import { assessGrounding } from "./core/grounding.ts";
+import {
+  formatMemoryForPrompt,
+  MAX_MEMORY_ROWS,
+  type MemoryRow,
+} from "./core/memory.ts";
 import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
@@ -35,6 +40,16 @@ const MAX_TOOL_ITERATIONS = 10;
 const WALL_TIME_MS = 25_000;
 const TOKEN_BUDGET = 80_000;
 const MAX_TOKENS_PER_TURN = 2000;
+// Anthropic bills a prompt-cache READ at ~10% of the base input-token price. The daily token
+// bucket is a COST ceiling, so cache_read is counted at this weight (not 1×) — otherwise a
+// cached realtime voice session, which re-reads the cached prefix every turn, exhausts the
+// budget ~10× too fast (the 3-4-minute 429 bug).
+const CACHE_READ_COST_WEIGHT = 0.1;
+// Voice replies are spoken aloud and must be short (the voice system prompt enforces brevity);
+// a hard per-turn output cap stops a runaway multi-paragraph answer from being synthesized and
+// keeps a spoken session well inside its token budget. Tool-call iterations only emit small
+// tool_use blocks, so this cap never starves them.
+const VOICE_MAX_TOKENS_PER_TURN = 600;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return corsResponse(req);
@@ -83,10 +98,13 @@ serve(async (req) => {
     // network rejection propagates to the outer catch → 500 (same as the old serial
     // awaits). Minor change: an access-denied user's rate-limit counters increment
     // once before the 403 — harmless (per-user; still 403'd).
-    //   Rate buckets: Request = 30/hr typed · 600/hr voice (its OWN bucket — a spoken
-    //   session runs 10+ turns/min and would trip the 30/hr cap mid-conversation); Token =
-    //   200k/day shared across Anthropic functions (checked here at 0 tokens to reject if
-    //   already over) — the token axis stays the real cost ceiling for BOTH surfaces.
+    //   Rate buckets (both axes split typed vs voice — see core/rateBucket.ts): Request =
+    //   30/hr typed · 600/hr voice (its OWN bucket — a spoken session runs 10+ turns/min and
+    //   would trip the 30/hr cap mid-conversation). Token (cost) = 200k/day on the SHARED
+    //   `ratelimit:tok:<uid>` key for typed (also used by other Anthropic functions) · 500k/day
+    //   on the voice-only `ratelimit:tok:voice:<uid>` key, so a long call can't drain the typed
+    //   budget. Checked here at 0 tokens to reject if already over; it stays the real cost
+    //   ceiling for BOTH surfaces (cache reads counted cost-weighted, see CACHE_READ_COST_WEIGHT).
     // The realtime voice worker tags its turns with `x-jarvis-surface: voice`. This header
     // only selects the caller's OWN per-user request bucket (not a tenant boundary), so a
     // spoofed value at most inflates that one user's request allowance — still token-bounded.
@@ -96,9 +114,9 @@ serve(async (req) => {
     const isVoiceSurface = req.headers.get("x-jarvis-surface") === "voice";
     const adminClient = createSupabaseAdminClient();
     const reqBucket = requestRateBucket(user.id, isVoiceSurface);
-    const tokBucketKey = `ratelimit:tok:${user.id}`;
+    const tokBucket = tokenRateBucket(user.id, isVoiceSurface);
 
-    const [profileRes, reqLimit, tokLimit, imoRes, prefsRes] =
+    const [profileRes, reqLimit, tokLimit, imoRes, prefsRes, memoryRes] =
       await Promise.all([
         db
           .from("user_profiles")
@@ -117,20 +135,31 @@ serve(async (req) => {
         enforceRateLimit(
           adminClient,
           {
-            key: tokBucketKey,
+            key: tokBucket.key,
             maxRequests: 2_000_000_000,
             windowSeconds: 86400,
             tokens: 0,
-            maxTokens: 200_000,
+            maxTokens: tokBucket.maxTokens,
           },
           cors,
         ),
         db.rpc("get_my_imo_id"),
         db
           .from("assistant_preferences")
-          .select("assistant_name, enabled_agents")
+          .select("assistant_name, enabled_agents, enabled_memory")
           .eq("user_id", user.id)
           .single(),
+        // Durable memory (Jarvis "second brain"): the user's active rows, pinned
+        // first then most-recent. RLS-scoped; always fetched (≤25 small rows, one
+        // indexed query) and only USED when enabled_memory is on (gated below).
+        db
+          .from("jarvis_memory")
+          .select("content, kind, pinned")
+          .eq("user_id", user.id)
+          .eq("active", true)
+          .order("pinned", { ascending: false })
+          .order("updated_at", { ascending: false })
+          .limit(MAX_MEMORY_ROWS),
       ]);
 
     // Profile: super-admin flag (for the guard) + first name (for the greeting).
@@ -259,8 +288,28 @@ serve(async (req) => {
     );
     const nowContext = `CURRENT DATE: Today is ${nowLong} (${nowIso}, ${tz}). Resolve every relative date from this and pass explicit YYYY-MM-DD ranges to date-scoped tools. Never invent or assume a date.`;
 
-    const systemPrompt = buildSystemPrompt(agent, assistantName, nowContext);
-    const tools = buildAnthropicTools(agent.allowedToolNames);
+    // Durable memory: inject the user's saved facts/preferences into the system
+    // prompt so Jarvis "remembers" across sessions. Default ON (prefs row may not
+    // exist yet); empty string when disabled or the user has no memory.
+    const memoryEnabled = prefs?.enabled_memory !== false;
+    const memoryContext = memoryEnabled
+      ? formatMemoryForPrompt((memoryRes.data as MemoryRow[] | null) ?? [])
+      : "";
+
+    const systemPrompt = buildSystemPrompt(
+      agent,
+      assistantName,
+      nowContext,
+      memoryContext,
+      isVoiceSurface,
+    );
+    // When memory is disabled, also remove the saveMemory tool — otherwise the
+    // opt-out would suppress injection but still let the model WRITE rows (the gate
+    // above only controls injection). Filtering here keeps both halves consistent.
+    const allowedToolNames = memoryEnabled
+      ? agent.allowedToolNames
+      : agent.allowedToolNames.filter((n) => n !== "saveMemory");
+    const tools = buildAnthropicTools(allowedToolNames);
     const anthropic = getAnthropicClient();
 
     // Cross-turn prompt caching: mark the LAST prior-history message as a cache
@@ -327,7 +376,16 @@ serve(async (req) => {
 
         try {
           for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-            if (Date.now() - startedAt > WALL_TIME_MS) break;
+            if (Date.now() - startedAt > WALL_TIME_MS) {
+              // The turn hit the wall-time ceiling and is being cut short. Log it so a
+              // silently-capped (possibly incomplete) reply is visible in traces instead
+              // of looking like a normal finish — the worker's 28s bridge timeout sits
+              // just past this, so the caller still gets the partial reply, not an abort.
+              console.warn(
+                `assistant-orchestrator: wall-time cap hit (${WALL_TIME_MS}ms, iteration ${i}, conversation=${conversationId}) — reply may be truncated.`,
+              );
+              break;
+            }
             if (tokensUsed > TOKEN_BUDGET) break;
 
             // Prompt caching: cache_control breakpoints on the static prefix
@@ -342,7 +400,9 @@ serve(async (req) => {
               // Per-agent overrides (faster model + tighter cap for draft agents);
               // fall back to the orchestrator defaults when an agent sets neither.
               model: agent.model ?? ORCHESTRATOR_MODEL,
-              max_tokens: agent.maxTokens ?? MAX_TOKENS_PER_TURN,
+              max_tokens: isVoiceSurface
+                ? VOICE_MAX_TOKENS_PER_TURN
+                : (agent.maxTokens ?? MAX_TOKENS_PER_TURN),
               system: [
                 {
                   type: "text",
@@ -384,13 +444,19 @@ serve(async (req) => {
             }
             const resp = await turn.finalMessage();
 
-            // Count cache_creation + cache_read too: after caching,
-            // usage.input_tokens is the UNCACHED remainder only, so summing just
-            // input+output would undercount and let the budget guard fire late.
+            // Cost-weighted token accounting (the budget is a SPEND ceiling, not a raw
+            // volume count). After caching, usage.input_tokens is the UNCACHED remainder
+            // only, so cache_creation + cache_read must be counted or we'd undercount.
+            // BUT cache_read bills at ~0.1× the base input price, so counting it at full
+            // weight overcounted ~10× — that was the bug that 429'd a voice session in 3-4
+            // minutes (every turn re-reads the cached prefix). Weight it at its real cost.
             tokensUsed +=
               (resp.usage?.input_tokens ?? 0) +
               (resp.usage?.cache_creation_input_tokens ?? 0) +
-              (resp.usage?.cache_read_input_tokens ?? 0) +
+              Math.round(
+                (resp.usage?.cache_read_input_tokens ?? 0) *
+                  CACHE_READ_COST_WEIGHT,
+              ) +
               (resp.usage?.output_tokens ?? 0);
             messages.push({ role: "assistant", content: resp.content });
 
@@ -567,11 +633,11 @@ serve(async (req) => {
             // already ran, only the NEXT one if the budget is exhausted.
             if (tokensUsed > 0) {
               await checkRateLimit(adminClient, {
-                key: tokBucketKey,
+                key: tokBucket.key,
                 maxRequests: 2_000_000_000,
                 windowSeconds: 86400,
                 tokens: tokensUsed,
-                maxTokens: 200_000,
+                maxTokens: tokBucket.maxTokens,
               });
             }
 

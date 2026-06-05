@@ -9,6 +9,7 @@ import { getTeamProductionSummary } from "./getTeamProductionSummary.ts";
 import { getTeamLeaderboard } from "./getTeamLeaderboard.ts";
 import { getPolicyRiskAlerts } from "./getPolicyRiskAlerts.ts";
 import { queryPolicies } from "./queryPolicies.ts";
+import { getWritingNumberCoverage } from "./getWritingNumberCoverage.ts";
 import { getLeadPriorities } from "./getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "./getRecruitingSnapshot.ts";
 import { getClientSnapshot } from "./getClientSnapshot.ts";
@@ -23,6 +24,7 @@ import { draftSmsMessage } from "./draftSmsMessage.ts";
 import { getUnderwritingRecommendation } from "./getUnderwritingRecommendation.ts";
 import { getWeather } from "./getWeather.ts";
 import { resolveContact } from "./resolveContact.ts";
+import { saveMemory } from "./saveMemory.ts";
 
 export const TOOLS: Record<string, RegisteredTool> = {
   [getDailyBriefingData.name]: getDailyBriefingData,
@@ -31,6 +33,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [getTeamLeaderboard.name]: getTeamLeaderboard,
   [getPolicyRiskAlerts.name]: getPolicyRiskAlerts,
   [queryPolicies.name]: queryPolicies,
+  [getWritingNumberCoverage.name]: getWritingNumberCoverage,
   [getLeadPriorities.name]: getLeadPriorities,
   [getRecruitingSnapshot.name]: getRecruitingSnapshot,
   [getClientSnapshot.name]: getClientSnapshot,
@@ -45,6 +48,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [getUnderwritingRecommendation.name]: getUnderwritingRecommendation,
   [getWeather.name]: getWeather,
   [resolveContact.name]: resolveContact,
+  [saveMemory.name]: saveMemory,
 };
 
 export interface AnthropicToolDef {

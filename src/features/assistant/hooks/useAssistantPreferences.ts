@@ -27,6 +27,7 @@ const DEFAULTS: AssistantPreferences = {
   voice_enabled: false,
   voice_engine: "legacy",
   sound_enabled: true,
+  enabled_memory: true,
   tone: "professional",
   briefing_style: "concise",
 };
@@ -42,7 +43,7 @@ export function useAssistantPreferences() {
       const { data } = await supabase
         .from("assistant_preferences")
         .select(
-          "assistant_name, enabled_agents, voice_enabled, voice_engine, sound_enabled, tone, briefing_style",
+          "assistant_name, enabled_agents, voice_enabled, voice_engine, sound_enabled, enabled_memory, tone, briefing_style",
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -55,6 +56,9 @@ export function useAssistantPreferences() {
         // opt-in back to the safe legacy transport.
         voice_engine: data.voice_engine === "realtime" ? "realtime" : "legacy",
         sound_enabled: data.sound_enabled ?? DEFAULTS.sound_enabled,
+        // Default ON: a missing column/value means memory is enabled (the user's
+        // own data); only an explicit false disables it.
+        enabled_memory: data.enabled_memory ?? DEFAULTS.enabled_memory,
         tone: data.tone ?? DEFAULTS.tone,
         briefing_style: data.briefing_style ?? DEFAULTS.briefing_style,
       };

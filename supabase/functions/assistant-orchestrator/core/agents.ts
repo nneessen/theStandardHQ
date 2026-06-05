@@ -25,6 +25,7 @@ NON-NEGOTIABLE RULES:
 - Only report a metric a tool actually returns, and use the RIGHT tool for it. The AGGREGATE production tools (getMyProduction / getTeamProductionSummary) return submitted premium (AP), issued-paid premium (IP), and APPROVED policy counts — they do NOT split "pending" vs "approved". But queryPolicies CAN count or list policies by application status (pending / approved / withdrawn / denied) — so for a pending-policy count, call queryPolicies with status ["pending"]; do NOT say it's unavailable. Only claim something is unavailable if NO tool returns it, and never relabel one metric as another.
 - Figures in your EARLIER replies are stale text, not live data — they came from past tool calls you can no longer see. If the user asks about a number again, or wants a comparison, trend, change, or any math involving it, CALL THE TOOL AGAIN to get a fresh, grounded value. Never restate or recompute a number from a previous message in this conversation.
 - Those earlier figures WERE grounded in a real tool result when you gave them, even though you can no longer see that result. NEVER tell the user you "made up", "fabricated", "invented", or "have no data for" something you already presented — that accusation is itself false and destroys trust. When you cannot see a prior tool's result, the ONLY correct move is to RE-CALL the appropriate tool to refresh the data, then answer from the fresh result. Disavowing your own prior, tool-backed answer is a serious error. (Carve-out: this forbids calling a PAST tool-backed answer fabricated. It does NOT override the rule below — if you re-call the tool and it now genuinely returns no data / available:false, report THAT honestly; that is reporting the current state, not disavowing a fabrication.)
+- DURABLE MEMORY is a legitimate source, distinct from the tool rules above. If a section titled "WHAT YOU KNOW ABOUT THIS USER" appears below, those are facts, goals, and preferences the USER themselves told you to remember in earlier sessions. You MAY state and act on them directly and confidently — they are user-stated, NOT fabricated, and you do NOT need a tool result to cite them (so "what's my goal?" / "what do you know about me?" is answered straight from that block, never refused). They are NOT live business data, though: for any CURRENT metric (production, AP/IP, policy counts, premiums, pace), still call the appropriate tool — a remembered goal or target is the user's stated intention, not today's number.
 - Match the tool to the question. A tool that returns AGGREGATE totals (e.g. getMyProduction) not having a per-item breakdown does NOT mean the breakdown is unavailable — another tool (e.g. queryPolicies) provides per-policy detail. Before telling the user you "can't" provide something, make sure you called the tool that actually returns it.
 - If a tool returns no data, an empty result, or a section flagged "available: false", say so plainly (e.g. "I don't have recruiting data connected for your account yet"). Do NOT fill the gap with a plausible-sounding number.
 - If the user's request is ambiguous or outside your tools, say what you can and cannot do. Do not pretend.
@@ -51,7 +52,8 @@ Pick the RIGHT tool for the question and call only what you need:
 - The user's OWN aggregate numbers ("my production", "how am I doing", "my AP this month") → getMyProduction.
 - The team's AGGREGATE totals ("how is my team doing", team pace) → getTeamProductionSummary.
 - A per-member RANKING ("who is leading on my team", "top producers", who's behind) → getTeamLeaderboard.
-- To LIST, COUNT, or FILTER individual policies — by application status (approved/pending/withdrawn/denied), in-force lifecycle (active/cancelled/lapsed), product, or a date range — use queryPolicies (e.g. "how many pending policies did I write in the last two weeks", "list my cancelled term_life policies"). Use scope 'mine' for the user's own book, 'team' for their downline. It returns an exact 'count' (how many) plus AP/IP totals that span ALL matches (how much) and a capped most-recent-first sample list; 'truncated' just means the list is a sample, NOT that the totals are partial — unless 'premiumsComplete' is false, in which case call the totals approximate. Remember 'pending' is an application status, not a lifecycle state. When the user wants to SEE the policies — "what did I sell", "list", "show me", "which ones", "the full picture" — present EACH returned policy as its own compact row: client name, product, status, submit date, effective date, annual premium, and policy number. Lead with the count + AP/IP total, then the list. NEVER collapse a "what did I sell / show me" request into a one-line summary — they want the per-policy detail, and every field above is in the tool result. If there are more than ~20 policies, show the ~20 most recent as rows and add "…and N more — narrow by status, product, or a tighter date range to see them" rather than trying to print all of them (a very long list gets cut off mid-row).
+- To LIST, COUNT, or FILTER individual policies — by application status (approved/pending/withdrawn/denied), in-force lifecycle (active/cancelled/lapsed), product, or a date range — use queryPolicies (e.g. "how many pending policies did I write in the last two weeks", "list my cancelled term_life policies"). Use scope 'mine' for the user's own book, 'team' for their downline. It returns an exact 'count' (how many) plus AP/IP totals that span ALL matches (how much) and a capped most-recent-first sample list; 'truncated' just means the list is a sample, NOT that the totals are partial — unless 'premiumsComplete' is false, in which case call the totals approximate. Remember 'pending' is an application status, not a lifecycle state.
+- For carrier WRITING NUMBERS / carrier appointments / licensing coverage — "which carriers do I have writing numbers with", "what appointments am I missing", "is my team appointed with <carrier>", "which agents are missing writing numbers" — use getWritingNumberCoverage (scope 'mine' for the user's own carriers incl. the actual numbers + the carriers they're missing; scope 'team' for an aggregate per-agent coverage breakdown + the team's least-covered carriers, no individual numbers). This is about carrier APPOINTMENTS, distinct from production/AP (queryPolicies/getMyProduction) and from underwriting approval — don't conflate a writing number (an appointment) with a sale. When the user wants to SEE the policies — "what did I sell", "list", "show me", "which ones", "the full picture" — present EACH returned policy as its own compact row: client name, product, status, submit date, effective date, annual premium, and policy number. Lead with the count + AP/IP total, then the list. NEVER collapse a "what did I sell / show me" request into a one-line summary — they want the per-policy detail, and every field above is in the tool result. If there are more than ~20 policies, show the ~20 most recent as rows and add "…and N more — narrow by status, product, or a tighter date range to see them" rather than trying to print all of them (a very long list gets cut off mid-row).
 State ONLY figures the tool returned; if a tool comes back unavailable, say so plainly and do not estimate or rank from memory. All of these are scoped to the user's own self/team — you cannot see other teams, so never present anyone else's team.
 
 Match the format to the ask: for a PACE/aggregate question, keep it tight — headline (pace vs expectation, top movers), one supporting detail, then a next step. For a request to SEE or LIST policies, completeness beats brevity: lead with the count + AP/IP total, then give per-policy rows (client, product, status, submit & effective dates, premium, policy number) — up to ~20 most-recent rows, and if more matched add "…and N more — narrow the filter" so the reply is never cut off mid-list. If the user wants to follow up with an agent, you may DRAFT an email or SMS for their approval — never claim you sent it.`;
@@ -156,6 +158,10 @@ Lead with the 1-3 products most likely to approve (carrier + product + class + l
 
 const DRAFT_TOOLS = ["draftEmailMessage", "draftSmsMessage"];
 
+// Durable-memory tool, available wherever drafting is (a "remember this" can occur
+// in any conversational agent). Mirrors DRAFT_TOOLS placement.
+const MEMORY_TOOLS = ["saveMemory"];
+
 export const AGENTS: Record<AgentKey, AgentConfig> = {
   "executive-briefing": {
     key: "executive-briefing",
@@ -169,9 +175,11 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getTeamProductionSummary",
       "getPolicyRiskAlerts",
       "queryPolicies",
+      "getWritingNumberCoverage",
       "getWeather",
       "resolveContact",
       ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
     ],
     allowedCategories: [
       "briefing",
@@ -193,7 +201,9 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getTeamProductionSummary",
       "getTeamLeaderboard",
       "queryPolicies",
+      "getWritingNumberCoverage",
       ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
     ],
     allowedCategories: ["production", "policy", "messaging"],
     // Higher than the other data agents: a "show me my policies" answer lists many
@@ -206,7 +216,12 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Approved-but-unpaid, payment-risk, pending follow-ups, chargeback exposure.",
     systemPrompt: POLICY_RISK_PROMPT,
-    allowedToolNames: ["getPolicyRiskAlerts", "queryPolicies", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getPolicyRiskAlerts",
+      "queryPolicies",
+      ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
+    ],
     allowedCategories: ["policy", "messaging"],
     maxTokens: 1000,
   },
@@ -216,7 +231,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Rank leads by urgency and likelihood; surface untouched hot leads and cold follow-ups.",
     systemPrompt: LEAD_PRIORITY_PROMPT,
-    allowedToolNames: ["getLeadPriorities", ...DRAFT_TOOLS],
+    allowedToolNames: ["getLeadPriorities", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["lead", "messaging"],
     maxTokens: 1000,
   },
@@ -226,7 +241,12 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Summarize book of business and draft client follow-ups (after approval).",
     systemPrompt: CRM_PROMPT,
-    allowedToolNames: ["getClientSnapshot", "resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getClientSnapshot",
+      "resolveContact",
+      ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
+    ],
     allowedCategories: ["crm", "messaging"],
     maxTokens: 1000,
   },
@@ -244,6 +264,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "draftCloseNote",
       "draftCloseTask",
       ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
     ],
     allowedCategories: ["close", "messaging"],
     maxTokens: 1000,
@@ -254,7 +275,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft natural, non-robotic outreach for mortgage protection, final expense, recruiting, and follow-ups.",
     systemPrompt: SMS_EMAIL_COPY_PROMPT,
-    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -265,7 +286,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Review drafts for risky wording, unsupported claims, and TCPA concerns; suggest safer alternatives.",
     systemPrompt: COMPLIANCE_PROMPT,
-    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["compliance", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -276,7 +297,11 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Licensed-agent recruiting intelligence, pipeline review, candidate follow-ups.",
     systemPrompt: RECRUITING_PROMPT,
-    allowedToolNames: ["getRecruitingSnapshot", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getRecruitingSnapshot",
+      ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
+    ],
     allowedCategories: ["recruiting", "messaging"],
     maxTokens: 1000,
   },
@@ -290,6 +315,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getTeamProductionSummary",
       "getTeamLeaderboard",
       ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
     ],
     allowedCategories: ["coaching", "production", "messaging"],
     maxTokens: 1000,
@@ -300,7 +326,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft scheduling messages for calls and meetings (no live calendar connection).",
     systemPrompt: CALENDAR_PROMPT,
-    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["calendar", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -311,7 +337,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Draft scoreboard updates, announcements, and motivational messages (no Slack connection).",
     systemPrompt: SLACK_PROMPT,
-    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["slack", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -322,7 +348,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Outline SMS/email sequences for hot leads, aged leads, and recruiting (no automation engine).",
     systemPrompt: WORKFLOW_PROMPT,
-    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS],
+    allowedToolNames: ["resolveContact", ...DRAFT_TOOLS, ...MEMORY_TOOLS],
     allowedCategories: ["workflow", "messaging"],
     model: DRAFT_MODEL,
     maxTokens: 600,
@@ -343,7 +369,11 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Rank carriers by probability of approval for a client's health profile; honest about what can't be assessed.",
     systemPrompt: UNDERWRITING_PROMPT,
-    allowedToolNames: ["getUnderwritingRecommendation", ...DRAFT_TOOLS],
+    allowedToolNames: [
+      "getUnderwritingRecommendation",
+      ...DRAFT_TOOLS,
+      ...MEMORY_TOOLS,
+    ],
     allowedCategories: ["underwriting", "messaging"],
     maxTokens: 1500,
   },
@@ -356,10 +386,25 @@ export function getAgent(key: AgentKey): AgentConfig {
   return AGENTS[key] ?? AGENTS["executive-briefing"];
 }
 
+// Appended LAST (after the agent role prompt) when the turn is a spoken voice turn
+// (x-jarvis-surface: voice). This is the PRIMARY fix for the "gibberish, especially
+// numbers" complaint: the reply is synthesized by a text-to-speech engine, so markdown
+// and typed-number formatting come out as literal noise ("star star", "dollar sign").
+// The worker's speech-text.ts net sanitizes whatever slips through; this directive keeps
+// the model from producing the noise in the first place AND keeps voice replies short,
+// which also cuts token spend (helps the per-session voice budget).
+export const VOICE_OUTPUT_DIRECTIVE = `VOICE MODE — YOUR REPLY WILL BE SPOKEN ALOUD BY A TEXT-TO-SPEECH ENGINE:
+- Output PLAIN SPOKEN PROSE ONLY. No markdown of any kind: no asterisks or bold, no headings (#), no bullet points or dashes, no tables, no code, no emoji, no links, no parentheses-heavy asides.
+- Say every number, amount, and percentage the way a person SPEAKS it, never how it's typed: "twelve thousand three hundred dollars" not "$12,300"; "forty-five point two percent" not "45.2%"; "one and a half million" not "$1.5M". Never write a "$", "%", or "#" symbol.
+- Be brief: lead with the answer in one or two sentences, add at most one supporting detail, then stop. Do not read long lists — name the top one or two items and offer to go deeper if they want. Aim for something that takes under about twenty seconds to say.
+- Sound like a sharp colleague talking out loud, not a document being read.`;
+
 export function buildSystemPrompt(
   agent: AgentConfig,
   assistantName: string,
   nowContext?: string,
+  memoryContext?: string,
+  isVoiceSurface?: boolean,
 ): string {
   const base = BASE_SYSTEM_RULES.replace(
     /\{\{ASSISTANT_NAME\}\}/g,
@@ -368,5 +413,11 @@ export function buildSystemPrompt(
   // Inject the real current date right after the base rules (so the "use the
   // CURRENT DATE below" rule resolves), before the agent's role prompt.
   const now = nowContext ? `\n\n${nowContext}` : "";
-  return `${base}${now}\n\n${agent.systemPrompt}`;
+  // Durable per-user memory (Jarvis "second brain"), injected after the date and
+  // before the agent role prompt. Empty string when the user has no memory or has
+  // memory disabled, so nothing is added.
+  const memory = memoryContext ? `\n\n${memoryContext}` : "";
+  // Voice directive goes LAST so it's the strongest, most-recent instruction.
+  const voice = isVoiceSurface ? `\n\n${VOICE_OUTPUT_DIRECTIVE}` : "";
+  return `${base}${now}${memory}\n\n${agent.systemPrompt}${voice}`;
 }

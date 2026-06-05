@@ -11,9 +11,9 @@ interface Props {
 
 const STATE_LABEL: Record<string, string> = {
   idle: "Start a voice session",
-  checking: "Starting…",
+  checking: "Connecting — wait for the cue…",
   unavailable: "Voice unavailable",
-  listening: "Listening — just speak",
+  listening: "Listening — go ahead",
   capturing: "Listening…",
   thinking: "Thinking…",
   speaking: "Speaking",
@@ -27,6 +27,7 @@ const STATE_LABEL: Record<string, string> = {
 export function VoiceOrb({ voice, assistantName = "Jarvis" }: Props) {
   const { state, message, available, start, stop } = voice;
   const isActive =
+    state === "checking" || // connecting counts as active so the orb is stoppable mid-connect
     state === "listening" ||
     state === "capturing" ||
     state === "thinking" ||

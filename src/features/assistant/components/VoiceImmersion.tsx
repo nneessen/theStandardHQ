@@ -15,8 +15,19 @@ const CAPTION: Record<string, string> = {
   listening: "LISTENING",
   capturing: "LISTENING",
   thinking: "PROCESSING",
-  checking: "STARTING",
+  checking: "CONNECTING",
   speaking: "SPEAKING",
+};
+
+// Per-state hint under the caption so the user knows exactly when to talk. The key fix for
+// "it looked ready but didn't hear me": "connecting" and "speaking" read as NOT-yet, only
+// "listening" says go ahead.
+const HINT: Record<string, string> = {
+  checking: "Connecting to Jarvis — one moment…",
+  speaking: "Jarvis is speaking…",
+  thinking: "Working on it…",
+  listening: "Go ahead — I'm listening",
+  capturing: "I hear you…",
 };
 
 function reactorMode(state: string): ReactorMode {
@@ -41,16 +52,21 @@ export function VoiceImmersion({ voice, assistantName, accent }: Props) {
 
   const [level, setLevel] = useState(0);
 
-  // Low-frequency sampling of mic amplitude to pulse the reactor core (the waveform
-  // canvas reads at full rAF rate on its own).
+  // Pulse the reactor core with the mic ONLY while the agent is actually listening; hold it
+  // calm (0) otherwise so connecting/speaking never looks like it's hearing you (matches the
+  // waveform gating below).
+  const hearing = voice.state === "listening" || voice.state === "capturing";
   useEffect(() => {
-    if (!active) return;
+    if (!hearing) {
+      setLevel(0);
+      return;
+    }
     const id = setInterval(
       () => setLevel(Math.min(1, voice.getLevel() * 6)),
       100,
     );
     return () => clearInterval(id);
-  }, [active, voice]);
+  }, [hearing, voice]);
 
   useEffect(() => {
     if (!active) return;
@@ -107,7 +123,9 @@ export function VoiceImmersion({ voice, assistantName, accent }: Props) {
               {CAPTION[voice.state] ?? assistantName}
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {voice.message ?? "Speak naturally — press ESC to end"}
+              {voice.message ??
+                HINT[voice.state] ??
+                "Speak naturally — press ESC to end"}
             </div>
           </div>
         </motion.div>
@@ -127,8 +145,12 @@ function Waveform({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const visible = useDocumentVisible();
+  // Mic-reactive bars ONLY when the agent is actually listening; during connecting / speaking /
+  // thinking we show a synthetic envelope so live mic motion never implies "I'm hearing you".
+  const listening = voice.state === "listening" || voice.state === "capturing";
   const speaking = voice.state === "speaking";
-  const thinking = voice.state === "thinking" || voice.state === "checking";
+  const thinking = voice.state === "thinking";
+  const connecting = voice.state === "checking";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -149,7 +171,7 @@ function Waveform({
       const barW = (w - gap * (BARS - 1)) / BARS;
       for (let i = 0; i < BARS; i++) {
         let mag: number;
-        if (hasMic && !speaking) {
+        if (hasMic && listening) {
           // Average a slice of the low-mid spectrum for each bar.
           const start = Math.floor((i / BARS) * 240);
           const end = start + 8;
@@ -157,8 +179,15 @@ function Waveform({
           for (let j = start; j < end; j++) sum += bins[j];
           mag = sum / 8 / 255;
         } else {
-          // Synthetic envelope while speaking / thinking (no useful mic signal).
-          const base = speaking ? 0.55 : thinking ? 0.3 : 0.12;
+          // Synthetic envelope when we are NOT actively listening. Connecting is the calmest
+          // (a faint idle shimmer) so it reads clearly as "not ready yet".
+          const base = speaking
+            ? 0.55
+            : thinking
+              ? 0.3
+              : connecting
+                ? 0.08
+                : 0.12;
           mag =
             base +
             Math.sin(phase + i * 0.4) * 0.18 +
@@ -174,7 +203,7 @@ function Waveform({
     };
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [voice, accent, visible, speaking, thinking]);
+  }, [voice, accent, visible, listening, speaking, thinking, connecting]);
 
   return (
     <canvas

@@ -12,7 +12,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "node --import tsx --env-file=.env.local ./src/agent.ts dev",
     "start": "node ./dist/agent.js start",
-    "test": "node --import tsx --test ./src/reply-stream.test.ts ./src/orchestrator-bridge.test.ts"
+    "test": "node --import tsx --test ./src/reply-stream.test.ts ./src/orchestrator-bridge.test.ts ./src/speech-text.test.ts"
   },
   "dependencies": {
     "@livekit/agents": "^1.4.5",
