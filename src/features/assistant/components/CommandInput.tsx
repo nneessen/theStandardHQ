@@ -4,12 +4,7 @@ import { ChevronRight, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_ACCENT } from "../lib/agentTheme";
-
-const QUICK_PROMPTS = [
-  "Brief me on what needs my attention today",
-  "What policies are at risk?",
-  "How is my team's production?",
-];
+import { QUICK_PROMPTS } from "../lib/capabilities";
 
 interface CommandInputProps {
   onSend: (text: string) => void;

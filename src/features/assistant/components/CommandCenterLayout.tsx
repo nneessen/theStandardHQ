@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VoiceOrb } from "./VoiceOrb";
 import { AssistantSettingsSheet } from "./AssistantSettingsSheet";
+import { CapabilitiesSheet } from "./CapabilitiesSheet";
 import { ArcReactor, type ReactorMode } from "./hud/ArcReactorLazy";
 import { ReactorDial } from "./hud/ReactorDial";
 import { usePointerTilt } from "./hud/usePointerTilt";
@@ -21,6 +22,8 @@ interface Props {
   reactorMode: ReactorMode;
   audioLevel?: number;
   voice: VoiceSessionUi;
+  /** Run an example prompt from the in-app guide (sends it as if typed). */
+  onRunPrompt: (text: string) => void;
   children: ReactNode;
 }
 
@@ -37,6 +40,7 @@ export function CommandCenterLayout({
   reactorMode,
   audioLevel = 0,
   voice,
+  onRunPrompt,
   children,
 }: Props) {
   const theme = agentTheme(agentKey);
@@ -129,6 +133,11 @@ export function CommandCenterLayout({
         </div>
         <div className="flex items-center gap-1.5">
           <VoiceOrb voice={voice} assistantName={assistantName} />
+          <CapabilitiesSheet
+            onRun={onRunPrompt}
+            assistantName={assistantName}
+            accent={accent}
+          />
           <AssistantSettingsSheet />
         </div>
       </header>

@@ -25,6 +25,11 @@ export interface VoiceSessionUi {
   start: () => Promise<void>;
   /** End the session and release the mic. */
   stop: () => void;
+  /**
+   * Recover audio playout when the browser blocked autoplay (the "Tap to enable audio"
+   * case). Must NOT end the session. No-op on transports that don't gate playout.
+   */
+  resumeAudio: () => void | Promise<void>;
   /** Fill `out` with byte frequency data from the live mic analyser; false if no session. */
   getFrequencyData: (out: Uint8Array) => boolean;
   /** Last measured mic RMS amplitude (0–1), for visualizers. */

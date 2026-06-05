@@ -593,12 +593,18 @@ export function useAssistantVoiceSession({
   // Last measured mic RMS amplitude (0–1).
   const getLevel = useCallback((): number => levelRef.current, []);
 
+  // The legacy transport plays TTS through its own <audio> element created inside the click
+  // gesture, so it never hits the autoplay-blocked path the realtime hook recovers from.
+  // No-op to satisfy the shared VoiceSessionUi surface.
+  const resumeAudio = useCallback(() => {}, []);
+
   return {
     state,
     message,
     available,
     start,
     stop,
+    resumeAudio,
     getFrequencyData,
     getLevel,
     // Spoken-reply pipeline (driven by AssistantPage as the reply streams in).

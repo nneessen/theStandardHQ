@@ -254,6 +254,17 @@ export function AssistantPage() {
     else realtimeStopRef.current();
   }, [realtimeEnabled]);
 
+  // Audible "you can talk now": chime the instant the agent flips into listening (from
+  // connecting/speaking/etc.). The immersion shows a green READY pill at the same moment —
+  // together they make the disabled→ready transition impossible to miss. Gated on sound_enabled
+  // via play().
+  const prevVoiceStateRef = useRef<VoiceSessionUi["state"]>(voice.state);
+  useEffect(() => {
+    const prev = prevVoiceStateRef.current;
+    if (prev !== "listening" && voice.state === "listening") play("ready");
+    prevVoiceStateRef.current = voice.state;
+  }, [voice.state, play]);
+
   // ⌘J (from anywhere) lands here and asks us to begin voice immediately so the
   // user can just talk. Mirror the orb's click guard: skip if a session is
   // already running, surface the same notice if the backend probe says voice
@@ -338,6 +349,7 @@ export function AssistantPage() {
         reactorMode={reactorMode}
         audioLevel={audioLevel}
         voice={voice}
+        onRunPrompt={handleSend}
       >
         <div
           ref={scrollRef}
