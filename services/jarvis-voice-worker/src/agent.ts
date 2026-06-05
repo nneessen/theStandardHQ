@@ -40,6 +40,7 @@ import {
 } from "./orchestrator-bridge.js";
 import { buildReplyStream } from "./reply-stream.js";
 import { normalizeSpeechStream } from "./speech-text.js";
+import { markJobStarted, startHeartbeat } from "./heartbeat.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -251,6 +252,9 @@ export default defineAgent({
 
   entry: async (ctx: JobContext) => {
     await ctx.connect();
+    // Stamp the process-level heartbeat with "a real job just started" (diagnostic only —
+    // idle gaps between calls are normal, so this is never used as a down-signal).
+    markJobStarted();
     // Rooms are minted as `jarvis-<uid>-<sessionUuid>`; pull the owner uid so we only
     // accept that user's JWT off the data channel (see SessionState). Match case-
     // insensitively (so a legit room is always recognized → no fail-open when ownerUid
@@ -380,6 +384,16 @@ export default defineAgent({
     });
   },
 });
+
+// Process-level liveness heartbeat — MAIN worker process ONLY. The SDK forks one subprocess
+// per room (ipc/job_main.js) and re-imports this module, so gate on that to avoid one heartbeat
+// timer per concurrent job. A successful heartbeat proves the event loop is alive + the box can
+// reach the network; the external monitor (voice-worker-health-check) pairs it with a Fly
+// machine-state check and alerts on staleness/stop. See heartbeat.ts for the coverage rationale.
+const isJobSubprocess = (process.argv[1] ?? "").endsWith("job_main.js");
+if (!isJobSubprocess) {
+  startHeartbeat();
+}
 
 // Register this file as the agent worker; LiveKit Cloud auto-dispatches it into rooms.
 // `ServerOptions` is the current name (the old `WorkerOptions` is a deprecated alias).

@@ -1,0 +1,63 @@
+# GitHub Actions Workflow: Jarvis Voice Worker Health Check
+# Triggers the voice-worker-health-check edge function, which judges the Fly.io voice
+# worker's health (Fly machine-state + heartbeat staleness) and alerts the owner (SMS +
+# email) on a healthy->down transition, clearing on recovery. All logic is in the edge
+# function — this workflow is just the cron trigger (same pattern as notification-digests).
+#
+# Runs every 15 minutes. Reuses the existing SUPABASE_SERVICE_ROLE_KEY repo secret; the Fly
+# token + alert recipients live as edge-function secrets, not here.
+
+name: Jarvis Voice Worker Health Check
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Check Voice Worker Health
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Edge Function
+        id: call-function
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://pcyaqwodnyrpkaiojnpz.supabase.co/functions/v1/voice-worker-health-check" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json")
+
+          # Extract HTTP status code (last line)
+          http_code=$(echo "$response" | tail -n1)
+          # Extract response body (all but last line)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          # Store outputs
+          echo "status=$http_code" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
+
+          # Fail the run if the monitor itself errored (not if the worker is down — the
+          # monitor returns 200 with isDown:true and handles alerting internally).
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Health-check function returned status $http_code"
+            exit 1
+          fi
+
+      - name: Log Results
+        if: always()
+        run: |
+          echo "## Jarvis Voice Worker Health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.call-function.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Response:**" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.call-function.outputs.body }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
