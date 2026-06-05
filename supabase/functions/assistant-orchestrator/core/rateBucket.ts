@@ -17,9 +17,23 @@ export const REQUEST_MAX_PER_HOUR_TYPED = 30;
 /** Voice request cap — high enough that a long spoken conversation never self-throttles. */
 export const REQUEST_MAX_PER_HOUR_VOICE = 600;
 
+// Daily TOKEN (cost) ceilings. The typed key is SHARED across Anthropic edge functions
+// (close-ai-builder, etc.) so its value + key must not change. Voice gets its OWN daily
+// bucket so a long spoken session can't drain the typed budget (and vice versa), and a
+// higher cap because a realtime call runs many short turns — but it is still a HARD spend
+// ceiling, not "unlimited". Tokens are counted COST-weighted (cache reads at ~0.1×, their
+// real Anthropic price), so this is a budget of input-token-equivalents, not raw volume.
+export const TOKEN_MAX_PER_DAY_TYPED = 200_000;
+export const TOKEN_MAX_PER_DAY_VOICE = 500_000;
+
 export interface RequestBucket {
   key: string;
   maxRequests: number;
+}
+
+export interface TokenBucket {
+  key: string;
+  maxTokens: number;
 }
 
 /**
@@ -39,5 +53,26 @@ export function requestRateBucket(
     : {
         key: `ratelimit:req:assistant-orchestrator:${userId}`,
         maxRequests: REQUEST_MAX_PER_HOUR_TYPED,
+      };
+}
+
+/**
+ * Pick the DAILY token bucket for this turn. Voice turns get a distinct key
+ * (`ratelimit:tok:voice:<uid>`) and the higher cap; everything else keeps the original
+ * shared `ratelimit:tok:<uid>` bucket and 200k cap (do NOT change that key — other Anthropic
+ * functions report into it). Mirrors requestRateBucket so both axes split the same way.
+ */
+export function tokenRateBucket(
+  userId: string,
+  isVoiceSurface: boolean,
+): TokenBucket {
+  return isVoiceSurface
+    ? {
+        key: `ratelimit:tok:voice:${userId}`,
+        maxTokens: TOKEN_MAX_PER_DAY_VOICE,
+      }
+    : {
+        key: `ratelimit:tok:${userId}`,
+        maxTokens: TOKEN_MAX_PER_DAY_TYPED,
       };
 }

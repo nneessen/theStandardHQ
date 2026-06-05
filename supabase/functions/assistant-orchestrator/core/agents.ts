@@ -386,11 +386,25 @@ export function getAgent(key: AgentKey): AgentConfig {
   return AGENTS[key] ?? AGENTS["executive-briefing"];
 }
 
+// Appended LAST (after the agent role prompt) when the turn is a spoken voice turn
+// (x-jarvis-surface: voice). This is the PRIMARY fix for the "gibberish, especially
+// numbers" complaint: the reply is synthesized by a text-to-speech engine, so markdown
+// and typed-number formatting come out as literal noise ("star star", "dollar sign").
+// The worker's speech-text.ts net sanitizes whatever slips through; this directive keeps
+// the model from producing the noise in the first place AND keeps voice replies short,
+// which also cuts token spend (helps the per-session voice budget).
+export const VOICE_OUTPUT_DIRECTIVE = `VOICE MODE — YOUR REPLY WILL BE SPOKEN ALOUD BY A TEXT-TO-SPEECH ENGINE:
+- Output PLAIN SPOKEN PROSE ONLY. No markdown of any kind: no asterisks or bold, no headings (#), no bullet points or dashes, no tables, no code, no emoji, no links, no parentheses-heavy asides.
+- Say every number, amount, and percentage the way a person SPEAKS it, never how it's typed: "twelve thousand three hundred dollars" not "$12,300"; "forty-five point two percent" not "45.2%"; "one and a half million" not "$1.5M". Never write a "$", "%", or "#" symbol.
+- Be brief: lead with the answer in one or two sentences, add at most one supporting detail, then stop. Do not read long lists — name the top one or two items and offer to go deeper if they want. Aim for something that takes under about twenty seconds to say.
+- Sound like a sharp colleague talking out loud, not a document being read.`;
+
 export function buildSystemPrompt(
   agent: AgentConfig,
   assistantName: string,
   nowContext?: string,
   memoryContext?: string,
+  isVoiceSurface?: boolean,
 ): string {
   const base = BASE_SYSTEM_RULES.replace(
     /\{\{ASSISTANT_NAME\}\}/g,
@@ -403,5 +417,7 @@ export function buildSystemPrompt(
   // before the agent role prompt. Empty string when the user has no memory or has
   // memory disabled, so nothing is added.
   const memory = memoryContext ? `\n\n${memoryContext}` : "";
-  return `${base}${now}${memory}\n\n${agent.systemPrompt}`;
+  // Voice directive goes LAST so it's the strongest, most-recent instruction.
+  const voice = isVoiceSurface ? `\n\n${VOICE_OUTPUT_DIRECTIVE}` : "";
+  return `${base}${now}${memory}\n\n${agent.systemPrompt}${voice}`;
 }
