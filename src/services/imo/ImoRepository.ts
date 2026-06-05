@@ -25,12 +25,12 @@ export class ImoRepository extends BaseRepository<
       .from(this.tableName)
       .select("*")
       .eq("code", code)
-      .single();
+      // maybeSingle() returns { data: null } for 0 rows instead of a 406
+      // (PGRST116), so a missing/invisible code is a quiet not-found, not a
+      // console error.
+      .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST116") {
-        return null; // Not found
-      }
       throw this.handleError(error, "findByCode");
     }
 
@@ -59,16 +59,16 @@ export class ImoRepository extends BaseRepository<
       `,
       )
       .eq("id", imoId)
-      .single();
+      // maybeSingle() returns { data: null } for 0 rows instead of a 406
+      // (PGRST116). After sunset deactivation the user's IMO row is no longer
+      // RLS-visible, which is an expected empty state, not an error.
+      .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST116") {
-        return null;
-      }
       throw this.handleError(error, "findWithAgencies");
     }
 
-    return data as Imo;
+    return (data as Imo | null) ?? null;
   }
 
   /**

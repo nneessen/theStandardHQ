@@ -53,16 +53,17 @@ export class AgencyRepository extends BaseRepository<
       `,
       )
       .eq("id", agencyId)
-      .single();
+      // maybeSingle() returns { data: null } for 0 rows instead of a 406
+      // (PGRST116). After sunset deactivation the user's agency row is no longer
+      // RLS-visible, which is an expected empty state, not an error. Catching
+      // PGRST116 in JS still left the browser logging the 406 to the console.
+      .maybeSingle();
 
     if (error) {
-      if (error.code === "PGRST116") {
-        return null;
-      }
       throw this.handleError(error, "findWithOwner");
     }
 
-    return data as Agency;
+    return (data as Agency | null) ?? null;
   }
 
   /**
