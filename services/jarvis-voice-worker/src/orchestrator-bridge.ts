@@ -34,14 +34,20 @@ export async function* callOrchestrator(
   message: string,
   conversationId: string | null,
   onConversationId: (id: string) => void,
-  // Caller's cancel signal (barge-in / turn interruption). Combined with the 45s hang-guard
+  // Caller's cancel signal (barge-in / turn interruption). Combined with the hang-guard
   // so an abandoned turn tears the fetch down immediately instead of streaming to a dead
   // consumer. Optional so existing callers/tests keep working.
   externalSignal?: AbortSignal,
 ): AsyncGenerator<string> {
+  // Hang-guard, aligned just past the orchestrator's own 25s wall-time ceiling. The
+  // orchestrator caps a turn at 25s and then streams a graceful `done`, so a real reply
+  // always lands well under this; 28s only fires if the upstream truly hangs (network/
+  // proxy), in which case the caller speaks the fallback. (Was 45s — a 20s gap that just
+  // let a wedged fetch sit open longer in a worker hosting other rooms.)
+  const HANG_GUARD_MS = 28_000;
   const signal = externalSignal
-    ? anySignal([AbortSignal.timeout(45_000), externalSignal])
-    : AbortSignal.timeout(45_000);
+    ? anySignal([AbortSignal.timeout(HANG_GUARD_MS), externalSignal])
+    : AbortSignal.timeout(HANG_GUARD_MS);
   const res = await fetch(cfg.url, {
     method: "POST",
     headers: {
@@ -55,8 +61,9 @@ export async function* callOrchestrator(
       "x-jarvis-surface": "voice",
     },
     body: JSON.stringify({ message, conversationId }),
-    // Hang-guard (45s turn ceiling) OR'd with the caller's cancel signal — the caller
-    // catches the AbortError and speaks a graceful fallback (or, on barge-in, stays silent).
+    // Hang-guard (28s turn ceiling, just past the orchestrator's 25s wall-time) OR'd with the
+    // caller's cancel signal — the caller catches the AbortError and speaks a graceful fallback
+    // (or, on barge-in, stays silent).
     signal,
   });
 
@@ -148,7 +155,7 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
   const ac = new AbortController();
   const onAbort = () => ac.abort();
   // Detach our listener from the LOSING signals once the controller aborts. Without this, on
-  // the common barge-in path (externalSignal wins at ~2s) the still-pending 45s timeout signal
+  // the common barge-in path (externalSignal wins at ~2s) the still-pending 28s timeout signal
   // keeps `onAbort` — and the whole closure — retained until its timer fires, needless
   // per-turn retention in a worker hosting many rooms.
   const cleanup = () => {

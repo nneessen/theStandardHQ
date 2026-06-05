@@ -39,6 +39,7 @@ import {
   type OrchestratorConfig,
 } from "./orchestrator-bridge.js";
 import { buildReplyStream } from "./reply-stream.js";
+import { normalizeSpeechStream } from "./speech-text.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -98,9 +99,11 @@ class SessionState {
         return;
       }
       // Bind to the room owner. Decode (NOT verify — the orchestrator verifies the
-      // signature) the `sub` and reject any token that isn't this room's user.
+      // signature) the `sub` and reject any token that isn't this room's user. Compare
+      // case-insensitively: `ownerUid` is already lowercased and UUIDs are case-
+      // insensitive, so casing can never be used to evade the match.
       const sub = decodeJwtSub(msg.jwt);
-      if (this.ownerUid && sub && sub !== this.ownerUid) {
+      if (this.ownerUid && sub && sub.toLowerCase() !== this.ownerUid) {
         console.log(
           `[jarvis] auth REJECTED: sub=${sub} != owner=${this.ownerUid}`,
         );
@@ -200,18 +203,41 @@ class JarvisAgent extends voice.Agent {
     const authState = this.authState;
     const jwt = authState.jwt;
     const text = latestUserText(chatCtx);
+
+    // Empty-STT guard: background noise / a false VAD trigger can produce a blank transcript.
+    // Calling the orchestrator with it wastes a turn (and tokens) and surfaces a scary "I hit a
+    // problem" fallback. Speak a gentle reprompt straight through TTS instead — no orchestrator
+    // call. Returning a fixed ReadableStream (not session.say()) keeps us on the normal reply
+    // path with no re-entrancy into the session from inside llmNode.
+    if (!text.trim()) {
+      return new ReadableStream<string>({
+        start(controller) {
+          controller.enqueue(
+            "Sorry, I didn't catch that — could you say it again?",
+          );
+          controller.close();
+        },
+      });
+    }
+
     return buildReplyStream({
       jwt,
       text,
+      // Wrap the orchestrator's raw token deltas in the speech-text net: strip any residual
+      // markdown/symbols and spell numbers, on COMPLETE sentences (so a figure split across
+      // deltas is never mangled). The orchestrator's voice prompt is the primary cleanup; this
+      // guarantees it. Cancellation still flows through the injected AbortSignal.
       stream: (signal) =>
-        callOrchestrator(
-          ORCHESTRATOR,
-          // Non-null: buildReplyStream only invokes `stream` when `jwt` is present.
-          jwt as string,
-          text,
-          authState.conversationId,
-          (id) => (authState.conversationId = id),
-          signal,
+        normalizeSpeechStream(
+          callOrchestrator(
+            ORCHESTRATOR,
+            // Non-null: buildReplyStream only invokes `stream` when `jwt` is present.
+            jwt as string,
+            text,
+            authState.conversationId,
+            (id) => (authState.conversationId = id),
+            signal,
+          ),
         ),
     });
   }
@@ -226,11 +252,16 @@ export default defineAgent({
   entry: async (ctx: JobContext) => {
     await ctx.connect();
     // Rooms are minted as `jarvis-<uid>-<sessionUuid>`; pull the owner uid so we only
-    // accept that user's JWT off the data channel (see SessionState).
+    // accept that user's JWT off the data channel (see SessionState). Match case-
+    // insensitively (so a legit room is always recognized → no fail-open when ownerUid
+    // is null) but LOWERCASE the captured uid; the JWT `sub` is lowercased at comparison
+    // too, so room-name casing can never be used to slip past the owner check.
     const ownerUid =
-      ctx.room.name?.match(
-        /^jarvis-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
-      )?.[1] ?? null;
+      ctx.room.name
+        ?.match(
+          /^jarvis-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+        )?.[1]
+        ?.toLowerCase() ?? null;
     const state = new SessionState(ownerUid);
 
     // Receive the user's JWT (and refreshes) over the data channel.
@@ -266,9 +297,33 @@ export default defineAgent({
         // (otherwise `new TTS()` throws "ElevenLabs API key is required"). Deepgram's plugin
         // already reads DEEPGRAM_API_KEY, which matches our secret, so STT needs no override.
         apiKey: requireEnv("ELEVENLABS_API_KEY"),
-        model: "eleven_turbo_v2_5",
+        // `eleven_multilingual_v2` (was `eleven_turbo_v2_5`): the turbo tier is the weakest at
+        // number/word prosody and was a source of the garbled-numbers complaint. Multilingual_v2
+        // is the higher-quality tier — richer, clearer enunciation, at a small latency cost the
+        // owner accepted. We deliberately do NOT set `applyTextNormalization: 'on'`: numbers are
+        // already spelled by the orchestrator's voice prompt (primary) + speech-text.ts (the
+        // deterministic net), so enabling it would be a third, redundant number engine.
+        model: "eleven_multilingual_v2",
+        // Stability ~0.5 keeps the voice steady (very low stability is a known mumble/wobble
+        // source); speaker boost sharpens enunciation of figures and carrier names.
+        voiceSettings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          use_speaker_boost: true,
+        },
       }),
-      // Barge-in is on by default in AgentSession; turn-detection model is auto-wired.
+      // Barge-in: VAD-based interruption is on by default, but the framework suppresses ALL
+      // audio-activity interruptions during an AEC (echo-cancellation) warmup window that
+      // RESTARTS on every agent utterance — default 3000ms (@livekit/agents
+      // AgentSessionOptions.aecWarmupDuration; enforced by agent_activity's
+      // shouldDiscardInputAudio + interruptByAudioActivity). At 3s, any reply shorter than ~3s
+      // can never be interrupted — exactly the "can't tell Jarvis to stop talking" complaint,
+      // confirmed live in the worker logs ("aec warmup active, disabling interruptions"
+      // warmupDurationMs:3000). Shorten to 800ms: long enough to keep the guard against the
+      // agent hearing its own first syllables echo back (the client mic also runs
+      // echoCancellation), short enough to barge in almost immediately. NOT null — null removes
+      // the self-interruption guard and risks the agent interrupting itself on speakers.
+      aecWarmupDuration: 800,
     });
 
     // Inbound noise cancellation is env-gated (see resolveNoiseCancellation): when enabled,
@@ -293,9 +348,49 @@ export default defineAgent({
     void session.say(
       "Hey, this is Jarvis. I can hear you — go ahead and ask your question.",
     );
+
+    // --- Lifecycle guards: don't let an abandoned room bill idle STT/TTS minutes. ----
+    // The framework does NOT auto-end the job when the human leaves, so a closed tab or a
+    // dropped connection would otherwise leave this worker holding open Deepgram + ElevenLabs
+    // connections until LiveKit's slow GC. In a 1:1 Jarvis room the only remote participant is
+    // the user, so when remoteParticipants empties, the human is gone → end the job. The
+    // client mints a fresh token and rejoins to continue, so this is safe.
+    const endIfEmpty = () => {
+      if (ctx.room.remoteParticipants.size === 0) {
+        console.log("[jarvis] human left the room — ending job");
+        ctx.shutdown("participant_left");
+      }
+    };
+    ctx.room.on("participantDisconnected", endIfEmpty);
+
+    // Hard backstop: even a tab that is left open (held connection, user walked away) ends
+    // after a fixed ceiling so it can't bill voice minutes indefinitely. The user can rejoin
+    // to start a fresh session. Cleared if the job shuts down first.
+    const MAX_SESSION_MS = 30 * 60_000;
+    const maxTimer = setTimeout(() => {
+      console.log("[jarvis] max session duration reached — ending job");
+      ctx.shutdown("max_duration");
+    }, MAX_SESSION_MS);
+    // Tear down both guards on shutdown so a torn-down job leaves no live timer or room
+    // listener behind (ctx.shutdown is itself idempotent, but don't leave the listener able
+    // to re-fire). Mirrors orchestrator-bridge.ts's removeEventListener cleanup pattern.
+    ctx.addShutdownCallback(async () => {
+      clearTimeout(maxTimer);
+      ctx.room.off("participantDisconnected", endIfEmpty);
+    });
   },
 });
 
 // Register this file as the agent worker; LiveKit Cloud auto-dispatches it into rooms.
 // `ServerOptions` is the current name (the old `WorkerOptions` is a deprecated alias).
-cli.runApp(new ServerOptions({ agent: fileURLToPath(import.meta.url) }));
+cli.runApp(
+  new ServerOptions({
+    agent: fileURLToPath(import.meta.url),
+    // Cap one job's memory so a single leaking/abandoned room is killed in isolation instead
+    // of OOM-ing the whole 1GB machine and dropping EVERY concurrent room with it (the default
+    // jobMemoryLimitMB is 0 = unlimited). A normal voice job uses far less; only a leak hits
+    // this. Real concurrency scales HORIZONTALLY (`fly scale count N`), not by packing this box.
+    jobMemoryWarnMB: 500,
+    jobMemoryLimitMB: 700,
+  }),
+);
