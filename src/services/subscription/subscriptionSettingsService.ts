@@ -78,22 +78,24 @@ class SubscriptionSettingsService {
    * Returns null if no settings exist (should never happen after migration)
    */
   async getSettings(): Promise<SubscriptionSettings | null> {
+    // Use maybeSingle() so an empty result returns { data: null } instead of a
+    // 406 (PGRST116). A deactivated/sunset user can lose RLS read access to the
+    // singleton row; that is an expected empty state, not a hard error.
     const { data, error } = await supabase
       .from("subscription_settings")
       .select("*")
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      // PGRST116 = no rows returned (shouldn't happen after migration)
-      if (error.code === "PGRST116") {
-        console.warn("No subscription settings found in database");
-        return null;
-      }
       console.error("Error fetching subscription settings:", error);
       throw new Error(
         `Failed to fetch subscription settings: ${error.message}`,
       );
+    }
+
+    if (!data) {
+      return null;
     }
 
     return transformFromDB(data);
