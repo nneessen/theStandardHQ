@@ -7741,6 +7741,7 @@
         "npm:husky@8",
         "npm:jsdom@27",
         "npm:lint-staged@^16.2.7",
+        "npm:livekit-client@^2.19.1",
         "npm:lucide-react@0.468",
         "npm:next-themes@~0.4.6",
         "npm:node-emoji@^2.2.0",

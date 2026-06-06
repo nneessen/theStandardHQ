@@ -34,6 +34,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
+  // TODO: Should update password not also have a confirm password in there?
   refreshSession: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- user metadata type
   updateUserMetadata: (metadata: any) => Promise<void>;

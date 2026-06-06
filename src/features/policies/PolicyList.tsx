@@ -95,13 +95,13 @@ interface PolicyListProps {
 }
 
 const PRODUCT_ABBREV: Record<string, string> = {
-  whole_life: "Whole",
+  whole_life: "WL",
   term_life: "Term",
   universal_life: "UL",
   indexed_universal_life: "IUL",
   variable_life: "VL",
   variable_universal_life: "VUL",
-  final_expense: "Final",
+  final_expense: "FEX",
   accidental: "AD&D",
   health: "Health",
   disability: "Disability",
@@ -283,6 +283,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const pendingCommission = commissionsForMetrics
     .filter((c) => c.status === "pending")
     .reduce((sum, c) => sum + (c.amount || 0), 0);
+  // TODO:  _totalAdvances Is declared but its value was never read.
   const _totalAdvances = paidCommissions.reduce(
     (sum, c) => sum + (c.amount || 0),
     0,
@@ -457,7 +458,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
         title="Policies"
         stats={
           metrics ? (
-            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground flex-wrap leading-tight">
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[15px] text-muted-foreground flex-wrap leading-tight">
               <span>
                 <span className="text-foreground font-semibold">
                   {metrics.totalPolicies.toLocaleString()}
@@ -523,7 +524,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   tone="ghost"
                   size="sm"
                   disabled={exporting}
-                  className="h-7 px-2.5 text-[11px]"
+                  className="h-7 px-2.5 text-[15px]"
                 >
                   <Download className="h-3 w-3" />
                   {exporting ? "Exporting…" : "Export"}
@@ -723,7 +724,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
             <TableHeader className="sticky top-0 bg-card z-10">
               <TableRow className="h-8 border-b border-border dark:border-border hover:bg-transparent">
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
+                  className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
                   onClick={() => toggleSort("policy_number")}
                 >
                   <div className="flex items-center gap-1">
@@ -737,7 +738,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
+                  className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
                   onClick={() => toggleSort("client")}
                 >
                   <div className="flex items-center gap-1">
@@ -750,11 +751,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2">
+                <TableHead className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2">
                   Carrier/Product
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
+                  className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
                   onClick={() => toggleSort("status")}
                 >
                   <div className="flex items-center gap-1">
@@ -768,7 +769,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
+                  className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right cursor-pointer hover:text-foreground dark:hover:text-background transition-colors"
                   onClick={() => toggleSort("annual_premium")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -782,14 +783,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   </div>
                 </TableHead>
                 {canViewCommissions && (
-                  <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right">
+                  <TableHead className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right">
                     Commission
                   </TableHead>
                 )}
-                <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-center">
+                <TableHead className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-center">
                   Comm Status
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2">
+                <TableHead className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex items-center gap-1 px-1.5 py-0.5 -ml-1.5 rounded hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors group">
@@ -845,7 +846,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right">
+                <TableHead className="text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground px-2 text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -916,7 +917,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       key={policy.id}
                       className="h-9 border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
                     >
-                      <TableCell className="text-[11px] text-foreground dark:text-foreground py-1.5 px-2 font-medium">
+                      <TableCell className="text-[14px] text-foreground dark:text-foreground py-1.5 px-2 font-medium">
                         <div className="flex items-center gap-1.5">
                           {policy.policyNumber}
                           {!policy.leadPurchaseId && (
@@ -936,22 +937,22 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-[11px] py-1.5 px-2">
+                      <TableCell className="text-[14px] py-1.5 px-2">
                         <div className="flex flex-col gap-0">
                           <span className="font-medium text-foreground dark:text-foreground">
                             {policy.client.name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                          <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                             {policy.client.age}y • {policy.client.state}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[11px] py-1.5 px-2">
+                      <TableCell className="text-[14px] py-1.5 px-2">
                         <div className="flex flex-col gap-0">
                           <span className="font-medium text-foreground dark:text-foreground">
                             {carrier?.name || "Unknown"}
                           </span>
-                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                          <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                             {PRODUCT_ABBREV[policy.product] || policy.product}
                           </span>
                         </div>
@@ -987,7 +988,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           >
                             <SelectTrigger
                               className={cn(
-                                "h-6 text-[10px] w-[85px] px-1.5 gap-1 font-medium border",
+                                "h-6 text-[13px] w-[85px] px-1.5 gap-1 font-medium border",
                                 policy.status === "pending" &&
                                   "bg-warning text-warning-foreground border-warning",
                                 policy.status === "approved" &&
@@ -1050,7 +1051,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                             >
                               <SelectTrigger
                                 className={cn(
-                                  "h-6 text-[10px] w-[85px] px-1.5 gap-1 font-medium border",
+                                  "h-6 text-[13px] w-[85px] px-1.5 gap-1 font-medium border",
                                   (policy.lifecycleStatus === "active" ||
                                     !policy.lifecycleStatus) &&
                                     "bg-info text-info-foreground border-info",
@@ -1076,23 +1077,23 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
+                      <TableCell className="text-[14px] py-1.5 px-2 text-right tabular-nums">
                         <div className="flex flex-col gap-0 items-end">
                           <span className="text-foreground dark:text-foreground">
                             {formatCurrency(policy.annualPremium)}
                           </span>
-                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                          <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                             annual
                           </span>
                         </div>
                       </TableCell>
                       {canViewCommissions && (
-                        <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
+                        <TableCell className="text-[14px] py-1.5 px-2 text-right tabular-nums">
                           <div className="flex flex-col gap-0 items-end">
                             <span className="text-success font-medium">
                               {formatCurrency(commission)}
                             </span>
-                            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                            <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                               {(policy.commissionPercentage * 100).toFixed(0)}%
                             </span>
                           </div>
@@ -1112,7 +1113,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           >
                             <SelectTrigger
                               className={cn(
-                                "h-6 text-[10px] w-[90px] mx-auto px-1.5 gap-1 font-medium border",
+                                "h-6 text-[14px] w-[90px] mx-auto px-1.5 gap-1 font-medium border",
                                 policyCommission.status === "paid" &&
                                   "bg-success text-success-foreground border-success",
                                 policyCommission.status === "pending" &&
@@ -1143,12 +1144,12 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                             </SelectContent>
                           </Select>
                         ) : (
-                          <span className="text-muted-foreground dark:text-muted-foreground text-[10px] block text-center">
+                          <span className="text-muted-foreground dark:text-muted-foreground text-[13px] block text-center">
                             No commission
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground dark:text-muted-foreground py-1.5 px-2">
+                      <TableCell className="text-[14px] text-muted-foreground dark:text-muted-foreground py-1.5 px-2">
                         {dateColumnType === "effective"
                           ? formatDate(policy.effectiveDate)
                           : policy.submitDate
@@ -1169,7 +1170,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           <DropdownMenuContent align="end" className="w-44">
                             <DropdownMenuItem
                               onClick={() => onEditPolicy(policy.id)}
-                              className="text-[11px]"
+                              className="text-[13px]"
                             >
                               <Edit className="mr-2 h-3.5 w-3.5" />
                               Edit Policy
@@ -1180,7 +1181,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                   setPolicyToLink(policy);
                                   setLinkDialogOpen(true);
                                 }}
-                                className="text-[11px]"
+                                className="text-[14px]"
                               >
                                 <Link2 className="mr-2 h-3.5 w-3.5" />
                                 Link to Lead Purchase
@@ -1194,14 +1195,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                     onClick={() =>
                                       handleCancelPolicy(policy.id)
                                     }
-                                    className="text-warning text-[11px]"
+                                    className="text-warning text-[14px]"
                                   >
                                     <XCircle className="mr-2 h-3.5 w-3.5" />
                                     Cancel Policy
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleLapsePolicy(policy.id)}
-                                    className="text-warning text-[11px]"
+                                    className="text-warning text-[14px]"
                                   >
                                     <AlertCircle className="mr-2 h-3.5 w-3.5" />
                                     Mark as Lapsed
@@ -1221,7 +1222,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                         | "lapsed",
                                     )
                                   }
-                                  className="text-success text-[11px]"
+                                  className="text-success text-[14px]"
                                 >
                                   <CheckCircle className="mr-2 h-3.5 w-3.5" />
                                   Reinstate Policy
@@ -1236,7 +1237,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                 )
                               }
                               disabled={isDeleting}
-                              className="text-destructive text-[11px]"
+                              className="text-destructive text-[14px]"
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
                               Delete Policy
@@ -1257,21 +1258,21 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <LogoSpinner size="xl" className="mr-2" />
-              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+              <span className="text-[14px] text-muted-foreground dark:text-muted-foreground">
                 Loading...
               </span>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center py-12 gap-2">
               <AlertCircle className="h-8 w-8 text-muted-foreground dark:text-muted-foreground" />
-              <span className="text-[11px] text-destructive">
+              <span className="text-[14px] text-destructive">
                 {error instanceof Error ? error.message : String(error)}
               </span>
               <Button
                 onClick={refresh}
                 size="sm"
                 variant="outline"
-                className="h-6 text-[10px] px-2"
+                className="h-6 text-[13px] px-2"
               >
                 Retry
               </Button>
@@ -1279,7 +1280,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           ) : policies.length === 0 ? (
             <div className="flex flex-col items-center py-12">
               <FileText className="h-8 w-8 text-muted-foreground dark:text-muted-foreground mb-2" />
-              <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+              <p className="text-[14px] text-muted-foreground dark:text-muted-foreground">
                 {filterCount > 0
                   ? "No policies match your filters"
                   : "No policies found"}
@@ -1299,7 +1300,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                     {/* Top: Client name + Actions menu */}
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-[12px] text-foreground dark:text-foreground truncate">
+                        <div className="font-medium text-[14px] text-foreground dark:text-foreground truncate">
                           {policy.client.name}
                         </div>
                         <div className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-0.5">
@@ -1320,7 +1321,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                         <DropdownMenuContent align="end" className="w-44">
                           <DropdownMenuItem
                             onClick={() => onEditPolicy(policy.id)}
-                            className="text-[11px]"
+                            className="text-[14px]"
                           >
                             <Edit className="mr-2 h-3.5 w-3.5" />
                             Edit Policy
@@ -1331,7 +1332,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                 setPolicyToLink(policy);
                                 setLinkDialogOpen(true);
                               }}
-                              className="text-[11px]"
+                              className="text-[14px]"
                             >
                               <Link2 className="mr-2 h-3.5 w-3.5" />
                               Link to Lead Purchase
@@ -1342,14 +1343,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               <>
                                 <DropdownMenuItem
                                   onClick={() => handleCancelPolicy(policy.id)}
-                                  className="text-warning text-[11px]"
+                                  className="text-warning text-[14px]"
                                 >
                                   <XCircle className="mr-2 h-3.5 w-3.5" />
                                   Cancel Policy
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleLapsePolicy(policy.id)}
-                                  className="text-warning text-[11px]"
+                                  className="text-warning text-[14px]"
                                 >
                                   <AlertCircle className="mr-2 h-3.5 w-3.5" />
                                   Mark as Lapsed
@@ -1368,7 +1369,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                       | "lapsed",
                                   )
                                 }
-                                className="text-success text-[11px]"
+                                className="text-success text-[14px]"
                               >
                                 <CheckCircle className="mr-2 h-3.5 w-3.5" />
                                 Reinstate Policy
@@ -1380,7 +1381,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               handleDeletePolicy(policy.id, policy.client.name)
                             }
                             disabled={isDeleting}
-                            className="text-destructive text-[11px]"
+                            className="text-destructive text-[14px]"
                           >
                             <Trash2 className="mr-2 h-3.5 w-3.5" />
                             Delete Policy
@@ -1390,7 +1391,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                     </div>
 
                     {/* Carrier + Product */}
-                    <div className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-1">
+                    <div className="text-[13px] text-muted-foreground dark:text-muted-foreground mt-1">
                       {carrier?.name || "Unknown"} &middot;{" "}
                       {PRODUCT_ABBREV[policy.product] || policy.product}{" "}
                       &middot;{" "}
@@ -1406,7 +1407,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       <div className="flex items-center gap-1.5">
                         <span
                           className={cn(
-                            "text-[10px] font-medium px-1.5 py-0.5 rounded capitalize",
+                            "text-[13px] font-medium px-1.5 py-0.5 rounded capitalize",
                             policy.status === "pending" &&
                               "bg-warning text-warning-foreground",
                             policy.status === "approved" &&
@@ -1422,7 +1423,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                         {policy.status === "approved" && (
                           <span
                             className={cn(
-                              "text-[10px] font-medium px-1.5 py-0.5 rounded capitalize",
+                              "text-[13px] font-medium px-1.5 py-0.5 rounded capitalize",
                               (!policy.lifecycleStatus ||
                                 policy.lifecycleStatus === "active") &&
                                 "bg-info text-info-foreground",
@@ -1439,11 +1440,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="text-[12px] font-medium text-foreground dark:text-foreground tabular-nums">
+                        <div className="text-[14px] font-medium text-foreground dark:text-foreground tabular-nums">
                           {formatCurrency(policy.annualPremium)}
                         </div>
                         {canViewCommissions && (
-                          <div className="text-[10px] text-success tabular-nums">
+                          <div className="text-[13px] text-success tabular-nums">
                             {formatCurrency(commission)} comm
                           </div>
                         )}
@@ -1458,7 +1459,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
 
         {/* Server-side Pagination Controls */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 border-t border-border dark:border-border flex-shrink-0">
-          <div className="flex items-center gap-3 text-[10px]">
+          <div className="flex items-center gap-3 text-[13px]">
             <span className="text-muted-foreground dark:text-muted-foreground">
               <span className="font-medium text-foreground dark:text-foreground">
                 {(currentPage - 1) * pageSize + 1}
@@ -1476,7 +1477,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
               value={pageSize.toString()}
               onValueChange={(value) => setPageSize(Number(value))}
             >
-              <SelectTrigger className="h-6 w-[80px] text-[10px] bg-card border-border dark:border-border">
+              <SelectTrigger className="h-6 w-[80px] text-[13px] bg-card border-border dark:border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1530,7 +1531,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       onClick={() => goToPage(1)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                      className="h-6 min-w-6 px-1.5 text-[13px] text-muted-foreground dark:text-muted-foreground"
                     >
                       1
                     </Button>,
@@ -1539,7 +1540,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                     pages.push(
                       <span
                         key="dots1"
-                        className="px-0.5 text-muted-foreground dark:text-muted-foreground text-[10px]"
+                        className="px-0.5 text-muted-foreground dark:text-muted-foreground text-[13px]"
                       >
                         ...
                       </span>,
@@ -1555,7 +1556,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       variant={currentPage === i ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "h-6 min-w-6 px-1.5 text-[10px]",
+                        "h-6 min-w-6 px-1.5 text-[13px]",
                         currentPage !== i &&
                           "text-muted-foreground dark:text-muted-foreground",
                       )}
@@ -1570,7 +1571,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                     pages.push(
                       <span
                         key="dots2"
-                        className="px-0.5 text-muted-foreground dark:text-muted-foreground text-[10px]"
+                        className="px-0.5 text-muted-foreground dark:text-muted-foreground text-[13px]"
                       >
                         ...
                       </span>,
@@ -1582,7 +1583,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       onClick={() => goToPage(totalPages)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground"
+                      className="h-6 min-w-6 px-1.5 text-[13px] text-muted-foreground dark:text-muted-foreground"
                     >
                       {totalPages}
                     </Button>,

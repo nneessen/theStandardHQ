@@ -86,6 +86,7 @@ export function UserProfile() {
   const [slugError, setSlugError] = useState<string>("");
   const [showSlugSuccess, setShowSlugSuccess] = useState(false);
   const [slugCopied, setSlugCopied] = useState(false);
+  const [subdomainCopied, setSubdomainCopied] = useState(false);
 
   // Profile photo state
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
@@ -447,6 +448,17 @@ export function UserProfile() {
     }
   };
 
+  const handleCopySubdomain = async () => {
+    const url = `https://${currentSlug}.thestandardhq.com`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setSubdomainCopied(true);
+      setTimeout(() => setSubdomainCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
   if (!user) {
     return (
       <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
@@ -706,37 +718,73 @@ export function UserProfile() {
                 queue.
               </p>
 
-              {/* Show current link if set */}
+              {/* Show current links if set */}
               {currentSlug && (
-                <div className="mb-3 p-2 bg-card border border-border border-l-4 border-l-success rounded-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] text-success font-medium mb-0.5">
-                        Your recruiting link:
-                      </p>
-                      <p className="text-[11px] text-success font-mono truncate">
-                        www.thestandardhq.com/join-{currentSlug}
-                      </p>
+                <div className="mb-3 space-y-2">
+                  {/* Branded subdomain — the clean, instant URL (works automatically) */}
+                  <div className="p-2 bg-card border border-border border-l-4 border-l-success rounded-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-success font-medium mb-0.5">
+                          Your branded link:
+                        </p>
+                        <p className="text-[11px] text-success font-mono truncate">
+                          {currentSlug}.thestandardhq.com
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopySubdomain}
+                        className="h-7 px-2 text-[10px] border-success text-success hover:bg-accent/40 flex-shrink-0"
+                      >
+                        {subdomainCopied ? (
+                          <>
+                            <Check className="h-3 w-3 mr-1" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCopyLink}
-                      className="h-7 px-2 text-[10px] border-success text-success hover:bg-accent/40 flex-shrink-0"
-                    >
-                      {slugCopied ? (
-                        <>
-                          <Check className="h-3 w-3 mr-1" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3 mr-1" />
-                          Copy
-                        </>
-                      )}
-                    </Button>
+                  </div>
+
+                  {/* Classic path-based link (kept so existing shared links keep working) */}
+                  <div className="p-2 bg-card border border-border rounded-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-v2-ink-muted font-medium mb-0.5">
+                          Also works:
+                        </p>
+                        <p className="text-[11px] text-v2-ink-muted font-mono truncate">
+                          www.thestandardhq.com/join-{currentSlug}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyLink}
+                        className="h-7 px-2 text-[10px] border-v2-ring flex-shrink-0"
+                      >
+                        {slugCopied ? (
+                          <>
+                            <Check className="h-3 w-3 mr-1" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

@@ -17,19 +17,19 @@ The Standard HQ is a full-featured internal platform designed for insurance agen
 
 ## Tech Stack
 
-| Category   | Technology                                      |
-| ---------- | ----------------------------------------------- |
-| Frontend   | React 19.1, TypeScript                          |
-| Build Tool | Vite 6                                          |
-| Routing    | TanStack Router                                 |
-| State/Data | TanStack Query                                  |
-| Forms      | TanStack Form, React Hook Form, Zod             |
-| Database   | Supabase (PostgreSQL)                           |
-| Styling    | Tailwind CSS v3                                 |
-| Components | Radix UI, shadcn/ui                             |
-| Charts     | Recharts, Nivo                                  |
-| Email      | React Email, Mailgun                            |
-| Testing    | Vitest, Testing Library                         |
+| Category   | Technology                          |
+| ---------- | ----------------------------------- |
+| Frontend   | React 19.1, TypeScript              |
+| Build Tool | Vite 6                              |
+| Routing    | TanStack Router                     |
+| State/Data | TanStack Query                      |
+| Forms      | TanStack Form, React Hook Form, Zod |
+| Database   | Supabase (PostgreSQL)               |
+| Styling    | Tailwind CSS v3                     |
+| Components | Radix UI, shadcn/ui                 |
+| Charts     | Recharts, Nivo                      |
+| Email      | React Email, Mailgun                |
+| Testing    | Vitest, Testing Library             |
 
 ## Features
 
@@ -249,6 +249,7 @@ The Standard HQ is a full-featured internal platform designed for insurance agen
    ```
 
 4. Start local Supabase:
+
    ```bash
    npm run supabase:start
    ```
@@ -304,25 +305,25 @@ VITE_ALLOW_REMOTE_SUPABASE_DEV=true
 
 ### Available Scripts
 
-| Command                                   | Description                                                                                    |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `npm run dev`                             | Start development server (local Supabase by default)                                           |
+| Command                                   | Description                                                                                   |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `npm run dev`                             | Start development server (local Supabase by default)                                          |
 | `npm run dev:local`                       | Start local API server, local edge functions, and Vite explicitly                             |
-| `npm run supabase:functions`              | Serve local Supabase Edge Functions                                                            |
-| `npm run supabase:start`                  | Start local Supabase via Docker                                                                |
-| `npm run supabase:stop`                   | Stop local Supabase                                                                            |
-| `npm run supabase:status`                 | Show local Supabase status                                                                     |
+| `npm run supabase:functions`              | Serve local Supabase Edge Functions                                                           |
+| `npm run supabase:start`                  | Start local Supabase via Docker                                                               |
+| `npm run supabase:stop`                   | Stop local Supabase                                                                           |
+| `npm run supabase:status`                 | Show local Supabase status                                                                    |
 | `npm run supabase:clone-remote-schema`    | Rebuild local `auth/public/storage` from the remote schema, buckets, and migration history    |
 | `npm run supabase:bootstrap-local-dev`    | Seed local-safe runtime data and deterministic local auth users on top of the mirrored schema |
-| `npm run supabase:sync-local-from-remote` | Run schema clone then bootstrap in one step                                                    |
-| `npm run build`                           | Build for production                                                                           |
-| `npm run preview`                         | Preview production build                                                                       |
-| `npm run test`                            | Run tests                                                                                      |
-| `npm run test:ui`                         | Run tests with UI                                                                              |
-| `npm run lint`                            | Lint code                                                                                      |
-| `npm run typecheck`                       | Type check                                                                                     |
-| `npm run generate:types`                  | Generate TypeScript types from Supabase schema                                                 |
-| `npm run email:dev`                       | Start email template development server                                                        |
+| `npm run supabase:sync-local-from-remote` | Run schema clone then bootstrap in one step                                                   |
+| `npm run build`                           | Build for production                                                                          |
+| `npm run preview`                         | Preview production build                                                                      |
+| `npm run test`                            | Run tests                                                                                     |
+| `npm run test:ui`                         | Run tests with UI                                                                             |
+| `npm run lint`                            | Lint code                                                                                     |
+| `npm run typecheck`                       | Type check                                                                                    |
+| `npm run generate:types`                  | Generate TypeScript types from Supabase schema                                                |
+| `npm run email:dev`                       | Start email template development server                                                       |
 
 ## Database
 
@@ -389,15 +390,15 @@ source .env && DATABASE_URL=$REMOTE_DATABASE_URL ./scripts/migrations/run-migrat
 
 ## User Roles
 
-| Role                    | Description                                  |
-| ----------------------- | -------------------------------------------- |
-| **Super Admin**         | Full system access, IMO management           |
-| **Admin**               | Agency-level administration                  |
-| **Agency Owner**        | Manages agency and its agents                |
-| **Agent**               | Standard licensed insurance agent            |
-| **Trainer**             | Staff role for training new recruits         |
-| **Contracting Manager** | Staff role for managing agent contracts      |
-| **Recruit**             | Pre-licensed recruit in onboarding pipeline  |
+| Role                    | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| **Super Admin**         | Full system access, IMO management          |
+| **Admin**               | Agency-level administration                 |
+| **Agency Owner**        | Manages agency and its agents               |
+| **Agent**               | Standard licensed insurance agent           |
+| **Trainer**             | Staff role for training new recruits        |
+| **Contracting Manager** | Staff role for managing agent contracts     |
+| **Recruit**             | Pre-licensed recruit in onboarding pipeline |
 
 ## Subscription & Billing
 

@@ -3586,7 +3586,7 @@ export type Database = {
           status: Database["public"]["Enums"]["custom_domain_status"];
           updated_at: string;
           user_id: string;
-          verification_token: string;
+          verification_token: string | null;
           verified_at: string | null;
         };
         Insert: {
@@ -3601,7 +3601,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["custom_domain_status"];
           updated_at?: string;
           user_id: string;
-          verification_token: string;
+          verification_token?: string | null;
           verified_at?: string | null;
         };
         Update: {
@@ -3616,7 +3616,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["custom_domain_status"];
           updated_at?: string;
           user_id?: string;
-          verification_token?: string;
+          verification_token?: string | null;
           verified_at?: string | null;
         };
         Relationships: [
@@ -5707,6 +5707,477 @@ export type Database = {
             columns: ["requester_id"];
             isOneToOne: false;
             referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_call_recordings: {
+        Row: {
+          acquisition_cost: number | null;
+          agent_id: string;
+          analysis_model: string | null;
+          analysis_status: string;
+          analyzed_at: string | null;
+          call_at: string | null;
+          call_direction: string;
+          caller_age: number | null;
+          caller_age_band: string | null;
+          caller_gender: string | null;
+          caller_name: string | null;
+          caller_state: string | null;
+          caller_zip: string | null;
+          created_at: string;
+          duration_seconds: number | null;
+          file_size_bytes: number | null;
+          id: string;
+          imo_id: string;
+          last_analysis_run_id: string | null;
+          metadata: Json;
+          mime_type: string | null;
+          notes: string | null;
+          original_filename: string | null;
+          outcome: string | null;
+          policies_count: number;
+          premium_amount: number | null;
+          storage_bucket: string;
+          storage_path: string;
+          talk_time_seconds: number | null;
+          transcribed_at: string | null;
+          transcript_language: string | null;
+          transcript_segments: Json | null;
+          transcript_text: string | null;
+          transcription_error: string | null;
+          transcription_model: string | null;
+          transcription_status: string;
+          updated_at: string;
+          uploader_id: string | null;
+        };
+        Insert: {
+          acquisition_cost?: number | null;
+          agent_id: string;
+          analysis_model?: string | null;
+          analysis_status?: string;
+          analyzed_at?: string | null;
+          call_at?: string | null;
+          call_direction?: string;
+          caller_age?: number | null;
+          caller_age_band?: string | null;
+          caller_gender?: string | null;
+          caller_name?: string | null;
+          caller_state?: string | null;
+          caller_zip?: string | null;
+          created_at?: string;
+          duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          id?: string;
+          imo_id: string;
+          last_analysis_run_id?: string | null;
+          metadata?: Json;
+          mime_type?: string | null;
+          notes?: string | null;
+          original_filename?: string | null;
+          outcome?: string | null;
+          policies_count?: number;
+          premium_amount?: number | null;
+          storage_bucket?: string;
+          storage_path: string;
+          talk_time_seconds?: number | null;
+          transcribed_at?: string | null;
+          transcript_language?: string | null;
+          transcript_segments?: Json | null;
+          transcript_text?: string | null;
+          transcription_error?: string | null;
+          transcription_model?: string | null;
+          transcription_status?: string;
+          updated_at?: string;
+          uploader_id?: string | null;
+        };
+        Update: {
+          acquisition_cost?: number | null;
+          agent_id?: string;
+          analysis_model?: string | null;
+          analysis_status?: string;
+          analyzed_at?: string | null;
+          call_at?: string | null;
+          call_direction?: string;
+          caller_age?: number | null;
+          caller_age_band?: string | null;
+          caller_gender?: string | null;
+          caller_name?: string | null;
+          caller_state?: string | null;
+          caller_zip?: string | null;
+          created_at?: string;
+          duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          id?: string;
+          imo_id?: string;
+          last_analysis_run_id?: string | null;
+          metadata?: Json;
+          mime_type?: string | null;
+          notes?: string | null;
+          original_filename?: string | null;
+          outcome?: string | null;
+          policies_count?: number;
+          premium_amount?: number | null;
+          storage_bucket?: string;
+          storage_path?: string;
+          talk_time_seconds?: number | null;
+          transcribed_at?: string | null;
+          transcript_language?: string | null;
+          transcript_segments?: Json | null;
+          transcript_text?: string | null;
+          transcription_error?: string | null;
+          transcription_model?: string | null;
+          transcription_status?: string;
+          updated_at?: string;
+          uploader_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_call_recordings_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_daily_call_metrics: {
+        Row: {
+          agent_id: string;
+          answered_calls: number | null;
+          clients_sold: number;
+          created_at: string;
+          entered_by: string | null;
+          id: string;
+          imo_id: string;
+          lead_spend: number | null;
+          leads_received: number | null;
+          marketing_spend: number | null;
+          metadata: Json;
+          metric_date: string;
+          missed_calls: number | null;
+          notes: string | null;
+          policies_sold: number;
+          premium_written: number | null;
+          total_inbound_calls: number;
+          total_talk_time_seconds: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          agent_id: string;
+          answered_calls?: number | null;
+          clients_sold?: number;
+          created_at?: string;
+          entered_by?: string | null;
+          id?: string;
+          imo_id: string;
+          lead_spend?: number | null;
+          leads_received?: number | null;
+          marketing_spend?: number | null;
+          metadata?: Json;
+          metric_date: string;
+          missed_calls?: number | null;
+          notes?: string | null;
+          policies_sold?: number;
+          premium_written?: number | null;
+          total_inbound_calls?: number;
+          total_talk_time_seconds?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          agent_id?: string;
+          answered_calls?: number | null;
+          clients_sold?: number;
+          created_at?: string;
+          entered_by?: string | null;
+          id?: string;
+          imo_id?: string;
+          lead_spend?: number | null;
+          leads_received?: number | null;
+          marketing_spend?: number | null;
+          metadata?: Json;
+          metric_date?: string;
+          missed_calls?: number | null;
+          notes?: string | null;
+          policies_sold?: number;
+          premium_written?: number | null;
+          total_inbound_calls?: number;
+          total_talk_time_seconds?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_daily_call_metrics_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_discovered_phrases: {
+        Row: {
+          agent_id: string | null;
+          correlation_with_sale: number | null;
+          created_at: string;
+          discovered_by_model: string | null;
+          discovery_run_id: string | null;
+          example_quotes: Json;
+          example_recording_ids: string[] | null;
+          id: string;
+          imo_id: string;
+          impact_score: number | null;
+          normalized_phrase: string;
+          phrase: string;
+          promoted_word_track_id: string | null;
+          rationale: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          sample_size: number | null;
+          status: string;
+          suggested_category: string | null;
+          suggested_timing: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          agent_id?: string | null;
+          correlation_with_sale?: number | null;
+          created_at?: string;
+          discovered_by_model?: string | null;
+          discovery_run_id?: string | null;
+          example_quotes?: Json;
+          example_recording_ids?: string[] | null;
+          id?: string;
+          imo_id: string;
+          impact_score?: number | null;
+          normalized_phrase: string;
+          phrase: string;
+          promoted_word_track_id?: string | null;
+          rationale?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          sample_size?: number | null;
+          status?: string;
+          suggested_category?: string | null;
+          suggested_timing?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          agent_id?: string | null;
+          correlation_with_sale?: number | null;
+          created_at?: string;
+          discovered_by_model?: string | null;
+          discovery_run_id?: string | null;
+          example_quotes?: Json;
+          example_recording_ids?: string[] | null;
+          id?: string;
+          imo_id?: string;
+          impact_score?: number | null;
+          normalized_phrase?: string;
+          phrase?: string;
+          promoted_word_track_id?: string | null;
+          rationale?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          sample_size?: number | null;
+          status?: string;
+          suggested_category?: string | null;
+          suggested_timing?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_discovered_phrases_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_discovered_phrases_promoted_word_track_id_fkey";
+            columns: ["promoted_word_track_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_word_tracks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_word_track_detections: {
+        Row: {
+          agent_id: string;
+          analysis_run_id: string | null;
+          char_end: number | null;
+          char_start: number | null;
+          created_at: string;
+          detected_phrase: string;
+          effectiveness_score: number | null;
+          id: string;
+          imo_id: string;
+          led_to_sale: boolean | null;
+          match_confidence: number | null;
+          on_expected_timing: boolean | null;
+          position_pct: number | null;
+          recording_id: string;
+          time_end_seconds: number | null;
+          time_start_seconds: number | null;
+          timing_bucket: string | null;
+          word_track_id: string;
+        };
+        Insert: {
+          agent_id: string;
+          analysis_run_id?: string | null;
+          char_end?: number | null;
+          char_start?: number | null;
+          created_at?: string;
+          detected_phrase: string;
+          effectiveness_score?: number | null;
+          id?: string;
+          imo_id: string;
+          led_to_sale?: boolean | null;
+          match_confidence?: number | null;
+          on_expected_timing?: boolean | null;
+          position_pct?: number | null;
+          recording_id: string;
+          time_end_seconds?: number | null;
+          time_start_seconds?: number | null;
+          timing_bucket?: string | null;
+          word_track_id: string;
+        };
+        Update: {
+          agent_id?: string;
+          analysis_run_id?: string | null;
+          char_end?: number | null;
+          char_start?: number | null;
+          created_at?: string;
+          detected_phrase?: string;
+          effectiveness_score?: number | null;
+          id?: string;
+          imo_id?: string;
+          led_to_sale?: boolean | null;
+          match_confidence?: number | null;
+          on_expected_timing?: boolean | null;
+          position_pct?: number | null;
+          recording_id?: string;
+          time_end_seconds?: number | null;
+          time_start_seconds?: number | null;
+          timing_bucket?: string | null;
+          word_track_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_word_track_detections_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_word_track_detections_recording_id_fkey";
+            columns: ["recording_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_recordings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_word_track_detections_word_track_id_fkey";
+            columns: ["word_track_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_word_tracks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_word_tracks: {
+        Row: {
+          category: string;
+          created_at: string;
+          created_by: string | null;
+          expected_timing: string;
+          expected_window_end_pct: number | null;
+          expected_window_start_pct: number | null;
+          id: string;
+          imo_id: string;
+          is_active: boolean;
+          label: string;
+          match_pattern: string | null;
+          match_type: string;
+          owner_id: string;
+          phrase: string;
+          priority: number;
+          promoted_from_id: string | null;
+          scope: string;
+          source: string;
+          supersedes_id: string | null;
+          updated_at: string;
+          version: number;
+        };
+        Insert: {
+          category?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expected_timing?: string;
+          expected_window_end_pct?: number | null;
+          expected_window_start_pct?: number | null;
+          id?: string;
+          imo_id: string;
+          is_active?: boolean;
+          label: string;
+          match_pattern?: string | null;
+          match_type?: string;
+          owner_id?: string;
+          phrase: string;
+          priority?: number;
+          promoted_from_id?: string | null;
+          scope?: string;
+          source?: string;
+          supersedes_id?: string | null;
+          updated_at?: string;
+          version?: number;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expected_timing?: string;
+          expected_window_end_pct?: number | null;
+          expected_window_start_pct?: number | null;
+          id?: string;
+          imo_id?: string;
+          is_active?: boolean;
+          label?: string;
+          match_pattern?: string | null;
+          match_type?: string;
+          owner_id?: string;
+          phrase?: string;
+          priority?: number;
+          promoted_from_id?: string | null;
+          scope?: string;
+          source?: string;
+          supersedes_id?: string | null;
+          updated_at?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_word_tracks_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_word_tracks_promoted_from_fk";
+            columns: ["promoted_from_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_discovered_phrases";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_word_tracks_supersedes_id_fkey";
+            columns: ["supersedes_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_word_tracks";
             referencedColumns: ["id"];
           },
         ];
@@ -14241,6 +14712,39 @@ export type Database = {
           },
         ];
       };
+      voice_worker_health: {
+        Row: {
+          down_since: string | null;
+          id: boolean;
+          last_alert_at: string | null;
+          last_job_at: string | null;
+          last_seen_at: string | null;
+          machine_id: string | null;
+          monitor_status: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          down_since?: string | null;
+          id?: boolean;
+          last_alert_at?: string | null;
+          last_job_at?: string | null;
+          last_seen_at?: string | null;
+          machine_id?: string | null;
+          monitor_status?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          down_since?: string | null;
+          id?: boolean;
+          last_alert_at?: string | null;
+          last_job_at?: string | null;
+          last_seen_at?: string | null;
+          machine_id?: string | null;
+          monitor_status?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       workflow_actions: {
         Row: {
           action_order: number;
@@ -15841,7 +16345,7 @@ export type Database = {
           status: Database["public"]["Enums"]["custom_domain_status"];
           updated_at: string;
           user_id: string;
-          verification_token: string;
+          verification_token: string | null;
           verified_at: string | null;
         };
         SetofOptions: {
@@ -18627,6 +19131,10 @@ export type Database = {
       };
       is_upline_of: { Args: { target_user_id: string }; Returns: boolean };
       is_user_approved: { Args: never; Returns: boolean };
+      kpi_admin_can_access_agent: {
+        Args: { p_agent: string };
+        Returns: boolean;
+      };
       list_agency_underwriting_sessions_v1: {
         Args: { p_page?: number; p_page_size?: number; p_search?: string };
         Returns: {

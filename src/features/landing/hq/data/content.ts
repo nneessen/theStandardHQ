@@ -158,7 +158,6 @@ export const INVENTORY: InventoryCategory[] = [
       "AI Hot 100",
       "Lead Heat Status Config",
       "AI Message Builder",
-      "Lead Drop",
       "Lifecycle Velocity Analytics",
       "Speed-to-Lead Tracking",
       "Cadence Analysis",

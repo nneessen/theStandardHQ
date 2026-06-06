@@ -129,7 +129,7 @@ function RecruitingDashboardContent() {
 
   const handleCopyLink = async () => {
     if (!recruiterSlug) return;
-    const url = `https://www.thestandardhq.com/join-${recruiterSlug}`;
+    const url = `https://${recruiterSlug}.thestandardhq.com`;
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
@@ -263,7 +263,7 @@ function RecruitingDashboardContent() {
   }, [pendingLeads, filteredRecruits]);
 
   const recruitingLinkUrl = recruiterSlug
-    ? `www.thestandardhq.com/join-${recruiterSlug}`
+    ? `${recruiterSlug}.thestandardhq.com`
     : null;
 
   return (
