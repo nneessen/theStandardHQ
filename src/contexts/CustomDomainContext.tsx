@@ -66,8 +66,13 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
     }
 
     // Zero-config branded subdomain {slug}.thestandardhq.com.
-    // The slug IS the subdomain label — resolve the theme directly via the
-    // public RPC (no custom_domains row, no resolve-custom-domain round-trip).
+    // The slug IS the subdomain label. We always hand the slug to PublicJoinPage,
+    // which decides whether the recruiter is publicly servable (via recruiter
+    // info) exactly like the /join-{slug} path — so a subdomain behaves
+    // identically to the path link. The theme is optional branding: apply it if
+    // present, otherwise PublicJoinPage falls back to the default theme. (Do NOT
+    // gate the slug on the theme RPC — it is stricter than the recruiter check
+    // and would 404 valid recruiters whose theme isn't published.)
     if (host.kind === "platform-subdomain") {
       const slug = host.slug;
       let cancelled = false;
@@ -77,25 +82,13 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
           const theme = await leadsService.getPublicRecruitingTheme(slug);
           if (cancelled) return;
 
-          if (!theme) {
-            // Slug not found / recruiter unapproved / IMO revoked or unlisted.
-            setState({
-              customDomainSlug: null,
-              isCustomDomain: true,
-              isLoading: false,
-              error: "Domain not configured",
-              theme: null,
-            });
-            return;
-          }
-
-          applyRecruitingTheme(theme);
+          if (theme) applyRecruitingTheme(theme);
           setState({
             customDomainSlug: slug,
             isCustomDomain: true,
             isLoading: false,
             error: null,
-            theme,
+            theme: theme ?? null,
           });
         } catch (err) {
           if (cancelled) return;
@@ -103,11 +96,13 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
             "[CustomDomainProvider] Subdomain resolution failed:",
             err,
           );
+          // Network/RPC failure — still hand the slug to PublicJoinPage so it can
+          // render the recruiter (or its own not-found) rather than a dead end.
           setState({
-            customDomainSlug: null,
+            customDomainSlug: slug,
             isCustomDomain: true,
             isLoading: false,
-            error: "Failed to resolve domain",
+            error: null,
             theme: null,
           });
         }
