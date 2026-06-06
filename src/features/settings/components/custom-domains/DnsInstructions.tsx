@@ -1,18 +1,17 @@
 // DNS Instructions
-// Shows CNAME and TXT record setup instructions
+// Shows the single CNAME record the user must add. Vercel verifies ownership via
+// the CNAME and auto-issues SSL once it resolves — no separate TXT record.
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Copy, Check, Info } from "lucide-react";
 
 interface DnsInstructionsProps {
   hostname: string;
-  verificationToken: string;
   vercelCname?: string | null;
 }
 
 export function DnsInstructions({
   hostname,
-  verificationToken,
   vercelCname,
 }: DnsInstructionsProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -21,6 +20,7 @@ export function DnsInstructions({
   // e.g., "join.example.com" -> "join", "team.join.example.com" -> "team.join"
   const parts = hostname.split(".");
   const subdomainPrefix = parts.slice(0, -2).join(".");
+  const cnameValue = vercelCname || "cname.vercel-dns.com";
 
   const handleCopy = (value: string, field: string) => {
     navigator.clipboard.writeText(value);
@@ -47,14 +47,14 @@ export function DnsInstructions({
       <div className="flex items-start gap-2 rounded bg-info/10 p-2">
         <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-info" />
         <p className="text-xs text-info">
-          Add these DNS records at your domain registrar. Changes may take 5-15
-          minutes to propagate.
+          Add this one CNAME record at your domain registrar. Your domain goes
+          live automatically once it resolves (usually 5–15 minutes).
         </p>
       </div>
 
-      {/* CNAME Record */}
+      {/* CNAME Record — the only record needed */}
       <div>
-        <h4 className="text-xs font-medium text-v2-ink">1. CNAME Record</h4>
+        <h4 className="text-xs font-medium text-v2-ink">CNAME Record</h4>
         <p className="mt-0.5 text-xs text-v2-ink-muted">
           Points your subdomain to The Standard
         </p>
@@ -73,59 +73,11 @@ export function DnsInstructions({
           <div className="flex items-center justify-between">
             <span className="text-v2-ink-muted">Value:</span>
             <span className="flex items-center text-v2-ink">
-              {vercelCname || "cname.vercel-dns.com"}
-              <CopyButton
-                value={vercelCname || "cname.vercel-dns.com"}
-                field="cname-value"
-              />
-            </span>
-          </div>
-          {!vercelCname && (
-            <p className="mt-1 text-xs text-warning">
-              Note: Check Vercel dashboard for domain-specific CNAME if this
-              generic one doesn't work.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* TXT Verification Record */}
-      <div>
-        <h4 className="text-xs font-medium text-v2-ink">
-          2. TXT Verification Record
-        </h4>
-        <p className="mt-0.5 text-xs text-v2-ink-muted">
-          Proves you own this domain
-        </p>
-        <div className="mt-1 space-y-1 rounded bg-v2-card p-2 font-mono text-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-v2-ink-muted">Name:</span>
-            <span className="flex items-center text-v2-ink">
-              _thestandardhq-verify.{subdomainPrefix}
-              <CopyButton
-                value={`_thestandardhq-verify.${subdomainPrefix}`}
-                field="txt-name"
-              />
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-v2-ink-muted">Type:</span>
-            <span className="text-v2-ink">TXT</span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-v2-ink-muted">Value:</span>
-            <span className="flex items-center break-all text-v2-ink">
-              {verificationToken}
-              <CopyButton value={verificationToken} field="txt-value" />
+              {cnameValue}
+              <CopyButton value={cnameValue} field="cname-value" />
             </span>
           </div>
         </div>
-        <p className="mt-1 text-xs text-v2-ink-subtle">
-          Some registrars need the full name:{" "}
-          <code className="bg-v2-ring px-1">
-            _thestandardhq-verify.{hostname}
-          </code>
-        </p>
       </div>
     </div>
   );

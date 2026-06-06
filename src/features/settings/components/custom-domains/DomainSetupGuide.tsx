@@ -1,5 +1,5 @@
 // Domain Setup Guide
-// Collapsible guide showing the 4-step domain setup process with time estimates
+// Collapsible guide showing the simplified 3-step domain setup process.
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Clock } from "lucide-react";
@@ -11,27 +11,23 @@ interface DomainSetupGuideProps {
 const SETUP_STEPS = [
   {
     step: 1,
-    name: "Add Domain",
+    name: "Add your subdomain",
     time: "~1 min",
-    description: "Enter your subdomain (e.g., join.yourdomain.com)",
+    description: "Enter your subdomain (e.g., join.yourdomain.com).",
   },
   {
     step: 2,
-    name: "Configure DNS",
+    name: "Add one CNAME record",
     time: "5-15 min",
-    description: "Add CNAME + TXT records at your domain registrar",
+    description:
+      "Copy the single CNAME we show into your domain registrar. That's the only record you need.",
   },
   {
     step: 3,
-    name: "Verify DNS",
-    time: "~1 min",
-    description: "We check your DNS records are configured correctly",
-  },
-  {
-    step: 4,
-    name: "SSL Provisioning",
+    name: "It goes live automatically",
     time: "1-15 min",
-    description: "Vercel generates your SSL certificate automatically",
+    description:
+      "We detect the DNS, verify ownership, and issue SSL automatically — no buttons to press.",
   },
 ];
 

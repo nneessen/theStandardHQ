@@ -1,19 +1,34 @@
-# Custom Domains for Recruiting Pages
+# Branded Recruiting URLs
 
-This document describes the custom domain feature that allows users to connect their own subdomains (e.g., `join.yourdomain.com`) to their recruiting pages instead of using the default `thestandardhq.com/join/{slug}` URL.
+> **2026-06-06 — Simplified.** Two ways an agent gets a branded recruiting URL.
+> Most agents need nothing more than **(A)**.
 
-## Overview
+- **(A) Zero-config subdomain — the default.** Every approved agent with a
+  `recruiter_slug` automatically has `https://{slug}.thestandardhq.com`. **No DNS
+  setup, no provisioning, no per-user records.** `*.thestandardhq.com` is a wildcard
+  domain on the Vercel project (Vercel manages the DNS zone → wildcard SSL cert
+  auto-renews). The frontend detects the subdomain (`src/lib/hostname.ts` →
+  `classifyHost`), extracts the slug from the label, and resolves the theme via the
+  existing public `get_public_recruiting_theme` RPC — no edge function round-trip.
+  The classic `thestandardhq.com/join-{slug}` path still works for shared links.
 
-**What it does:**
-- Users can add a custom subdomain like `join.yourdomain.com`
-- The system verifies domain ownership via DNS TXT record
-- Once verified, the domain is provisioned on Vercel for SSL/hosting
-- Visitors to the custom domain see the user's recruiting page
+- **(B) Custom (white-label) domain — optional.** An agent connects their own
+  subdomain (e.g. `join.theiragency.com`). Flow: **add → one CNAME → goes live
+  automatically.** The domain is registered with Vercel at create time; the user
+  adds a single CNAME; Vercel verifies ownership via that CNAME and auto-issues SSL.
+  There is **no homegrown TXT verification** and **no manual Verify/Provision
+  buttons** (removed 2026-06-06 — the TXT step was redundant and broken; the domain
+  is added to Vercel once, at create). Requires a valid `VERCEL_API_TOKEN`.
 
-**Limitations (v1):**
-- Subdomains only (e.g., `join.example.com`), not apex domains (`example.com`)
-- One active custom domain per user
-- Vercel-only provisioning
+**Custom-domain limitations:** subdomains only (not apex); one active per user;
+Vercel-only. **Lifecycle:** `draft → pending_dns → [provisioning] → active` (+
+`error`). `pending_dns` polls Vercel every 60s; when DNS is detected it advances to
+`provisioning` (SSL issuing, 2h timeout), then `active` once configured.
+
+> **Historical note:** earlier versions used a `_thestandardhq-verify` TXT record
+> plus separate `custom-domain-verify` / `custom-domain-provision` edge functions
+> and a `verified` status. All removed. `verification_token` is deprecated/nullable.
+> `resolve-custom-domain` is a **public** (`verify_jwt=false`) endpoint.
 
 ---
 
@@ -58,17 +73,34 @@ supabase secrets set VERCEL_API_TOKEN=your_token_here --project-ref pcyaqwodnyrp
 supabase secrets set VERCEL_PROJECT_ID=prj_xxxxxxxx --project-ref pcyaqwodnyrpkaiojnpz
 ```
 
+> If the token is invalid/expired, `custom-domain-create` now fails loudly with
+> "Custom domain service is misconfigured (invalid Vercel API token)" and rolls
+> back the draft row — the old behavior silently left a half-created domain.
+
+### 2b. Add the wildcard domain (for zero-config subdomains — Part A)
+
+Add `*.thestandardhq.com` to the Vercel project so every `{slug}.thestandardhq.com`
+resolves automatically:
+
+1. Vercel → Project → **Domains → Add** → `*.thestandardhq.com`.
+2. Add the DNS records Vercel shows. `thestandardhq.com`'s nameservers are already
+   on Vercel (`ns1/ns2.vercel-dns.com`), so Vercel issues and **auto-renews** the
+   wildcard SSL cert — no manual `_acme-challenge` rotation. One-time, no API token
+   required.
+
 ### 3. Deploy Edge Functions
 
-The following Edge Functions must be deployed:
+Custom domains use three edge functions (the old `custom-domain-verify` and
+`custom-domain-provision` were removed 2026-06-06):
 
 ```bash
+# verify_jwt defaults to TRUE (auth required) — do NOT pass --no-verify-jwt:
 npx supabase functions deploy custom-domain-create --project-ref pcyaqwodnyrpkaiojnpz
-npx supabase functions deploy custom-domain-verify --project-ref pcyaqwodnyrpkaiojnpz
-npx supabase functions deploy custom-domain-provision --project-ref pcyaqwodnyrpkaiojnpz
 npx supabase functions deploy custom-domain-status --project-ref pcyaqwodnyrpkaiojnpz
 npx supabase functions deploy custom-domain-delete --project-ref pcyaqwodnyrpkaiojnpz
-npx supabase functions deploy resolve-custom-domain --project-ref pcyaqwodnyrpkaiojnpz
+
+# resolve-custom-domain is PUBLIC — must be verify_jwt=false (browser calls it without auth):
+npx supabase functions deploy resolve-custom-domain --project-ref pcyaqwodnyrpkaiojnpz --no-verify-jwt
 ```
 
 ### 4. Verify Setup

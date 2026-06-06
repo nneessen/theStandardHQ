@@ -95,9 +95,16 @@ serve(async (req) => {
       });
     }
 
-    // If domain is in provisioning status, check Vercel for updates
-    if (domain.status === "provisioning" && domain.provider_domain_id) {
-      // Timeout detection first — use the DB timestamp (before any updates)
+    // While the domain is awaiting DNS or issuing SSL, poll Vercel for updates.
+    // Both pending_dns (waiting for the user's CNAME) and provisioning (DNS seen,
+    // SSL minting) must check Vercel — otherwise a pending_dns domain would never
+    // auto-advance to active.
+    if (
+      (domain.status === "pending_dns" || domain.status === "provisioning") &&
+      domain.provider_domain_id
+    ) {
+      // Timeout applies ONLY to provisioning (SSL issuing). pending_dns may sit
+      // for days while the user adds DNS, so it must never time out.
       const provisioningAge =
         Date.now() - new Date(domain.updated_at).getTime();
       const TWO_HOURS = 2 * 60 * 60 * 1000;
@@ -174,8 +181,9 @@ serve(async (req) => {
           }
         }
 
-        // Not configured yet — check if we've exceeded the timeout
-        if (provisioningAge > TWO_HOURS) {
+        // Not configured yet.
+        // Timeout applies only once SSL is actually being issued (provisioning).
+        if (domain.status === "provisioning" && provisioningAge > TWO_HOURS) {
           console.log(
             "[custom-domain-status] Provisioning timeout:",
             domain.hostname,
@@ -183,7 +191,7 @@ serve(async (req) => {
           );
 
           const timeoutDetails = configData?.misconfigured
-            ? "DNS appears misconfigured. Check your CNAME record points to cname.vercel-dns.com."
+            ? "DNS appears misconfigured. Check your CNAME record points to the value shown."
             : "SSL provisioning timed out after 2 hours.";
 
           const { data: errorDomain, error: errorTransition } =
@@ -192,7 +200,7 @@ serve(async (req) => {
               p_user_id: user.id,
               p_new_status: "error",
               p_provider_metadata: JSON.stringify(vercelData ?? configData),
-              p_last_error: `${timeoutDetails} You can retry provisioning or delete and re-add.`,
+              p_last_error: `${timeoutDetails} You can delete and re-add the domain to retry.`,
             });
 
           if (!errorTransition) {
@@ -201,7 +209,7 @@ serve(async (req) => {
                 status: "error",
                 domain: errorDomain,
                 diagnostics,
-                message: `${timeoutDetails} You can retry provisioning or delete and re-add.`,
+                message: `${timeoutDetails} You can delete and re-add the domain to retry.`,
               }),
               {
                 status: 200,
@@ -214,23 +222,36 @@ serve(async (req) => {
           }
         }
 
+        // NOTE: we intentionally do NOT auto-advance pending_dns -> provisioning.
+        // Vercel returns verified:true for a subdomain at create time (before any
+        // CNAME exists), so keying a transition on it would arm the 2h SSL timeout
+        // before the user adds DNS and prematurely error a slow-but-correct user.
+        // There is no reliable "CNAME present but SSL still minting" signal
+        // (misconfigured===false is already our active trigger), so we stay in
+        // pending_dns, poll, and jump straight to active once configured. A truly
+        // misconfigured domain simply sits in pending_dns with diagnostics showing
+        // misconfigured:Yes — more honest than a misleading hard error.
+
         // Update provider_metadata (but don't reset updated_at — preserve timeout tracking)
         await supabaseAdmin
           .from("custom_domains")
           .update({ provider_metadata: vercelData ?? domain.provider_metadata })
           .eq("id", domain.id);
 
-        // Still provisioning - return updated data with diagnostics
+        // Still waiting — keep the current status (pending_dns or provisioning).
         return new Response(
           JSON.stringify({
-            status: "provisioning",
+            status: domain.status,
             domain: {
               ...domain,
               provider_metadata: vercelData ?? domain.provider_metadata,
             },
             vercel_verification: vercelData?.verification || [],
             diagnostics,
-            message: "SSL certificate is still being provisioned.",
+            message:
+              domain.status === "pending_dns"
+                ? "Waiting for the CNAME record to propagate."
+                : "SSL certificate is still being provisioned.",
           }),
           {
             status: 200,
@@ -245,8 +266,9 @@ serve(async (req) => {
           configResult.error,
         );
 
-        // Still check timeout even when Vercel API fails
-        if (provisioningAge > TWO_HOURS) {
+        // Still check timeout even when Vercel API fails — but only for
+        // provisioning (an SSL-issuing domain), never pending_dns.
+        if (domain.status === "provisioning" && provisioningAge > TWO_HOURS) {
           console.log(
             "[custom-domain-status] Provisioning timeout (Vercel unreachable):",
             domain.hostname,
@@ -309,11 +331,11 @@ function getStatusMessage(status: string): string {
     case "draft":
       return "Domain created. Configure DNS and verify ownership.";
     case "pending_dns":
-      return "Waiting for DNS verification.";
+      return "Add the CNAME record — your domain goes live automatically once it resolves.";
     case "verified":
-      return "DNS verified. Ready to provision.";
+      return "DNS verified.";
     case "provisioning":
-      return "SSL certificate is being provisioned.";
+      return "DNS detected. SSL certificate is being issued.";
     case "active":
       return "Domain is active and ready to use.";
     case "error":

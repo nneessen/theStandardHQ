@@ -18,7 +18,7 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
   const [createdDomain, setCreatedDomain] = useState<{
     id: string;
     hostname: string;
-    verification_token: string;
+    cname: string;
   } | null>(null);
 
   const createDomain = useCreateCustomDomain();
@@ -73,7 +73,7 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
       setCreatedDomain({
         id: result.domain.id,
         hostname: result.domain.hostname,
-        verification_token: result.domain.verification_token,
+        cname: result.dns_instructions.cname.value,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create domain");
@@ -99,11 +99,12 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
           </button>
         </div>
         <p className="mt-2 text-xs text-v2-ink-muted">
-          Add the DNS records below, then click "Verify DNS" to continue.
+          Add the CNAME record below. Your domain goes live automatically once
+          it resolves — no further action needed.
         </p>
         <DnsInstructions
           hostname={createdDomain.hostname}
-          verificationToken={createdDomain.verification_token}
+          vercelCname={createdDomain.cname}
         />
         <div className="mt-3">
           <Button size="sm" onClick={onCancel} className="h-7 text-xs">

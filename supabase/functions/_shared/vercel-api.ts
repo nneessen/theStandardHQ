@@ -25,6 +25,8 @@ export interface VercelApiError {
   error: {
     code: string;
     message: string;
+    // Present (and true) when the API token itself is invalid/expired/revoked.
+    invalidToken?: boolean;
   };
 }
 
@@ -65,6 +67,17 @@ export async function addDomainToVercel(
     if (!response.ok) {
       const errorData = data as VercelApiError;
       console.error("[vercel-api] Add domain failed:", errorData);
+
+      // An invalid/expired/revoked API token surfaces as code "forbidden" with
+      // invalidToken:true. This is a platform misconfiguration, NOT a user DNS
+      // problem — distinguish it so we never tell the user to "add a record".
+      if (errorData.error?.invalidToken === true) {
+        return {
+          success: false,
+          error:
+            "Custom domain service is misconfigured (invalid Vercel API token). Please contact support.",
+        };
+      }
 
       // Handle specific Vercel errors
       if (errorData.error?.code === "domain_already_in_use") {

@@ -13,15 +13,11 @@ export type CustomDomainInsert =
 export type CustomDomainStatus =
   Database["public"]["Enums"]["custom_domain_status"];
 
-// DNS Instructions from Edge Function
+// DNS Instructions from Edge Function — a single CNAME record is all that's needed.
+// Vercel verifies subdomain ownership via the CNAME and auto-issues SSL once it resolves.
 export interface DnsInstructions {
   cname: {
     name: string;
-    value: string;
-  };
-  txt: {
-    name: string;
-    nameRelative: string;
     value: string;
   };
 }
@@ -30,31 +26,6 @@ export interface DnsInstructions {
 export interface CreateDomainResponse {
   domain: CustomDomain;
   dns_instructions: DnsInstructions;
-  message: string;
-}
-
-export interface VerifyDomainResponse {
-  verified: boolean;
-  domain?: CustomDomain;
-  error?: string;
-  found_records?: string[];
-  expected_record?: {
-    name: string;
-    name_relative: string;
-    value: string;
-  };
-  message: string;
-}
-
-export interface ProvisionDomainResponse {
-  status: CustomDomainStatus;
-  domain: CustomDomain;
-  vercel_verification?: Array<{
-    type: string;
-    domain: string;
-    value: string;
-    reason: string;
-  }>;
   message: string;
 }
 

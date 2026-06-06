@@ -2,7 +2,7 @@
 // Custom Domain Context
 // Detects if app is loaded on a custom domain and resolves to recruiter_slug + theme
 
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -15,19 +15,10 @@ import {
   applyRecruitingTheme,
   clearRecruitingTheme,
 } from "@/lib/recruiting-theme";
+
+import { leadsService } from "@/services/leads";
 import { supabaseFunctionsUrl } from "@/services/base";
-
-// Primary domains (not custom domains)
-const PRIMARY_DOMAINS = [
-  "thestandardhq.com",
-  "www.thestandardhq.com",
-  "localhost",
-  "127.0.0.1",
-];
-
-// Vercel preview deployments should be treated as primary
-const isVercelPreview = (hostname: string) =>
-  hostname.endsWith(".vercel.app") || hostname.endsWith(".vercel.sh");
+import { classifyHost } from "@/lib/hostname";
 
 const CustomDomainContext = createContext<CustomDomainContextValue>({
   customDomainSlug: null,
@@ -60,12 +51,10 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
 
   useEffect(() => {
     const hostname = window.location.hostname;
+    const host = classifyHost(hostname);
 
-    // Check if on primary domain or Vercel preview
-    const isPrimary =
-      PRIMARY_DOMAINS.includes(hostname) || isVercelPreview(hostname);
-
-    if (isPrimary) {
+    // Primary app/marketing site (or reserved platform subdomain) — not branded.
+    if (host.kind === "primary") {
       setState({
         customDomainSlug: null,
         isCustomDomain: false,
@@ -76,7 +65,61 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
       return;
     }
 
-    // This is a custom domain - resolve via Edge Function
+    // Zero-config branded subdomain {slug}.thestandardhq.com.
+    // The slug IS the subdomain label — resolve the theme directly via the
+    // public RPC (no custom_domains row, no resolve-custom-domain round-trip).
+    if (host.kind === "platform-subdomain") {
+      const slug = host.slug;
+      let cancelled = false;
+
+      (async () => {
+        try {
+          const theme = await leadsService.getPublicRecruitingTheme(slug);
+          if (cancelled) return;
+
+          if (!theme) {
+            // Slug not found / recruiter unapproved / IMO revoked or unlisted.
+            setState({
+              customDomainSlug: null,
+              isCustomDomain: true,
+              isLoading: false,
+              error: "Domain not configured",
+              theme: null,
+            });
+            return;
+          }
+
+          applyRecruitingTheme(theme);
+          setState({
+            customDomainSlug: slug,
+            isCustomDomain: true,
+            isLoading: false,
+            error: null,
+            theme,
+          });
+        } catch (err) {
+          if (cancelled) return;
+          console.error(
+            "[CustomDomainProvider] Subdomain resolution failed:",
+            err,
+          );
+          setState({
+            customDomainSlug: null,
+            isCustomDomain: true,
+            isLoading: false,
+            error: "Failed to resolve domain",
+            theme: null,
+          });
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        clearRecruitingTheme();
+      };
+    }
+
+    // External white-label custom domain — resolve via Edge Function.
     const resolveCustomDomain = async () => {
       try {
         const response = await fetch(

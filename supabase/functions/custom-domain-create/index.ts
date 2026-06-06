@@ -5,7 +5,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
 import { validateHostname, getDnsInstructions } from "../_shared/dns-lookup.ts";
-import { addDomainToVercel, getDomainConfig } from "../_shared/vercel-api.ts";
+import {
+  addDomainToVercel,
+  getDomainConfig,
+  removeDomainFromVercel,
+} from "../_shared/vercel-api.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -137,14 +141,8 @@ serve(async (req) => {
       );
     }
 
-    // Generate cryptographically random verification token (32 bytes = 64 hex chars)
-    const tokenBytes = new Uint8Array(32);
-    crypto.getRandomValues(tokenBytes);
-    const verificationToken = Array.from(tokenBytes)
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    // Insert domain record with draft status
+    // Insert domain record with draft status.
+    // No homegrown verification token — Vercel proves ownership via the CNAME itself.
     const { data: domain, error: insertError } = await supabaseAdmin
       .from("custom_domains")
       .insert({
@@ -152,7 +150,6 @@ serve(async (req) => {
         user_id: user.id,
         hostname: normalizedHostname,
         status: "draft",
-        verification_token: verificationToken,
       })
       .select()
       .single();
@@ -180,83 +177,72 @@ serve(async (req) => {
       );
     }
 
-    // Add domain to Vercel immediately to get the correct CNAME target
+    // Register the domain with Vercel. This is REQUIRED — without it, Vercel never
+    // issues SSL and the domain can never go live. So if it fails, fail loudly:
+    // delete the draft row (never strand a half-created domain) and surface the error.
     console.log("[custom-domain-create] Adding to Vercel:", normalizedHostname);
     const vercelResult = await addDomainToVercel(normalizedHostname);
 
-    let vercelCname: string | null = null;
-    let vercelData: Record<string, unknown> | null = null;
-
-    if (vercelResult.success && vercelResult.data) {
-      vercelData = vercelResult.data as unknown as Record<string, unknown>;
-
-      // Extract the CNAME target from Vercel's verification array
-      // Vercel returns something like: verification: [{ type: "TXT", domain: "...", value: "..." }]
-      // But the actual CNAME comes from the domain config endpoint
-      // The CNAME target is typically in the format: {hash}.vercel-dns-{number}.com
-      // We need to check if Vercel provided a specific CNAME target
-      if (vercelData.verification && Array.isArray(vercelData.verification)) {
-        const cnameVerification = (
-          vercelData.verification as Array<{
-            type: string;
-            domain: string;
-            value: string;
-          }>
-        ).find((v) => v.type === "CNAME");
-        if (cnameVerification) {
-          vercelCname = cnameVerification.value;
-        }
-      }
-
-      // If no specific CNAME in verification, check if there's a cname property
-      if (!vercelCname && vercelData.cname) {
-        vercelCname = vercelData.cname as string;
-      }
-
-      console.log("[custom-domain-create] Vercel response:", {
-        name: vercelData.name,
-        configured: vercelData.configured,
-        verified: vercelData.verified,
-        vercelCname,
-      });
-
-      // If we still don't have a CNAME, try getting the domain config
-      if (!vercelCname) {
-        const configResult = await getDomainConfig(normalizedHostname);
-        if (configResult.success && configResult.data) {
-          // The cnames array contains the expected CNAME target
-          if (configResult.data.cnames && configResult.data.cnames.length > 0) {
-            vercelCname = configResult.data.cnames[0];
-            console.log(
-              "[custom-domain-create] Got CNAME from config:",
-              vercelCname,
-            );
-          }
-        }
-      }
-    } else {
-      // Vercel add failed - log but continue (user can still see generic instructions)
-      console.warn(
+    if (!vercelResult.success || !vercelResult.data) {
+      console.error(
         "[custom-domain-create] Vercel add failed:",
         vercelResult.error,
       );
+      // Roll back the draft so the user can retry cleanly.
+      await supabaseAdmin.from("custom_domains").delete().eq("id", domain.id);
+
+      // domain_already_in_use on ANOTHER project is the user's to resolve (409);
+      // anything else (invalid token, API outage) is a platform problem (502).
+      const isUserResolvable = (vercelResult.error || "")
+        .toLowerCase()
+        .includes("another");
+      return new Response(
+        JSON.stringify({
+          error:
+            vercelResult.error ||
+            "Custom domain service is temporarily unavailable. Please contact support.",
+        }),
+        {
+          status: isUserResolvable ? 409 : 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
-    // Update domain with Vercel data if available
-    if (vercelData) {
-      await supabaseAdmin
-        .from("custom_domains")
-        .update({
-          provider_domain_id: (vercelData.name as string) || normalizedHostname,
-          provider_metadata: {
-            ...vercelData,
-            vercel_cname: vercelCname,
-          },
-        })
-        .eq("id", domain.id);
+    const vercelData = vercelResult.data as unknown as Record<string, unknown>;
+
+    // Resolve the real CNAME target Vercel expects (domain-specific), falling
+    // back to the generic target only if the config endpoint gives us nothing.
+    let vercelCname = "cname.vercel-dns.com";
+    const configResult = await getDomainConfig(normalizedHostname);
+    if (
+      configResult.success &&
+      configResult.data?.cnames &&
+      configResult.data.cnames.length > 0
+    ) {
+      vercelCname = configResult.data.cnames[0];
     }
 
-    // Transition to pending_dns status via admin function
+    console.log("[custom-domain-create] Vercel response:", {
+      name: vercelData.name,
+      configured: vercelData.configured,
+      verified: vercelData.verified,
+      vercelCname,
+    });
+
+    // Store Vercel identity + metadata.
+    await supabaseAdmin
+      .from("custom_domains")
+      .update({
+        provider_domain_id: (vercelData.name as string) || normalizedHostname,
+        provider_metadata: {
+          ...vercelData,
+          vercel_cname: vercelCname,
+        },
+      })
+      .eq("id", domain.id);
+
+    // Transition draft -> pending_dns.
     const { data: updatedDomain, error: transitionError } =
       await supabaseAdmin.rpc("admin_update_domain_status", {
         p_domain_id: domain.id,
@@ -269,10 +255,11 @@ serve(async (req) => {
         "[custom-domain-create] Transition error:",
         transitionError,
       );
-      // Clean up the draft record
+      // Clean up the draft record + deprovision Vercel to avoid orphans.
+      await removeDomainFromVercel(normalizedHostname);
       await supabaseAdmin.from("custom_domains").delete().eq("id", domain.id);
       return new Response(
-        JSON.stringify({ error: "Failed to initialize domain verification" }),
+        JSON.stringify({ error: "Failed to initialize domain" }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -280,11 +267,8 @@ serve(async (req) => {
       );
     }
 
-    // Generate DNS instructions (include Vercel CNAME if available)
-    const dnsInstructions = getDnsInstructions(
-      normalizedHostname,
-      verificationToken,
-    );
+    // Single CNAME instruction — Vercel verifies ownership + issues SSL once it resolves.
+    const dnsInstructions = getDnsInstructions(normalizedHostname, vercelCname);
 
     console.log("[custom-domain-create] Domain created:", {
       id: domain.id,
@@ -293,7 +277,7 @@ serve(async (req) => {
       vercelCname,
     });
 
-    // Refetch the domain to get updated provider_metadata
+    // Refetch the domain to get updated provider_metadata.
     const { data: finalDomain } = await supabaseAdmin
       .from("custom_domains")
       .select("*")
@@ -305,7 +289,8 @@ serve(async (req) => {
         domain: finalDomain || updatedDomain,
         dns_instructions: dnsInstructions,
         vercel_cname: vercelCname,
-        message: "Domain created. Please add the DNS records and click Verify.",
+        message:
+          "Domain created. Add the CNAME record below — it goes live automatically once DNS resolves.",
       }),
       {
         status: 201,

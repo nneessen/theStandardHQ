@@ -9,8 +9,6 @@ import { supabase } from "@/services/base/supabase";
 import type {
   CustomDomain,
   CreateDomainResponse,
-  VerifyDomainResponse,
-  ProvisionDomainResponse,
   DomainStatusResponse,
   DeleteDomainResponse,
   DnsInstructions,
@@ -141,82 +139,11 @@ export function useCreateCustomDomain() {
 }
 
 /**
- * Verify DNS for a custom domain
- */
-export function useVerifyCustomDomain() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (domainId: string): Promise<VerifyDomainResponse> => {
-      const { data, error } =
-        await supabase.functions.invoke<VerifyDomainResponse>(
-          "custom-domain-verify",
-          {
-            body: { domain_id: domainId },
-          },
-        );
-
-      if (error) {
-        throw new Error(error.message || "Failed to verify domain");
-      }
-
-      if (!data) {
-        throw new Error("No response from server");
-      }
-
-      return data;
-    },
-    onSuccess: (_, domainId) => {
-      queryClient.invalidateQueries({ queryKey: customDomainKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: customDomainKeys.detail(domainId),
-      });
-    },
-  });
-}
-
-/**
- * Provision a verified domain on Vercel
- */
-export function useProvisionCustomDomain() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (domainId: string): Promise<ProvisionDomainResponse> => {
-      const { data, error } =
-        await supabase.functions.invoke<ProvisionDomainResponse>(
-          "custom-domain-provision",
-          {
-            body: { domain_id: domainId },
-          },
-        );
-
-      if (error) {
-        throw new Error(error.message || "Failed to provision domain");
-      }
-
-      if (!data) {
-        throw new Error("No response from server");
-      }
-
-      // Check for error in response body
-      if ("error" in data && typeof data.error === "string") {
-        throw new Error(data.error);
-      }
-
-      return data;
-    },
-    onSuccess: (_, domainId) => {
-      queryClient.invalidateQueries({ queryKey: customDomainKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: customDomainKeys.detail(domainId),
-      });
-    },
-  });
-}
-
-/**
- * Check status of a provisioning domain
+ * Check status of a domain awaiting DNS / SSL.
+ *
+ * There is no separate "verify" or "provision" step: the domain is registered
+ * with Vercel at create time, the user adds a single CNAME, and this endpoint
+ * watches Vercel until the domain is configured (auto-advancing to active).
  */
 export function useCheckDomainStatus() {
   const queryClient = useQueryClient();
@@ -284,8 +211,12 @@ export function useDeleteCustomDomain() {
 }
 
 /**
- * Hook for polling domain status during provisioning
- * Implements backoff: 10s → 20s → 30s → 60s, stops after 3 min
+ * Poll domain status while it is awaiting DNS or issuing SSL.
+ *
+ * Polls every 60s while the domain is `pending_dns` or `provisioning` and stops
+ * only once it reaches a terminal state (`active` or `error`). DNS propagation +
+ * SSL issuance can take 1–30 minutes (occasionally up to 2h), so we keep a steady
+ * cadence rather than giving up after a few minutes.
  */
 export function useDomainStatusPolling(
   domainId: string | null,
@@ -301,19 +232,16 @@ export function useDomainStatusPolling(
     },
     enabled: enabled && !!domainId,
     refetchInterval: (query) => {
-      // Stop polling if domain is no longer provisioning
       const data = query.state.data;
-      if (data && data.status !== "provisioning") {
+      // Keep polling only while waiting on DNS or SSL.
+      if (
+        data &&
+        data.status !== "pending_dns" &&
+        data.status !== "provisioning"
+      ) {
         return false;
       }
-
-      // Implement backoff based on fetch count
-      const fetchCount = query.state.dataUpdateCount;
-      if (fetchCount <= 1) return 10000; // 10s
-      if (fetchCount <= 3) return 20000; // 20s
-      if (fetchCount <= 6) return 30000; // 30s
-      if (fetchCount <= 9) return 60000; // 60s
-      return false; // Stop after ~3 min
+      return 60000; // 60s
     },
     staleTime: 0,
     gcTime: 0,

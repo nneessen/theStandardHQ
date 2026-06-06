@@ -32,20 +32,10 @@ const STEPS: Step[] = [
     },
   },
   {
-    id: "verify",
-    label: "Verify",
-    getState: (status) => {
-      if (status === "draft" || status === "pending_dns") return "pending";
-      if (status === "verified") return "current";
-      return "completed";
-    },
-  },
-  {
     id: "ssl",
     label: "SSL",
     getState: (status) => {
-      if (["draft", "pending_dns", "verified"].includes(status))
-        return "pending";
+      if (["draft", "pending_dns"].includes(status)) return "pending";
       if (status === "provisioning") return "current";
       return "completed";
     },

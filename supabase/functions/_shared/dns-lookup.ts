@@ -1,91 +1,24 @@
-// DNS TXT verification helper for custom domain ownership
-// Uses Deno's built-in DNS resolution
-
-const VERIFICATION_PREFIX = "_thestandardhq-verify";
-
-/**
- * Verify DNS TXT record contains the expected verification token
- * Looks up: _thestandardhq-verify.{hostname}
- */
-export async function verifyDnsTxtRecord(
-  hostname: string,
-  expectedToken: string,
-): Promise<{ verified: boolean; error?: string; foundRecords?: string[] }> {
-  const lookupName = `${VERIFICATION_PREFIX}.${hostname}`;
-
-  try {
-    console.log(`[dns-lookup] Looking up TXT records for: ${lookupName}`);
-
-    const txtRecords = await Deno.resolveDns(lookupName, "TXT");
-    const foundRecords: string[] = [];
-
-    // Each TXT record can be an array of strings (for long values split by DNS)
-    // Also need to strip quotes that some DNS providers wrap values in
-    for (const record of txtRecords) {
-      // Join multi-part strings, strip surrounding/embedded quotes, trim whitespace
-      const value = (Array.isArray(record) ? record.join("") : String(record))
-        .replace(/^"|"$/g, "") // Strip surrounding quotes
-        .replace(/"\s*"/g, "") // Handle split strings with quotes
-        .trim();
-
-      foundRecords.push(value);
-
-      if (value === expectedToken) {
-        console.log(`[dns-lookup] Token verified for: ${hostname}`);
-        return { verified: true, foundRecords };
-      }
-    }
-
-    console.log(
-      `[dns-lookup] Token not found. Expected: ${expectedToken}, Found: ${foundRecords.join(", ")}`,
-    );
-    return {
-      verified: false,
-      error: "Verification token not found in DNS TXT records",
-      foundRecords,
-    };
-  } catch (err) {
-    // DNS lookup failed (NXDOMAIN, timeout, etc.)
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown DNS error";
-    console.error(
-      `[dns-lookup] DNS TXT lookup failed for ${lookupName}:`,
-      errorMessage,
-    );
-
-    // Check for common DNS errors
-    if (errorMessage.includes("NXDOMAIN") || errorMessage.includes("no data")) {
-      return {
-        verified: false,
-        error: `No TXT record found at ${lookupName}. Please add the DNS record and wait for propagation.`,
-      };
-    }
-
-    if (errorMessage.includes("SERVFAIL")) {
-      return {
-        verified: false,
-        error: "DNS server error. Please try again in a few minutes.",
-      };
-    }
-
-    return {
-      verified: false,
-      error: `DNS lookup failed: ${errorMessage}`,
-    };
-  }
-}
+// Hostname validation + DNS instruction helpers for custom domains.
+//
+// Ownership/verification is handled entirely by Vercel: a single CNAME pointing
+// at Vercel proves DNS control and auto-issues SSL. There is no homegrown TXT
+// verification (the previous `_thestandardhq-verify` TXT lookup was both
+// redundant and broken — Deno.resolveDns appended the edge container's search
+// suffix, so it could never resolve).
 
 /**
- * Generate DNS instruction text for users
+ * Generate the single CNAME record the user must add for a custom subdomain.
+ * @param hostname full subdomain, e.g. "join.example.com"
+ * @param cnameTarget the CNAME value to point at (Vercel's real target, or the
+ *   generic fallback "cname.vercel-dns.com")
  */
 export function getDnsInstructions(
   hostname: string,
-  verificationToken: string,
+  cnameTarget = "cname.vercel-dns.com",
 ): {
   cname: { name: string; value: string };
-  txt: { name: string; nameRelative: string; value: string };
 } {
-  // Extract subdomain prefix (everything before the first dot of the base domain)
+  // Extract subdomain prefix (everything before the base domain)
   // e.g., "join.example.com" -> "join"
   const parts = hostname.split(".");
   const subdomainPrefix = parts.slice(0, -2).join(".");
@@ -93,12 +26,7 @@ export function getDnsInstructions(
   return {
     cname: {
       name: subdomainPrefix,
-      value: "cname.vercel-dns.com",
-    },
-    txt: {
-      name: `${VERIFICATION_PREFIX}.${hostname}`,
-      nameRelative: `${VERIFICATION_PREFIX}.${subdomainPrefix}`,
-      value: verificationToken,
+      value: cnameTarget,
     },
   };
 }
