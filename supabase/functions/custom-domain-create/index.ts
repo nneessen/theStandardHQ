@@ -256,7 +256,17 @@ serve(async (req) => {
         transitionError,
       );
       // Clean up the draft record + deprovision Vercel to avoid orphans.
-      await removeDomainFromVercel(normalizedHostname);
+      const removal = await removeDomainFromVercel(normalizedHostname);
+      if (!removal.success) {
+        // The domain was added to Vercel but we couldn't remove it AND couldn't
+        // track it — log loudly so the orphan can be reconciled manually.
+        console.error(
+          "[custom-domain-create] ORPHAN: Vercel domain left registered (removal failed) for",
+          normalizedHostname,
+          "-",
+          removal.error,
+        );
+      }
       await supabaseAdmin.from("custom_domains").delete().eq("id", domain.id);
       return new Response(
         JSON.stringify({ error: "Failed to initialize domain" }),

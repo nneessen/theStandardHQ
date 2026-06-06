@@ -72,6 +72,11 @@ export function getPlatformSubdomainSlug(hostname: string): string | null {
   return label;
 }
 
+/** The zero-config branded recruiting URL for a given recruiter slug. */
+export function subdomainUrl(slug: string): string {
+  return `https://${slug}.${PLATFORM_APEX}`;
+}
+
 export type HostClassification =
   | { kind: "primary" }
   | { kind: "platform-subdomain"; slug: string }

@@ -156,6 +156,22 @@ serve(async (req) => {
               "[custom-domain-status] Active transition error:",
               activeError,
             );
+            // Vercel says it's configured but we couldn't flip to active. Return
+            // the current state and let the next poll retry — do NOT fall through
+            // to the timeout block below, which could wrongly mark a configured
+            // domain as errored.
+            return new Response(
+              JSON.stringify({
+                status: domain.status,
+                domain,
+                diagnostics,
+                message: "Finalizing — your domain is configured on Vercel.",
+              }),
+              {
+                status: 200,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              },
+            );
           } else {
             console.log(
               "[custom-domain-status] Domain now active:",
@@ -232,10 +248,26 @@ serve(async (req) => {
         // misconfigured domain simply sits in pending_dns with diagnostics showing
         // misconfigured:Yes — more honest than a misleading hard error.
 
+        // Merge fresh Vercel data over the existing metadata — do NOT replace it,
+        // or we'd drop the synthetic `vercel_cname` we stored at create time and
+        // the DNS instructions would revert to the generic CNAME target while the
+        // user is still trying to add the record.
+        const existingMeta =
+          domain.provider_metadata &&
+          typeof domain.provider_metadata === "object"
+            ? (domain.provider_metadata as Record<string, unknown>)
+            : {};
+        const mergedMeta = vercelData
+          ? {
+              ...existingMeta,
+              ...(vercelData as unknown as Record<string, unknown>),
+            }
+          : existingMeta;
+
         // Update provider_metadata (but don't reset updated_at — preserve timeout tracking)
         await supabaseAdmin
           .from("custom_domains")
-          .update({ provider_metadata: vercelData ?? domain.provider_metadata })
+          .update({ provider_metadata: mergedMeta })
           .eq("id", domain.id);
 
         // Still waiting — keep the current status (pending_dns or provisioning).
@@ -244,7 +276,7 @@ serve(async (req) => {
             status: domain.status,
             domain: {
               ...domain,
-              provider_metadata: vercelData ?? domain.provider_metadata,
+              provider_metadata: mergedMeta,
             },
             vercel_verification: vercelData?.verification || [],
             diagnostics,
@@ -281,7 +313,7 @@ serve(async (req) => {
               p_new_status: "error",
               p_provider_metadata: JSON.stringify(domain.provider_metadata),
               p_last_error:
-                "SSL provisioning timed out after 2 hours (Vercel unreachable). You can retry provisioning or delete and re-add.",
+                "SSL provisioning timed out after 2 hours (Vercel unreachable). You can delete and re-add the domain to retry.",
             });
 
           if (!errorTransition) {
@@ -290,7 +322,7 @@ serve(async (req) => {
                 status: "error",
                 domain: errorDomain,
                 message:
-                  "SSL provisioning timed out. You can retry provisioning or delete and re-add.",
+                  "SSL provisioning timed out. You can delete and re-add the domain to retry.",
               }),
               {
                 status: 200,

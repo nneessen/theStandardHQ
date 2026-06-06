@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { downloadCSV } from "@/utils/exportHelpers";
 import { normalizePhaseNameToStatus } from "@/lib/pipeline";
+import { subdomainUrl } from "@/lib/hostname";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { BasicRecruitingView } from "./components/BasicRecruitingView";
@@ -129,7 +130,7 @@ function RecruitingDashboardContent() {
 
   const handleCopyLink = async () => {
     if (!recruiterSlug) return;
-    const url = `https://${recruiterSlug}.thestandardhq.com`;
+    const url = subdomainUrl(recruiterSlug);
     try {
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);

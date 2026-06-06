@@ -5,6 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/services/base/supabase";
 import type {
   CustomDomain,
@@ -13,6 +14,30 @@ import type {
   DeleteDomainResponse,
   DnsInstructions,
 } from "@/types/custom-domain.types";
+
+/**
+ * Extract the human-readable message an edge function put in its `{ error }`
+ * body. `supabase.functions.invoke` reports any non-2xx as a FunctionsHttpError
+ * whose `.message` is the generic "Edge Function returned a non-2xx status
+ * code" — the real message lives in the Response (`error.context`). Without
+ * this, the clear errors the functions return (invalid token, domain in use,
+ * etc.) never reach the user.
+ */
+async function edgeErrorMessage(
+  error: unknown,
+  fallback: string,
+): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const body = await error.context.json();
+      if (body && typeof body.error === "string") return body.error;
+    } catch {
+      // body wasn't JSON / already consumed — fall through to generic message
+    }
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
 
 // Query keys
 export const customDomainKeys = {
@@ -115,14 +140,16 @@ export function useCreateCustomDomain() {
         );
 
       if (error) {
-        throw new Error(error.message || "Failed to create domain");
+        throw new Error(
+          await edgeErrorMessage(error, "Failed to create domain"),
+        );
       }
 
       if (!data) {
         throw new Error("No response from server");
       }
 
-      // Check for error in response body
+      // Check for error in response body (soft errors returned with 2xx)
       if ("error" in data && typeof data.error === "string") {
         throw new Error(data.error);
       }
@@ -159,7 +186,9 @@ export function useCheckDomainStatus() {
         );
 
       if (error) {
-        throw new Error(error.message || "Failed to check domain status");
+        throw new Error(
+          await edgeErrorMessage(error, "Failed to check domain status"),
+        );
       }
 
       if (!data) {
@@ -195,7 +224,9 @@ export function useDeleteCustomDomain() {
         );
 
       if (error) {
-        throw new Error(error.message || "Failed to delete domain");
+        throw new Error(
+          await edgeErrorMessage(error, "Failed to delete domain"),
+        );
       }
 
       if (!data) {
@@ -207,43 +238,5 @@ export function useDeleteCustomDomain() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customDomainKeys.all });
     },
-  });
-}
-
-/**
- * Poll domain status while it is awaiting DNS or issuing SSL.
- *
- * Polls every 60s while the domain is `pending_dns` or `provisioning` and stops
- * only once it reaches a terminal state (`active` or `error`). DNS propagation +
- * SSL issuance can take 1–30 minutes (occasionally up to 2h), so we keep a steady
- * cadence rather than giving up after a few minutes.
- */
-export function useDomainStatusPolling(
-  domainId: string | null,
-  enabled: boolean,
-) {
-  const checkStatus = useCheckDomainStatus();
-
-  return useQuery({
-    queryKey: [...customDomainKeys.detail(domainId ?? ""), "polling"],
-    queryFn: async () => {
-      if (!domainId) return null;
-      return checkStatus.mutateAsync(domainId);
-    },
-    enabled: enabled && !!domainId,
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      // Keep polling only while waiting on DNS or SSL.
-      if (
-        data &&
-        data.status !== "pending_dns" &&
-        data.status !== "provisioning"
-      ) {
-        return false;
-      }
-      return 60000; // 60s
-    },
-    staleTime: 0,
-    gcTime: 0,
   });
 }

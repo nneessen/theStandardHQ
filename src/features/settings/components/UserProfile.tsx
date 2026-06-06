@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Link as RouterLink } from "@tanstack/react-router";
+import { subdomainUrl } from "@/lib/hostname";
 import {
   User,
   Save,
@@ -449,7 +450,7 @@ export function UserProfile() {
   };
 
   const handleCopySubdomain = async () => {
-    const url = `https://${currentSlug}.thestandardhq.com`;
+    const url = subdomainUrl(currentSlug);
     try {
       await navigator.clipboard.writeText(url);
       setSubdomainCopied(true);
