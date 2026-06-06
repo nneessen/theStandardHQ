@@ -21,6 +21,7 @@ import {
   Megaphone,
   GraduationCap,
   PhoneCall,
+  PhoneIncoming,
   Sparkles,
   IdCard,
 } from "lucide-react";
@@ -220,6 +221,15 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "Close KPIs",
         href: "/close-kpi",
         subscriptionFeature: "close_kpi",
+      },
+      {
+        icon: PhoneIncoming,
+        label: "Call KPIs",
+        href: "/kpi",
+        // Limited to Epic Life during rollout (super-admins bypass). Mirrors the
+        // /kpi RouteGuard requireEmailIncludes gate.
+        public: true,
+        requireEmailIncludes: "epiclife",
       },
       {
         icon: Sparkles,

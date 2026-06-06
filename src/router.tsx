@@ -88,6 +88,11 @@ const CloseAiBuilderPage = lazy(() =>
     default: m.CloseAiBuilderPage,
   })),
 );
+const KpiPage = lazy(() =>
+  import("./features/kpi").then((m) => ({
+    default: m.KpiPage,
+  })),
+);
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
   () => import("./features/underwriting/components/Wizard"),
@@ -657,6 +662,18 @@ const closeKpiRoute = createRoute({
   ),
 });
 
+// Call KPIs - inbound-call KPI workspace (Phase 1). Epic-Life-only during
+// rollout (super-admins bypass), mirroring the Command Center email gate.
+const kpiRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "kpi",
+  component: () => (
+    <RouteGuard noRecruits requireEmailIncludes="epiclife">
+      <KpiPage />
+    </RouteGuard>
+  ),
+});
+
 // Close AI Builder - AI-generated email/SMS templates + workflows for Close CRM
 const closeAiBuilderRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1156,6 +1173,7 @@ const routeTree = rootRoute.addChildren([
   voiceCloneRoute,
   voiceAgentRoute,
   closeKpiRoute,
+  kpiRoute,
   closeAiBuilderRoute,
   roadmapListRoute,
   roadmapEditorRoute,

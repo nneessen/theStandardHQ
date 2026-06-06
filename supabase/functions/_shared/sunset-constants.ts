@@ -33,6 +33,11 @@ export const PRIVATE_USER_BUCKETS = [
   "user-documents",
   "contract-documents",
   "presentation-recordings",
+  // KPI call recordings ({agent_id}/...) — audio holds caller PII/PHI/TCPA
+  // content, so an account wipe must purge it. (The DB rows in kpi_* cascade via
+  // their agent_id/owner_id → auth.users ON DELETE CASCADE when the auth user is
+  // deleted; only the storage objects need explicit purging here.)
+  "call-recordings",
 ] as const;
 
 /**
