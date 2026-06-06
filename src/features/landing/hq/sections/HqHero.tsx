@@ -24,6 +24,16 @@ export function HqHero({ reducedMotion }: { reducedMotion: boolean }) {
           The intelligent platform behind high-performing insurance agents.
           Built in-house, by a producer, for producers.
         </p>
+        <p className="hero-hiring">
+          <strong>Now hiring &mdash; licensed &amp; unlicensed agents.</strong>{" "}
+          Ditch the 12-hour days. We work{" "}
+          <strong>10&nbsp;AM&ndash;5&nbsp;PM ET</strong>, Monday&ndash;Friday
+          &mdash; <strong>no weekends</strong>. Every lead is inbound, so you
+          never make a single cold call, and most agents take just{" "}
+          <strong>3&ndash;6 calls a day</strong>. Agency-wide we close about{" "}
+          <strong>33%</strong> at roughly <strong>$170</strong> cost per
+          acquisition.
+        </p>
         <div className="hero-cta">
           <Link to={APPLY_PATH} className="btn btn-pri" data-magnet>
             Start your journey →
