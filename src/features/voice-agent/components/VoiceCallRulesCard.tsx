@@ -27,7 +27,7 @@ import {
   type ChatBotCloseLeadStatus,
   type ChatBotVoiceSetupState,
 } from "@/features/chat-bot";
-import { useCloseSmartViews } from "@/features/channel-orchestration";
+import { useCloseSmartViews } from "@/features/chat-bot";
 
 // ─── Types ─────────────────────────────────────────────────────
 

@@ -3,36 +3,20 @@
 
 import { supabase } from "../base/supabase";
 
-/**
- * Request payload for sending an SMS
- */
 export interface SendSmsRequest {
-  /** Phone number (will be normalized to E.164 by the Edge Function) */
   to: string;
-  /** SMS message content (max ~160 chars for single SMS) */
   message: string;
-  /** Optional: Recruit ID for logging/tracking */
   recruitId?: string;
-  /** Optional: Automation ID for logging/tracking */
   automationId?: string;
-  /** Optional: Trigger type for logging */
   trigger?: string;
 }
 
-/**
- * Response from the SMS Edge Function
- */
 export interface SendSmsResponse {
   success: boolean;
-  /** Twilio message SID if successful */
   messageId?: string;
-  /** Error message if failed */
   error?: string;
 }
 
-/**
- * Result from sending SMS to multiple recipients
- */
 export interface SendSmsBulkResult {
   successCount: number;
   failureCount: number;
@@ -44,47 +28,28 @@ export interface SendSmsBulkResult {
   }>;
 }
 
-/**
- * Normalize phone number to a consistent format for display/validation
- * This is a client-side normalization; the Edge Function does the final E.164 conversion
- */
 function normalizePhoneForValidation(phone: string): string | null {
   if (!phone) return null;
 
-  // Remove all non-digit characters except leading +
   const cleaned = phone.replace(/[^\d+]/g, "");
 
-  // Basic validation - must have enough digits
   const digitsOnly = cleaned.replace(/\+/g, "");
   if (digitsOnly.length < 10) return null;
 
   return cleaned;
 }
 
-/**
- * Check if a phone number appears valid for SMS
- */
 export function isValidPhoneNumber(phone: string): boolean {
   if (!phone) return false;
   const normalized = normalizePhoneForValidation(phone);
   if (!normalized) return false;
 
-  // Must have at least 10 digits
   const digitsOnly = normalized.replace(/\+/g, "");
   return digitsOnly.length >= 10 && digitsOnly.length <= 15;
 }
 
-/**
- * SMS Service - handles sending SMS messages via Twilio
- */
 class SmsService {
-  /**
-   * Send a single SMS message
-   * @param request - SMS request with recipient and message
-   * @returns Response indicating success/failure
-   */
   async sendSms(request: SendSmsRequest): Promise<SendSmsResponse> {
-    // Validate phone number client-side first
     if (!isValidPhoneNumber(request.to)) {
       return {
         success: false,
@@ -92,7 +57,6 @@ class SmsService {
       };
     }
 
-    // Validate message content
     if (!request.message || request.message.trim().length === 0) {
       return {
         success: false,
@@ -124,13 +88,6 @@ class SmsService {
     }
   }
 
-  /**
-   * Send SMS to multiple recipients
-   * @param phoneNumbers - Array of phone numbers
-   * @param message - Message to send to all recipients
-   * @param metadata - Optional metadata for tracking
-   * @returns Bulk result with success/failure counts
-   */
   async sendSmsBulk(
     phoneNumbers: string[],
     message: string,

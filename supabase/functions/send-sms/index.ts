@@ -24,11 +24,19 @@ interface SendSmsResponse {
   success: boolean;
   messageId?: string;
   error?: string;
+  // Twilio's real failure details, surfaced so callers/humans can act (was previously masked).
+  errorCode?: number;
+  errorMessage?: string;
 }
 
 interface TwilioMessageResponse {
   sid: string;
   status: string;
+  // Twilio's REST error JSON uses `code` + `message` (NOT error_code/error_message — those names
+  // are wrong and were always undefined, which is why real failures came back as an opaque string).
+  // Kept the old optional fields for safety, but `code`/`message` are the ones Twilio actually sends.
+  code?: number;
+  message?: string;
   error_code?: number;
   error_message?: string;
 }
@@ -342,12 +350,20 @@ serve(async (req) => {
       try {
         data = JSON.parse(responseText);
       } catch {
-        console.error("[send-sms] Failed to parse Twilio response as JSON");
+        // Twilio returns JSON even for errors, so a non-JSON/empty body means something upstream
+        // (empty response, an HTML gateway/error page, a credential or transport problem). Surface
+        // the raw HTTP status + body so the failure is diagnosable instead of an opaque string.
+        console.error("[send-sms] Twilio response not JSON:", {
+          status: response.status,
+          bodyPreview: responseText.slice(0, 300),
+        });
         return new Response(
           JSON.stringify({
             success: false,
             error: "SMS service error",
-          } as SendSmsResponse),
+            twilioStatus: response.status,
+            twilioBody: responseText.slice(0, 300),
+          }),
           {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -368,16 +384,25 @@ serve(async (req) => {
       );
     }
 
-    // Check for Twilio errors
-    if (!response.ok || data.error_code) {
+    // Surface the REAL Twilio failure instead of masking it. Twilio returns a numeric error_code
+    // + human error_message (e.g. 21610 = recipient previously texted STOP, 21614 = not an
+    // SMS-capable number, 30034 = unregistered A2P 10DLC, 21408 = region not enabled). Callers and
+    // humans need the code to act — hiding it behind a generic string is what made this delivery
+    // failure undiagnosable. Backward compatible: success/error are unchanged; the details are added.
+    const twilioCode = data.code ?? data.error_code;
+    const twilioMessage = data.message ?? data.error_message;
+    if (!response.ok || twilioCode) {
       console.error("[send-sms] Twilio API error:", {
         status: response.status,
-        errorCode: data.error_code,
+        errorCode: twilioCode,
+        errorMessage: twilioMessage,
       });
       return new Response(
         JSON.stringify({
           success: false,
           error: "SMS service error",
+          errorCode: twilioCode,
+          errorMessage: twilioMessage,
         } as SendSmsResponse),
         {
           status: 200,
