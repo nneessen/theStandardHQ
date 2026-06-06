@@ -51,9 +51,6 @@ export * from "./subscription";
 // Documents hooks
 export * from "./documents";
 
-// Reports hooks
-export * from "./reports";
-
 // Alerts hooks
 export * from "./alerts";
 

@@ -5,7 +5,6 @@ import {
   Home,
   TrendingUp,
   Target,
-  BarChart3,
   CreditCard,
   FileText,
   Users,
@@ -20,11 +19,9 @@ import {
   Wallet,
   Store,
   Megaphone,
-  Briefcase,
+  GraduationCap,
   PhoneCall,
-  Network,
   Sparkles,
-  Zap,
   IdCard,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
@@ -80,13 +77,6 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         permission: "nav.dashboard",
         subscriptionFeature: "targets_basic",
       },
-      {
-        icon: BarChart3,
-        label: "Reports",
-        href: "/reports",
-        permission: "nav.downline_reports",
-        subscriptionFeature: "reports_view",
-      },
     ],
   },
   {
@@ -126,6 +116,21 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
     ],
   },
   {
+    id: "training",
+    label: "Training",
+    items: [
+      {
+        icon: GraduationCap,
+        label: "Agent Roadmap",
+        href: "/agent-roadmap",
+        // The /agent-roadmap route auto-routes by role (admins → manage view,
+        // agents → their checklist) and is RLS-scoped per agency/IMO, so a
+        // single item is correct for everyone. Visible to all agents.
+        public: true,
+      },
+    ],
+  },
+  {
     id: "growth",
     label: "Growth",
     items: [
@@ -146,7 +151,13 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "Lead Vendors",
         href: "/lead-vendors",
         public: true,
-        superAdminOnly: true,
+        // Restricted to the two IMO-owner accounts only. NOTE: `allowedEmails`
+        // has no super-admin bypass in the resolver, so ONLY these exact
+        // accounts see the nav item (kept in sync with the route guard).
+        allowedEmails: [
+          "nickneessen@thestandardhq.com",
+          "epiclife.neessen@gmail.com",
+        ],
       },
       {
         icon: Megaphone,
@@ -205,13 +216,6 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         allowedAgencyId: THE_STANDARD_AGENCY_ID,
       },
       {
-        icon: Network,
-        label: "Orchestrator",
-        href: "/channel-orchestration",
-        public: true,
-        allowedAgencyId: THE_STANDARD_AGENCY_ID,
-      },
-      {
         icon: CloseCrmIcon,
         label: "Close KPIs",
         href: "/close-kpi",
@@ -222,19 +226,6 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "AI Template Builder",
         href: "/close-ai-builder",
         subscriptionFeature: "close_ai_builder",
-      },
-      {
-        icon: Zap,
-        label: "Lead Drop",
-        href: "/lead-drop",
-        subscriptionFeature: "close_kpi",
-      },
-      {
-        icon: Briefcase,
-        label: "Business Tools",
-        href: "/business-tools",
-        public: true,
-        allowedAgencyId: THE_STANDARD_AGENCY_ID,
       },
     ],
   },

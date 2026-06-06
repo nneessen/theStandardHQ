@@ -9,8 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// eslint-disable-next-line no-restricted-imports
-import { MultiSelectFilter } from "@/features/reports/components/filters/MultiSelectFilter";
+import { MultiSelectFilter } from "@/components/ui/MultiSelectFilter";
 import {
   useCloseLeadStatuses,
   useCloseSmartViews,

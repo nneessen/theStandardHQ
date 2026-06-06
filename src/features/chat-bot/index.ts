@@ -85,6 +85,10 @@ export type {
   UpdatePhoneNumberParams,
 } from "../voice-agent/types/voice-phone-number.types";
 
+// Close Smart Views — used by the AI Voice Agent rules card
+export { useCloseSmartViews } from "./hooks/useCloseSmartViews";
+export type { CloseSmartView } from "./hooks/useCloseSmartViews";
+
 // Bot health monitoring — used by the /admin/bot-health page
 export { useBotSystemHealth, botHealthKeys } from "./hooks/useBotSystemHealth";
 export {

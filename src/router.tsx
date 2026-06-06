@@ -24,7 +24,6 @@ import {
   PendingApproval,
   DeniedAccess,
 } from "./features/auth";
-import { ReportsDashboard } from "./features/reports";
 import AdminControlCenter from "./features/admin/components/AdminControlCenter";
 // PermissionGuard reserved for future granular route permissions
 // import { PermissionGuard } from "./components/auth/PermissionGuard";
@@ -74,15 +73,10 @@ import { ChatBotPage } from "./features/chat-bot";
 import { AssistantPage } from "./features/assistant";
 import { VoiceAgentPage } from "./features/voice-agent";
 import { VoiceCloneWizardPage } from "./features/voice-agent/components/VoiceCloneWizardPage";
-import { ChannelOrchestrationPage } from "./features/channel-orchestration";
 import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
 
-// Lazy-loaded business tools page
-const BusinessToolsPage = lazy(
-  () => import("./features/business-tools/BusinessToolsPage"),
-);
 const CloseKpiPage = lazy(() =>
   import("./features/close-kpi/CloseKpiPage").then((m) => ({
     default: m.CloseKpiPage,
@@ -93,12 +87,6 @@ const CloseAiBuilderPage = lazy(() =>
     default: m.CloseAiBuilderPage,
   })),
 );
-const LeadDropPage = lazy(() =>
-  import("./features/close-lead-drop/LeadDropPage").then((m) => ({
-    default: m.LeadDropPage,
-  })),
-);
-
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
   () => import("./features/underwriting/components/Wizard"),
@@ -275,22 +263,6 @@ const targetsRoute = createRoute({
       subscriptionFeature="targets_basic"
     >
       <TargetsPage />
-    </RouteGuard>
-  ),
-});
-
-// Reports route - requires approval, blocks recruits and staff roles, requires reports_view subscription feature
-const reportsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "reports",
-  component: () => (
-    <RouteGuard
-      permission="nav.downline_reports"
-      noRecruits
-      noStaffRoles
-      subscriptionFeature="reports_view"
-    >
-      <ReportsDashboard />
     </RouteGuard>
   ),
 });
@@ -673,17 +645,6 @@ const voiceAgentRoute = createRoute({
   ),
 });
 
-// Channel Orchestration route - SMS + Voice routing rules, page handles access gating
-const channelOrchestrationRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "channel-orchestration",
-  component: () => (
-    <RouteGuard noRecruits noStaffRoles>
-      <ChannelOrchestrationPage />
-    </RouteGuard>
-  ),
-});
-
 // Close KPI Dashboard - Close CRM analytics, page handles connection gating
 const closeKpiRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -702,28 +663,6 @@ const closeAiBuilderRoute = createRoute({
   component: () => (
     <RouteGuard noRecruits noStaffRoles subscriptionFeature="close_ai_builder">
       <CloseAiBuilderPage />
-    </RouteGuard>
-  ),
-});
-
-// Lead Drop - bulk lead transfer between Close CRM accounts
-const leadDropRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "lead-drop",
-  component: () => (
-    <RouteGuard noRecruits noStaffRoles>
-      <LeadDropPage />
-    </RouteGuard>
-  ),
-});
-
-// Business Tools route - Financial statement processing, page handles upsell internally
-const businessToolsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "business-tools",
-  component: () => (
-    <RouteGuard noRecruits noStaffRoles>
-      <BusinessToolsPage />
     </RouteGuard>
   ),
 });
@@ -924,7 +863,9 @@ const billingRoute = createRoute({
   ),
 });
 
-// Lead Vendors route - restricted to specific users in The Standard agency
+// Lead Vendors route - restricted to the two IMO-owner accounts only.
+// Kept in sync with the sidebar nav allowedEmails. allowedAgencyId removed so
+// the agency-wide grant no longer applies.
 const leadVendorsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "lead-vendors",
@@ -933,12 +874,9 @@ const leadVendorsRoute = createRoute({
       noRecruits
       noStaffRoles
       allowedEmails={[
-        "hunterthornhillsm@gmail.com",
-        "andrewengel1999@gmail.com",
-        "minyojames@gmail.com",
-        "james.wadleigh.insurance@gmail.com",
+        "nickneessen@thestandardhq.com",
+        "epiclife.neessen@gmail.com",
       ]}
-      allowedAgencyId="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
     >
       <LeadIntelligenceDashboard />
     </RouteGuard>
@@ -1157,7 +1095,6 @@ const routeTree = rootRoute.addChildren([
   compGuideRoute,
   settingsRoute,
   targetsRoute,
-  reportsRoute,
   expensesRoute,
   testCompGuideRoute,
   hierarchyIndexRoute,
@@ -1206,11 +1143,8 @@ const routeTree = rootRoute.addChildren([
   commandCenterRoute,
   voiceCloneRoute,
   voiceAgentRoute,
-  channelOrchestrationRoute,
   closeKpiRoute,
   closeAiBuilderRoute,
-  leadDropRoute,
-  businessToolsRoute,
   roadmapListRoute,
   roadmapEditorRoute,
   roadmapTeamOverviewRoute,

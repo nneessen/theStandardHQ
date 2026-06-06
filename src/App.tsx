@@ -15,28 +15,21 @@ import { useSubscription, useTemporaryAccessCheck } from "./hooks/subscription";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicLandingPage } from "./features/landing";
 import { RecruitHeader } from "./components/layout/RecruitHeader";
-
-// Primary domains (not custom domains)
-const PRIMARY_DOMAINS = [
-  "thestandardhq.com",
-  "www.thestandardhq.com",
-  "localhost",
-  "127.0.0.1",
-];
-
-const isVercelPreview = (hostname: string) =>
-  hostname.endsWith(".vercel.app") || hostname.endsWith(".vercel.sh");
+import { classifyHost } from "./lib/hostname";
 
 function App() {
   const location = useLocation();
   const hostname =
     typeof window !== "undefined" ? window.location.hostname : "";
 
-  // Check if we're on a custom domain
+  // Classify the host once: primary app/marketing, a zero-config branded
+  // subdomain ({slug}.thestandardhq.com), or an external white-label domain.
+  const host = classifyHost(hostname);
+
+  // Branded hosts (platform subdomain or external custom domain) render the
+  // public recruiting page at root. CustomDomainContext resolves the slug/theme.
   const isOnCustomDomain =
-    hostname &&
-    !PRIMARY_DOMAINS.includes(hostname) &&
-    !isVercelPreview(hostname);
+    host.kind === "platform-subdomain" || host.kind === "custom";
 
   // Check if public path BEFORE calling useAuth to avoid unnecessary auth checks
   const publicPaths = [
@@ -71,8 +64,7 @@ function App() {
   }
 
   // Primary domain landing page paths
-  const isOnPrimaryDomain =
-    PRIMARY_DOMAINS.includes(hostname) || isVercelPreview(hostname);
+  const isOnPrimaryDomain = host.kind === "primary";
 
   // Show landing page at "/" or "/landing" on primary domain (before auth check)
   if (
