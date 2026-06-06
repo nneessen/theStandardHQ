@@ -18,7 +18,6 @@ import {
 import { useTemporaryAccessConfig } from "./useSubscriptionSettings";
 import { useImoAllFeaturesAccess } from "./useImoAllFeaturesAccess";
 import { subscriptionSettingsService } from "@/services/subscription";
-import { isSuperAdminEmail } from "@/lib/temporaryAccess";
 
 // Roles that bypass subscription checks (staff roles)
 // Note: trainer and contracting_manager removed - they should have limited access
@@ -158,7 +157,7 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
 
   // Check if user is super admin (bypasses ALL feature gating)
   const { isSuperAdmin } = useImo();
-  const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(userEmail);
+  const isSuperAdminUser = isSuperAdmin;
 
   return useMemo(() => {
     // Dynamically determine required plan from database
@@ -316,7 +315,7 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
 
   // Check if user is super admin (bypasses ALL feature gating)
   const { isSuperAdmin } = useImo();
-  const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(userEmail);
+  const isSuperAdminUser = isSuperAdmin;
 
   return useMemo(() => {
     // Super admin bypass - immediate access, no loading wait
@@ -441,7 +440,7 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
 
   // Check if user is super admin (bypasses ALL feature gating)
   const { isSuperAdmin } = useImo();
-  const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(userEmail);
+  const isSuperAdminUser = isSuperAdmin;
 
   return useMemo(() => {
     // Super admin bypass - immediate access, no loading wait

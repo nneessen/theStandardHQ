@@ -10,7 +10,6 @@ import {
 } from "@/hooks/subscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
-import { isSuperAdminEmail } from "@/lib/temporaryAccess";
 
 export interface DashboardFeatures {
   // Expense-related features (Pro+)
@@ -62,8 +61,7 @@ export function useDashboardFeatures(): DashboardFeatures {
 
   return useMemo(() => {
     // Check if user is super admin (bypasses ALL gating)
-    const userEmail = supabaseUser?.email;
-    const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(userEmail);
+    const isSuperAdminUser = isSuperAdmin;
 
     // Organization roles from ImoContext
     const isImoAdmin = isSuperAdminUser || imoAdminFlag;

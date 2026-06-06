@@ -8,8 +8,6 @@ import { useSubscription } from "./useSubscription";
 import { useOwnerDownlineAccess } from "./useOwnerDownlineAccess";
 import { useImoAllFeaturesAccess } from "./useImoAllFeaturesAccess";
 import { useImo } from "@/contexts/ImoContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { isSuperAdminEmail } from "@/lib/temporaryAccess";
 
 // Analytics section identifiers that match database analytics_sections array
 export type AnalyticsSectionKey =
@@ -99,8 +97,7 @@ export function useAnalyticsSectionAccess(
 
   // Check if user is super admin (bypasses ALL feature gating)
   const { isSuperAdmin } = useImo();
-  const { user } = useAuth();
-  const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(user?.email);
+  const isSuperAdminUser = isSuperAdmin;
 
   return useMemo(() => {
     // Super admin bypass - immediate access, no loading wait
@@ -193,8 +190,7 @@ export function useAccessibleAnalyticsSections(): {
 
   // Check if user is super admin (bypasses ALL feature gating)
   const { isSuperAdmin } = useImo();
-  const { user } = useAuth();
-  const isSuperAdminUser = isSuperAdmin || isSuperAdminEmail(user?.email);
+  const isSuperAdminUser = isSuperAdmin;
 
   return useMemo(() => {
     const allSections: AnalyticsSectionKey[] = [
