@@ -1,20 +1,37 @@
 // src/features/kpi/components/dashboard/LengthDistributionPanel.tsx
-// Section 6 — Call Length Distribution. nivo histogram of call counts per length
-// bucket, plus a closing-rate chip per bucket (does longer talk-time close?).
+// Section 6 — Call Length Distribution. recharts histogram of call counts per
+// length bucket + a closing-rate chip per bucket (does longer talk-time close?).
+// Uses recharts (prod-proven), not nivo.
 
-import React from "react";
-import { ResponsiveBar } from "@nivo/bar";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { Hourglass } from "lucide-react";
 import { Board, EmptyState, T } from "@/components/board";
 import { useKpiCallAnalytics } from "../../hooks";
 import { SectionCap } from "./SectionCap";
 import { LoadingRow, ErrorRow } from "./PerformanceBand";
-import { nivoTheme, rateColor } from "./chart-theme";
+import { rateColor } from "./chart-theme";
 import type { DateRange } from "../../types/kpi.types";
 
 interface Props {
   range: DateRange;
 }
+
+const axisTick = { fontSize: 12, fill: T.mut, fontFamily: T.mono };
+const tipStyle = {
+  background: "#161617",
+  border: `1px solid ${T.line2}`,
+  borderRadius: 8,
+  fontFamily: T.mono,
+  fontSize: 12,
+};
 
 export function LengthDistributionPanel({ range }: Props) {
   const { data, isLoading, isError, error } = useKpiCallAnalytics(range);
@@ -44,26 +61,45 @@ export function LengthDistributionPanel({ range }: Props) {
         />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ height: 200 }}>
-            <ResponsiveBar
-              data={chartData}
-              keys={["count"]}
-              indexBy="bucket"
-              margin={{ top: 16, right: 8, bottom: 28, left: 36 }}
-              padding={0.34}
-              colors={T.blue}
-              borderRadius={3}
-              enableGridY
-              enableLabel
-              labelSkipHeight={14}
-              axisLeft={{ tickSize: 0, tickPadding: 6, tickValues: 4 }}
-              axisBottom={{ tickSize: 0, tickPadding: 6 }}
-              theme={nivoTheme}
-              animate
-              motionConfig="gentle"
-              role="img"
-              ariaLabel="Call count by length bucket"
-            />
+          <div style={{ height: 190 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  stroke={T.line}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="bucket"
+                  tick={axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                  width={32}
+                />
+                <Tooltip
+                  contentStyle={tipStyle}
+                  itemStyle={{ color: T.cream }}
+                  labelStyle={{ color: T.mut2 }}
+                  cursor={{ fill: T.line, opacity: 0.4 }}
+                />
+                <Bar
+                  dataKey="count"
+                  name="Calls"
+                  fill={T.blue}
+                  radius={[3, 3, 0, 0]}
+                  maxBarSize={64}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
           {/* Closing rate per bucket */}

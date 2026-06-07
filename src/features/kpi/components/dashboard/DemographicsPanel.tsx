@@ -1,16 +1,27 @@
 // src/features/kpi/components/dashboard/DemographicsPanel.tsx
-// Section 5 — Caller Demographics. Age-band distribution (nivo bar: calls per
-// band with the closing-rate as the in-bar label) + a gender split donut.
+// Section 5 — Caller Demographics. Age-band distribution (recharts bars: calls
+// per band + a close-rate chip row) and a gender split donut. Uses recharts
+// (proven in prod) — NOT nivo, which pulls @react-spring and caused a
+// duplicate-React crash in the production bundle.
 
-import React from "react";
-import { ResponsiveBar } from "@nivo/bar";
-import { ResponsivePie } from "@nivo/pie";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import { Users } from "lucide-react";
 import { Board, EmptyState, T } from "@/components/board";
 import { useKpiCallAnalytics } from "../../hooks";
 import { SectionCap } from "./SectionCap";
 import { LoadingRow, ErrorRow } from "./PerformanceBand";
-import { nivoTheme } from "./chart-theme";
+import { rateColor } from "./chart-theme";
 import type { DateRange } from "../../types/kpi.types";
 
 interface Props {
@@ -24,14 +35,20 @@ const GENDER_COLORS: Record<string, string> = {
   unknown: "rgba(236,226,205,0.4)",
 };
 
+const axisTick = { fontSize: 12, fill: T.mut, fontFamily: T.mono };
+const tipStyle = {
+  background: "#161617",
+  border: `1px solid ${T.line2}`,
+  borderRadius: 8,
+  fontFamily: T.mono,
+  fontSize: 12,
+};
+
 export function DemographicsPanel({ range }: Props) {
   const { data, isLoading, isError, error } = useKpiCallAnalytics(range);
 
-  const ageData = (data?.byAgeBand ?? []).map((b) => ({
-    band: b.label,
-    calls: b.calls,
-    closingRate: Number(b.closingRate.toFixed(0)),
-  }));
+  const ageBands = data?.byAgeBand ?? [];
+  const ageData = ageBands.map((b) => ({ band: b.label, calls: b.calls }));
   const genderData = (data?.byGender ?? []).map((g) => ({
     id: g.label,
     label: g.label,
@@ -39,8 +56,7 @@ export function DemographicsPanel({ range }: Props) {
     color: GENDER_COLORS[g.gender] ?? T.blue,
   }));
   const genderTotal = genderData.reduce((n, g) => n + g.value, 0);
-
-  const isEmpty = ageData.length === 0 && genderData.length === 0;
+  const isEmpty = ageBands.length === 0 && genderData.length === 0;
 
   return (
     <Board pad={22} style={{ height: "100%" }}>
@@ -67,11 +83,11 @@ export function DemographicsPanel({ range }: Props) {
             display: "grid",
             gridTemplateColumns: "minmax(0, 1fr) 190px",
             gap: 18,
-            alignItems: "center",
+            alignItems: "start",
           }}
         >
-          {/* Age-band bars */}
-          <div style={{ height: 230, minWidth: 0 }}>
+          {/* Age-band bars + close-rate chips */}
+          <div style={{ minWidth: 0 }}>
             <div
               style={{
                 font: `600 12.5px ${T.mono}`,
@@ -79,33 +95,86 @@ export function DemographicsPanel({ range }: Props) {
                 marginBottom: 4,
               }}
             >
-              Calls by age band · % = close rate
+              Calls by age band
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveBar
-                data={ageData}
-                keys={["calls"]}
-                indexBy="band"
-                margin={{ top: 16, right: 6, bottom: 28, left: 36 }}
-                padding={0.32}
-                colors={T.blue}
-                borderRadius={3}
-                enableGridY
-                enableLabel
-                label={(d) => `${d.data.closingRate}%`}
-                labelSkipHeight={14}
-                axisLeft={{ tickSize: 0, tickPadding: 6, tickValues: 4 }}
-                axisBottom={{ tickSize: 0, tickPadding: 6 }}
-                theme={nivoTheme}
-                animate
-                motionConfig="gentle"
-                role="img"
-                ariaLabel="Calls by age band"
-              />
+            <div style={{ height: 168 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={ageData}
+                  margin={{ top: 8, right: 6, left: -16, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="4 4"
+                    stroke={T.line}
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="band"
+                    tick={axisTick}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={axisTick}
+                    axisLine={false}
+                    tickLine={false}
+                    width={32}
+                  />
+                  <Tooltip
+                    contentStyle={tipStyle}
+                    itemStyle={{ color: T.cream }}
+                    labelStyle={{ color: T.mut2 }}
+                    cursor={{ fill: T.line, opacity: 0.4 }}
+                  />
+                  <Bar
+                    dataKey="calls"
+                    name="Calls"
+                    fill={T.blue}
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={46}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${ageBands.length}, 1fr)`,
+                gap: 6,
+                borderTop: `1px solid ${T.line}`,
+                paddingTop: 8,
+                marginTop: 4,
+              }}
+            >
+              {ageBands.map((b) => (
+                <div
+                  key={b.label}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <span
+                    style={{
+                      font: `700 14px ${T.disp}`,
+                      color: b.calls === 0 ? T.mut2 : rateColor(b.closingRate),
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {b.calls === 0 ? "—" : `${b.closingRate.toFixed(0)}%`}
+                  </span>
+                  <span style={{ font: `500 11.5px ${T.mono}`, color: T.mut2 }}>
+                    close
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Gender donut */}
+          {/* Gender donut + legend */}
           <div
             style={{
               display: "flex",
@@ -118,18 +187,28 @@ export function DemographicsPanel({ range }: Props) {
               Gender
             </div>
             <div style={{ height: 120, width: 120 }}>
-              <ResponsivePie
-                data={genderData}
-                colors={{ datum: "data.color" }}
-                innerRadius={0.62}
-                padAngle={2}
-                cornerRadius={2}
-                enableArcLabels={false}
-                enableArcLinkLabels={false}
-                isInteractive
-                theme={nivoTheme}
-                margin={{ top: 4, right: 4, bottom: 4, left: 4 }}
-              />
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={genderData}
+                    dataKey="value"
+                    nameKey="label"
+                    innerRadius={36}
+                    outerRadius={56}
+                    paddingAngle={2}
+                    stroke="none"
+                    isAnimationActive={false}
+                  >
+                    {genderData.map((g) => (
+                      <Cell key={g.id} fill={g.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={tipStyle}
+                    itemStyle={{ color: T.cream }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
             <div
               style={{

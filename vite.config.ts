@@ -57,6 +57,11 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), versionPlugin()],
     resolve: {
+      // Force a SINGLE copy of React across all deps (incl. transitive ones such
+      // as @react-spring pulled in by @nivo). Multiple React copies in a split
+      // production bundle cause "Invalid hook call / Cannot read 'useRef' of
+      // null" at runtime (seen on the /kpi dashboard on Vercel).
+      dedupe: ["react", "react-dom"],
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
