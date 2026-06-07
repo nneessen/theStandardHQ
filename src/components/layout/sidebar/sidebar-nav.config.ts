@@ -15,6 +15,7 @@ import {
   Mail,
   Workflow,
   ShieldCheck,
+  Calculator,
   Trophy,
   Wallet,
   Store,
@@ -194,6 +195,12 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         href: "/underwriting/wizard",
         public: true,
         requiresUnderwritingEnabled: true,
+      },
+      {
+        icon: Calculator,
+        label: "Quick Quote",
+        href: "/underwriting/quick-quote",
+        public: true,
       },
       {
         icon: Shield,
