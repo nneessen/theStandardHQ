@@ -30,11 +30,11 @@ DECLARE
   v_dupes   int;
   v_inserted int;
 BEGIN
-  -- Guard: idempotent. Epic Life starts with 0 rates; bail if rates exist.
-  IF EXISTS (SELECT 1 FROM public.premium_matrix WHERE imo_id = v_dst_imo) THEN
-    RAISE NOTICE 'Epic Life already has premium_matrix rows — skipping clone (idempotent).';
-    RETURN;
-  END IF;
+  -- Idempotency is row-level via the ON CONFLICT below (premium_matrix_unique_idx),
+  -- NOT a coarse "Epic already has rates" early-return. The coarse guard was
+  -- order-coupled to the new-products script (which also seeds Epic rates): if
+  -- that ran first, or this re-ran afterwards, the early-return silently skipped
+  -- these 19 products forever. Per-row ON CONFLICT is safe to re-run in any order.
 
   -- Build the FFG-product -> Epic-product map for EXACT (carrier, product) matches.
   -- Only FFG products that actually carry rates are considered.
@@ -52,15 +52,25 @@ BEGIN
 
   SELECT count(*) INTO v_pairs FROM _prod_map;
 
-  -- Safety: the map MUST be 1:1. If any FFG product matched >1 Epic product
-  -- (duplicate Epic catalog entries), abort rather than multiply rate rows.
+  -- Safety: the map MUST be strictly 1:1 in BOTH directions, else the rate
+  -- INSERT multiplies or merges rows. Abort on either:
+  --   (a) one FFG product -> many Epic products (duplicate Epic catalog rows), or
+  --   (b) many FFG products -> one Epic product (would union both FFG rate sets
+  --       into one Epic product; overlapping keys then resolve nondeterministically
+  --       via ON CONFLICT, so an arbitrary premium "wins" with no error).
   SELECT count(*) INTO v_dupes
-  FROM (SELECT ffg_pid FROM _prod_map GROUP BY ffg_pid HAVING count(*) > 1) d;
+  FROM (
+    SELECT ffg_pid FROM _prod_map GROUP BY ffg_pid HAVING count(*) > 1
+    UNION ALL
+    SELECT epic_pid FROM _prod_map GROUP BY epic_pid HAVING count(*) > 1
+  ) d;
   IF v_dupes > 0 THEN
-    RAISE EXCEPTION 'Ambiguous mapping: % FFG products match multiple Epic products. Aborting.', v_dupes;
+    RAISE EXCEPTION 'Ambiguous mapping: % product(s) match many-to-one or one-to-many between FFG and Epic. Aborting.', v_dupes;
   END IF;
 
-  RAISE NOTICE 'Mapped % FFG products -> Epic products (expected 19).', v_pairs;
+  -- 19 on the very first run; grows to 35 after the new-products script runs
+  -- (those 16 products then also exist in Epic and match exactly).
+  RAISE NOTICE 'Mapped % FFG product(s) -> Epic product(s).', v_pairs;
 
   -- Clone the rates, re-tenanted and re-pointed at the Epic product.
   INSERT INTO public.premium_matrix
@@ -76,5 +86,6 @@ BEGIN
                health_class, imo_id, COALESCE(term_years, 0)) DO NOTHING;
 
   GET DIAGNOSTICS v_inserted = ROW_COUNT;
-  RAISE NOTICE 'Inserted % Epic Life premium_matrix rows (expected 127589).', v_inserted;
+  -- 127,589 on the first run; 0 on any re-run (all rows already present).
+  RAISE NOTICE 'Inserted % Epic Life premium_matrix row(s).', v_inserted;
 END $$;

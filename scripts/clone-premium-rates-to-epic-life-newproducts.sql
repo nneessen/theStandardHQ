@@ -31,7 +31,7 @@ DO $$
 DECLARE
   v_src_imo uuid := 'ffffffff-ffff-ffff-ffff-ffffffffffff'; -- FFG (retired)
   v_dst_imo uuid := '89514211-f2bd-4440-9527-90a472c5e622'; -- Epic Life
-  v_carriers int; v_products int; v_rates int; v_srcn int;
+  v_carriers int; v_products int; v_rates int; v_srcn int; v_dupes int;
 BEGIN
   -- The FFG products to clone: rate-bearing AND not already present in Epic by
   -- (carrier name, product name).
@@ -53,7 +53,32 @@ BEGIN
           AND lower(trim(ep.name)) = lower(trim(p.name)));
 
   SELECT count(*) INTO v_srcn FROM _src;
-  RAISE NOTICE 'FFG products to clone: % (expected 16).', v_srcn;
+  -- 16 on the first run; 0 on any re-run (all already present in Epic).
+  RAISE NOTICE 'FFG products to clone: %.', v_srcn;
+
+  -- Safety: the (carrier name, product name) key MUST be unique within _src.
+  -- Unlike the exact-match script, this one CREATES new Epic products, and the
+  -- per-statement NOT EXISTS guards below cannot dedup within a single INSERT
+  -- (NOT EXISTS sees the pre-insert state). So two FFG rows sharing (ck,pk) would
+  -- create two identically-named Epic products and clone rates into each distinct
+  -- product_id (ON CONFLICT can't catch cross-product_id dupes) -> duplicated
+  -- products + doubled quote rows, silently. Abort instead.
+  SELECT count(*) INTO v_dupes
+  FROM (SELECT ck, pk FROM _src GROUP BY ck, pk HAVING count(*) > 1) d;
+  IF v_dupes > 0 THEN
+    RAISE EXCEPTION 'Ambiguous source: % (carrier,product) name-pair(s) are duplicated in FFG. Aborting to avoid duplicate Epic products.', v_dupes;
+  END IF;
+
+  -- Also abort if Epic already holds duplicate-named carriers (would make the
+  -- lower(name) carrier join below fan out and multiply product/rate inserts).
+  SELECT count(*) INTO v_dupes
+  FROM (
+    SELECT lower(trim(name)) AS ck FROM public.carriers
+    WHERE imo_id = v_dst_imo GROUP BY lower(trim(name)) HAVING count(*) > 1
+  ) d;
+  IF v_dupes > 0 THEN
+    RAISE EXCEPTION 'Epic Life has % duplicate-named carrier(s); carrier-name join would multiply rows. Aborting.', v_dupes;
+  END IF;
 
   -- 1) Create any Epic carriers that don't yet exist (matched by lower(name)).
   INSERT INTO public.carriers
@@ -68,7 +93,8 @@ BEGIN
     WHERE ec.imo_id = v_dst_imo
       AND lower(trim(ec.name)) = lower(trim(fc.name)));
   GET DIAGNOSTICS v_carriers = ROW_COUNT;
-  RAISE NOTICE 'New Epic carriers created: % (expected 1 = SBLI).', v_carriers;
+  -- 1 on the first run (SBLI); 0 on any re-run.
+  RAISE NOTICE 'New Epic carriers created: %.', v_carriers;
 
   -- 2) Create the new Epic products under the matching Epic carrier.
   INSERT INTO public.products
@@ -86,7 +112,8 @@ BEGIN
     SELECT 1 FROM public.products ep
     WHERE ep.carrier_id = ec.id AND lower(trim(ep.name)) = s.pk);
   GET DIAGNOSTICS v_products = ROW_COUNT;
-  RAISE NOTICE 'New Epic products created: % (expected 16).', v_products;
+  -- 16 on the first run; 0 on any re-run.
+  RAISE NOTICE 'New Epic products created: %.', v_products;
 
   -- 3) Clone the rates onto the new Epic products (join FFG rate -> FFG product
   --    -> Epic carrier by name -> Epic product by carrier+name).
@@ -104,5 +131,6 @@ BEGIN
   ON CONFLICT (product_id, age, face_amount, gender, tobacco_class,
                health_class, imo_id, COALESCE(term_years, 0)) DO NOTHING;
   GET DIAGNOSTICS v_rates = ROW_COUNT;
-  RAISE NOTICE 'Cloned Epic rates: % (expected 14624).', v_rates;
+  -- 14,624 on the first run; 0 on any re-run.
+  RAISE NOTICE 'Cloned Epic rates: %.', v_rates;
 END $$;
