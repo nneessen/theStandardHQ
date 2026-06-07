@@ -5,7 +5,7 @@
 // white form panel. The legally-required TCPA consent lives on the final step
 // and is recorded verbatim + versioned on submit (never editable per-recruiter).
 
-import { useState } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Loader2, ArrowLeft, ArrowRight } from "lucide-react";
@@ -35,6 +35,7 @@ import {
   type LeadInsuranceExperience,
   type LeadSpecialty,
 } from "@/types/leads.types";
+import { getContrastingTextColor } from "@/lib/recruiting-theme";
 
 // Validation schema
 const leadFormSchema = z.object({
@@ -112,6 +113,87 @@ const EXPERIENCE_OPTIONS: { value: LeadInsuranceExperience; label: string }[] =
     { value: "1_to_3_years", label: "1–3 years" },
     { value: "3_plus_years", label: "3+ years" },
   ];
+
+/**
+ * Accessible segmented radio control. A proper radiogroup: named via
+ * aria-labelledby, single tab stop with roving tabindex, ArrowKey navigation.
+ * The selected pill ALWAYS has a visible fill (brand color, or a dark fallback
+ * when no primaryColor is passed) with a contrast-aware foreground.
+ */
+function SegmentedRadio({
+  label,
+  options,
+  value,
+  onChange,
+  primaryColor,
+  columns = 3,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  primaryColor?: string;
+  columns?: 2 | 3;
+}) {
+  const labelId = useId();
+  const selectedBg = primaryColor || "#1c1917";
+  const selectedFg = getContrastingTextColor(selectedBg);
+  const hasSelection = options.some((o) => o.value === value);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    let next = i;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown")
+      next = (i + 1) % options.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      next = (i - 1 + options.length) % options.length;
+    else return;
+    e.preventDefault();
+    onChange(options[next].value);
+    e.currentTarget.parentElement
+      ?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      ?.[next]?.focus();
+  };
+
+  return (
+    <div>
+      <span id={labelId} className={LABEL}>
+        {label}
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby={labelId}
+        className={`grid gap-2 ${columns === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+      >
+        {options.map((opt, i) => {
+          const selected = value === opt.value;
+          return (
+            <button
+              type="button"
+              key={opt.value}
+              role="radio"
+              aria-checked={selected}
+              tabIndex={selected || (!hasSelection && i === 0) ? 0 : -1}
+              onClick={() => onChange(opt.value)}
+              onKeyDown={(e) => onKeyDown(e, i)}
+              className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
+                selected
+                  ? "border-transparent"
+                  : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
+              }`}
+              style={
+                selected
+                  ? { backgroundColor: selectedBg, color: selectedFg }
+                  : undefined
+              }
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function LeadInterestForm({
   recruiterSlug,
@@ -204,8 +286,12 @@ export function LeadInterestForm({
   };
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
+  // Contrast-aware foreground so CTAs stay readable on a light brand color.
   const accentStyle = primaryColor
-    ? { backgroundColor: primaryColor, color: "#ffffff" }
+    ? {
+        backgroundColor: primaryColor,
+        color: getContrastingTextColor(primaryColor),
+      }
     : undefined;
 
   return (
@@ -236,9 +322,14 @@ export function LeadInterestForm({
         />
       </div>
 
-      {/* Editorial progress */}
+      {/* Editorial progress — announced to screen readers on each step change */}
       <div className="mb-5">
-        <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-500">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-500"
+        >
           <span>{STEP_TITLES[step]}</span>
           <span className="tabular-nums">
             {String(step + 1).padStart(2, "0")}
@@ -458,31 +549,14 @@ export function LeadInterestForm({
             validators={{ onChange: leadFormSchema.shape.availability }}
           >
             {(field) => (
-              <div>
-                <Label className={LABEL}>Availability</Label>
-                <div className="grid grid-cols-3 gap-2" role="radiogroup">
-                  {AVAILABILITY_OPTIONS.map((opt) => {
-                    const selected = field.state.value === opt.value;
-                    return (
-                      <button
-                        type="button"
-                        key={opt.value}
-                        role="radio"
-                        aria-checked={selected}
-                        onClick={() => field.handleChange(opt.value)}
-                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
-                          selected
-                            ? "border-transparent text-white"
-                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
-                        }`}
-                        style={selected ? accentStyle : undefined}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <SegmentedRadio
+                label="Availability"
+                columns={3}
+                primaryColor={primaryColor}
+                value={field.state.value}
+                onChange={(v) => field.handleChange(v as LeadAvailability)}
+                options={AVAILABILITY_OPTIONS}
+              />
             )}
           </form.Field>
         </div>
@@ -496,31 +570,16 @@ export function LeadInterestForm({
             validators={{ onChange: leadFormSchema.shape.insuranceExperience }}
           >
             {(field) => (
-              <div>
-                <Label className={LABEL}>Insurance experience</Label>
-                <div className="grid grid-cols-2 gap-2" role="radiogroup">
-                  {EXPERIENCE_OPTIONS.map((opt) => {
-                    const selected = field.state.value === opt.value;
-                    return (
-                      <button
-                        type="button"
-                        key={opt.value}
-                        role="radio"
-                        aria-checked={selected}
-                        onClick={() => field.handleChange(opt.value)}
-                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
-                          selected
-                            ? "border-transparent text-white"
-                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
-                        }`}
-                        style={selected ? accentStyle : undefined}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <SegmentedRadio
+                label="Insurance experience"
+                columns={2}
+                primaryColor={primaryColor}
+                value={field.state.value}
+                onChange={(v) =>
+                  field.handleChange(v as LeadInsuranceExperience)
+                }
+                options={EXPERIENCE_OPTIONS}
+              />
             )}
           </form.Field>
 
@@ -560,36 +619,17 @@ export function LeadInterestForm({
 
           <form.Field name="isLicensed">
             {(field) => (
-              <div>
-                <Label className={LABEL}>
-                  Do you have a life insurance license?
-                </Label>
-                <div className="grid grid-cols-2 gap-2" role="radiogroup">
-                  {[
-                    { value: true, label: "Yes" },
-                    { value: false, label: "No" },
-                  ].map((opt) => {
-                    const selected = field.state.value === opt.value;
-                    return (
-                      <button
-                        type="button"
-                        key={opt.label}
-                        role="radio"
-                        aria-checked={selected}
-                        onClick={() => field.handleChange(opt.value)}
-                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
-                          selected
-                            ? "border-transparent text-white"
-                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
-                        }`}
-                        style={selected ? accentStyle : undefined}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <SegmentedRadio
+                label="Do you have a life insurance license?"
+                columns={2}
+                primaryColor={primaryColor}
+                value={field.state.value ? "yes" : "no"}
+                onChange={(v) => field.handleChange(v === "yes")}
+                options={[
+                  { value: "yes", label: "Yes" },
+                  { value: "no", label: "No" },
+                ]}
+              />
             )}
           </form.Field>
 
