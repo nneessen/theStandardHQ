@@ -151,7 +151,7 @@ export function AiDesignStep({
       toast.error("Describe the page you want first.");
       return;
     }
-    const spec = await composer.run(prompt, {
+    const { spec, error } = await composer.run(prompt, {
       images: refImages.map((r) => ({
         media_type: r.media_type,
         data: r.data,
@@ -163,6 +163,8 @@ export function AiDesignStep({
       updateField("design_spec", spec);
       updateField("design_prompt", prompt.trim());
       toast.success("Your page is ready — refine it below or continue.");
+    } else if (error) {
+      toast.error(error);
     }
   };
 
@@ -186,10 +188,16 @@ export function AiDesignStep({
 
   const handleRefine = async () => {
     if (!refineMsg.trim()) return;
-    const spec = await composer.run(refineMsg, { agentContext, refine: true });
+    const { spec, error } = await composer.run(refineMsg, {
+      agentContext,
+      refine: true,
+    });
     if (spec) {
       updateField("design_spec", spec);
       setRefineMsg("");
+      toast.success("Design updated — check the preview.");
+    } else if (error) {
+      toast.error(error);
     }
   };
 

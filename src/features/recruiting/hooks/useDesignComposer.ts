@@ -34,9 +34,9 @@ export function useDesignComposer(initialSpec?: RecruitingDesignSpec | null) {
     async (
       prompt: string,
       opts: ComposerRunOptions = {},
-    ): Promise<RecruitingDesignSpec | null> => {
+    ): Promise<{ spec: RecruitingDesignSpec | null; error: string | null }> => {
       const trimmed = prompt.trim();
-      if (!trimmed) return null;
+      if (!trimmed) return { spec: null, error: null };
       setIsGenerating(true);
       setError(null);
       try {
@@ -54,12 +54,12 @@ export function useDesignComposer(initialSpec?: RecruitingDesignSpec | null) {
           { role: "user", content: trimmed },
           { role: "assistant", content: "Updated your page design." },
         ]);
-        return result.spec;
+        return { spec: result.spec, error: null };
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Couldn't generate a design.",
-        );
-        return null;
+        const message =
+          e instanceof Error ? e.message : "Couldn't generate a design.";
+        setError(message);
+        return { spec: null, error: message };
       } finally {
         setIsGenerating(false);
       }
