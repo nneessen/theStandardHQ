@@ -1,23 +1,27 @@
 // Custom Domain Manager
-// Main component for managing custom domains in user settings
+// Compact list of the user's custom domains + a CTA that opens the full-page
+// guided setup wizard. The actual "add a domain" flow lives in
+// CustomDomainSetupWizard (route: /recruiting/custom-domains/setup).
 
-import React from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Globe, Plus, Loader2 } from "lucide-react";
 import { useMyCustomDomains } from "@/hooks";
 import { DomainCard } from "./DomainCard";
-import { AddDomainForm } from "./AddDomainForm";
-import { DomainSetupGuide } from "./DomainSetupGuide";
+
+const SETUP_ROUTE = "/recruiting/custom-domains/setup" as const;
 
 export function CustomDomainManager() {
+  const navigate = useNavigate();
   const { data: domains, isLoading, error } = useMyCustomDomains();
-  const [showAddForm, setShowAddForm] = React.useState(false);
 
-  // Check if user already has an active domain (v1 limit)
   const hasActiveDomain = domains?.some((d) => d.status === "active");
-  // Check if user has any domain in progress
+  // A domain still being set up (not active, not errored) blocks adding another.
   const hasPendingDomain = domains?.some(
     (d) => d.status !== "active" && d.status !== "error",
   );
+  const canAddDomain = !hasActiveDomain && !hasPendingDomain;
+
+  const startSetup = () => navigate({ to: SETUP_ROUTE });
 
   if (isLoading) {
     return (
@@ -35,8 +39,6 @@ export function CustomDomainManager() {
     );
   }
 
-  const canAddDomain = !hasActiveDomain && !hasPendingDomain;
-
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -45,61 +47,53 @@ export function CustomDomainManager() {
           <Globe className="h-4 w-4 text-v2-ink-muted" />
           <h3 className="text-sm font-medium text-v2-ink">Custom Domain</h3>
         </div>
-        {canAddDomain && !showAddForm && (
+        {canAddDomain && (
           <button
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-1 text-xs font-medium text-v2-ink-muted hover:text-v2-ink"
+            onClick={startSetup}
+            className="flex items-center gap-1 rounded bg-v2-ink px-2.5 py-1 text-xs font-medium text-v2-canvas hover:opacity-90"
           >
             <Plus className="h-3.5 w-3.5" />
-            Add Domain
+            Add domain
           </button>
         )}
       </div>
 
-      {/* Description */}
       <p className="text-xs text-v2-ink-muted">
         Connect your own subdomain (e.g., join.yourdomain.com) to your
-        recruiting page. Visitors will see your custom URL in their browser.
+        recruiting page. We walk you through it step by step.
       </p>
 
-      {/* Setup Guide - expanded by default when no domains exist */}
-      <DomainSetupGuide defaultOpen={!domains || domains.length === 0} />
-
-      {/* Domain List */}
+      {/* Domain list, or empty state */}
       {domains && domains.length > 0 ? (
         <div className="space-y-3">
           {domains.map((domain) => (
             <DomainCard key={domain.id} domain={domain} />
           ))}
         </div>
-      ) : !showAddForm ? (
-        <div className="rounded-md border border-dashed border-v2-ring p-4 text-center">
-          <p className="text-xs text-v2-ink-muted">
-            No custom domain configured
-          </p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="mt-2 text-xs font-medium text-v2-ink hover:text-v2-ink"
-          >
-            Add your first custom domain
-          </button>
-        </div>
-      ) : null}
-
-      {/* Add Domain Form */}
-      {showAddForm && canAddDomain && (
-        <AddDomainForm onCancel={() => setShowAddForm(false)} />
+      ) : (
+        <button
+          onClick={startSetup}
+          className="flex w-full flex-col items-center gap-2 rounded-md border border-dashed border-v2-ring p-6 text-center hover:border-v2-ink-subtle hover:bg-v2-ring/30"
+        >
+          <Globe className="h-5 w-5 text-v2-ink-subtle" />
+          <span className="text-sm font-medium text-v2-ink">
+            Set up a custom domain
+          </span>
+          <span className="text-xs text-v2-ink-muted">
+            Use your own web address like join.youragency.com
+          </span>
+        </button>
       )}
 
-      {/* v1 Limit Notice */}
+      {/* v1 limit notices */}
       {hasActiveDomain && (
         <p className="text-xs text-v2-ink-muted">
-          You already have an active custom domain. Delete it to add a new one.
+          You have an active custom domain. Delete it to add a new one.
         </p>
       )}
       {hasPendingDomain && !hasActiveDomain && (
         <p className="text-xs text-v2-ink-muted">
-          Complete or delete your pending domain before adding a new one.
+          Finish or delete your in-progress domain before adding another.
         </p>
       )}
     </div>

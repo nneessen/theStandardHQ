@@ -39,6 +39,7 @@ import { AgentDetailPage } from "./features/hierarchy/AgentDetailPage";
 import { OrgChartPage } from "./features/hierarchy/OrgChartPage";
 import { RecruitingDashboard } from "./features/recruiting/RecruitingDashboard";
 import { PipelineAdminPage } from "./features/recruiting/admin/PipelineAdminPage";
+import { CustomDomainSetupWizard } from "./features/settings/components/custom-domains";
 import { MyRecruitingPipeline } from "./features/recruiting/pages/MyRecruitingPipeline";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
@@ -1075,6 +1076,17 @@ const agentRoadmapRunnerRoute = createRoute({
   },
 });
 
+// Full-page guided wizard for connecting a user-owned custom domain.
+const customDomainSetupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "recruiting/custom-domains/setup",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles subscriptionFeature="custom_branding">
+      <CustomDomainSetupWizard />
+    </RouteGuard>
+  ),
+});
+
 // Create the route tree - all routes are already linked via getParentRoute
 // Note: publicJoinAltRoute is at the end as a catch-all for /join-* URLs
 const routeTree = rootRoute.addChildren([
@@ -1151,6 +1163,7 @@ const routeTree = rootRoute.addChildren([
   roadmapTeamRoute,
   agentRoadmapLandingRoute,
   agentRoadmapRunnerRoute,
+  customDomainSetupRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);
 

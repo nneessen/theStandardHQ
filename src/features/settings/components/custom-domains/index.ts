@@ -1,7 +1,6 @@
 // Custom Domains Components Export
 export { CustomDomainManager } from "./CustomDomainManager";
+export { CustomDomainSetupWizard } from "./CustomDomainSetupWizard";
 export { DomainCard } from "./DomainCard";
-export { AddDomainForm } from "./AddDomainForm";
 export { DnsInstructions } from "./DnsInstructions";
-export { DomainSetupGuide } from "./DomainSetupGuide";
 export { DomainProgressIndicator } from "./DomainProgressIndicator";

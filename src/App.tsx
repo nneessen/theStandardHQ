@@ -193,6 +193,24 @@ function AuthenticatedApp() {
     );
   }
 
+  // Custom-domain setup wizard owns the full viewport (its own dark shell +
+  // step rail + back-to-settings affordance) — no sidebar.
+  const isCustomDomainSetup =
+    location.pathname === "/recruiting/custom-domains/setup";
+  if (isCustomDomainSetup) {
+    return (
+      <>
+        <Toaster />
+        <CookieConsentBanner />
+        <ImoProvider>
+          <ApprovalGuard>
+            <Outlet />
+          </ApprovalGuard>
+        </ImoProvider>
+      </>
+    );
+  }
+
   // Check if we're on the recruit pipeline page (no sidebar)
   const isRecruitPipeline = location.pathname === "/recruiting/my-pipeline";
 
