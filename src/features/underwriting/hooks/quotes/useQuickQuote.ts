@@ -63,8 +63,14 @@ export function useQuotesForCoverage(
   input: QuoteInput | null,
   options?: { enabled?: boolean },
 ) {
-  const { imo } = useImo();
-  const imoId = imo?.id ?? "";
+  // All quote hooks scope by the EFFECTIVE (acting-aware) IMO from useImo(),
+  // matching Products/Carriers/CommissionRates management which read the same
+  // catalog. For regular agents this is their home IMO; for a super-admin
+  // acting as a tenant it is that tenant, so Quick Quote shows the rates of the
+  // IMO they are acting as (not their home IMO). Null only in "All IMOs" mode,
+  // where the query is disabled (you can't quote across all IMOs).
+  const { effectiveImoId } = useImo();
+  const imoId = effectiveImoId ?? "";
 
   return useQuery({
     queryKey: quoteKeys.coverage(input ?? ({} as QuoteInput), imoId),
@@ -100,8 +106,8 @@ export function useQuotesForBudget(
   input: QuoteInput | null,
   options?: { enabled?: boolean },
 ) {
-  const { imo } = useImo();
-  const imoId = imo?.id ?? "";
+  const { effectiveImoId } = useImo();
+  const imoId = effectiveImoId ?? "";
 
   return useQuery({
     queryKey: quoteKeys.budget(input ?? ({} as QuoteInput), imoId),
@@ -135,8 +141,8 @@ export function useQuotes(
   input: QuoteInput | null,
   options?: { enabled?: boolean },
 ) {
-  const { imo } = useImo();
-  const imoId = imo?.id ?? "";
+  const { effectiveImoId } = useImo();
+  const imoId = effectiveImoId ?? "";
 
   const isCoverageMode = input?.mode === "coverage";
   const isBudgetMode = input?.mode === "budget";
@@ -200,8 +206,8 @@ export function useQuotes(
  * ```
  */
 export function useQuoteMutation() {
-  const { imo } = useImo();
-  const imoId = imo?.id ?? "";
+  const { effectiveImoId } = useImo();
+  const imoId = effectiveImoId ?? "";
 
   return useMutation<QuoteResult[], Error, QuoteInput>({
     mutationFn: async (input) => {
@@ -278,8 +284,8 @@ export function useAllPremiumMatrices(): {
   error: Error | null;
   refetch: () => void;
 } {
-  const { imo } = useImo();
-  const imoId = imo?.id ?? "";
+  const { effectiveImoId } = useImo();
+  const imoId = effectiveImoId ?? "";
 
   const query = useQuery({
     queryKey: quoteKeys.allMatrices(imoId),
