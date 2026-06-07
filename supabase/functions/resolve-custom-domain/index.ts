@@ -41,6 +41,13 @@ interface RecruitingPageTheme {
   enabled_features: Record<string, boolean>;
   default_city: string | null;
   default_state: string | null;
+  // AI-composed design spec. Deliberate exception to this file's
+  // whitelist-every-field rule: a full discriminated-union spec can't be deeply
+  // validated here without duplicating the frontend validator. Deep validation is
+  // delegated to (a) the edge generator at write time and (b) the frontend
+  // renderer (validateDesignSpec), which re-validates before render. We only
+  // guarantee here that it's a plain object or null — never an array/scalar.
+  design_spec: Record<string, unknown> | null;
 }
 
 interface ResolveResponse {
@@ -145,6 +152,15 @@ function sanitizeTheme(rawTheme: Record<string, unknown>): RecruitingPageTheme {
     default_state: rawTheme.default_state
       ? String(rawTheme.default_state)
       : null,
+
+    // AI-composed design spec — shallow guard (plain object or null). The
+    // frontend renderer re-validates the full structure before render.
+    design_spec:
+      rawTheme.design_spec &&
+      typeof rawTheme.design_spec === "object" &&
+      !Array.isArray(rawTheme.design_spec)
+        ? (rawTheme.design_spec as Record<string, unknown>)
+        : null,
   };
 }
 

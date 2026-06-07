@@ -1,6 +1,8 @@
 // src/types/recruiting-theme.types.ts
 // TypeScript types for recruiting page branding/theming
 
+import type { RecruitingDesignSpec } from "./recruiting-design-spec.types";
+
 /**
  * Layout variant options for recruiting pages
  */
@@ -93,6 +95,9 @@ export interface RecruitingPageTheme {
   // Location
   default_city: string | null;
   default_state: string | null;
+
+  // AI-composed design (null = fall back to the legacy theme fields above)
+  design_spec: RecruitingDesignSpec | null;
 }
 
 /**
@@ -139,6 +144,10 @@ export interface RecruitingPageSettings {
   default_city: string | null;
   default_state: string | null;
 
+  // AI-composed design
+  design_spec: RecruitingDesignSpec | null;
+  design_prompt: string | null;
+
   // Timestamps
   created_at: string;
   updated_at: string;
@@ -167,6 +176,8 @@ export interface RecruitingPageSettingsInput {
   enabled_features?: EnabledFeatures;
   default_city?: string | null;
   default_state?: string | null;
+  design_spec?: RecruitingDesignSpec | null;
+  design_prompt?: string | null;
 }
 
 /**
@@ -202,6 +213,7 @@ export const DEFAULT_THEME: RecruitingPageTheme = {
   },
   default_city: null,
   default_state: null,
+  design_spec: null,
 };
 
 /**

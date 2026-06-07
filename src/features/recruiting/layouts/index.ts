@@ -1,9 +1,9 @@
 // src/features/recruiting/layouts/index.ts
-// Re-export all layout components
+// Recruiting page layouts. The 4 old hand-built layouts were replaced by the
+// AI block composer (AiComposedLayout); NickCustomLayout remains for the
+// owner's hard-tuned `the-standard` page.
 
-export { SplitPanelLayout } from "./SplitPanelLayout";
-export { CenteredCardLayout } from "./CenteredCardLayout";
-export { HeroSlideLayout } from "./HeroSlideLayout";
-export { MultiSectionLayout } from "./MultiSectionLayout";
+export { AiComposedLayout } from "./AiComposedLayout";
+export { NickCustomLayout } from "./NickCustomLayout";
 export type { LayoutProps, ActiveSocialLink } from "./types";
 export { getActiveSocialLinks } from "./types";

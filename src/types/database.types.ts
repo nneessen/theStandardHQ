@@ -9348,6 +9348,8 @@ export type Database = {
           cta_text: string | null;
           default_city: string | null;
           default_state: string | null;
+          design_prompt: string | null;
+          design_spec: Json | null;
           disclaimer_text: string | null;
           display_name: string | null;
           enabled_features: Json | null;
@@ -9374,6 +9376,8 @@ export type Database = {
           cta_text?: string | null;
           default_city?: string | null;
           default_state?: string | null;
+          design_prompt?: string | null;
+          design_spec?: Json | null;
           disclaimer_text?: string | null;
           display_name?: string | null;
           enabled_features?: Json | null;
@@ -9400,6 +9404,8 @@ export type Database = {
           cta_text?: string | null;
           default_city?: string | null;
           default_state?: string | null;
+          design_prompt?: string | null;
+          design_spec?: Json | null;
           disclaimer_text?: string | null;
           display_name?: string | null;
           enabled_features?: Json | null;

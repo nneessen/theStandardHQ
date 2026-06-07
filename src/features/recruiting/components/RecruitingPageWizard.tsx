@@ -25,9 +25,6 @@ import {
   AlertCircle,
   Eye,
   PartyPopper,
-  LayoutGrid,
-  Palette,
-  Image as ImageIcon,
   Share2,
   ListChecks,
 } from "lucide-react";
@@ -39,21 +36,14 @@ import { useFeatureAccess } from "@/hooks/subscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { subdomainUrl } from "@/lib/hostname";
 import { isValidHexColor, isValidSafeUrl } from "@/lib/recruiting-validation";
-import {
-  ColorPicker,
-  ImageUpload,
-  CustomDomainManager,
-} from "@/features/settings";
+import { CustomDomainManager } from "@/features/settings";
+import { AiDesignStep } from "./wizard/AiDesignStep";
 import type {
   RecruitingPageSettingsInput,
   SocialLinks,
   EnabledFeatures,
 } from "@/types/recruiting-theme.types";
-import {
-  COLOR_PRESETS,
-  DEFAULT_THEME,
-  LOGO_SIZE_MAP,
-} from "@/types/recruiting-theme.types";
+import { DEFAULT_THEME } from "@/types/recruiting-theme.types";
 import { useRecruitingPageEditor } from "../hooks/useRecruitingPageEditor";
 
 /* ───────────────────────────── steps ───────────────────────────── */
@@ -70,7 +60,7 @@ type StepId =
 const STEPS: { id: StepId; label: string; hint: string }[] = [
   { id: "link", label: "Your link", hint: "Pick your web address" },
   { id: "about", label: "About you", hint: "Name & message" },
-  { id: "look", label: "Look & feel", hint: "Layout, colors, logo" },
+  { id: "look", label: "Design", hint: "AI builds your page" },
   {
     id: "booking",
     label: "Booking & contact",
@@ -146,6 +136,8 @@ const INITIAL_FORM: RecruitingPageSettingsInput = {
   default_city: "",
   default_state: "",
   enabled_features: DEFAULT_THEME.enabled_features,
+  design_spec: null,
+  design_prompt: "",
 };
 
 /* ─────────────────────── small presentational ──────────────────── */
@@ -256,6 +248,8 @@ export function RecruitingPageWizard() {
         default_state: settings.default_state || "",
         enabled_features:
           settings.enabled_features || DEFAULT_THEME.enabled_features,
+        design_spec: settings.design_spec ?? null,
+        design_prompt: settings.design_prompt ?? "",
       });
     }
     seededRef.current = true;
@@ -512,7 +506,7 @@ export function RecruitingPageWizard() {
 
           {step === "look" && (
             <FeatureGate feature="custom_branding" promptVariant="card">
-              <LookStep
+              <AiDesignStep
                 form={form}
                 updateField={updateField}
                 onUpload={handleUpload}
@@ -844,261 +838,6 @@ function AboutStep({
   );
 }
 
-/* ────────────────────────── step 3: look ───────────────────────── */
-
-const LAYOUTS: {
-  id: NonNullable<RecruitingPageSettingsInput["layout_variant"]>;
-  name: string;
-  desc: string;
-}[] = [
-  { id: "split-panel", name: "Split panel", desc: "Hero left, form right" },
-  { id: "centered-card", name: "Centered card", desc: "Clean & minimal" },
-  { id: "hero-slide", name: "Hero slide", desc: "Full-screen + slide form" },
-  {
-    id: "multi-section",
-    name: "Multi-section",
-    desc: "Scrolling landing page",
-  },
-];
-
-function LayoutPreview({ id, color }: { id: string; color: string }) {
-  const base = "h-16 overflow-hidden rounded border border-border/60";
-  if (id === "split-panel") {
-    return (
-      <div className={`${base} flex`}>
-        <div className="flex w-1/2 flex-col justify-end gap-1 bg-foreground/90 p-1.5">
-          <div className="h-1 w-8 rounded-full bg-white/60" />
-          <div
-            className="h-1.5 w-5 rounded"
-            style={{ backgroundColor: color }}
-          />
-        </div>
-        <div className="flex w-1/2 flex-col justify-center gap-1 bg-background p-1.5">
-          <div className="h-1 w-full rounded bg-muted" />
-          <div className="h-1 w-full rounded bg-muted" />
-          <div
-            className="h-1.5 w-full rounded"
-            style={{ backgroundColor: color }}
-          />
-        </div>
-      </div>
-    );
-  }
-  if (id === "centered-card") {
-    return (
-      <div
-        className={`${base} flex items-center justify-center bg-gradient-to-br from-background to-muted/50`}
-      >
-        <div className="w-12 space-y-1 rounded border border-border/60 bg-card p-1.5 shadow-sm">
-          <div className="h-1 w-full rounded bg-muted" />
-          <div
-            className="h-1.5 w-full rounded"
-            style={{ backgroundColor: color }}
-          />
-        </div>
-      </div>
-    );
-  }
-  if (id === "hero-slide") {
-    return (
-      <div
-        className={`${base} relative flex flex-col items-center justify-center bg-foreground/90 p-1.5`}
-      >
-        <div className="h-1.5 w-12 rounded-full bg-white/60" />
-        <div
-          className="mt-1 h-2 w-6 rounded"
-          style={{ backgroundColor: color }}
-        />
-        <div className="absolute bottom-1 right-1 top-1 w-4 rounded-l border-l border-border/60 bg-background/90" />
-      </div>
-    );
-  }
-  return (
-    <div className={`${base} flex flex-col`}>
-      <div className="flex h-5 items-center justify-center bg-foreground/90">
-        <div className="h-1 w-8 rounded-full bg-white/50" />
-      </div>
-      <div
-        className="flex flex-1 items-center justify-center gap-1"
-        style={{ backgroundColor: `${color}14` }}
-      >
-        <div
-          className="h-2 w-2 rounded"
-          style={{ backgroundColor: `${color}55` }}
-        />
-        <div
-          className="h-2 w-2 rounded"
-          style={{ backgroundColor: `${color}55` }}
-        />
-        <div
-          className="h-2 w-2 rounded"
-          style={{ backgroundColor: `${color}55` }}
-        />
-      </div>
-      <div className="h-2 bg-foreground/90" />
-    </div>
-  );
-}
-
-function LookStep({
-  form,
-  updateField,
-  onUpload,
-  onDeleteImage,
-  uploadingType,
-}: {
-  form: RecruitingPageSettingsInput;
-  updateField: <K extends keyof RecruitingPageSettingsInput>(
-    f: K,
-    v: RecruitingPageSettingsInput[K],
-  ) => void;
-  onUpload: (file: File, type: "logo_light" | "logo_dark" | "hero") => void;
-  onDeleteImage: (
-    field: "logo_light_url" | "logo_dark_url" | "hero_image_url",
-  ) => void;
-  uploadingType: "logo_light" | "logo_dark" | "hero" | null;
-}) {
-  const color = form.primary_color || DEFAULT_THEME.primary_color;
-  return (
-    <div className="max-w-2xl space-y-8">
-      <StepHeader
-        title="Make it yours"
-        desc="Choose a layout, your brand colors, and upload your logo. Everything updates on your live page."
-      />
-
-      {/* Layout */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <LayoutGrid className="h-4 w-4 text-v2-ink-muted" />
-          <h3 className="text-sm font-semibold text-v2-ink">Page layout</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {LAYOUTS.map((l) => {
-            const selected = form.layout_variant === l.id;
-            return (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => updateField("layout_variant", l.id)}
-                className={`relative rounded-lg border-2 p-2.5 text-left transition-all ${
-                  selected
-                    ? "border-info bg-info/5"
-                    : "border-v2-ring hover:border-info/50"
-                }`}
-              >
-                {selected && (
-                  <Check className="absolute right-2 top-2 h-4 w-4 text-info" />
-                )}
-                <LayoutPreview id={l.id} color={color} />
-                <p className="mt-2 text-xs font-medium text-v2-ink">{l.name}</p>
-                <p className="text-[10px] text-v2-ink-subtle">{l.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Colors */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Palette className="h-4 w-4 text-v2-ink-muted" />
-          <h3 className="text-sm font-semibold text-v2-ink">Brand colors</h3>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <ColorPicker
-            label="Primary color"
-            value={form.primary_color || DEFAULT_THEME.primary_color}
-            onChange={(c) => updateField("primary_color", c)}
-            presets={COLOR_PRESETS.primary}
-          />
-          <ColorPicker
-            label="Accent color"
-            value={form.accent_color || DEFAULT_THEME.accent_color}
-            onChange={(c) => updateField("accent_color", c)}
-            presets={COLOR_PRESETS.accent}
-          />
-        </div>
-      </section>
-
-      {/* Logo size */}
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4 text-v2-ink-muted" />
-          <h3 className="text-sm font-semibold text-v2-ink">Logo size</h3>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {(["small", "medium", "large", "xlarge"] as const).map((size) => {
-            const selected = form.logo_size === size;
-            return (
-              <button
-                key={size}
-                type="button"
-                onClick={() => updateField("logo_size", size)}
-                className={`flex flex-col items-center gap-1.5 rounded-lg border-2 px-5 py-3 transition-all ${
-                  selected
-                    ? "border-info bg-info/5"
-                    : "border-v2-ring hover:border-info/50"
-                }`}
-              >
-                <div
-                  className="flex items-center justify-center rounded"
-                  style={{
-                    width: LOGO_SIZE_MAP[size].desktop * 0.5,
-                    height: LOGO_SIZE_MAP[size].desktop * 0.5,
-                    backgroundColor: color,
-                  }}
-                />
-                <span className="text-xs font-medium capitalize text-v2-ink">
-                  {size}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Images */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4 text-v2-ink-muted" />
-          <h3 className="text-sm font-semibold text-v2-ink">
-            Logo & hero image
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <ImageUpload
-            label="Logo (for dark backgrounds)"
-            description="Shown on dark areas. PNG or SVG works best."
-            value={form.logo_light_url ?? null}
-            onUpload={(file) => onUpload(file, "logo_light")}
-            onDelete={() => onDeleteImage("logo_light_url")}
-            isUploading={uploadingType === "logo_light"}
-            accept="image/png,image/svg+xml,image/webp"
-          />
-          <ImageUpload
-            label="Logo (for light backgrounds)"
-            description="Shown on light areas. PNG or SVG works best."
-            value={form.logo_dark_url ?? null}
-            onUpload={(file) => onUpload(file, "logo_dark")}
-            onDelete={() => onDeleteImage("logo_dark_url")}
-            isUploading={uploadingType === "logo_dark"}
-            accept="image/png,image/svg+xml,image/webp"
-          />
-        </div>
-        <ImageUpload
-          label="Hero image (optional)"
-          description="A background image for the hero section. JPG or PNG."
-          value={form.hero_image_url ?? null}
-          onUpload={(file) => onUpload(file, "hero")}
-          onDelete={() => onDeleteImage("hero_image_url")}
-          isUploading={uploadingType === "hero"}
-          accept="image/jpeg,image/png,image/webp"
-        />
-      </section>
-    </div>
-  );
-}
-
 /* ───────────────────────── step 4: booking ─────────────────────── */
 
 function BookingStep({
@@ -1404,11 +1143,8 @@ function ReviewStep({
             />
             <SummaryRow label="Headline" value={form.headline?.trim() || "—"} />
             <SummaryRow
-              label="Layout"
-              value={
-                LAYOUTS.find((l) => l.id === form.layout_variant)?.name ||
-                "Split panel"
-              }
+              label="Design"
+              value={form.design_spec ? "AI-built page" : "Default layout"}
             />
             <SummaryRow
               label="Button text"

@@ -47,6 +47,7 @@ function App() {
     "/register/",
     "/test-register/",
     "/landing",
+    "/internal/design-preview", // wizard live-preview iframe (renders bare, no shell)
   ];
   const isPublicPath = publicPaths.some((path) =>
     location.pathname.startsWith(path),

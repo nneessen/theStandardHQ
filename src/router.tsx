@@ -43,6 +43,7 @@ import { CustomDomainSetupWizard } from "./features/settings/components/custom-d
 import { MyRecruitingPipeline } from "./features/recruiting/pages/MyRecruitingPipeline";
 import { RecruitingYourPage } from "./features/recruiting/pages/RecruitingYourPage";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
+import { DesignPreviewPage } from "./features/recruiting/pages/DesignPreviewPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
 import { PublicRegistrationPage } from "./features/recruiting/pages/PublicRegistrationPage";
 import { TestRegistration } from "./features/recruiting/pages/TestRegistration";
@@ -560,6 +561,15 @@ const publicJoinRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "join/$recruiterId",
   component: PublicJoinPage,
+});
+
+// Design preview route — renders bare inside the wizard's live-preview iframe.
+// Marked public in App.tsx so it loads without the app shell; it only renders a
+// spec handed in via postMessage (no DB access).
+const designPreviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "internal/design-preview",
+  component: DesignPreviewPage,
 });
 
 // Public Registration route - self-registration via invite token (NO AUTH)
@@ -1152,6 +1162,7 @@ const routeTree = rootRoute.addChildren([
   workflowAdminRoute,
   myPipelineRoute,
   publicJoinRoute,
+  designPreviewRoute,
   publicRegistrationRoute,
   testRegistrationRoute,
   trainingHubRoute,

@@ -17,13 +17,12 @@ import {
   clearRecruitingTheme,
   mergeWithDefaults,
 } from "@/lib/recruiting-theme";
-import {
-  SplitPanelLayout,
-  CenteredCardLayout,
-  HeroSlideLayout,
-  MultiSectionLayout,
-} from "../layouts";
+import { AiComposedLayout } from "../layouts/AiComposedLayout";
 import { NickCustomLayout } from "../layouts/NickCustomLayout";
+import {
+  validateDesignSpec,
+  legacyThemeToSpec,
+} from "@/lib/recruiting-design-spec";
 
 /**
  * Extract recruiter slug from pathname or route params
@@ -145,6 +144,17 @@ export function PublicJoinPage() {
     return theme || DEFAULT_THEME;
   }, [theme]);
 
+  // Resolve the design spec to render. This is the public re-validation point:
+  // a stored design_spec is UNTRUSTED and re-validated on every load; recruiters
+  // without a spec fall back to an on-brand spec derived from their theme.
+  const resolvedSpec = useMemo(
+    () =>
+      displayTheme.design_spec
+        ? validateDesignSpec(displayTheme.design_spec).spec
+        : legacyThemeToSpec(displayTheme),
+    [displayTheme],
+  );
+
   // Show loading while custom domain is resolving
   if (isCustomDomainLoading) {
     return (
@@ -215,18 +225,9 @@ export function PublicJoinPage() {
     return <NickCustomLayout {...layoutProps} />;
   }
 
-  // Render the appropriate layout based on theme's layout_variant
-  switch (displayTheme.layout_variant) {
-    case "centered-card":
-      return <CenteredCardLayout {...layoutProps} />;
-    case "hero-slide":
-      return <HeroSlideLayout {...layoutProps} />;
-    case "multi-section":
-      return <MultiSectionLayout {...layoutProps} />;
-    case "split-panel":
-    default:
-      return <SplitPanelLayout {...layoutProps} />;
-  }
+  // Everyone else renders through the AI block composer (validated spec or the
+  // legacy-theme fallback computed above).
+  return <AiComposedLayout spec={resolvedSpec} {...layoutProps} />;
 }
 
 export default PublicJoinPage;

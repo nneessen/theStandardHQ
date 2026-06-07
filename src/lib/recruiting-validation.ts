@@ -232,6 +232,10 @@ export const recruitingPageThemeSchema = z.object({
   ),
   default_city: z.string().nullable().optional(),
   default_state: z.string().nullable().optional(),
+  // Untrusted jsonb passed through verbatim — the renderer (PublicJoinPage)
+  // re-validates via validateDesignSpec() before anything is shown. Without this
+  // line the z.object() would silently DROP design_spec on read.
+  design_spec: z.any().nullable().optional().default(null),
 });
 
 /**
@@ -290,6 +294,11 @@ export const brandingSettingsInputSchema = z.object({
   enabled_features: enabledFeaturesSchema,
   default_city: z.string().nullable().optional(),
   default_state: z.string().nullable().optional(),
+  // Persisted as jsonb. The wizard validates the spec client-side before save,
+  // and the public renderer re-validates on every load — so a loose passthrough
+  // here is safe.
+  design_spec: z.any().nullable().optional(),
+  design_prompt: z.string().nullable().optional(),
 });
 
 export type ValidatedBrandingInput = z.infer<
