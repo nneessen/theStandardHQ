@@ -1,7 +1,7 @@
 // src/features/settings/products/components/ProductForm.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,13 +29,6 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +39,6 @@ import { useCarriers } from "../../carriers/hooks/useCarriers";
 import type { Database } from "@/types/database.types";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useImo } from "@/contexts/ImoContext";
-import { useAllActiveImos } from "@/hooks/imo";
 import { UnderwritingConstraintsEditor } from "./UnderwritingConstraintsEditor";
 import { ProductBuildChartSelector } from "./ProductBuildTableEditor";
 import type { ProductUnderwritingConstraints } from "@/features/underwriting";
@@ -102,7 +94,6 @@ interface ProductFormProps {
   onSubmit: (data: ProductFormValues) => void;
   isSubmitting?: boolean;
   defaultImoId?: string;
-  onImoChange?: (imoId: string) => void;
 }
 
 export function ProductForm({
@@ -112,10 +103,11 @@ export function ProductForm({
   onSubmit,
   isSubmitting = false,
   defaultImoId,
-  onImoChange,
 }: ProductFormProps) {
+  // The product is always created in the currently-selected (effective) IMO —
+  // there is a single IMO selector (the sidebar switcher), so no per-form IMO
+  // picker. RLS WITH CHECK enforces imo_id = the acting IMO anyway.
   const { isSuperAdmin, imo } = useImo();
-  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
   const [carrierSearchOpen, setCarrierSearchOpen] = useState(false);
   const [underwritingConstraints, setUnderwritingConstraints] =
     useState<ProductUnderwritingConstraints | null>(null);
@@ -387,49 +379,6 @@ export function ProductForm({
 
                 {/* Right column */}
                 <div className="space-y-3">
-                  {/* IMO Selector - Only shown for super admins */}
-                  {isSuperAdmin && allImos.length > 0 && (
-                    <FormField
-                      control={form.control}
-                      name="imo_id"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                            IMO *
-                          </FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              onImoChange?.(value);
-                            }}
-                            value={field.value || ""}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-7 text-[11px] bg-card border-border">
-                                <SelectValue placeholder="Select IMO" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {allImos.map((imoOption) => (
-                                <SelectItem
-                                  key={imoOption.id}
-                                  value={imoOption.id}
-                                  className="text-[11px]"
-                                >
-                                  {imoOption.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription className="text-[10px] text-muted-foreground">
-                            Which IMO this product belongs to
-                          </FormDescription>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
                   <FormField
                     control={form.control}
                     name="is_active"

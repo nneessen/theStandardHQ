@@ -1,7 +1,7 @@
 // src/features/settings/commission-rates/CommissionRatesManagement.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,8 +34,6 @@ import { RateEditDialog } from "./components/RateEditDialog";
 import { RateBulkImport } from "./components/RateBulkImport";
 import type { Database } from "@/types/database.types";
 import { useImo } from "@/contexts/ImoContext";
-import { useAllActiveImos } from "@/hooks/imo";
-import { FFG_IMO_ID } from "@/constants/imos";
 
 type ProductType = Database["public"]["Enums"]["product_type"];
 
@@ -55,24 +53,11 @@ const PRODUCT_TYPES: ProductType[] = [
 ];
 
 export function CommissionRatesManagement() {
-  const { isSuperAdmin, imo } = useImo();
-  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
-
-  // Default to FFG for super admins, otherwise use user's IMO
-  const [filterImoId, setFilterImoId] = useState<string>("");
-
-  // Set default IMO on mount
-  useEffect(() => {
-    if (isSuperAdmin) {
-      const defaultImoId =
-        allImos.find((imoOption) => imoOption.id === FFG_IMO_ID)?.id ??
-        allImos[0]?.id ??
-        "";
-      setFilterImoId(defaultImoId);
-    } else if (imo?.id) {
-      setFilterImoId(imo.id);
-    }
-  }, [allImos, isSuperAdmin, imo?.id]);
+  // Single source of truth: the global sidebar IMO selector. No per-page IMO
+  // dropdown, no silent default to FFG — commission rates are managed for the
+  // currently-selected IMO only.
+  const { effectiveImoId, isViewingAllImos } = useImo();
+  const filterImoId = effectiveImoId ?? "";
 
   const {
     productsWithRates,
@@ -337,188 +322,181 @@ export function CommissionRatesManagement() {
             size="sm"
             className="h-6 px-2 text-[10px]"
             onClick={() => setIsBulkImportOpen(true)}
+            disabled={!filterImoId}
           >
             <Upload className="h-3 w-3 mr-1" />
             Bulk Import
           </Button>
         </div>
 
-        <div className="p-3 space-y-2">
-          {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
-            {/* IMO Filter - Only for super admins */}
-            {isSuperAdmin && allImos.length > 0 && (
-              <Select value={filterImoId} onValueChange={setFilterImoId}>
-                <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
-                  <SelectValue placeholder="Select IMO" />
+        {isViewingAllImos ? (
+          <div className="p-6 text-center text-[11px] text-muted-foreground">
+            Select a specific IMO in the sidebar to manage commission rates.
+            Rates are managed one IMO at a time.
+          </div>
+        ) : (
+          <div className="p-3 space-y-2">
+            {/* Filters */}
+            <div className="flex gap-2 flex-wrap">
+              <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-7 h-7 text-[11px] bg-card border-border"
+                />
+              </div>
+              <Select
+                value={filterCarrierId || "all"}
+                onValueChange={(v) => setFilterCarrierId(v === "all" ? "" : v)}
+              >
+                <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
+                  <SelectValue placeholder="All Carriers" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allImos.map((imoOption) => (
-                    <SelectItem key={imoOption.id} value={imoOption.id}>
-                      {imoOption.name}
+                  <SelectItem value="all">All Carriers</SelectItem>
+                  {carriers.map((carrier) => (
+                    <SelectItem key={carrier.id} value={carrier.id}>
+                      {carrier.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            )}
-            <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-7 text-[11px] bg-card border-border"
-              />
-            </div>
-            <Select
-              value={filterCarrierId || "all"}
-              onValueChange={(v) => setFilterCarrierId(v === "all" ? "" : v)}
-            >
-              <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
-                <SelectValue placeholder="All Carriers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Carriers</SelectItem>
-                {carriers.map((carrier) => (
-                  <SelectItem key={carrier.id} value={carrier.id}>
-                    {carrier.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filterProductType || "all"}
-              onValueChange={(v) =>
-                setFilterProductType(v === "all" ? "" : (v as ProductType))
-              }
-            >
-              <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {PRODUCT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <label className="flex items-center gap-1.5 px-2 h-7 border border-border rounded bg-card">
-              <Checkbox
-                checked={showEmptyOnly}
-                onCheckedChange={(checked) =>
-                  setShowEmptyOnly(checked as boolean)
+              <Select
+                value={filterProductType || "all"}
+                onValueChange={(v) =>
+                  setFilterProductType(v === "all" ? "" : (v as ProductType))
                 }
-                className="h-3 w-3"
-              />
-              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                Empty only
-              </span>
-            </label>
-          </div>
+              >
+                <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {PRODUCT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.replace("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <label className="flex items-center gap-1.5 px-2 h-7 border border-border rounded bg-card">
+                <Checkbox
+                  checked={showEmptyOnly}
+                  onCheckedChange={(checked) =>
+                    setShowEmptyOnly(checked as boolean)
+                  }
+                  className="h-3 w-3"
+                />
+                <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                  Empty only
+                </span>
+              </label>
+            </div>
 
-          {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-border">
-            <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow className="border-b border-border hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                    Carrier
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                    Product
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
-                    Type
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px] text-center">
-                    Rate Coverage
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[60px] text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-[11px] text-muted-foreground py-6"
-                    >
-                      {showEmptyOnly
-                        ? "No products without rates found."
-                        : searchTerm || filterCarrierId || filterProductType
-                          ? "No products found matching your filters."
-                          : "No products yet. Add products in the Products tab first."}
-                    </TableCell>
+            {/* Table */}
+            <div className="rounded-lg overflow-hidden border border-border">
+              <Table>
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                      Carrier
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                      Product
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
+                      Type
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px] text-center">
+                      Rate Coverage
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[60px] text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  filteredProducts.map((product) => {
-                    const [filled, total] = product.rateCoverage
-                      .split("/")
-                      .map(Number);
-                    const isComplete = filled === total;
-                    const isEmpty = filled === 0;
-
-                    return (
-                      <TableRow
-                        key={product.productId}
-                        className="hover:bg-background border-b border-border/60"
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center text-[11px] text-muted-foreground py-6"
                       >
-                        <TableCell className="py-1.5">
-                          <span className="font-medium text-[11px] text-foreground">
-                            {product.carrierName}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          <span className="text-[11px] text-muted-foreground">
-                            {product.productName}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] h-4 px-1 border-border dark:border-border"
-                          >
-                            {product.productType.replace("_", " ")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-1.5 text-center">
-                          <Badge
-                            variant={
-                              isComplete
-                                ? "default"
-                                : isEmpty
-                                  ? "destructive"
-                                  : "secondary"
-                            }
-                            className="text-[10px] h-4 px-1"
-                          >
-                            {product.rateCoverage}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-1.5 text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
-                            onClick={() => handleEditRates(product)}
-                          >
-                            <Edit className="h-2.5 w-2.5 mr-0.5" />
-                            <span className="text-[10px]">Edit</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                        {showEmptyOnly
+                          ? "No products without rates found."
+                          : searchTerm || filterCarrierId || filterProductType
+                            ? "No products found matching your filters."
+                            : "No products yet. Add products in the Products tab first."}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredProducts.map((product) => {
+                      const [filled, total] = product.rateCoverage
+                        .split("/")
+                        .map(Number);
+                      const isComplete = filled === total;
+                      const isEmpty = filled === 0;
+
+                      return (
+                        <TableRow
+                          key={product.productId}
+                          className="hover:bg-background border-b border-border/60"
+                        >
+                          <TableCell className="py-1.5">
+                            <span className="font-medium text-[11px] text-foreground">
+                              {product.carrierName}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-1.5">
+                            <span className="text-[11px] text-muted-foreground">
+                              {product.productName}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-1.5">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-4 px-1 border-border dark:border-border"
+                            >
+                              {product.productType.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-1.5 text-center">
+                            <Badge
+                              variant={
+                                isComplete
+                                  ? "default"
+                                  : isEmpty
+                                    ? "destructive"
+                                    : "secondary"
+                              }
+                              className="text-[10px] h-4 px-1"
+                            >
+                              {product.rateCoverage}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
+                              onClick={() => handleEditRates(product)}
+                            >
+                              <Edit className="h-2.5 w-2.5 mr-0.5" />
+                              <span className="text-[10px]">Edit</span>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Edit Rates Dialog */}

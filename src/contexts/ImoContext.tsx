@@ -37,10 +37,35 @@ const DEFAULT_IMO_CONTEXT: ImoContextType = {
   actingImoId: null,
   setActingImoId: () => {},
   effectiveImoId: null,
+  isViewingAllImos: false,
   refetch: async () => {},
 };
 
 const ACTING_IMO_STORAGE_KEY = "acting-imo-id";
+
+/**
+ * Sentinel selection meaning "view every IMO at once" (cross-tenant). This is
+ * the ONLY way a super-admin lands in RLS see-all mode — it is never the
+ * default. "Own IMO" (null selection) resolves to the super-admin's home IMO,
+ * so a fresh login is always scoped to a single tenant.
+ */
+export const ALL_IMOS_SENTINEL = "__all_imos__";
+
+/**
+ * Resolve the sidebar selection into the value that must be written to
+ * auth.users.raw_user_meta_data.acting_imo_id so the DB helper
+ * get_effective_imo_id() scopes RLS to exactly the IMO the UI is showing:
+ *   - "All IMOs"          → null (true see-all)
+ *   - a specific IMO uuid → that uuid
+ *   - "Own IMO" (null)    → the super-admin's home IMO uuid
+ */
+function resolveActingMetadata(
+  selection: string | null,
+  homeImoId: string | null,
+): string | null {
+  if (selection === ALL_IMOS_SENTINEL) return null;
+  return selection ?? homeImoId;
+}
 
 /**
  * Hook to access IMO context
@@ -206,12 +231,17 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
       } catch {
         // sessionStorage unavailable (private mode, etc.) — in-memory still works
       }
-      // Persist acting_imo_id into auth.users.raw_user_meta_data so RLS sees
-      // it. Must complete BEFORE we invalidate queries — otherwise the
-      // refetches would race against the metadata write and see stale scope.
+      // Persist the RESOLVED acting_imo_id into auth.users.raw_user_meta_data so
+      // RLS sees it. "Own IMO" (null selection) resolves to the home IMO — NOT
+      // null — so RLS scopes to a single tenant instead of silently going
+      // see-all. Only the explicit "All IMOs" sentinel writes null. Must
+      // complete BEFORE we invalidate queries — otherwise the refetches would
+      // race against the metadata write and see stale scope.
       try {
         const { error: updateError } = await supabase.auth.updateUser({
-          data: { acting_imo_id: imoId },
+          data: {
+            acting_imo_id: resolveActingMetadata(imoId, user?.imo_id ?? null),
+          },
         });
         if (updateError) {
           logger.error(
@@ -235,7 +265,7 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
       // risks missing one and silently showing cross-tenant data.
       queryClient.invalidateQueries();
     },
-    [isSuperAdmin, user?.id, queryClient],
+    [isSuperAdmin, user?.id, user?.imo_id, queryClient],
   );
 
   // If the user is not a super-admin but a stale acting IMO sits in storage,
@@ -262,7 +292,12 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
     (async () => {
       try {
         const { error: syncError } = await supabase.auth.updateUser({
-          data: { acting_imo_id: actingImoId },
+          data: {
+            acting_imo_id: resolveActingMetadata(
+              actingImoId,
+              user?.imo_id ?? null,
+            ),
+          },
         });
         if (syncError && !cancelled) {
           logger.warn(
@@ -284,13 +319,24 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
     return () => {
       cancelled = true;
     };
-    // Only re-sync when the user identity changes — actingImoId changes are
-    // handled by setActingImoId, which writes to auth.users directly.
+    // Re-sync when identity OR home imo changes — the latter matters because
+    // resolveActingMetadata() resolves "Own IMO" to user.imo_id, and on a fresh
+    // login imo_id can arrive in a render after user.id. Without it, a default
+    // "Own IMO" session could persist acting_imo_id=NULL (RLS see-all) on the
+    // super_admin_in_scope tables. actingImoId changes are handled by
+    // setActingImoId, which writes to auth.users directly.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, isSuperAdmin]);
+  }, [user?.id, user?.imo_id, isSuperAdmin]);
 
-  const effectiveImoId =
-    (isSuperAdmin ? actingImoId : null) ?? user?.imo_id ?? null;
+  // The single source of truth for "which IMO am I looking at", kept identical
+  // to what get_effective_imo_id() resolves on the DB side. Null ONLY in the
+  // explicit "All IMOs" mode; "Own IMO" (null selection) resolves to home.
+  const isViewingAllImos = isSuperAdmin && actingImoId === ALL_IMOS_SENTINEL;
+  const effectiveImoId = isViewingAllImos
+    ? null
+    : isSuperAdmin
+      ? (actingImoId ?? user?.imo_id ?? null)
+      : (user?.imo_id ?? null);
 
   // Context value
   const value: ImoContextType = {
@@ -305,6 +351,7 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
     actingImoId: isSuperAdmin ? actingImoId : null,
     setActingImoId,
     effectiveImoId,
+    isViewingAllImos,
     refetch: fetchImoData,
   };
 

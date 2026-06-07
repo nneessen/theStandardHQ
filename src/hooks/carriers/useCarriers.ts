@@ -25,7 +25,11 @@ export function useCarriers(options?: {
   staleTime?: number;
   refetchOnWindowFocus?: boolean;
 }) {
-  const { imo } = useImo();
+  // Scope to the single selected IMO (acting-aware). The query key includes it
+  // so each IMO caches separately and a super-admin switching IMOs never sees
+  // another tenant's carriers from a stale cache. Disabled in "All IMOs" mode
+  // (no single IMO to scope to).
+  const { effectiveImoId } = useImo();
   const {
     enabled = true,
     staleTime = 5 * 60 * 1000, // 5 minutes
@@ -33,15 +37,17 @@ export function useCarriers(options?: {
   } = options || {};
 
   return useQuery({
-    queryKey: [...carrierQueryKeys.list(), imo?.id ?? "no-imo"],
+    queryKey: [...carrierQueryKeys.list(), effectiveImoId ?? "no-imo"],
     queryFn: async () => {
-      const result = await carrierService.getAll();
+      const result = effectiveImoId
+        ? await carrierService.getAllForImo(effectiveImoId)
+        : await carrierService.getAll();
       if (result.success && result.data) {
         return result.data;
       }
       throw new Error(result.error?.message || "Failed to fetch carriers");
     },
-    enabled,
+    enabled: enabled && !!effectiveImoId,
     staleTime,
     refetchOnWindowFocus,
   });
@@ -80,11 +86,11 @@ export function useActiveCarriers(options?: {
   enabled?: boolean;
   staleTime?: number;
 }) {
-  const { imo } = useImo();
+  const { effectiveImoId } = useImo();
   const { enabled = true, staleTime = 5 * 60 * 1000 } = options || {};
 
   return useQuery({
-    queryKey: [...carrierQueryKeys.active(), imo?.id ?? "no-imo"],
+    queryKey: [...carrierQueryKeys.active(), effectiveImoId ?? "no-imo"],
     queryFn: async () => {
       const result = await carrierService.getActive();
       if (result.success && result.data) {
@@ -94,7 +100,7 @@ export function useActiveCarriers(options?: {
         result.error?.message || "Failed to fetch active carriers",
       );
     },
-    enabled,
+    enabled: enabled && !!effectiveImoId,
     staleTime,
   });
 }
@@ -109,14 +115,17 @@ export function useSearchCarriers(
     staleTime?: number;
   },
 ) {
-  const { imo } = useImo();
+  const { effectiveImoId } = useImo();
   const {
     enabled = true,
     staleTime = 30 * 1000, // 30 seconds for search results
   } = options || {};
 
   return useQuery({
-    queryKey: [...carrierQueryKeys.search(searchTerm), imo?.id ?? "no-imo"],
+    queryKey: [
+      ...carrierQueryKeys.search(searchTerm),
+      effectiveImoId ?? "no-imo",
+    ],
     queryFn: async () => {
       if (!searchTerm.trim()) {
         return [];

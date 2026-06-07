@@ -11,7 +11,17 @@ export interface TenantContext {
 
 /**
  * Get the current user's tenant context from their profile.
- * Returns the user's imo_id and agency_id for multi-tenant data isolation.
+ * Returns the EFFECTIVE imo_id and agency_id for multi-tenant data isolation.
+ *
+ * This is a faithful mirror of the database RLS helper `get_effective_imo_id()`,
+ * so the application layer never disagrees with what RLS will actually return:
+ *   - super-admin  → their acting_imo_id (the IMO they have switched to in the
+ *                    sidebar selector; `null` only in the explicit "All IMOs" mode)
+ *   - everyone else → their real home imo_id (acting context is ignored)
+ *
+ * Keeping these two layers in lockstep is what prevents cross-IMO bleed-over:
+ * a super-admin viewing Epic Life must have the app-layer default tenant resolve
+ * to Epic Life too, not silently fall back to their home IMO (FFG).
  *
  * @throws Error if user is not authenticated or profile not found
  */
@@ -27,7 +37,7 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
 
   const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
-    .select("imo_id, agency_id")
+    .select("imo_id, agency_id, is_super_admin")
     .eq("id", user.id)
     .single();
 
@@ -35,10 +45,26 @@ export async function getCurrentTenantContext(): Promise<TenantContext> {
     throw new Error(`Failed to fetch user profile: ${profileError.message}`);
   }
 
+  const homeImoId = profile?.imo_id ?? null;
+  const isSuperAdmin = profile?.is_super_admin === true;
+
+  // Read the super-admin "acting IMO" from auth metadata — the same value the
+  // SQL helper get_effective_imo_id() reads from raw_user_meta_data. supabase-js
+  // surfaces it as user.user_metadata. Empty string is normalised to null.
+  const actingImoId = isSuperAdmin
+    ? (user.user_metadata?.acting_imo_id as string | undefined) || null
+    : null;
+
+  const imoId = isSuperAdmin ? actingImoId : homeImoId;
+
+  // Agency context only applies when the effective IMO is the user's own IMO.
+  // A super-admin acting as another tenant has no agency there.
+  const agencyId = imoId === homeImoId ? (profile?.agency_id ?? null) : null;
+
   return {
     userId: user.id,
-    imoId: profile?.imo_id ?? null,
-    agencyId: profile?.agency_id ?? null,
+    imoId,
+    agencyId,
   };
 }
 

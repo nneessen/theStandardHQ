@@ -1,7 +1,7 @@
 // src/features/settings/carriers/components/CarrierForm.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,19 +22,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Carrier } from "../hooks/useCarriers";
 import { useImo } from "@/contexts/ImoContext";
-import { useAllActiveImos } from "@/hooks/imo";
 
 const carrierFormSchema = z.object({
   name: z
@@ -60,7 +52,6 @@ interface CarrierFormProps {
   onSubmit: (data: CarrierFormValues) => void;
   isSubmitting?: boolean;
   defaultImoId?: string;
-  onImoChange?: (imoId: string) => void;
 }
 
 export function CarrierForm({
@@ -70,10 +61,11 @@ export function CarrierForm({
   onSubmit,
   isSubmitting = false,
   defaultImoId,
-  onImoChange,
 }: CarrierFormProps) {
+  // The carrier is always created in the currently-selected (effective) IMO —
+  // there is a single IMO selector (the sidebar switcher), so no per-form IMO
+  // picker. RLS WITH CHECK enforces imo_id = the acting IMO anyway.
   const { isSuperAdmin, imo } = useImo();
-  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
 
   const form = useForm<CarrierFormValues>({
     resolver: zodResolver(carrierFormSchema),
@@ -186,49 +178,6 @@ export function CarrierForm({
                 </FormItem>
               )}
             />
-
-            {/* IMO Selector - Only shown for super admins */}
-            {isSuperAdmin && allImos.length > 0 && (
-              <FormField
-                control={form.control}
-                name="imo_id"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      IMO *
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        onImoChange?.(value);
-                      }}
-                      value={field.value || ""}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="h-7 text-[11px] bg-card border-border">
-                          <SelectValue placeholder="Select IMO" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {allImos.map((imoOption) => (
-                          <SelectItem
-                            key={imoOption.id}
-                            value={imoOption.id}
-                            className="text-[11px]"
-                          >
-                            {imoOption.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription className="text-[10px] text-muted-foreground">
-                      Which IMO this carrier belongs to
-                    </FormDescription>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )}
-              />
-            )}
 
             <FormField
               control={form.control}

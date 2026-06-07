@@ -1,11 +1,11 @@
 // src/components/layout/sidebar/SidebarHeader.tsx
 // Presentational header for the main app sidebar.
 
-import React from "react";
 import { ChevronLeft, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationDropdown } from "@/components/notifications";
 import { cn } from "@/lib/utils";
+import { ALL_IMOS_SENTINEL } from "@/contexts/ImoContext";
 import type { Agency, Imo } from "@/types/imo.types";
 
 interface SidebarHeaderProps {
@@ -107,14 +107,18 @@ export function SidebarHeader({
                   onChange={(e) => setActingImoId(e.target.value || null)}
                   className={cn(
                     "w-full text-[10px] px-1.5 py-0.5 rounded border bg-v2-card text-v2-ink-muted cursor-pointer",
-                    actingImoId
-                      ? "border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-medium"
-                      : "border-v2-ring",
+                    actingImoId === ALL_IMOS_SENTINEL
+                      ? "border-red-500/60 bg-red-500/10 text-red-900 dark:text-red-200 font-semibold"
+                      : actingImoId
+                        ? "border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-medium"
+                        : "border-v2-ring",
                   )}
                   title={
-                    actingImoId
-                      ? "Acting as another IMO — recruits and reads will be scoped to it"
-                      : "Acting as your own IMO"
+                    actingImoId === ALL_IMOS_SENTINEL
+                      ? "Viewing ALL IMOs — data spans every tenant (cross-tenant view)"
+                      : actingImoId
+                        ? "Acting as another IMO — recruits and reads are scoped to it"
+                        : "Scoped to your own IMO"
                   }
                 >
                   <option value="">— Own IMO —</option>
@@ -124,6 +128,10 @@ export function SidebarHeader({
                       Act as {i.code || i.name}
                     </option>
                   ))}
+                  <option value={ALL_IMOS_SENTINEL}>
+                    {actingImoId === ALL_IMOS_SENTINEL ? "● " : ""}— All IMOs
+                    (cross-tenant) —
+                  </option>
                 </select>
               </div>
             ) : null}

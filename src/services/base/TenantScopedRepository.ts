@@ -29,7 +29,12 @@ export abstract class TenantScopedRepository<
     const context = await getCurrentTenantContext();
 
     if (!context.imoId) {
-      throw new Error("Current user is not assigned to an IMO");
+      // For a super-admin this means "All IMOs" mode is active — there is no
+      // single default tenant. The caller must pass an explicit imo_id (or the
+      // user must pick a specific IMO in the selector) before reading/writing.
+      throw new Error(
+        "No IMO selected. Pick a specific IMO before reading or creating IMO-scoped data.",
+      );
     }
 
     return context.imoId;

@@ -136,16 +136,23 @@ export interface ImoContextType {
   loading: boolean;
   error: Error | null;
 
-  // Super-admin acting IMO override.
-  // When isSuperAdmin: actingImoId can be set to operate as if a member of
-  // another IMO (writes assigned to that IMO, reads filtered by that IMO).
+  // Super-admin acting IMO selection.
+  // When isSuperAdmin, this holds the current sidebar selection:
+  //   - null              → "Own IMO" (default; scopes to the super-admin's home IMO)
+  //   - a uuid            → acting as that specific IMO
+  //   - ALL_IMOS_SENTINEL → explicit "All IMOs" cross-tenant view
   // Persists in sessionStorage; clears on browser close.
   actingImoId: string | null;
   setActingImoId: (imoId: string | null) => Promise<void> | void;
 
-  // Effective IMO id for writes/filters. Equals actingImoId when set
-  // (super-admin only), otherwise the user's own imo.
+  // Effective IMO id for writes/filters. The single source of truth that BOTH
+  // the app layer and RLS scope to: the selected/home IMO, or null only in the
+  // explicit "All IMOs" mode.
   effectiveImoId: string | null;
+
+  // True only when a super-admin has explicitly chosen the cross-tenant
+  // "All IMOs" view (effectiveImoId is null and data spans every IMO).
+  isViewingAllImos: boolean;
 
   // Actions
   refetch: () => Promise<void>;

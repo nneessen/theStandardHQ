@@ -1,7 +1,7 @@
 // src/features/settings/products/ProductsManagement.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,15 +36,12 @@ import { useCarriers } from "../carriers/hooks/useCarriers";
 import { ProductForm } from "./components/ProductForm";
 import { ProductBulkImport } from "./components/ProductBulkImport";
 import type { Product, ProductFormData } from "@/types/product.types";
-import { useAllActiveImos, useImo } from "@/hooks/imo";
+import { useImo } from "@/hooks/imo";
 
 export function ProductsManagement() {
-  const { imo, isSuperAdmin } = useImo();
-  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
-  const [selectedImoId, setSelectedImoId] = useState<string | undefined>(
-    imo?.id,
-  );
-  const targetImoId = isSuperAdmin ? selectedImoId : undefined;
+  // Single source of truth: the global sidebar IMO selector (effectiveImoId).
+  const { effectiveImoId, isViewingAllImos } = useImo();
+  const targetImoId = effectiveImoId ?? undefined;
   const {
     products,
     isLoading,
@@ -52,9 +49,9 @@ export function ProductsManagement() {
     updateProduct,
     deleteProduct,
     bulkImportProducts,
-  } = useProducts(targetImoId, { enabled: !isSuperAdmin || !!targetImoId });
+  } = useProducts(targetImoId, { enabled: !!targetImoId });
   const { carriers } = useCarriers(targetImoId, {
-    enabled: !isSuperAdmin || !!targetImoId,
+    enabled: !!targetImoId,
   });
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,17 +60,6 @@ export function ProductsManagement() {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    if (!isSuperAdmin) {
-      setSelectedImoId(imo?.id);
-      return;
-    }
-
-    if (selectedImoId) return;
-
-    setSelectedImoId(imo?.id ?? allImos[0]?.id);
-  }, [allImos, imo?.id, isSuperAdmin, selectedImoId]);
 
   useEffect(() => {
     setFilterCarrierId("");
@@ -121,7 +107,7 @@ export function ProductsManagement() {
     } else {
       await createProduct.mutateAsync({
         ...data,
-        imo_id: isSuperAdmin ? (data.imo_id ?? targetImoId) : data.imo_id,
+        imo_id: data.imo_id ?? targetImoId,
       });
     }
     setIsFormOpen(false);
@@ -140,7 +126,7 @@ export function ProductsManagement() {
     await bulkImportProducts.mutateAsync(
       productsData.map((product) => ({
         ...product,
-        imo_id: isSuperAdmin ? (product.imo_id ?? targetImoId) : product.imo_id,
+        imo_id: product.imo_id ?? targetImoId,
       })),
     );
     setIsBulkImportOpen(false);
@@ -178,7 +164,7 @@ export function ProductsManagement() {
               size="sm"
               className="h-6 px-2 text-[10px] border-border"
               onClick={() => setIsBulkImportOpen(true)}
-              disabled={isSuperAdmin && !targetImoId}
+              disabled={!targetImoId}
             >
               <Upload className="h-3 w-3 mr-1" />
               Bulk Import
@@ -187,7 +173,7 @@ export function ProductsManagement() {
               size="sm"
               className="h-6 px-2 text-[10px]"
               onClick={handleAddProduct}
-              disabled={isSuperAdmin && !targetImoId}
+              disabled={!targetImoId}
             >
               <Plus className="h-3 w-3 mr-1" />
               New Product
@@ -195,148 +181,140 @@ export function ProductsManagement() {
           </div>
         </div>
 
-        <div className="p-3 space-y-2">
-          {/* Filters */}
-          <div className="flex gap-2">
-            {isSuperAdmin && (
+        {isViewingAllImos ? (
+          <div className="p-6 text-center text-[11px] text-muted-foreground">
+            Select a specific IMO in the sidebar to manage products. Products
+            are managed one IMO at a time.
+          </div>
+        ) : (
+          <div className="p-3 space-y-2">
+            {/* Filters */}
+            <div className="flex gap-2">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-7 h-7 text-[11px] bg-card border-border"
+                />
+              </div>
               <Select
-                value={selectedImoId ?? ""}
-                onValueChange={setSelectedImoId}
+                value={filterCarrierId || "all"}
+                onValueChange={(v) => setFilterCarrierId(v === "all" ? "" : v)}
               >
                 <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
-                  <SelectValue placeholder="Select IMO" />
+                  <SelectValue placeholder="All Carriers" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allImos.map((imoOption) => (
-                    <SelectItem key={imoOption.id} value={imoOption.id}>
-                      {imoOption.name}
+                  <SelectItem value="all">All Carriers</SelectItem>
+                  {carriers.map((carrier) => (
+                    <SelectItem key={carrier.id} value={carrier.id}>
+                      {carrier.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            )}
-            <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-7 text-[11px] bg-card border-border"
-              />
             </div>
-            <Select
-              value={filterCarrierId || "all"}
-              onValueChange={(v) => setFilterCarrierId(v === "all" ? "" : v)}
-            >
-              <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
-                <SelectValue placeholder="All Carriers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Carriers</SelectItem>
-                {carriers.map((carrier) => (
-                  <SelectItem key={carrier.id} value={carrier.id}>
-                    {carrier.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-border">
-            <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow className="border-b border-border hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
-                    Product Name
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[150px]">
-                    Carrier
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[120px]">
-                    Type
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px]">
-                    Status
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px] text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-[11px] text-muted-foreground py-6"
-                    >
-                      {searchTerm || filterCarrierId
-                        ? "No products found matching your filters."
-                        : 'No products yet. Click "New Product" to add one.'}
-                    </TableCell>
+            {/* Table */}
+            <div className="rounded-lg overflow-hidden border border-border">
+              <Table>
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
+                      Product Name
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[150px]">
+                      Carrier
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[120px]">
+                      Type
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px]">
+                      Status
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px] text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  filteredProducts.map((product) => (
-                    <TableRow
-                      key={product.id}
-                      className="hover:bg-background border-b border-border/60"
-                    >
-                      <TableCell className="py-1.5">
-                        <span className="font-medium text-[11px] text-foreground">
-                          {product.name}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <span className="text-[11px] text-muted-foreground">
-                          {getCarrierName(product.carrier_id)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] h-4 px-1 border-border dark:border-border"
-                        >
-                          {product.product_type.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <Badge
-                          variant={product.is_active ? "default" : "secondary"}
-                          className="text-[10px] h-4 px-1"
-                        >
-                          {product.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-1.5 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
-                            onClick={() => handleEditProduct(product)}
-                          >
-                            <Edit className="h-2.5 w-2.5 mr-0.5" />
-                            <span className="text-[10px]">Edit</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
-                            onClick={() => handleDeleteClick(product)}
-                          >
-                            <Trash2 className="h-2.5 w-2.5" />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center text-[11px] text-muted-foreground py-6"
+                      >
+                        {searchTerm || filterCarrierId
+                          ? "No products found matching your filters."
+                          : 'No products yet. Click "New Product" to add one.'}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredProducts.map((product) => (
+                      <TableRow
+                        key={product.id}
+                        className="hover:bg-background border-b border-border/60"
+                      >
+                        <TableCell className="py-1.5">
+                          <span className="font-medium text-[11px] text-foreground">
+                            {product.name}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <span className="text-[11px] text-muted-foreground">
+                            {getCarrierName(product.carrier_id)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-4 px-1 border-border dark:border-border"
+                          >
+                            {product.product_type.replace("_", " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <Badge
+                            variant={
+                              product.is_active ? "default" : "secondary"
+                            }
+                            className="text-[10px] h-4 px-1"
+                          >
+                            {product.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-1.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
+                              onClick={() => handleEditProduct(product)}
+                            >
+                              <Edit className="h-2.5 w-2.5 mr-0.5" />
+                              <span className="text-[10px]">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
+                              onClick={() => handleDeleteClick(product)}
+                            >
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Form Dialog */}
@@ -347,7 +325,6 @@ export function ProductsManagement() {
         onSubmit={handleFormSubmit}
         isSubmitting={createProduct.isPending || updateProduct.isPending}
         defaultImoId={targetImoId}
-        onImoChange={setSelectedImoId}
       />
 
       {/* Bulk Import Dialog */}

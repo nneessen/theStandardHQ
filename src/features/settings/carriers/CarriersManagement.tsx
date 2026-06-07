@@ -1,16 +1,9 @@
 // src/features/settings/carriers/CarriersManagement.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -27,19 +20,18 @@ import { CarrierForm } from "./components/CarrierForm";
 import { CarrierDeleteDialog } from "./components/CarrierDeleteDialog";
 import { BuildTableEditor } from "./components/BuildTableEditor";
 import { NewCarrierForm } from "../../../types/carrier.types";
-import { useAllActiveImos, useImo } from "@/hooks/imo";
+import { useImo } from "@/hooks/imo";
 
 export function CarriersManagement() {
-  const { imo, isSuperAdmin } = useImo();
-  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
-  const [selectedImoId, setSelectedImoId] = useState<string | undefined>(
-    imo?.id,
-  );
-  const targetImoId = isSuperAdmin ? selectedImoId : undefined;
+  // Single source of truth for which IMO we're managing: the global sidebar
+  // selector (effectiveImoId). No per-page IMO dropdown. In the explicit
+  // "All IMOs" view there is no single IMO to manage, so reads are gated off.
+  const { effectiveImoId, isViewingAllImos } = useImo();
+  const targetImoId = effectiveImoId ?? undefined;
   const { carriers, isLoading, createCarrier, updateCarrier, deleteCarrier } =
-    useCarriers(targetImoId, { enabled: !isSuperAdmin || !!targetImoId });
+    useCarriers(targetImoId, { enabled: !!targetImoId });
   const { products } = useProducts(targetImoId, {
-    enabled: !isSuperAdmin || !!targetImoId,
+    enabled: !!targetImoId,
   });
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,17 +39,6 @@ export function CarriersManagement() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBuildTableOpen, setIsBuildTableOpen] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
-
-  useEffect(() => {
-    if (!isSuperAdmin) {
-      setSelectedImoId(imo?.id);
-      return;
-    }
-
-    if (selectedImoId) return;
-
-    setSelectedImoId(imo?.id ?? allImos[0]?.id);
-  }, [allImos, imo?.id, isSuperAdmin, selectedImoId]);
 
   // Filter carriers based on search
   let filteredCarriers = carriers;
@@ -111,7 +92,7 @@ export function CarriersManagement() {
     } else {
       await createCarrier.mutateAsync({
         ...data,
-        imo_id: isSuperAdmin ? (data.imo_id ?? targetImoId) : data.imo_id,
+        imo_id: data.imo_id ?? targetImoId,
       });
     }
     setIsFormOpen(false);
@@ -156,151 +137,138 @@ export function CarriersManagement() {
             size="sm"
             className="h-6 px-2 text-[10px]"
             onClick={handleAddCarrier}
-            disabled={isSuperAdmin && !targetImoId}
+            disabled={!targetImoId}
           >
             <Plus className="h-3 w-3 mr-1" />
             New Carrier
           </Button>
         </div>
 
-        <div className="p-3 space-y-2">
-          {/* Search */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
-              <Input
-                type="text"
-                placeholder="Search carriers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
-              />
+        {isViewingAllImos ? (
+          <div className="p-6 text-center text-[11px] text-v2-ink-muted">
+            Select a specific IMO in the sidebar to manage carriers. Carriers
+            are managed one IMO at a time.
+          </div>
+        ) : (
+          <div className="p-3 space-y-2">
+            {/* Search */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+                <Input
+                  type="text"
+                  placeholder="Search carriers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+                />
+              </div>
             </div>
 
-            {isSuperAdmin && (
-              <Select
-                value={selectedImoId ?? ""}
-                onValueChange={setSelectedImoId}
-              >
-                <SelectTrigger className="h-7 w-56 text-[11px] bg-v2-card border-v2-ring">
-                  <SelectValue placeholder="Select IMO" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allImos.map((imoOption) => (
-                    <SelectItem
-                      key={imoOption.id}
-                      value={imoOption.id}
-                      className="text-[11px]"
-                    >
-                      {imoOption.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-
-          {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-v2-ring">
-            <Table>
-              <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
-                    Carrier Name
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
-                    Short Name
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
-                    # Products
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
-                    Status
-                  </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCarriers.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-[11px] text-v2-ink-muted py-6"
-                    >
-                      {searchTerm
-                        ? "No carriers found matching your search."
-                        : 'No carriers yet. Click "New Carrier" to add one.'}
-                    </TableCell>
+            {/* Table */}
+            <div className="rounded-lg overflow-hidden border border-v2-ring">
+              <Table>
+                <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                  <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                      Carrier Name
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
+                      Short Name
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
+                      # Products
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
+                      Status
+                    </TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ) : (
-                  filteredCarriers.map((carrier) => (
-                    <TableRow
-                      key={carrier.id}
-                      className="hover:bg-v2-canvas border-b border-v2-ring/60"
-                    >
-                      <TableCell className="py-1.5">
-                        <span className="font-medium text-[11px] text-v2-ink">
-                          {carrier.name}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <span className="text-[11px] text-v2-ink-muted">
-                          {carrier.code || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <span className="text-[11px] text-v2-ink-muted">
-                          {getProductCount(carrier.id)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-1.5">
-                        <Badge
-                          variant={carrier.is_active ? "default" : "secondary"}
-                          className="text-[10px] h-4 px-1"
-                        >
-                          {carrier.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-1.5 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
-                            onClick={() => handleBuildTableClick(carrier)}
-                            title="Edit build table for rating class determination"
-                          >
-                            <Ruler className="h-2.5 w-2.5 mr-0.5" />
-                            <span className="text-[10px]">Build</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
-                            onClick={() => handleEditCarrier(carrier)}
-                          >
-                            <Edit className="h-2.5 w-2.5 mr-0.5" />
-                            <span className="text-[10px]">Edit</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
-                            onClick={() => handleDeleteClick(carrier)}
-                          >
-                            <Trash2 className="h-2.5 w-2.5" />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredCarriers.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center text-[11px] text-v2-ink-muted py-6"
+                      >
+                        {searchTerm
+                          ? "No carriers found matching your search."
+                          : 'No carriers yet. Click "New Carrier" to add one.'}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredCarriers.map((carrier) => (
+                      <TableRow
+                        key={carrier.id}
+                        className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                      >
+                        <TableCell className="py-1.5">
+                          <span className="font-medium text-[11px] text-v2-ink">
+                            {carrier.name}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <span className="text-[11px] text-v2-ink-muted">
+                            {carrier.code || "—"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <span className="text-[11px] text-v2-ink-muted">
+                            {getProductCount(carrier.id)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-1.5">
+                          <Badge
+                            variant={
+                              carrier.is_active ? "default" : "secondary"
+                            }
+                            className="text-[10px] h-4 px-1"
+                          >
+                            {carrier.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-1.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                              onClick={() => handleBuildTableClick(carrier)}
+                              title="Edit build table for rating class determination"
+                            >
+                              <Ruler className="h-2.5 w-2.5 mr-0.5" />
+                              <span className="text-[10px]">Build</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                              onClick={() => handleEditCarrier(carrier)}
+                            >
+                              <Edit className="h-2.5 w-2.5 mr-0.5" />
+                              <span className="text-[10px]">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
+                              onClick={() => handleDeleteClick(carrier)}
+                            >
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Form Sheet */}
@@ -311,7 +279,6 @@ export function CarriersManagement() {
         onSubmit={handleFormSubmit}
         isSubmitting={createCarrier.isPending || updateCarrier.isPending}
         defaultImoId={targetImoId}
-        onImoChange={setSelectedImoId}
       />
 
       {/* Delete Dialog */}
