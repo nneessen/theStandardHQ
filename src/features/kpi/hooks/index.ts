@@ -18,3 +18,7 @@ export {
   useUploadRecording,
   type RecordingUploadMeta,
 } from "./useRecordings";
+export {
+  useKpiCallAnalytics,
+  useWordTrackEffectiveness,
+} from "./useCallAnalytics";

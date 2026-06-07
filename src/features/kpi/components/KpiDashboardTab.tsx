@@ -1,19 +1,13 @@
 // src/features/kpi/components/KpiDashboardTab.tsx
-// Dashboard tab: a Board of FlapTiles summarizing the agent's entered daily
-// metrics over a selectable date range, plus the manual-entry panel.
-//
-// Tile-suppression contract: a tile renders ONLY when its backing value is
-// non-null (a real 0 renders; null suppresses). When no rows exist in the
-// range, every aggregate is null → an EmptyState replaces the board.
+// Comprehensive inbound-call KPI dashboard. Eight Board bands:
+//   1 Performance · 2 Trend          (your logged DAILY totals)
+//   3 States · 4 Time-of-day · 5 Demographics · 6 Length · 7 Word-tracks · 8 Team
+//                                    (from your analyzed call RECORDINGS, RLS-scoped)
+// A provenance strip between the two groups makes the dual-source model legible.
+// Header keeps the date-range selector, a "Log day" dialog, and the "?" guide.
 
 import React, { useMemo, useState } from "react";
-import {
-  Board,
-  FlapTile,
-  EmptyState,
-  type FlapTileTone,
-} from "@/components/board";
-import { MetricTooltip } from "@/components/ui/MetricTooltip";
+import { CalendarPlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -21,11 +15,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/format";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { formatDateForDB } from "@/lib/date";
-import { useAgentKpiSummary } from "../hooks";
-import { formatCallDuration } from "../lib/format-call-duration";
 import { ManualKpiEntryPanel } from "./ManualKpiEntryPanel";
+import { KpiGuideSheet } from "./KpiGuideSheet";
+import { PerformanceBand } from "./dashboard/PerformanceBand";
+import { TrendPanel } from "./dashboard/TrendPanel";
+import { RecordingsProvenance } from "./dashboard/RecordingsProvenance";
+import { StatesPanel } from "./dashboard/StatesPanel";
+import { TimeOfDayPanel } from "./dashboard/TimeOfDayPanel";
+import { DemographicsPanel } from "./dashboard/DemographicsPanel";
+import { LengthDistributionPanel } from "./dashboard/LengthDistributionPanel";
+import { WordTrackEffectivenessPanel } from "./dashboard/WordTrackEffectivenessPanel";
+import { TeamPanel } from "./dashboard/TeamPanel";
 import type { DateRange } from "../types/kpi.types";
 
 type RangePreset =
@@ -47,7 +57,6 @@ function computeRange(preset: RangePreset): DateRange {
   const today = new Date();
   const to = formatDateForDB(today);
   const start = new Date(today);
-
   switch (preset) {
     case "last_7_days":
       start.setDate(start.getDate() - 6);
@@ -68,176 +77,81 @@ function computeRange(preset: RangePreset): DateRange {
   return { from: formatDateForDB(start), to };
 }
 
-interface Tile {
-  label: string;
-  value: string | null;
-  tone?: FlapTileTone;
-  tooltip?: { title: string; description: string; formula?: string };
-}
-
 export const KpiDashboardTab: React.FC = () => {
   const [preset, setPreset] = useState<RangePreset>("last_30_days");
   const range = useMemo(() => computeRange(preset), [preset]);
-  const { summary, isLoading, isError, error } = useAgentKpiSummary(range);
-
-  const tiles = useMemo<Tile[]>(() => {
-    if (!summary) return [];
-    const s = summary;
-    const all: Tile[] = [
-      {
-        label: "Inbound Calls",
-        value:
-          s.totalInboundCalls != null
-            ? formatNumber(s.totalInboundCalls)
-            : null,
-      },
-      {
-        label: "Answered",
-        value: s.answeredCalls != null ? formatNumber(s.answeredCalls) : null,
-      },
-      {
-        label: "Connect Rate",
-        value: s.connectRate != null ? formatPercent(s.connectRate) : null,
-        tone: "blue",
-        tooltip: {
-          title: "Connect Rate",
-          description: "Share of inbound calls that were answered.",
-          formula: "answered ÷ inbound calls",
-        },
-      },
-      {
-        label: "Clients Sold",
-        value: s.clientsSold != null ? formatNumber(s.clientsSold) : null,
-        tone: "green",
-      },
-      {
-        label: "Policies Sold",
-        value: s.policiesSold != null ? formatNumber(s.policiesSold) : null,
-        tone: "green",
-      },
-      {
-        label: "Closing Rate",
-        value: s.closingRate != null ? formatPercent(s.closingRate) : null,
-        tone: "green",
-        tooltip: {
-          title: "Closing Rate",
-          description: "Clients sold per inbound call.",
-          formula: "clients sold ÷ inbound calls",
-        },
-      },
-      {
-        label: "Policies / Client",
-        value:
-          s.policiesPerClient != null ? s.policiesPerClient.toFixed(2) : null,
-        tooltip: {
-          title: "Policies per Client",
-          description: "Average number of policies written per client sold.",
-          formula: "policies sold ÷ clients sold",
-        },
-      },
-      {
-        label: "Premium Written",
-        value:
-          s.premiumWritten != null ? formatCurrency(s.premiumWritten) : null,
-        tone: "amber",
-      },
-      {
-        label: "Cost / Acquisition",
-        value:
-          s.costPerAcquisition != null
-            ? formatCurrency(s.costPerAcquisition)
-            : null,
-        tone: "amber",
-        tooltip: {
-          title: "Cost per Acquisition",
-          description: "Total lead + marketing spend per client sold.",
-          formula: "(lead spend + marketing spend) ÷ clients sold",
-        },
-      },
-      {
-        label: "Total Talk Time",
-        value: formatCallDuration(s.totalTalkTimeSeconds),
-      },
-    ];
-    return all.filter((t) => t.value != null);
-  }, [summary]);
 
   return (
     <div className="space-y-3">
-      {/* Range selector */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[11px] text-muted-foreground">
+      {/* Control row */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="font-mono text-xs text-muted-foreground">
           {range.from} → {range.to}
         </div>
-        <Select
-          value={preset}
-          onValueChange={(v) => setPreset(v as RangePreset)}
-        >
-          <SelectTrigger className="h-7 w-[150px] text-[11px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {RANGE_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value} className="text-[11px]">
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={preset}
+            onValueChange={(v) => setPreset(v as RangePreset)}
+          >
+            <SelectTrigger className="h-8 w-[150px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {RANGE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 text-xs"
+              >
+                <CalendarPlus className="h-3.5 w-3.5" />
+                Log day
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Log day</DialogTitle>
+                <DialogDescription>
+                  Enter or edit a day's call numbers. Saving updates the
+                  Performance band and Trend.
+                </DialogDescription>
+              </DialogHeader>
+              <ManualKpiEntryPanel />
+            </DialogContent>
+          </Dialog>
+
+          <KpiGuideSheet />
+        </div>
       </div>
 
-      {/* Metrics board */}
-      {isLoading ? (
-        <div className="py-10 text-center text-[11px] text-muted-foreground">
-          Loading metrics…
-        </div>
-      ) : isError ? (
-        <div className="py-10 text-center text-[11px] text-destructive">
-          {error instanceof Error ? error.message : "Failed to load metrics"}
-        </div>
-      ) : tiles.length === 0 ? (
-        <Board>
-          <EmptyState
-            title="No metrics yet"
-            hint="Enter a day's call numbers below to populate this dashboard."
-          />
-        </Board>
-      ) : (
-        <Board>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-              gap: 10,
-            }}
-          >
-            {tiles.map((t) => (
-              <FlapTile
-                key={t.label}
-                tone={t.tone}
-                label={
-                  t.tooltip ? (
-                    <span className="inline-flex items-center">
-                      {t.label}
-                      <MetricTooltip
-                        title={t.tooltip.title}
-                        description={t.tooltip.description}
-                        formula={t.tooltip.formula}
-                      />
-                    </span>
-                  ) : (
-                    t.label
-                  )
-                }
-                value={t.value}
-              />
-            ))}
-          </div>
-        </Board>
-      )}
+      {/* 1. Performance + 2. Trend — from logged daily totals */}
+      <PerformanceBand range={range} />
+      <TrendPanel range={range} />
 
-      {/* Manual entry */}
-      <ManualKpiEntryPanel />
+      {/* Provenance divider — everything below is from analyzed recordings */}
+      <RecordingsProvenance range={range} />
+
+      {/* 3–6 — from analyzed call recordings */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <StatesPanel range={range} />
+        <TimeOfDayPanel range={range} />
+      </div>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <DemographicsPanel range={range} />
+        <LengthDistributionPanel range={range} />
+      </div>
+
+      {/* 7. Word-tracks + 8. Team */}
+      <WordTrackEffectivenessPanel range={range} />
+      <TeamPanel range={range} />
     </div>
   );
 };

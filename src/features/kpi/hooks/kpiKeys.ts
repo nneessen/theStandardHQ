@@ -15,6 +15,10 @@ export const kpiKeys = {
     [...kpiKeys.all, "recordings", agentId] as const,
   wordTracks: (ownerId: string) =>
     [...kpiKeys.all, "word-tracks", ownerId] as const,
+  callAnalytics: (range: DateRange) =>
+    [...kpiKeys.all, "call-analytics", range.from, range.to] as const,
+  wordTrackEffectiveness: (range: DateRange) =>
+    [...kpiKeys.all, "wt-effectiveness", range.from, range.to] as const,
 };
 
 /**
