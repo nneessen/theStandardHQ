@@ -106,9 +106,17 @@ export function useUploadRecording() {
       }
       return data as CallRecordingRow;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Recording uploaded");
       queryClient.invalidateQueries({ queryKey: kpiKeys.all });
+      // Fire-and-forget transcription. The row's transcription_status reflects
+      // progress/outcome, so we never block (or fail) the upload UX on this and
+      // we swallow invoke errors. The authed supabase client forwards the JWT.
+      void supabase.functions
+        .invoke("transcribe-call-recording", {
+          body: { recording_id: data.id },
+        })
+        .catch(() => {});
     },
     onError: (error) => {
       toast.error(
