@@ -6,8 +6,9 @@
 import { Link } from "@tanstack/react-router";
 import { SectionShell, PillButton } from "@/components/v2";
 import { Cap, T } from "@/components/board";
+import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { RecruitingLinkPanel } from "../components/RecruitingLinkPanel";
-import { CustomDomainManager } from "@/features/settings";
+import { CustomDomainManager, BrandingSettings } from "@/features/settings";
 
 export function RecruitingYourPage() {
   return (
@@ -51,6 +52,13 @@ export function RecruitingYourPage() {
           <section className="rounded-lg border border-v2-ring bg-v2-card p-4">
             <CustomDomainManager />
           </section>
+
+          {/* Page branding — layout, colors, logos, display options */}
+          <FeatureGate feature="custom_branding" promptVariant="card">
+            <section className="rounded-lg border border-v2-ring bg-v2-card p-4">
+              <BrandingSettings />
+            </section>
+          </FeatureGate>
         </div>
       </div>
     </SectionShell>

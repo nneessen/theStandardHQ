@@ -28,8 +28,6 @@ import { searchUsersForAssignment } from "@/services/users/userSearchService";
 import { getDisplayName } from "../../../types/user.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RoleName } from "@/types/permissions.types";
-import { BrandingSettings } from "./BrandingSettings";
-import { FeatureGate } from "@/components/subscription/FeatureGate";
 // eslint-disable-next-line no-restricted-imports
 import { MyCarrierContractsCard } from "@/features/contracting/components/MyCarrierContractsCard";
 import { toast } from "sonner";
@@ -577,16 +575,8 @@ export function UserProfile() {
         </div>
       </div>
 
-      {/* Recruiting Page Branding - Premium Feature.
-          The recruiting link, URL slug, and custom domains now live on
-          Recruiting -> Your Page. */}
-      {!isStaffOnly && (
-        <FeatureGate feature="custom_branding" promptVariant="card">
-          <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
-            <BrandingSettings />
-          </div>
-        </FeatureGate>
-      )}
+      {/* Recruiting page branding (layout, colors, logos, display options) now
+          lives entirely on Recruiting → Your Page. */}
 
       {/* Team Hierarchy Card - Hidden for staff-only roles */}
       {!isStaffOnly && (

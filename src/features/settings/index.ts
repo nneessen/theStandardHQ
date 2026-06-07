@@ -3,7 +3,8 @@ export { SettingsDashboard } from "./SettingsDashboard";
 // Join Request
 export { JoinRequestForm } from "./join-request/components/JoinRequestForm";
 
-// Custom domains (also surfaced on Recruiting → Your Page)
+// Recruiting branding + custom domains (surfaced on Recruiting → Your Page)
+export { BrandingSettings } from "./components/BrandingSettings";
 export {
   CustomDomainManager,
   CustomDomainSetupWizard,
