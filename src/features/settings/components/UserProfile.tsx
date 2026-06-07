@@ -32,7 +32,6 @@ import { searchUsersForAssignment } from "@/services/users/userSearchService";
 import { getDisplayName } from "../../../types/user.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RoleName } from "@/types/permissions.types";
-import { CustomDomainManager } from "./custom-domains";
 import { BrandingSettings } from "./BrandingSettings";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
 // eslint-disable-next-line no-restricted-imports
@@ -841,11 +840,6 @@ export function UserProfile() {
                   </p>
                 </div>
               </form>
-
-              {/* Custom Domain Section */}
-              <div className="mt-4 pt-3 border-t border-v2-ring">
-                <CustomDomainManager />
-              </div>
 
               {/* Branding Settings Section */}
               <div className="mt-4 pt-3 border-t border-v2-ring">

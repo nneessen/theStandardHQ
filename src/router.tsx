@@ -41,6 +41,7 @@ import { RecruitingDashboard } from "./features/recruiting/RecruitingDashboard";
 import { PipelineAdminPage } from "./features/recruiting/admin/PipelineAdminPage";
 import { CustomDomainSetupWizard } from "./features/settings/components/custom-domains";
 import { MyRecruitingPipeline } from "./features/recruiting/pages/MyRecruitingPipeline";
+import { RecruitingYourPage } from "./features/recruiting/pages/RecruitingYourPage";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
 import { PublicRegistrationPage } from "./features/recruiting/pages/PublicRegistrationPage";
@@ -1093,6 +1094,17 @@ const agentRoadmapRunnerRoute = createRoute({
   },
 });
 
+// Recruiting → "Your Page" tab: branded link + custom domains in one place.
+const recruitingYourPageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "recruiting/your-page",
+  component: () => (
+    <RouteGuard permission="nav.recruiting_pipeline" noRecruits>
+      <RecruitingYourPage />
+    </RouteGuard>
+  ),
+});
+
 // Full-page guided wizard for connecting a user-owned custom domain.
 const customDomainSetupRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1182,6 +1194,7 @@ const routeTree = rootRoute.addChildren([
   agentRoadmapLandingRoute,
   agentRoadmapRunnerRoute,
   customDomainSetupRoute,
+  recruitingYourPageRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);
 

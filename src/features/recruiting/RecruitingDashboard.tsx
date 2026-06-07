@@ -8,6 +8,7 @@ import {
   Copy,
   Check,
   ArrowRight,
+  Globe,
 } from "lucide-react";
 import {
   useRecruits,
@@ -332,6 +333,22 @@ function RecruitingDashboardContent() {
               </PillButton>
             </div>
           </header>
+
+          {/* Tab nav — Pipeline vs Your Page (branded link + custom domains) */}
+          <div className="flex items-center gap-1.5">
+            <PillButton tone="black" size="sm">
+              Pipeline
+            </PillButton>
+            <Link to="/recruiting/your-page">
+              <PillButton
+                tone="ghost"
+                size="sm"
+                leadingIcon={<Globe className="h-3.5 w-3.5" />}
+              >
+                Your Page
+              </PillButton>
+            </Link>
+          </div>
 
           {/* Hero band — pipeline snapshot (real counts from `stats`) */}
           <Board
