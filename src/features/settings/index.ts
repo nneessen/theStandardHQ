@@ -4,7 +4,7 @@ export { SettingsDashboard } from "./SettingsDashboard";
 export { JoinRequestForm } from "./join-request/components/JoinRequestForm";
 
 // Recruiting branding + custom domains (surfaced on Recruiting → Your Page)
-export { BrandingSettings } from "./components/BrandingSettings";
+export { ColorPicker, ImageUpload } from "./components/branding-controls";
 export {
   CustomDomainManager,
   CustomDomainSetupWizard,

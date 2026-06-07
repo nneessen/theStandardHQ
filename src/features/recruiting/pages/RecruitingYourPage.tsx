@@ -1,20 +1,19 @@
 // Recruiting → "Your Page" tab.
-// One obvious home for everything about an agent's public recruiting page:
-// their link + URL slug, and custom (white-label) domains. The custom-domain
-// "Add domain" CTA opens the full-page setup wizard.
+// One obvious, guided home for everything about an agent's public recruiting
+// page: their link/slug, brand identity, look & feel, booking & contact,
+// display options, and an optional custom domain — all as a single
+// step-by-step wizard built for non-technical users.
 
 import { Link } from "@tanstack/react-router";
 import { SectionShell, PillButton } from "@/components/v2";
 import { Cap, T } from "@/components/board";
-import { FeatureGate } from "@/components/subscription/FeatureGate";
-import { RecruitingLinkPanel } from "../components/RecruitingLinkPanel";
-import { CustomDomainManager, BrandingSettings } from "@/features/settings";
+import { RecruitingPageWizard } from "../components/RecruitingPageWizard";
 
 export function RecruitingYourPage() {
   return (
     <SectionShell className="dashboard-canvas">
       <div className="mx-auto w-full max-w-[1100px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {/* Header + tab nav */}
           <header className="flex flex-col gap-3">
             <div>
@@ -43,22 +42,8 @@ export function RecruitingYourPage() {
             </div>
           </header>
 
-          {/* Recruiting link + slug */}
-          <section className="rounded-lg border border-v2-ring bg-v2-card p-4">
-            <RecruitingLinkPanel />
-          </section>
-
-          {/* Custom (white-label) domain */}
-          <section className="rounded-lg border border-v2-ring bg-v2-card p-4">
-            <CustomDomainManager />
-          </section>
-
-          {/* Page branding — layout, colors, logos, display options */}
-          <FeatureGate feature="custom_branding" promptVariant="card">
-            <section className="rounded-lg border border-v2-ring bg-v2-card p-4">
-              <BrandingSettings />
-            </section>
-          </FeatureGate>
+          {/* Guided setup wizard */}
+          <RecruitingPageWizard />
         </div>
       </div>
     </SectionShell>
