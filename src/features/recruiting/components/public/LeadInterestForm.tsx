@@ -1,10 +1,14 @@
 // src/features/recruiting/components/public/LeadInterestForm.tsx
-// Public interest form for recruiting funnel - Visual redesign v2
+// Public interest form for the recruiting funnel — MULTI-STEP so it never
+// scrolls: 4 short steps with an editorial "01 / 04" progress. High-contrast
+// fields (off-white fills + defined borders) so inputs read clearly on the
+// white form panel. The legally-required TCPA consent lives on the final step
+// and is recorded verbatim + versioned on submit (never editable per-recruiter).
 
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSubmitLead } from "../../hooks/useLeads";
 import { US_STATES } from "@/constants/states";
 import {
@@ -66,14 +69,49 @@ interface LeadInterestFormProps {
   darkMode?: boolean;
 }
 
-// Helper to extract error message from Zod error
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- error object type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack error shape
 const getErrorMessage = (errors: any[]): string => {
   if (!errors || errors.length === 0) return "";
   return errors
     .map((err) => (typeof err === "string" ? err : err?.message || String(err)))
     .join(", ");
 };
+
+// Shared field styling — off-white fill + defined border so fields stand out on
+// the white panel; focus picks up the recruiter's brand color.
+const FIELD =
+  "h-11 w-full rounded-[3px] border border-neutral-300 bg-neutral-50 px-3 text-sm text-neutral-900 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-[var(--spec-primary,#1c1917)] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[var(--spec-primary,#1c1917)]";
+const LABEL =
+  "mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-500";
+const ERR =
+  "border-destructive focus:border-destructive focus:ring-destructive";
+
+const STEP_FIELDS: string[][] = [
+  ["firstName", "lastName", "email", "phone"],
+  ["city", "state", "availability"],
+  ["insuranceExperience", "incomeGoals", "isLicensed"],
+  ["whyInterested", "tcpaConsent"],
+];
+const STEP_TITLES = [
+  "About you",
+  "Location & availability",
+  "Your experience",
+  "Almost there",
+];
+const TOTAL = STEP_FIELDS.length;
+
+const AVAILABILITY_OPTIONS: { value: LeadAvailability; label: string }[] = [
+  { value: "full_time", label: "Full-time" },
+  { value: "part_time", label: "Part-time" },
+  { value: "exploring", label: "Exploring" },
+];
+const EXPERIENCE_OPTIONS: { value: LeadInsuranceExperience; label: string }[] =
+  [
+    { value: "none", label: "No experience" },
+    { value: "less_than_1_year", label: "< 1 year" },
+    { value: "1_to_3_years", label: "1–3 years" },
+    { value: "3_plus_years", label: "3+ years" },
+  ];
 
 export function LeadInterestForm({
   recruiterSlug,
@@ -87,6 +125,7 @@ export function LeadInterestForm({
   const [selectedSpecialties, setSelectedSpecialties] = useState<
     LeadSpecialty[]
   >([]);
+  const [step, setStep] = useState(0);
 
   const form = useForm({
     defaultValues: {
@@ -106,14 +145,8 @@ export function LeadInterestForm({
       tcpaConsent: false,
     },
     onSubmit: async ({ value }) => {
-      // Honeypot check - if filled, it's likely a bot
-      if (honeypot) {
-        return;
-      }
-
-      // Get UTM params from URL
+      if (honeypot) return; // bot
       const urlParams = new URLSearchParams(window.location.search);
-
       const result = await submitLeadMutation.mutateAsync({
         recruiterSlug,
         firstName: value.firstName,
@@ -140,10 +173,7 @@ export function LeadInterestForm({
         tcpaConsentText: TCPA_LEAD_CONSENT_TEXT,
         tcpaConsentVersion: TCPA_LEAD_CONSENT_VERSION,
       });
-
-      if (result.success && result.lead_id) {
-        onSuccess(result.lead_id);
-      }
+      if (result.success && result.lead_id) onSuccess(result.lead_id);
     },
   });
 
@@ -155,13 +185,35 @@ export function LeadInterestForm({
     );
   };
 
+  const goNext = async () => {
+    const fields = STEP_FIELDS[step];
+    const results = await Promise.all(
+      fields.map((f) => form.validateField(f as never, "change")),
+    );
+    const hasError = results.some((e) => Array.isArray(e) && e.length > 0);
+    if (hasError) {
+      toast.error("Please complete the highlighted fields.");
+      requestAnimationFrame(() => {
+        document
+          .querySelector("[data-field-error]")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
+    setStep((s) => Math.min(s + 1, TOTAL - 1));
+  };
+  const goBack = () => setStep((s) => Math.max(s - 1, 0));
+
+  const accentStyle = primaryColor
+    ? { backgroundColor: primaryColor, color: "#ffffff" }
+    : undefined;
+
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
         e.stopPropagation();
         await form.handleSubmit();
-        // Show toast + scroll to first error if validation blocked submit
         requestAnimationFrame(() => {
           const errorEl = document.querySelector("[data-field-error]");
           if (errorEl) {
@@ -170,9 +222,9 @@ export function LeadInterestForm({
           }
         });
       }}
-      className={`space-y-3 ${darkMode ? "lead-form-dark" : ""}`}
+      className={`flex flex-col ${darkMode ? "lead-form-dark" : ""}`}
     >
-      {/* Honeypot field - hidden from real users */}
+      {/* Honeypot — hidden from real users */}
       <div className="absolute -left-[9999px]" aria-hidden="true">
         <input
           type="text"
@@ -184,570 +236,551 @@ export function LeadInterestForm({
         />
       </div>
 
-      {/* Name Row */}
-      <div className="grid grid-cols-2 gap-2">
-        <form.Field
-          name="firstName"
-          validators={{ onChange: leadFormSchema.shape.firstName }}
-        >
-          {(field) => (
-            <div className="space-y-1.5">
-              <Label htmlFor="firstName" className="text-xs font-medium">
-                First Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="firstName"
-                placeholder="John"
-                variant="outlined"
-                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors &&
-                field.state.meta.errors.length > 0 && (
-                  <p className="text-xs text-destructive" data-field-error>
-                    {getErrorMessage(field.state.meta.errors)}
-                  </p>
-                )}
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field
-          name="lastName"
-          validators={{ onChange: leadFormSchema.shape.lastName }}
-        >
-          {(field) => (
-            <div className="space-y-1.5">
-              <Label htmlFor="lastName" className="text-xs font-medium">
-                Last Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="lastName"
-                placeholder="Doe"
-                variant="outlined"
-                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors &&
-                field.state.meta.errors.length > 0 && (
-                  <p className="text-xs text-destructive" data-field-error>
-                    {getErrorMessage(field.state.meta.errors)}
-                  </p>
-                )}
-            </div>
-          )}
-        </form.Field>
+      {/* Editorial progress */}
+      <div className="mb-5">
+        <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-500">
+          <span>{STEP_TITLES[step]}</span>
+          <span className="tabular-nums">
+            {String(step + 1).padStart(2, "0")}
+            <span className="opacity-40">
+              {" "}
+              / {String(TOTAL).padStart(2, "0")}
+            </span>
+          </span>
+        </div>
+        <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-neutral-200">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${((step + 1) / TOTAL) * 100}%`,
+              background: primaryColor || "#1c1917",
+            }}
+          />
+        </div>
       </div>
 
-      {/* Email */}
-      <form.Field
-        name="email"
-        validators={{ onChange: leadFormSchema.shape.email }}
-      >
-        {(field) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs font-medium">
-              Email <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john.doe@example.com"
-              variant="outlined"
-              className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive" data-field-error>
-                {getErrorMessage(field.state.meta.errors)}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      {/* Phone */}
-      <form.Field
-        name="phone"
-        validators={{ onChange: leadFormSchema.shape.phone }}
-      >
-        {(field) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-xs font-medium">
-              Phone <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="(555) 123-4567"
-              variant="outlined"
-              className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive" data-field-error>
-                {getErrorMessage(field.state.meta.errors)}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      {/* Location Row */}
-      <div className="grid grid-cols-2 gap-2">
-        <form.Field
-          name="city"
-          validators={{ onChange: leadFormSchema.shape.city }}
-        >
-          {(field) => (
-            <div className="space-y-1.5">
-              <Label htmlFor="city" className="text-xs font-medium">
-                City <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="city"
-                placeholder="New York"
-                variant="outlined"
-                className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors &&
-                field.state.meta.errors.length > 0 && (
-                  <p className="text-xs text-destructive" data-field-error>
-                    {getErrorMessage(field.state.meta.errors)}
-                  </p>
-                )}
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field
-          name="state"
-          validators={{ onChange: leadFormSchema.shape.state }}
-        >
-          {(field) => (
-            <div className="space-y-1.5">
-              <Label htmlFor="state" className="text-xs font-medium">
-                State <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={field.state.value}
-                onValueChange={(value) => field.handleChange(value)}
-              >
-                <SelectTrigger
-                  aria-label="State"
-                  className={`h-9 text-sm bg-white text-neutral-900 border-2 border-border data-[placeholder]:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-                >
-                  <SelectValue placeholder="Select state" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px]">
-                  {US_STATES.map((state) => (
-                    <SelectItem
-                      key={state.value}
-                      value={state.value}
-                      className="text-sm"
-                    >
-                      {state.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {field.state.meta.errors &&
-                field.state.meta.errors.length > 0 && (
-                  <p className="text-xs text-destructive" data-field-error>
-                    {getErrorMessage(field.state.meta.errors)}
-                  </p>
-                )}
-            </div>
-          )}
-        </form.Field>
-      </div>
-
-      {/* Availability */}
-      <form.Field
-        name="availability"
-        validators={{ onChange: leadFormSchema.shape.availability }}
-      >
-        {(field) => (
-          <div className="space-y-2">
-            <Label className="text-xs font-medium">
-              Availability <span className="text-destructive">*</span>
-            </Label>
-            <RadioGroup
-              value={field.state.value}
-              onValueChange={(value) =>
-                field.handleChange(value as LeadAvailability)
-              }
-              className="flex flex-wrap gap-3"
+      {/* ─────────── STEP 1 — About you ─────────── */}
+      {step === 0 && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <form.Field
+              name="firstName"
+              validators={{ onChange: leadFormSchema.shape.firstName }}
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="full_time"
-                  id="full_time"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="full_time" className="text-sm font-normal">
-                  Full-time
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="part_time"
-                  id="part_time"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="part_time" className="text-sm font-normal">
-                  Part-time
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="exploring"
-                  id="exploring"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="exploring" className="text-sm font-normal">
-                  Just exploring
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-      </form.Field>
-
-      {/* Income Goals */}
-      <form.Field name="incomeGoals">
-        {(field) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="incomeGoals" className="text-xs font-medium">
-              Income Goals (Optional)
-            </Label>
-            <Select
-              value={field.state.value}
-              onValueChange={(value) => field.handleChange(value)}
-            >
-              <SelectTrigger
-                aria-label="Income goals"
-                className="h-9 text-sm bg-white text-neutral-900 border-2 border-border data-[placeholder]:text-neutral-500"
-              >
-                <SelectValue placeholder="Select income goal (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {INCOME_GOAL_OPTIONS.filter((opt) => opt.value !== "").map(
-                  (option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="text-sm"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ),
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </form.Field>
-
-      {/* Insurance Experience */}
-      <form.Field
-        name="insuranceExperience"
-        validators={{ onChange: leadFormSchema.shape.insuranceExperience }}
-      >
-        {(field) => (
-          <div className="space-y-2">
-            <Label className="text-xs font-medium">
-              Insurance Experience <span className="text-destructive">*</span>
-            </Label>
-            <RadioGroup
-              value={field.state.value}
-              onValueChange={(value) =>
-                field.handleChange(value as LeadInsuranceExperience)
-              }
-              className="grid grid-cols-2 gap-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="none"
-                  id="exp_none"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="exp_none" className="text-sm font-normal">
-                  No experience
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="less_than_1_year"
-                  id="exp_less_1"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="exp_less_1" className="text-sm font-normal">
-                  Less than 1 year
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="1_to_3_years"
-                  id="exp_1_3"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="exp_1_3" className="text-sm font-normal">
-                  1-3 years
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="3_plus_years"
-                  id="exp_3_plus"
-                  className="border-2 border-border  bg-background"
-                />
-                <Label htmlFor="exp_3_plus" className="text-sm font-normal">
-                  3+ years
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-      </form.Field>
-
-      {/* Licensing Section - New Fields */}
-      <div className="border-t border-border pt-3 mt-3">
-        <form.Field name="isLicensed">
-          {(field) => (
-            <div className="space-y-2">
-              <Label className="text-xs font-medium">
-                Do you have a life insurance license?
-              </Label>
-              <RadioGroup
-                value={field.state.value ? "yes" : "no"}
-                onValueChange={(value) => field.handleChange(value === "yes")}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="yes"
-                    id="licensed_yes"
-                    className="border-2 border-border  bg-background"
-                  />
-                  <Label htmlFor="licensed_yes" className="text-sm font-normal">
-                    Yes
+              {(field) => (
+                <div>
+                  <Label htmlFor="firstName" className={LABEL}>
+                    First name
                   </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="no"
-                    id="licensed_no"
-                    className="border-2 border-border  bg-background"
+                  <Input
+                    id="firstName"
+                    placeholder="John"
+                    className={`${FIELD} ${field.state.meta.errors?.length ? ERR : ""}`}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
                   />
-                  <Label htmlFor="licensed_no" className="text-sm font-normal">
-                    No
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          )}
-        </form.Field>
-
-        {/* Conditional fields - only show if licensed */}
-        <form.Subscribe selector={(state) => state.values.isLicensed}>
-          {(isLicensed) =>
-            isLicensed && (
-              <div className="space-y-4 mt-4 pl-4 border-l-2 border-warning/30">
-                {/* Current IMO */}
-                <form.Field name="currentImoName">
-                  {(field) => (
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="currentImoName"
-                        className="text-xs font-medium"
-                      >
-                        Which IMO/agency are you currently with? (optional)
-                      </Label>
-                      <Input
-                        id="currentImoName"
-                        placeholder="Enter your current IMO or agency name"
-                        variant="outlined"
-                        className={`h-9 text-sm bg-white text-neutral-900 placeholder:text-neutral-500 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
-                      />
-                    </div>
+                  {field.state.meta.errors?.length > 0 && (
+                    <p
+                      className="mt-1 text-xs text-destructive"
+                      data-field-error
+                    >
+                      {getErrorMessage(field.state.meta.errors)}
+                    </p>
                   )}
-                </form.Field>
-
-                {/* Specialties Multi-Select */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">
-                    Which products do you primarily sell? (select all that
-                    apply)
+                </div>
+              )}
+            </form.Field>
+            <form.Field
+              name="lastName"
+              validators={{ onChange: leadFormSchema.shape.lastName }}
+            >
+              {(field) => (
+                <div>
+                  <Label htmlFor="lastName" className={LABEL}>
+                    Last name
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {SPECIALTY_OPTIONS.map((option) => (
-                      <div
-                        key={option.value}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`specialty_${option.value}`}
-                          checked={selectedSpecialties.includes(option.value)}
-                          onCheckedChange={() =>
-                            handleSpecialtyToggle(option.value)
-                          }
-                        />
-                        <Label
-                          htmlFor={`specialty_${option.value}`}
-                          className="text-sm font-normal cursor-pointer"
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    className={`${FIELD} ${field.state.meta.errors?.length ? ERR : ""}`}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  {field.state.meta.errors?.length > 0 && (
+                    <p
+                      className="mt-1 text-xs text-destructive"
+                      data-field-error
+                    >
+                      {getErrorMessage(field.state.meta.errors)}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field
+            name="email"
+            validators={{ onChange: leadFormSchema.shape.email }}
+          >
+            {(field) => (
+              <div>
+                <Label htmlFor="email" className={LABEL}>
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="john.doe@example.com"
+                  className={`${FIELD} ${field.state.meta.errors?.length ? ERR : ""}`}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                />
+                {field.state.meta.errors?.length > 0 && (
+                  <p className="mt-1 text-xs text-destructive" data-field-error>
+                    {getErrorMessage(field.state.meta.errors)}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field
+            name="phone"
+            validators={{ onChange: leadFormSchema.shape.phone }}
+          >
+            {(field) => (
+              <div>
+                <Label htmlFor="phone" className={LABEL}>
+                  Phone
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  className={`${FIELD} ${field.state.meta.errors?.length ? ERR : ""}`}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                />
+                {field.state.meta.errors?.length > 0 && (
+                  <p className="mt-1 text-xs text-destructive" data-field-error>
+                    {getErrorMessage(field.state.meta.errors)}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+        </div>
+      )}
+
+      {/* ─────────── STEP 2 — Location & availability ─────────── */}
+      {step === 1 && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <form.Field
+              name="city"
+              validators={{ onChange: leadFormSchema.shape.city }}
+            >
+              {(field) => (
+                <div>
+                  <Label htmlFor="city" className={LABEL}>
+                    City
+                  </Label>
+                  <Input
+                    id="city"
+                    placeholder="New York"
+                    className={`${FIELD} ${field.state.meta.errors?.length ? ERR : ""}`}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  {field.state.meta.errors?.length > 0 && (
+                    <p
+                      className="mt-1 text-xs text-destructive"
+                      data-field-error
+                    >
+                      {getErrorMessage(field.state.meta.errors)}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+            <form.Field
+              name="state"
+              validators={{ onChange: leadFormSchema.shape.state }}
+            >
+              {(field) => (
+                <div>
+                  <Label htmlFor="state" className={LABEL}>
+                    State
+                  </Label>
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(v) => field.handleChange(v)}
+                  >
+                    <SelectTrigger
+                      aria-label="State"
+                      className={`${FIELD} data-[placeholder]:text-neutral-400 ${field.state.meta.errors?.length ? ERR : ""}`}
+                    >
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[220px]">
+                      {US_STATES.map((s) => (
+                        <SelectItem
+                          key={s.value}
+                          value={s.value}
+                          className="text-sm"
                         >
-                          {option.label}
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {field.state.meta.errors?.length > 0 && (
+                    <p
+                      className="mt-1 text-xs text-destructive"
+                      data-field-error
+                    >
+                      {getErrorMessage(field.state.meta.errors)}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field
+            name="availability"
+            validators={{ onChange: leadFormSchema.shape.availability }}
+          >
+            {(field) => (
+              <div>
+                <Label className={LABEL}>Availability</Label>
+                <div className="grid grid-cols-3 gap-2" role="radiogroup">
+                  {AVAILABILITY_OPTIONS.map((opt) => {
+                    const selected = field.state.value === opt.value;
+                    return (
+                      <button
+                        type="button"
+                        key={opt.value}
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => field.handleChange(opt.value)}
+                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
+                          selected
+                            ? "border-transparent text-white"
+                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
+                        }`}
+                        style={selected ? accentStyle : undefined}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </form.Field>
+        </div>
+      )}
+
+      {/* ─────────── STEP 3 — Experience ─────────── */}
+      {step === 2 && (
+        <div className="space-y-3">
+          <form.Field
+            name="insuranceExperience"
+            validators={{ onChange: leadFormSchema.shape.insuranceExperience }}
+          >
+            {(field) => (
+              <div>
+                <Label className={LABEL}>Insurance experience</Label>
+                <div className="grid grid-cols-2 gap-2" role="radiogroup">
+                  {EXPERIENCE_OPTIONS.map((opt) => {
+                    const selected = field.state.value === opt.value;
+                    return (
+                      <button
+                        type="button"
+                        key={opt.value}
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => field.handleChange(opt.value)}
+                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
+                          selected
+                            ? "border-transparent text-white"
+                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
+                        }`}
+                        style={selected ? accentStyle : undefined}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="incomeGoals">
+            {(field) => (
+              <div>
+                <Label htmlFor="incomeGoals" className={LABEL}>
+                  Income goal (optional)
+                </Label>
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v)}
+                >
+                  <SelectTrigger
+                    aria-label="Income goal"
+                    className={`${FIELD} data-[placeholder]:text-neutral-400`}
+                  >
+                    <SelectValue placeholder="Select (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INCOME_GOAL_OPTIONS.filter((o) => o.value !== "").map(
+                      (o) => (
+                        <SelectItem
+                          key={o.value}
+                          value={o.value}
+                          className="text-sm"
+                        >
+                          {o.label}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="isLicensed">
+            {(field) => (
+              <div>
+                <Label className={LABEL}>
+                  Do you have a life insurance license?
+                </Label>
+                <div className="grid grid-cols-2 gap-2" role="radiogroup">
+                  {[
+                    { value: true, label: "Yes" },
+                    { value: false, label: "No" },
+                  ].map((opt) => {
+                    const selected = field.state.value === opt.value;
+                    return (
+                      <button
+                        type="button"
+                        key={opt.label}
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => field.handleChange(opt.value)}
+                        className={`rounded-[3px] border px-2 py-2.5 text-sm font-medium transition-colors ${
+                          selected
+                            ? "border-transparent text-white"
+                            : "border-neutral-300 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
+                        }`}
+                        style={selected ? accentStyle : undefined}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </form.Field>
+
+          <form.Subscribe selector={(s) => s.values.isLicensed}>
+            {(isLicensed) =>
+              isLicensed && (
+                <div className="space-y-3 border-l-2 border-neutral-200 pl-3">
+                  <form.Field name="currentImoName">
+                    {(field) => (
+                      <div>
+                        <Label htmlFor="currentImoName" className={LABEL}>
+                          Current IMO / agency (optional)
                         </Label>
+                        <Input
+                          id="currentImoName"
+                          placeholder="Your current IMO or agency"
+                          className={FIELD}
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          onBlur={field.handleBlur}
+                        />
                       </div>
-                    ))}
+                    )}
+                  </form.Field>
+                  <div>
+                    <Label className={LABEL}>Products you sell</Label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {SPECIALTY_OPTIONS.map((opt) => (
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 text-sm text-neutral-700"
+                        >
+                          <Checkbox
+                            checked={selectedSpecialties.includes(opt.value)}
+                            onCheckedChange={() =>
+                              handleSpecialtyToggle(opt.value)
+                            }
+                            className="border-neutral-400"
+                          />
+                          {opt.label}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          }
-        </form.Subscribe>
-      </div>
-
-      {/* Why Interested */}
-      <form.Field
-        name="whyInterested"
-        validators={{ onChange: leadFormSchema.shape.whyInterested }}
-      >
-        {(field) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="whyInterested" className="text-xs font-medium">
-              Why are you interested in a career in insurance?{" "}
-              <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="whyInterested"
-              variant="ghost"
-              placeholder="Tell us a bit about yourself and what draws you to this opportunity..."
-              className={`min-h-[56px] text-sm resize-none bg-white text-neutral-900 placeholder:text-neutral-500 border-2 border-border rounded-lg focus:border-foreground focus:bg-white ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-            />
-            {field.state.meta.errors.length > 0 && (
-              <p className="text-xs text-destructive" data-field-error>
-                {getErrorMessage(field.state.meta.errors)}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      {/* TCPA "prior express written consent" — REQUIRED. Hard-coded here in the
-          shared form (not in the per-recruiter layout disclaimer) so a recruiter's
-          custom branding can never remove it. Rendered text == recorded text. */}
-      <form.Field
-        name="tcpaConsent"
-        validators={{
-          onChange: ({ value }: { value: boolean }) =>
-            value === true
-              ? undefined
-              : "You must agree to be contacted in order to submit this form.",
-        }}
-      >
-        {(field) => (
-          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 space-y-1.5">
-            <label
-              htmlFor="tcpaConsent"
-              className="flex items-start gap-2 cursor-pointer"
-            >
-              <Checkbox
-                id="tcpaConsent"
-                checked={field.state.value}
-                onCheckedChange={(checked) =>
-                  field.handleChange(checked === true)
-                }
-                className="mt-0.5 shrink-0 border-2 border-neutral-400 bg-white"
-              />
-              <span className="text-[11px] leading-relaxed text-neutral-700">
-                {TCPA_LEAD_CONSENT_TEXT}
-              </span>
-            </label>
-            <p className="pl-6 text-[11px] text-neutral-600">
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-neutral-900"
-              >
-                Terms of Service
-              </a>
-              {" · "}
-              <a
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-neutral-900"
-              >
-                Privacy Policy
-              </a>
-              {" · "}
-              <a
-                href="/accessibility"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-neutral-900"
-              >
-                Accessibility
-              </a>
-            </p>
-            {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-              <p className="pl-6 text-xs text-destructive" data-field-error>
-                {getErrorMessage(field.state.meta.errors)}
-              </p>
-            )}
-          </div>
-        )}
-      </form.Field>
-
-      {/* Submit Button - Theme-colored CTA. Disabled until TCPA consent is ticked. */}
-      <form.Subscribe selector={(state) => state.values.tcpaConsent}>
-        {(tcpaConsent) => (
-          <Button
-            type="submit"
-            className={`w-full h-10 font-semibold shadow-lg hover:shadow-xl transition-all ${
-              !primaryColor ? "bg-warning hover:bg-warning text-black" : ""
-            }`}
-            style={
-              primaryColor
-                ? {
-                    backgroundColor: primaryColor,
-                    color: "#ffffff",
-                  }
-                : undefined
+              )
             }
-            disabled={submitLeadMutation.isPending || !tcpaConsent}
+          </form.Subscribe>
+        </div>
+      )}
+
+      {/* ─────────── STEP 4 — Why + consent ─────────── */}
+      {step === 3 && (
+        <div className="space-y-3">
+          <form.Field
+            name="whyInterested"
+            validators={{ onChange: leadFormSchema.shape.whyInterested }}
           >
-            {submitLeadMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Submitting...
-              </>
-            ) : (
-              ctaText
+            {(field) => (
+              <div>
+                <Label htmlFor="whyInterested" className={LABEL}>
+                  Why are you interested?
+                </Label>
+                <Textarea
+                  id="whyInterested"
+                  placeholder="Tell us a bit about yourself and what draws you to this opportunity…"
+                  className={`min-h-[88px] w-full resize-none rounded-[3px] border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-900 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-[var(--spec-primary,#1c1917)] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[var(--spec-primary,#1c1917)] ${field.state.meta.errors?.length ? ERR : ""}`}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                />
+                {field.state.meta.errors?.length > 0 && (
+                  <p className="mt-1 text-xs text-destructive" data-field-error>
+                    {getErrorMessage(field.state.meta.errors)}
+                  </p>
+                )}
+              </div>
             )}
+          </form.Field>
+
+          {/* TCPA "prior express written consent" — REQUIRED. Hard-coded here so a
+              recruiter's branding can never remove it. Rendered text == recorded text. */}
+          <form.Field
+            name="tcpaConsent"
+            validators={{
+              onChange: ({ value }: { value: boolean }) =>
+                value === true
+                  ? undefined
+                  : "You must agree to be contacted in order to submit this form.",
+            }}
+          >
+            {(field) => (
+              <div className="space-y-1.5 rounded-[3px] border border-neutral-200 bg-neutral-50 p-2.5">
+                <label
+                  htmlFor="tcpaConsent"
+                  className="flex cursor-pointer items-start gap-2"
+                >
+                  <Checkbox
+                    id="tcpaConsent"
+                    checked={field.state.value}
+                    onCheckedChange={(c) => field.handleChange(c === true)}
+                    className="mt-0.5 shrink-0 border-neutral-400 bg-white"
+                  />
+                  <span className="text-[11px] leading-relaxed text-neutral-700">
+                    {TCPA_LEAD_CONSENT_TEXT}
+                  </span>
+                </label>
+                <p className="pl-6 text-[11px] text-neutral-600">
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-neutral-900"
+                  >
+                    Terms of Service
+                  </a>
+                  {" · "}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-neutral-900"
+                  >
+                    Privacy Policy
+                  </a>
+                  {" · "}
+                  <a
+                    href="/accessibility"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-neutral-900"
+                  >
+                    Accessibility
+                  </a>
+                </p>
+                {field.state.meta.errors?.length > 0 && (
+                  <p className="pl-6 text-xs text-destructive" data-field-error>
+                    {getErrorMessage(field.state.meta.errors)}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+        </div>
+      )}
+
+      {/* ─────────── Footer nav ─────────── */}
+      <div className="mt-5 flex items-center gap-2">
+        {step > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={goBack}
+            className="h-11 border-neutral-300 px-4 text-neutral-700"
+          >
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Back
           </Button>
         )}
-      </form.Subscribe>
+        {step < TOTAL - 1 ? (
+          <Button
+            type="button"
+            onClick={goNext}
+            className="h-11 flex-1 font-semibold"
+            style={accentStyle}
+          >
+            Continue
+            <ArrowRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        ) : (
+          <form.Subscribe selector={(s) => s.values.tcpaConsent}>
+            {(tcpaConsent) => (
+              <Button
+                type="submit"
+                disabled={submitLeadMutation.isPending || !tcpaConsent}
+                className={`h-11 flex-1 font-semibold ${!primaryColor ? "bg-neutral-900 text-white hover:bg-neutral-800" : ""}`}
+                style={accentStyle}
+              >
+                {submitLeadMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting…
+                  </>
+                ) : (
+                  ctaText
+                )}
+              </Button>
+            )}
+          </form.Subscribe>
+        )}
+      </div>
     </form>
   );
 }

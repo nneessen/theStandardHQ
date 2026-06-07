@@ -1,47 +1,46 @@
 // src/features/recruiting/layouts/blocks/ValueGridBlock.tsx
+// Editorial numbered list (big index numerals + hairline rules) — intentionally
+// NOT a grid of icon cards (that reads as generic SaaS/AI-built).
 import type { ValueGridBlock as ValueGridBlockData } from "@/types/recruiting-design-spec.types";
-import { resolveIcon } from "./icons";
 
 export function ValueGridBlock({ block }: { block: ValueGridBlockData }) {
   return (
-    <section className="space-y-4">
+    <section>
       {block.heading && (
-        <div className="section-eyebrow-row !mb-0">
+        <div className="section-eyebrow-row !mb-3">
           <span className="section-eyebrow-line" />
           <span className="section-eyebrow-label">{block.heading}</span>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {block.items.map((item, i) => {
-          const Icon = resolveIcon(item.icon);
-          return (
-            <div key={i} className="card card-hover p-4 flex gap-3">
-              {Icon && (
-                <span
-                  className="landing-icon-tile h-9 w-9 shrink-0"
-                  style={{
-                    background: "var(--spec-primary)",
-                    color: "var(--spec-primary-fg)",
-                    borderColor: "var(--spec-primary)",
-                  }}
-                >
-                  <Icon className="h-4 w-4" />
-                </span>
-              )}
-              <div className="min-w-0">
-                <p className="font-display font-bold uppercase tracking-tight text-[0.95rem] leading-tight">
-                  {item.title}
+      <ul className="border-t border-[var(--landing-border)]">
+        {block.items.map((item, i) => (
+          <li
+            key={i}
+            className="flex items-baseline gap-4 border-b border-[var(--landing-border)] py-3"
+          >
+            <span
+              className="font-display font-black tabular leading-none"
+              style={{
+                fontSize: "1.5rem",
+                color: "var(--spec-primary)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div className="min-w-0">
+              <p className="font-display font-bold uppercase leading-tight tracking-tight text-[1.05rem]">
+                {item.title}
+              </p>
+              {item.body && (
+                <p className="text-eyebrow mt-0.5 !normal-case !tracking-normal leading-relaxed">
+                  {item.body}
                 </p>
-                {item.body && (
-                  <p className="text-eyebrow !normal-case !tracking-normal mt-1 leading-relaxed">
-                    {item.body}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
-          );
-        })}
-      </div>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

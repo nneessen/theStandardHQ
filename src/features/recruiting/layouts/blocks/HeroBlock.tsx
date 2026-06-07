@@ -1,5 +1,5 @@
 // src/features/recruiting/layouts/blocks/HeroBlock.tsx
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { HeroBlock as HeroBlockData } from "@/types/recruiting-design-spec.types";
 import type { BlockRenderContext } from "./types";
 
@@ -31,19 +31,19 @@ export function HeroBlock({
       className={`flex flex-col ${centered ? "items-center text-center" : "items-start"}`}
     >
       {block.eyebrow && !minimal && (
-        <div className="inline-flex items-center gap-3 mb-5">
+        <div
+          className={`mb-6 flex items-center gap-3 ${centered ? "justify-center" : ""}`}
+        >
           <span
-            className="pulse-glow inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] rounded-[2px] font-mono"
-            style={{
-              background: "var(--spec-primary)",
-              color: "var(--spec-primary-fg)",
-            }}
+            className="h-px w-8"
+            style={{ background: "var(--spec-primary)" }}
+          />
+          <span
+            className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ color: "var(--spec-primary)" }}
           >
             {block.eyebrow}
           </span>
-          {!centered && (
-            <span className="hidden sm:block w-10 h-px bg-[var(--landing-border)]" />
-          )}
         </div>
       )}
 
@@ -83,7 +83,6 @@ export function HeroBlock({
                 borderColor: "var(--spec-primary)",
               }}
             >
-              <Sparkles className="h-3.5 w-3.5" />
               {block.primary_cta}
               <ArrowRight className="h-3.5 w-3.5" />
             </button>

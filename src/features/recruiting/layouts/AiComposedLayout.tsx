@@ -178,13 +178,17 @@ export function AiComposedLayout({
 
         {/* ============ RIGHT / FORM PANEL (scrolls internally on desktop) ============ */}
         <aside className="surface-paper lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-l lg:border-[var(--landing-border-strong)]">
-          <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto p-6 sm:p-8 xl:p-10">
-            {formBlock && <BlockRenderer block={formBlock} ctx={ctx} />}
-            {theme.disclaimer_text && (
-              <p className="mt-6 text-eyebrow font-mono leading-relaxed opacity-80">
-                {theme.disclaimer_text}
-              </p>
-            )}
+          <div className="flex flex-col overflow-y-auto p-6 sm:p-8 xl:p-10 lg:min-h-0 lg:flex-1">
+            {/* my-auto centers the short multi-step form; if a step is ever tall
+                it still scrolls from the top (never clips). */}
+            <div className="my-auto w-full">
+              {formBlock && <BlockRenderer block={formBlock} ctx={ctx} />}
+              {theme.disclaimer_text && (
+                <p className="mt-6 text-eyebrow font-mono leading-relaxed opacity-80">
+                  {theme.disclaimer_text}
+                </p>
+              )}
+            </div>
           </div>
         </aside>
       </div>

@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeAll, describe, it, expect, vi } from "vitest";
 import { AiComposedLayout } from "../AiComposedLayout";
@@ -21,7 +21,10 @@ import { validateDesignSpec } from "@/lib/recruiting-design-spec";
 import { DEFAULT_THEME } from "@/types/recruiting-theme.types";
 import type { PublicRecruiterInfo } from "@/types/leads.types";
 
-const TCPA_SNIPPET = /prior express written consent/i;
+// The lead form is multi-step (TCPA lives on the final step). The honeypot input
+// is always rendered, regardless of step, so it's a stable "one form" marker.
+const formCount = (c: HTMLElement) =>
+  c.querySelectorAll('input[name="company_fax_ext"]').length;
 
 function renderLayout(specInput: unknown) {
   const { spec } = validateDesignSpec(specInput);
@@ -40,8 +43,8 @@ function renderLayout(specInput: unknown) {
 }
 
 describe("AiComposedLayout", () => {
-  it("renders exactly ONE lead form (with TCPA consent) when the spec has two form blocks", () => {
-    renderLayout({
+  it("renders exactly ONE lead form when the spec has two form blocks", () => {
+    const { container } = renderLayout({
       theme: { palette: { primary: "#112233", accent: "#445566" } },
       blocks: [
         { id: "h", type: "hero", variant: "split", headline: "Join Acme" },
@@ -49,20 +52,22 @@ describe("AiComposedLayout", () => {
         { id: "f2", type: "form", heading: "Second" },
       ],
     });
-    expect(screen.getAllByText(TCPA_SNIPPET)).toHaveLength(1);
+    expect(formCount(container)).toBe(1);
     expect(screen.getByText(/Join Acme/)).toBeInTheDocument();
+    // First step of the multi-step form is shown.
+    expect(screen.getByText(/About you/i)).toBeInTheDocument();
   });
 
   it("injects and renders the lead form when the spec has NO form block", () => {
-    renderLayout({
+    const { container } = renderLayout({
       theme: { palette: { primary: "#0ea5e9", accent: "#22c55e" } },
       blocks: [{ id: "h", type: "hero", variant: "stacked", headline: "Hi" }],
     });
-    expect(screen.getAllByText(TCPA_SNIPPET)).toHaveLength(1);
+    expect(formCount(container)).toBe(1);
   });
 
   it("renders content blocks (value grid) alongside the form", () => {
-    renderLayout({
+    const { container } = renderLayout({
       theme: { palette: { primary: "#112233", accent: "#445566" } },
       blocks: [
         { id: "h", type: "hero", variant: "split", headline: "Build" },
@@ -76,7 +81,34 @@ describe("AiComposedLayout", () => {
       ],
     });
     expect(screen.getByText("Fast growth")).toBeInTheDocument();
-    expect(screen.getAllByText(TCPA_SNIPPET)).toHaveLength(1);
+    expect(formCount(container)).toBe(1);
+  });
+
+  it("advances the multi-step form when the first step is valid", async () => {
+    renderLayout({
+      theme: { palette: { primary: "#112233", accent: "#445566" } },
+      blocks: [
+        { id: "h", type: "hero", variant: "split", headline: "Join" },
+        { id: "f", type: "form" },
+      ],
+    });
+    expect(screen.getByText(/About you/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("John"), {
+      target: { value: "Jane" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Doe"), {
+      target: { value: "Roe" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("john.doe@example.com"), {
+      target: { value: "jane@example.com" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("(555) 123-4567"), {
+      target: { value: "(555) 123-4567" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+    expect(
+      await screen.findByText(/Location & availability/i),
+    ).toBeInTheDocument();
   });
 });
 
