@@ -124,6 +124,9 @@ serve(async (req) => {
           context,
           fired_at: new Date().toISOString(),
           workflows_triggered: 0,
+          // Stamp the tenant on the event log. Set on the user-JWT path (the caller's
+          // IMO); null for service-role/system emits that carry no IMO context.
+          imo_id: callerImoId,
         })
         .select("id")
         .single();
