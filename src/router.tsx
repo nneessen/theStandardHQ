@@ -46,7 +46,6 @@ import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { DesignPreviewPage } from "./features/recruiting/pages/DesignPreviewPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
 import { PublicRegistrationPage } from "./features/recruiting/pages/PublicRegistrationPage";
-import { TestRegistration } from "./features/recruiting/pages/TestRegistration";
 import { RecruitDetailPage } from "./features/recruiting/pages/RecruitDetailPage";
 import { LeadDetailPage } from "./features/recruiting/pages/LeadDetailPage";
 import { TrainingHubPage, TrainerDashboard } from "./features/training-hub";
@@ -584,13 +583,6 @@ const publicRegistrationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register/$token",
   component: PublicRegistrationPage,
-});
-
-// Debug route for testing registration
-const testRegistrationRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "test-register/$token",
-  component: TestRegistration,
 });
 
 // Underwriting Wizard route - full-page wizard, feature flag guarded internally
@@ -1188,7 +1180,6 @@ const routeTree = rootRoute.addChildren([
   publicJoinRoute,
   designPreviewRoute,
   publicRegistrationRoute,
-  testRegistrationRoute,
   trainingHubRoute,
   myTrainingRoute,
   myTrainingBuilderRoute,

@@ -45,7 +45,6 @@ function App() {
     "/join-",
     "/join/",
     "/register/",
-    "/test-register/",
     "/landing",
     "/internal/design-preview", // wizard live-preview iframe (renders bare, no shell)
   ];
