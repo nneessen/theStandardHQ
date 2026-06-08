@@ -51,6 +51,8 @@ plans/continuation-prompts/
 
 # PreCompact hook logs
 .claude/hooks/pre-compact.log
+# Claude Code scheduled-task runtime lock
+.claude/scheduled_tasks.lock
 build.log
 dev.log
 .vercel

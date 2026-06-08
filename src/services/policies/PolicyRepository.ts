@@ -634,7 +634,10 @@ export class PolicyRepository extends BaseRepository<
           )
         `,
         )
-        .eq("status", "active")
+        // "active" is a lifecycle_status; the status column only holds
+        // approved/pending/withdrawn/denied, so filtering status='active'
+        // silently matches nothing.
+        .eq("lifecycle_status", "active")
         .gte("effective_date", formatDateForDB(startDate))
         .lte("effective_date", formatDateForDB(endDate))
         .order("effective_date", { ascending: false });
@@ -655,7 +658,9 @@ export class PolicyRepository extends BaseRepository<
         .from(this.tableName)
         .select("annual_premium")
         .eq("carrier_id", carrierId)
-        .eq("status", "active");
+        // "active" is a lifecycle_status, not a status value (which only holds
+        // approved/pending/withdrawn/denied). See getAggregateMetrics.
+        .eq("lifecycle_status", "active");
 
       if (error) {
         throw this.handleError(error, "getTotalAnnualPremiumByCarrier");
@@ -906,8 +911,11 @@ export class PolicyRepository extends BaseRepository<
       const [allPolicies, newPolicies] = await Promise.all([
         this.client
           .from(this.tableName)
+          // "active" is a lifecycle_status, not a status value (status holds
+          // approved/pending/withdrawn/denied). Filtering status='active'
+          // matched nothing on prod.
           .select("annual_premium")
-          .eq("status", "active")
+          .eq("lifecycle_status", "active")
           .lte("effective_date", formatDateForDB(endDate)),
         this.client
           .from(this.tableName)
