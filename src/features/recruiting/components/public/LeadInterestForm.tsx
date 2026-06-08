@@ -82,8 +82,7 @@ const getErrorMessage = (errors: any[]): string => {
 // the white panel; focus picks up the recruiter's brand color.
 const FIELD =
   "h-11 w-full rounded-[3px] border border-neutral-300 bg-neutral-50 px-3 text-sm text-neutral-900 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-[var(--spec-primary,#1c1917)] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[var(--spec-primary,#1c1917)]";
-const LABEL =
-  "mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-500";
+const LABEL = "mb-1.5 block font-mono text-xs font-semibold text-neutral-600";
 const ERR =
   "border-destructive focus:border-destructive focus:ring-destructive";
 
@@ -328,7 +327,7 @@ export function LeadInterestForm({
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.14em] text-neutral-500"
+          className="flex items-baseline justify-between font-mono text-xs font-medium text-neutral-600"
         >
           <span>{STEP_TITLES[step]}</span>
           <span className="tabular-nums">

@@ -3,8 +3,10 @@
 // screen, big inputs, a clickable step rail, autosave on every step, and a
 // truthful "Preview my page" button that opens the real live page.
 //
-// Steps: Your link → About you → Look & feel → Booking & contact →
-// What visitors see → Custom domain (optional) → Review & publish.
+// Steps: Your link → Design (colors + logo + AI prompt) →
+// Booking & contact → Review (custom domain inline).
+//
+// The page is LIVE the moment the slug is saved — there is no publish gate.
 //
 // Data access goes through useRecruitingPageEditor (feature hook). Branding
 // steps are gated behind the custom_branding entitlement; the link itself is
@@ -26,7 +28,6 @@ import {
   Eye,
   PartyPopper,
   Share2,
-  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,37 +42,26 @@ import { AiDesignStep } from "./wizard/AiDesignStep";
 import type {
   RecruitingPageSettingsInput,
   SocialLinks,
-  EnabledFeatures,
 } from "@/types/recruiting-theme.types";
 import { DEFAULT_THEME } from "@/types/recruiting-theme.types";
 import { useRecruitingPageEditor } from "../hooks/useRecruitingPageEditor";
 
 /* ───────────────────────────── steps ───────────────────────────── */
 
-type StepId =
-  | "link"
-  | "about"
-  | "look"
-  | "booking"
-  | "visitors"
-  | "domain"
-  | "review";
+type StepId = "link" | "design" | "booking" | "review";
 
 const STEPS: { id: StepId; label: string; hint: string }[] = [
   { id: "link", label: "Your link", hint: "Pick your web address" },
-  { id: "about", label: "About you", hint: "Name & message" },
-  { id: "look", label: "Design", hint: "AI builds your page" },
+  { id: "design", label: "Design", hint: "Colors, logo & AI builder" },
   {
     id: "booking",
     label: "Booking & contact",
     hint: "How prospects reach you",
   },
-  { id: "visitors", label: "What visitors see", hint: "Sections & options" },
-  { id: "domain", label: "Custom domain", hint: "Optional — your own URL" },
-  { id: "review", label: "Review & publish", hint: "You're all set" },
+  { id: "review", label: "Review", hint: "You're all set" },
 ];
 
-const BRANDING_STEPS: StepId[] = ["about", "look", "booking", "visitors"];
+const BRANDING_STEPS: StepId[] = ["design", "booking"];
 
 /* ─────────────────────────── helpers ───────────────────────────── */
 
@@ -162,11 +152,11 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium uppercase tracking-wide text-v2-ink-subtle">
+      <label className="block text-xs font-medium text-v2-ink-subtle">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-v2-ink-subtle">{hint}</p>}
+      {hint && <p className="text-sm text-v2-ink-subtle">{hint}</p>}
     </div>
   );
 }
@@ -196,7 +186,7 @@ function UrlField({
         }`}
       />
       {invalid && (
-        <p className="text-[11px] text-destructive">
+        <p className="text-sm text-destructive">
           Must start with http:// or https://
         </p>
       )}
@@ -267,14 +257,6 @@ export function RecruitingPageWizard() {
       setForm((prev) => ({
         ...prev,
         social_links: { ...prev.social_links, [platform]: url },
-      })),
-    [],
-  );
-  const updateFeature = useCallback(
-    (feature: keyof EnabledFeatures, value: boolean) =>
-      setForm((prev) => ({
-        ...prev,
-        enabled_features: { ...prev.enabled_features, [feature]: value },
       })),
     [],
   );
@@ -429,7 +411,7 @@ export function RecruitingPageWizard() {
   const handleFinish = useCallback(async () => {
     if (!currentSlug) {
       setStep("link");
-      setSlugError("Choose your link to publish your page.");
+      setSlugError("Choose your link to make your page live.");
       return;
     }
     if (canBrand) {
@@ -441,7 +423,7 @@ export function RecruitingPageWizard() {
       if (!ok) return;
     }
     setPublished(true);
-    toast.success("Your recruiting page is published!");
+    toast.success("Your recruiting page is live!");
   }, [currentSlug, canBrand, hasBrandingErrors, persistBranding]);
 
   const previewUrl = currentSlug ? subdomainUrl(currentSlug) : null;
@@ -513,13 +495,7 @@ export function RecruitingPageWizard() {
             />
           )}
 
-          {step === "about" && (
-            <FeatureGate feature="custom_branding" promptVariant="card">
-              <AboutStep form={form} updateField={updateField} />
-            </FeatureGate>
-          )}
-
-          {step === "look" && (
+          {step === "design" && (
             <FeatureGate feature="custom_branding" promptVariant="card">
               <AiDesignStep
                 form={form}
@@ -539,20 +515,6 @@ export function RecruitingPageWizard() {
                 updateSocial={updateSocial}
               />
             </FeatureGate>
-          )}
-
-          {step === "visitors" && (
-            <FeatureGate feature="custom_branding" promptVariant="card">
-              <VisitorsStep
-                form={form}
-                updateField={updateField}
-                updateFeature={updateFeature}
-              />
-            </FeatureGate>
-          )}
-
-          {step === "domain" && (
-            <DomainStep currentSlug={currentSlug} previewUrl={previewUrl} />
           )}
 
           {step === "review" && (
@@ -591,7 +553,7 @@ export function RecruitingPageWizard() {
                 ) : (
                   <Check className="mr-1.5 h-4 w-4" />
                 )}
-                {published ? "Saved" : "Finish & publish"}
+                {published ? "Saved" : "Done — your page is live"}
               </Button>
             ) : (
               <Button
@@ -603,7 +565,7 @@ export function RecruitingPageWizard() {
                 {slugSaving || savingBranding ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}
-                {step === "domain" ? "Continue" : "Save & continue"}
+                Save &amp; continue
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             )}
@@ -625,7 +587,7 @@ function StepRail({
 }) {
   return (
     <aside className="lg:sticky lg:top-4 lg:self-start">
-      <ol className="flex gap-3 overflow-x-auto lg:flex-col lg:gap-0 lg:overflow-visible">
+      <ol className="flex flex-wrap gap-x-4 gap-y-3 lg:flex-col lg:flex-nowrap lg:gap-0">
         {STEPS.map((s, i) => {
           const done = i < currentIdx;
           const current = i === currentIdx;
@@ -638,7 +600,7 @@ function StepRail({
               >
                 <div className="flex flex-col items-center">
                   <span
-                    className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
+                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors ${
                       done
                         ? "border-success bg-success text-success-foreground"
                         : current
@@ -646,7 +608,7 @@ function StepRail({
                           : "border-v2-ring text-v2-ink-subtle"
                     }`}
                   >
-                    {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                    {done ? <Check className="h-4 w-4" /> : i + 1}
                   </span>
                   {i < STEPS.length - 1 && (
                     <span
@@ -658,7 +620,7 @@ function StepRail({
                 </div>
                 <span className="min-w-0 pt-0.5">
                   <span
-                    className={`block whitespace-nowrap text-sm font-medium lg:whitespace-normal ${
+                    className={`block text-sm font-medium ${
                       current
                         ? "text-v2-ink"
                         : done
@@ -668,7 +630,7 @@ function StepRail({
                   >
                     {s.label}
                   </span>
-                  <span className="hidden text-[11px] text-v2-ink-subtle lg:block">
+                  <span className="hidden text-sm text-v2-ink-subtle lg:block">
                     {s.hint}
                   </span>
                 </span>
@@ -765,12 +727,12 @@ function LinkStep({
           </span>
         </div>
         {error ? (
-          <p className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+          <p className="mt-1.5 flex items-center gap-1 text-sm text-destructive">
             <AlertCircle className="h-3.5 w-3.5" />
             {error}
           </p>
         ) : (
-          <p className="mt-1.5 text-[11px] text-v2-ink-subtle">
+          <p className="mt-1.5 text-sm text-v2-ink-subtle">
             Lowercase letters, numbers, and hyphens only.
           </p>
         )}
@@ -778,7 +740,7 @@ function LinkStep({
 
       {currentSlug && (
         <div className="mt-6 space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-v2-ink-subtle">
+          <p className="text-xs font-medium text-v2-ink-subtle">
             Your page is live at
           </p>
           <CopyRow
@@ -796,64 +758,7 @@ function LinkStep({
   );
 }
 
-/* ────────────────────────── step 2: about ──────────────────────── */
-
-function AboutStep({
-  form,
-  updateField,
-}: {
-  form: RecruitingPageSettingsInput;
-  updateField: <K extends keyof RecruitingPageSettingsInput>(
-    f: K,
-    v: RecruitingPageSettingsInput[K],
-  ) => void;
-}) {
-  return (
-    <div className="max-w-xl space-y-6">
-      <StepHeader
-        title="Tell prospects who you are"
-        desc="This is the headline and message visitors see first. Make it personal and inviting."
-      />
-      <Field label="Display name" hint="Your agency or team name.">
-        <Input
-          value={form.display_name || ""}
-          onChange={(e) => updateField("display_name", e.target.value)}
-          placeholder="The Standard — Tampa"
-          className="h-11 text-base"
-        />
-      </Field>
-      <Field label="Headline">
-        <Input
-          value={form.headline || ""}
-          onChange={(e) => updateField("headline", e.target.value)}
-          placeholder="Join Our Team"
-          className="h-11 text-base"
-        />
-      </Field>
-      <Field label="Subheadline">
-        <Textarea
-          value={form.subheadline || ""}
-          onChange={(e) => updateField("subheadline", e.target.value)}
-          placeholder="Build your career in insurance"
-          className="min-h-[70px] text-sm"
-        />
-      </Field>
-      <Field
-        label="About you (optional)"
-        hint="A short paragraph about your agency and what makes it a great place to work."
-      >
-        <Textarea
-          value={form.about_text || ""}
-          onChange={(e) => updateField("about_text", e.target.value)}
-          placeholder="Tell prospects about your agency, your culture, and the opportunity…"
-          className="min-h-[110px] text-sm"
-        />
-      </Field>
-    </div>
-  );
-}
-
-/* ───────────────────────── step 4: booking ─────────────────────── */
+/* ───────────────────────── step 3: booking ─────────────────────── */
 
 function BookingStep({
   form,
@@ -871,7 +776,7 @@ function BookingStep({
     <div className="max-w-xl space-y-6">
       <StepHeader
         title="How prospects reach you"
-        desc="Set the button text, add a booking link, and connect your socials. All optional — fill in what you use."
+        desc="Set the button text, add a booking link, connect your socials, and set your default location. All optional — fill in what you use."
       />
       <Field label="Button text" hint="The call-to-action on your page.">
         <Input
@@ -921,91 +826,8 @@ function BookingStep({
           placeholder="https://youtube.com/…"
         />
       </div>
-    </div>
-  );
-}
 
-/* ──────────────────────── step 5: visitors ─────────────────────── */
-
-function Toggle({
-  checked,
-  onChange,
-  title,
-  desc,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-md border border-v2-ring p-3 hover:bg-v2-ring/30">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
-      />
-      <span>
-        <span className="block text-sm font-medium text-v2-ink">{title}</span>
-        <span className="block text-[11px] text-v2-ink-subtle">{desc}</span>
-      </span>
-    </label>
-  );
-}
-
-function VisitorsStep({
-  form,
-  updateField,
-  updateFeature,
-}: {
-  form: RecruitingPageSettingsInput;
-  updateField: <K extends keyof RecruitingPageSettingsInput>(
-    f: K,
-    v: RecruitingPageSettingsInput[K],
-  ) => void;
-  updateFeature: (feature: keyof EnabledFeatures, value: boolean) => void;
-}) {
-  const ef = form.enabled_features ?? {};
-  return (
-    <div className="max-w-xl space-y-6">
-      <StepHeader
-        title="What visitors see"
-        desc="Turn page sections on or off and add a few finishing touches."
-      />
-
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-2">
-          <ListChecks className="h-4 w-4 text-v2-ink-muted" />
-          <h3 className="text-sm font-semibold text-v2-ink">Page sections</h3>
-        </div>
-        <Toggle
-          checked={ef.show_display_name !== false}
-          onChange={(v) => updateFeature("show_display_name", v)}
-          title="Show display-name heading"
-          desc="Display your agency name next to your logo."
-        />
-        <Toggle
-          checked={ef.show_stats !== false}
-          onChange={(v) => updateFeature("show_stats", v)}
-          title="Show earnings highlight"
-          desc='The "$20,000+ average monthly commissions" callout.'
-        />
-        <Toggle
-          checked={ef.show_about !== false}
-          onChange={(v) => updateFeature("show_about", v)}
-          title="Show About section"
-          desc="Display the about text you wrote earlier."
-        />
-        <Toggle
-          checked={ef.collect_phone !== false}
-          onChange={(v) => updateFeature("collect_phone", v)}
-          title="Collect phone number"
-          desc="Ask prospects for a phone number on the form."
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 pt-2">
         <Field label="Default city (optional)">
           <Input
             value={form.default_city || ""}
@@ -1040,60 +862,12 @@ function VisitorsStep({
   );
 }
 
-/* ──────────────────────── step 6: domain ───────────────────────── */
-
-function DomainStep({
-  currentSlug,
-  previewUrl,
-}: {
-  currentSlug: string;
-  previewUrl: string | null;
-}) {
-  return (
-    <div className="max-w-2xl space-y-6">
-      <StepHeader
-        title="Use your own domain (optional)"
-        desc="Your page already works on your free address. If you own a domain, you can connect it for a fully branded link — we walk you through it step by step."
-      />
-
-      {currentSlug && (
-        <div className="rounded-lg border border-success/30 bg-success/10 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-success">
-            <CheckCircle2 className="h-4 w-4" />
-            Your free address is ready
-          </div>
-          <a
-            href={previewUrl ?? "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 block truncate font-mono text-sm text-success hover:underline"
-          >
-            {currentSlug}.thestandardhq.com
-          </a>
-          <p className="mt-1.5 text-xs text-v2-ink-muted">
-            Most agents just use this — nothing to set up. A custom domain is
-            purely optional.
-          </p>
-        </div>
-      )}
-
-      <FeatureGate feature="custom_branding" promptVariant="card">
-        <div className="rounded-lg border border-v2-ring bg-v2-card p-4">
-          <CustomDomainManager />
-        </div>
-      </FeatureGate>
-    </div>
-  );
-}
-
-/* ──────────────────────── step 7: review ───────────────────────── */
+/* ──────────────────────── step 4: review ───────────────────────── */
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-v2-ring py-2 last:border-0">
-      <span className="text-xs uppercase tracking-wide text-v2-ink-subtle">
-        {label}
-      </span>
+      <span className="text-xs text-v2-ink-subtle">{label}</span>
       <span className="min-w-0 truncate text-sm text-v2-ink">{value}</span>
     </div>
   );
@@ -1115,30 +889,30 @@ function ReviewStep({
   onEditLink: () => void;
 }) {
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="max-w-2xl space-y-6">
       <StepHeader
-        title="Review & publish"
-        desc="Here's a quick summary. Open your live page to see exactly what prospects will see."
+        title="Review"
+        desc="Your page is live the moment your link is saved — no publishing step. Here's a quick summary; open your live page to see exactly what prospects will see."
       />
 
       {published && (
         <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 p-3 text-sm font-medium text-success">
           <PartyPopper className="h-5 w-5" />
-          Your recruiting page is published and live!
+          Your recruiting page is live!
         </div>
       )}
 
       {!currentSlug && (
         <div className="flex items-start justify-between gap-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
-          <div className="flex items-start gap-2 text-xs text-warning">
+          <div className="flex items-start gap-2 text-sm text-warning">
             <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-            <span>You still need to pick your link before publishing.</span>
+            <span>Pick your link to make your page live.</span>
           </div>
           <Button
             size="sm"
             variant="outline"
             onClick={onEditLink}
-            className="h-8"
+            className="h-9"
           >
             Pick link
           </Button>
@@ -1186,11 +960,49 @@ function ReviewStep({
         </a>
       )}
 
-      <p className="flex items-center gap-1.5 text-xs text-v2-ink-subtle">
+      {/* Custom domain — optional, inline */}
+      <div className="space-y-3 border-t border-v2-ring pt-5">
+        <div>
+          <h3 className="text-sm font-semibold text-v2-ink">
+            Use your own domain (optional)
+          </h3>
+          <p className="mt-1 text-sm text-v2-ink-muted">
+            Your page already works on your free address. If you own a domain,
+            connect it for a fully branded link — we walk you through it.
+          </p>
+        </div>
+
+        {currentSlug && (
+          <div className="rounded-lg border border-success/30 bg-success/10 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-success">
+              <CheckCircle2 className="h-4 w-4" />
+              Your free address is ready
+            </div>
+            <a
+              href={previewUrl ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 block truncate font-mono text-sm text-success hover:underline"
+            >
+              {currentSlug}.thestandardhq.com
+            </a>
+            <p className="mt-1.5 text-sm text-v2-ink-muted">
+              Most agents just use this — nothing to set up. A custom domain is
+              purely optional.
+            </p>
+          </div>
+        )}
+
+        <FeatureGate feature="custom_branding" promptVariant="card">
+          <div className="rounded-lg border border-v2-ring bg-v2-card p-4">
+            <CustomDomainManager />
+          </div>
+        </FeatureGate>
+      </div>
+
+      <p className="flex items-center gap-1.5 text-sm text-v2-ink-subtle">
         <Link2 className="h-3.5 w-3.5" />
-        Changes save automatically as you go. Click{" "}
-        <strong className="text-v2-ink-muted">Finish &amp; publish</strong> when
-        you're happy.
+        Changes save automatically as you go — your page is already live.
       </p>
     </div>
   );

@@ -187,6 +187,14 @@ export function PipelineTemplatesList({
     }
   };
 
+  const openCreateFlow = () => {
+    if (isRegularUser) {
+      setConsultationWarningOpen(true);
+    } else {
+      setCreateDialogOpen(true);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center border border-border bg-card rounded-lg">
@@ -195,12 +203,16 @@ export function PipelineTemplatesList({
     );
   }
 
+  const isEmpty = !templates || templates.length === 0;
+
   return (
     <div className="space-y-2.5">
-      {/* Actions */}
+      {/* Actions bar */}
       <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
         <p className="text-[11px] text-muted-foreground">
-          Manage pipeline templates and their phases
+          {isEmpty
+            ? "Create your first pipeline template to start building your recruiting workflow"
+            : "Duplicate a proven template, then tweak phases and items — fastest way to build a new pipeline"}
         </p>
         <Button
           size="sm"
@@ -211,161 +223,175 @@ export function PipelineTemplatesList({
               ? "Switch from All IMOs to a specific IMO to create a template"
               : undefined
           }
-          onClick={() =>
-            isRegularUser
-              ? setConsultationWarningOpen(true)
-              : setCreateDialogOpen(true)
-          }
+          onClick={openCreateFlow}
         >
           <Plus className="h-3 w-3 mr-1.5" />
           New Template
         </Button>
       </div>
 
-      {/* Templates Table */}
-      <div className="border border-border bg-card rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="h-8 bg-background border-b border-border">
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Name
-              </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Description
-              </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
-                Status
-              </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
-                Default
-              </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-24">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {templates?.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="p-8">
-                  <div className="text-center">
-                    <Inbox className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-[11px] text-muted-foreground">
-                      No templates found. Create one to get started.
-                    </p>
-                  </div>
-                </TableCell>
+      {/* Empty state — rich panel outside the table */}
+      {isEmpty ? (
+        <div className="border border-border bg-card rounded-lg px-6 py-10 flex flex-col items-center text-center gap-3">
+          <Inbox className="h-8 w-8 text-muted-foreground" />
+          <div className="space-y-1">
+            <p className="text-[12px] font-semibold text-foreground">
+              No pipeline templates yet
+            </p>
+            <p className="text-[11px] text-muted-foreground max-w-xs">
+              Create your first template to define phases, checklist items, and
+              automations for your recruiting pipeline.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="h-7 px-3 text-[11px] mt-1"
+            disabled={isViewingAllImos}
+            title={
+              isViewingAllImos
+                ? "Switch from All IMOs to a specific IMO to create a template"
+                : undefined
+            }
+            onClick={openCreateFlow}
+          >
+            <Plus className="h-3 w-3 mr-1.5" />
+            Create your first pipeline
+          </Button>
+        </div>
+      ) : (
+        /* Templates Table */
+        <div className="border border-border bg-card rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="h-8 bg-background border-b border-border">
+                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Name
+                </TableHead>
+                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Description
+                </TableHead>
+                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
+                  Status
+                </TableHead>
+                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
+                  Default
+                </TableHead>
+                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-40">
+                  Actions
+                </TableHead>
               </TableRow>
-            )}
-            {templates?.map((template) => (
-              <TableRow
-                key={template.id}
-                className="h-9 hover:bg-background border-b border-border/60 last:border-0"
-              >
-                <TableCell className="p-2 text-[11px] font-medium text-foreground">
-                  {template.name}
-                  {isSuperAdmin && imoLabel(template.imo_id) && (
-                    <span className="ml-1.5 text-[9px] font-normal uppercase tracking-wide text-muted-foreground">
-                      {imoLabel(template.imo_id)}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="p-2 text-[11px] text-muted-foreground truncate max-w-64">
-                  {template.description || "-"}
-                </TableCell>
-                <TableCell className="p-2">
-                  <Badge
-                    variant={template.is_active ? "default" : "secondary"}
-                    className="text-[9px] h-4 px-1.5"
-                  >
-                    {template.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="p-2">
-                  {template.is_default ? (
-                    <Star className="h-3.5 w-3.5 text-warning fill-amber-500" />
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => handleSetDefault(template.id)}
-                      disabled={setDefaultTemplate.isPending || !isAdmin}
-                      title={
-                        !isAdmin
-                          ? "Only admins can set the default template"
-                          : undefined
-                      }
+            </TableHeader>
+            <TableBody>
+              {templates.map((template) => (
+                <TableRow
+                  key={template.id}
+                  className="h-9 hover:bg-background border-b border-border/60 last:border-0"
+                >
+                  <TableCell className="p-2 text-[11px] font-medium text-foreground">
+                    {template.name}
+                    {isSuperAdmin && imoLabel(template.imo_id) && (
+                      <span className="ml-1.5 text-[9px] font-normal uppercase tracking-wide text-muted-foreground">
+                        {imoLabel(template.imo_id)}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="p-2 text-[11px] text-muted-foreground truncate max-w-64">
+                    {template.description || "-"}
+                  </TableCell>
+                  <TableCell className="p-2">
+                    <Badge
+                      variant={template.is_active ? "default" : "secondary"}
+                      className="text-[9px] h-4 px-1.5"
                     >
-                      <Star className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                  )}
-                </TableCell>
-                <TableCell className="p-2">
-                  <div className="flex items-center gap-0.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => onSelectTemplate(template.id)}
-                      disabled={
-                        !canModifyTemplate(template.created_by, template.name)
-                      }
-                      title={
-                        !canModifyTemplate(template.created_by, template.name)
-                          ? "You can only edit your own templates"
-                          : undefined
-                      }
-                    >
-                      <Edit2
-                        className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "text-muted-foreground dark:text-muted-foreground" : "text-muted-foreground"}`}
-                      />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => {
-                        setDuplicateName(`${template.name} (Copy)`);
-                        setDuplicateTemplateId(template.id);
-                      }}
-                      disabled={isRegularUser}
-                      title={
-                        isRegularUser
-                          ? "Only admins and staff can duplicate templates"
-                          : undefined
-                      }
-                    >
-                      <Copy
-                        className={`h-3 w-3 ${isRegularUser ? "text-muted-foreground" : "text-muted-foreground dark:text-muted-foreground"}`}
-                      />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                      onClick={() => setDeleteConfirmId(template.id)}
-                      disabled={
-                        template.is_default ||
-                        !canModifyTemplate(template.created_by, template.name)
-                      }
-                      title={
-                        !canModifyTemplate(template.created_by, template.name)
-                          ? "You can only delete your own templates"
-                          : undefined
-                      }
-                    >
-                      <Trash2
-                        className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "" : "opacity-30"}`}
-                      />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+                      {template.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="p-2">
+                    {template.is_default ? (
+                      <Star className="h-3.5 w-3.5 text-warning fill-amber-500" />
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => handleSetDefault(template.id)}
+                        disabled={setDefaultTemplate.isPending || !isAdmin}
+                        title={
+                          !isAdmin
+                            ? "Only admins can set the default template"
+                            : undefined
+                        }
+                      >
+                        <Star className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    )}
+                  </TableCell>
+                  <TableCell className="p-2">
+                    <div className="flex items-center gap-1">
+                      {/* Duplicate — promoted to labeled outline button (clone-as-primary affordance) */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 px-2 text-[10px] font-medium gap-1"
+                        onClick={() => {
+                          setDuplicateName(`${template.name} (Copy)`);
+                          setDuplicateTemplateId(template.id);
+                        }}
+                        disabled={isRegularUser}
+                        title={
+                          isRegularUser
+                            ? "Only admins and staff can duplicate templates"
+                            : "Duplicate this template — fastest way to build a new pipeline"
+                        }
+                      >
+                        <Copy className="h-3 w-3" />
+                        Duplicate
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => onSelectTemplate(template.id)}
+                        disabled={
+                          !canModifyTemplate(template.created_by, template.name)
+                        }
+                        title={
+                          !canModifyTemplate(template.created_by, template.name)
+                            ? "You can only edit your own templates"
+                            : "Edit template"
+                        }
+                      >
+                        <Edit2
+                          className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "text-muted-foreground dark:text-muted-foreground" : "text-muted-foreground"}`}
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={() => setDeleteConfirmId(template.id)}
+                        disabled={
+                          template.is_default ||
+                          !canModifyTemplate(template.created_by, template.name)
+                        }
+                        title={
+                          !canModifyTemplate(template.created_by, template.name)
+                            ? "You can only delete your own templates"
+                            : undefined
+                        }
+                      >
+                        <Trash2
+                          className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "" : "opacity-30"}`}
+                        />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>

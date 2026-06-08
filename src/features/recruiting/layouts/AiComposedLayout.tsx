@@ -86,6 +86,12 @@ export function AiComposedLayout({
     "--landing-radius": RADIUS_MAP[spec.theme.radius],
     "--landing-font-display": FONT_PAIRING_MAP[spec.theme.font_pairing].display,
     "--landing-font-mono": FONT_PAIRING_MAP[spec.theme.font_pairing].body,
+    // Bump fluid type scale modestly so the public prospect page reads larger.
+    // These override the defaults from landing-theme.css without touching that file.
+    "--landing-fs-xs": "clamp(0.8125rem, 0.775rem + 0.25vw, 0.9375rem)",
+    "--landing-fs-sm": "clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem)",
+    "--landing-fs-base": "clamp(1rem, 0.96rem + 0.2vw, 1.125rem)",
+    "--landing-fs-lg": "clamp(1.1875rem, 1.1rem + 0.375vw, 1.4375rem)",
   } as CSSProperties;
 
   const ctx: BlockRenderContext = {

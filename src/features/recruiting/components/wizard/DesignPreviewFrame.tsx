@@ -5,8 +5,15 @@
 // desktop/mobile width toggle — the iframe's element width IS the inner viewport
 // width, so AiComposedLayout's responsive breakpoints resolve accurately. This
 // is how we visually prove the form fits the viewport (the original complaint).
+//
+// SCALING: at desktop (1180px logical), the iframe is wider than its max-w-3xl
+// container. We keep the iframe's style.width at the logical frame width so the
+// internal viewport stays accurate, but wrap it in a div scaled via
+// `transform: scale(ratio)` with an explicit scaled height so no overflow occurs.
+// The measurement div is a plain w-full block — its clientWidth is parent-capped
+// and not inflated by the oversized iframe child.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Monitor, Smartphone } from "lucide-react";
 import type { RecruitingDesignSpec } from "@/types/recruiting-design-spec.types";
 import type { RecruitingPageTheme } from "@/types/recruiting-theme.types";
@@ -26,8 +33,34 @@ export function DesignPreviewFrame({
   theme: Partial<RecruitingPageTheme>;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // measureRef: a plain block div whose clientWidth is parent-constrained (not
+  // pushed by the iframe child). We observe it to compute the scale ratio.
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const [view, setView] = useState<ViewWidth>("desktop");
   const [ready, setReady] = useState(false);
+
+  // Measure container width immediately before first paint to avoid a flash.
+  useLayoutEffect(() => {
+    const el = measureRef.current;
+    if (!el) return;
+    setContainerWidth(el.clientWidth);
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w) setContainerWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // scale ≤ 1: desktop may need to shrink; mobile (390) fits inside, so cap at 1.
+  const frameWidth = WIDTHS[view];
+  const scale =
+    containerWidth !== null
+      ? Math.min(1, containerWidth / frameWidth)
+      : view === "mobile"
+        ? 1
+        : 0; // hide until measured to avoid flash at full 1180px
 
   // The child posts "ready" once it's listening.
   useEffect(() => {
@@ -89,22 +122,36 @@ export function DesignPreviewFrame({
           </button>
         </div>
       </div>
-      <div
-        className="overflow-auto p-3"
-        style={{ maxHeight: PREVIEW_HEIGHT + 40 }}
-      >
+      {/* Measure div: plain w-full block — its clientWidth is parent-capped, not
+          inflated by the oversized iframe below. */}
+      <div ref={measureRef} className="w-full" />
+      <div className="overflow-hidden p-3">
         {spec ? (
-          <iframe
-            ref={iframeRef}
-            src={PREVIEW_PATH}
-            title="Recruiting page preview"
+          // Outer div acts as the "scaled bounding box" so the parent sees the
+          // correctly-sized footprint (no horizontal overflow).
+          <div
             style={{
-              width: WIDTHS[view],
-              height: PREVIEW_HEIGHT,
-              border: 0,
+              width: "100%",
+              height: scale > 0 ? PREVIEW_HEIGHT * scale : 0,
+              overflow: "hidden",
             }}
-            className="mx-auto block rounded bg-white shadow-sm"
-          />
+          >
+            <iframe
+              ref={iframeRef}
+              src={PREVIEW_PATH}
+              title="Recruiting page preview"
+              style={{
+                // Keep logical frame width so internal viewport breakpoints resolve correctly.
+                width: frameWidth,
+                height: PREVIEW_HEIGHT,
+                border: 0,
+                transformOrigin: "top left",
+                transform: `scale(${scale})`,
+                visibility: scale > 0 ? "visible" : "hidden",
+              }}
+              className="block rounded bg-white shadow-sm"
+            />
+          </div>
         ) : (
           <div className="flex h-40 items-center justify-center text-xs text-v2-ink-subtle">
             Generate a design to see your live preview.

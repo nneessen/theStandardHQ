@@ -38,7 +38,7 @@ import { downloadCSV } from "@/utils/exportHelpers";
 import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { subdomainUrl } from "@/lib/hostname";
 import { useFeatureAccess } from "@/hooks/subscription";
-import { FeatureGate } from "@/components/subscription/FeatureGate";
+import { UpgradePrompt } from "@/components/subscription";
 import { BasicRecruitingView } from "./components/BasicRecruitingView";
 import { PillButton, PillNav, SoftCard, SectionShell } from "@/components/v2";
 import { Board, Cap, FlapTile, Num, T } from "@/components/board";
@@ -879,8 +879,8 @@ export function RecruitingDashboard() {
   }
 
   return (
-    <FeatureGate feature="recruiting_basic" promptVariant="card">
-      <div />
-    </FeatureGate>
+    <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <UpgradePrompt feature="recruiting_basic" variant="card" />
+    </div>
   );
 }

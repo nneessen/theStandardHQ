@@ -365,7 +365,7 @@ export function MyRecruitingPipeline() {
       <div className="theme-landing surface-base flex items-center justify-center min-h-screen">
         <div className="text-center">
           <Loader2
-            className="h-6 w-6 animate-spin mx-auto mb-3"
+            className="h-8 w-8 animate-spin mx-auto mb-3"
             style={{ color: "var(--landing-deep-green)" }}
           />
           <p className="text-eyebrow">Loading your pipeline…</p>
@@ -378,7 +378,7 @@ export function MyRecruitingPipeline() {
     return (
       <div className="theme-landing surface-base flex items-center justify-center min-h-screen px-4">
         <div className="surface-paper rounded-[2px] border border-[var(--landing-border)] p-6 max-w-sm text-center shadow-[0_1px_0_rgba(22,27,19,0.04),0_8px_24px_-4px_rgba(22,27,19,0.12)]">
-          <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-3" />
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-3" />
           <h2 className="text-display-xl mb-1">
             Couldn&apos;t load your profile
           </h2>
@@ -396,7 +396,7 @@ export function MyRecruitingPipeline() {
       <div className="theme-landing surface-base flex items-center justify-center min-h-screen px-4">
         <div className="surface-paper rounded-[2px] border border-[var(--landing-border)] p-6 max-w-sm text-center shadow-[0_1px_0_rgba(22,27,19,0.04),0_8px_24px_-4px_rgba(22,27,19,0.12)]">
           <AlertCircle
-            className="h-6 w-6 mx-auto mb-3"
+            className="h-8 w-8 mx-auto mb-3"
             style={{ color: "var(--landing-deep-green)" }}
           />
           <h2 className="text-display-xl mb-1">Profile not found</h2>
@@ -534,7 +534,7 @@ export function MyRecruitingPipeline() {
                 }
               />
             ) : (
-              <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle">
                 No phases yet — they will appear here as soon as your recruiter
                 sets up your pipeline.
               </p>
@@ -579,7 +579,7 @@ export function MyRecruitingPipeline() {
           caption="A clear headshot helps your recruiter and trainers match a face to the name. Keep it under 5 MB."
           compact
         >
-          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-v2-card hover:bg-v2-ring dark:bg-v2-ring  text-white dark:text-v2-ink px-4 py-2.5 text-[13px] font-semibold transition-colors">
+          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-v2-card hover:bg-v2-ring dark:bg-v2-ring  text-white dark:text-v2-ink px-4 py-2.5 text-sm font-semibold transition-colors">
             {uploadingPhoto ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (

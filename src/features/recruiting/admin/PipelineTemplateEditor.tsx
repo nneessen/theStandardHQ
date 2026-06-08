@@ -105,7 +105,7 @@ export function PipelineTemplateEditor({
     return (
       <div className="p-8 text-center border border-v2-ring bg-v2-card rounded-lg">
         <AlertCircle className="h-6 w-6 text-v2-ink-subtle mx-auto mb-2" />
-        <p className="text-[11px] text-v2-ink-muted">Template not found</p>
+        <p className="text-sm text-v2-ink-muted">Template not found</p>
       </div>
     );
   }
@@ -116,7 +116,7 @@ export function PipelineTemplateEditor({
       {!canModify && (
         <div className="flex items-center gap-2 bg-warning/10 rounded-lg px-3 py-2 border border-warning/30">
           <AlertCircle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
-          <span className="text-[11px] text-warning">
+          <span className="text-sm text-warning">
             You can only view this template. Only the creator, an admin, or
             staff with access to DEFAULT templates can make changes.
           </span>
@@ -129,20 +129,20 @@ export function PipelineTemplateEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-[11px]"
+            className="h-9 px-2 text-sm"
             onClick={onClose}
           >
             <ArrowLeft className="h-3 w-3 mr-1.5" />
             Back to Templates
           </Button>
           <div className="h-4 w-px bg-v2-ring" />
-          <span className="text-[11px] font-medium text-v2-ink">
+          <span className="text-sm font-medium text-v2-ink">
             {template.name}
           </span>
           {template.is_default && (
             <Badge
               variant="secondary"
-              className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning dark:text-warning"
+              className="text-xs h-5 px-1.5 bg-warning/20 text-warning dark:bg-warning dark:text-warning"
             >
               Default
             </Badge>
@@ -151,7 +151,7 @@ export function PipelineTemplateEditor({
         {canModify && (
           <Button
             size="sm"
-            className="h-7 px-3 text-[11px]"
+            className="h-9 px-3 text-sm"
             onClick={handleSave}
             disabled={!hasChanges || updateTemplate.isPending}
           >
@@ -166,13 +166,13 @@ export function PipelineTemplateEditor({
       </div>
 
       {/* Template Details */}
-      <div className="p-3 border border-v2-ring bg-v2-card rounded-lg">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted mb-3">
+      <div className="p-4 border border-v2-ring bg-v2-card rounded-lg">
+        <h3 className="text-base font-medium uppercase tracking-wide text-v2-ink-muted mb-3">
           Template Details
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
               Name
             </Label>
             {/* WARNING: Any template name containing "DEFAULT" (case-insensitive) is
@@ -183,14 +183,14 @@ export function PipelineTemplateEditor({
               value={name}
               onChange={(e) => handleFieldChange("name", e.target.value)}
               disabled={!canModify}
-              className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+              className="h-9 text-sm bg-v2-canvas border-v2-ring"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
               Status
             </Label>
-            <div className="flex items-center gap-2 h-7">
+            <div className="flex items-center gap-2 h-9">
               <Checkbox
                 checked={isActive}
                 onCheckedChange={(checked: boolean) =>
@@ -198,13 +198,13 @@ export function PipelineTemplateEditor({
                 }
                 disabled={!canModify}
               />
-              <span className="text-[11px] text-v2-ink-muted">
+              <span className="text-sm text-v2-ink-muted">
                 {isActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
           <div className="col-span-2 space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
               Description
             </Label>
             <Textarea
@@ -212,14 +212,14 @@ export function PipelineTemplateEditor({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Optional description..."
               disabled={!canModify}
-              className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
+              className="text-sm min-h-14 bg-v2-canvas border-v2-ring"
             />
           </div>
         </div>
       </div>
 
       {/* Phases Editor */}
-      <div className="p-3 border border-v2-ring bg-v2-card rounded-lg">
+      <div className="p-4 border border-v2-ring bg-v2-card rounded-lg">
         <PhaseEditor templateId={templateId} readOnly={!canModify} />
       </div>
     </div>

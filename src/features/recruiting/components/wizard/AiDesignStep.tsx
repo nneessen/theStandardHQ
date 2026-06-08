@@ -15,6 +15,7 @@ import {
   X,
   Palette,
   Send,
+  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -206,9 +207,9 @@ export function AiDesignStep({
       <div>
         <h2 className="text-lg font-semibold text-v2-ink">Design your page</h2>
         <p className="mt-1 text-sm text-v2-ink-muted">
-          Pick your colors and logo, then describe the recruiting page you want.
-          Our AI builds it for you — refine it by chatting until it&apos;s
-          right.
+          Pick your colors and logo, add a few details about you, then describe
+          the recruiting page you want. Our AI builds it for you — refine it by
+          chatting until it&apos;s right.
         </p>
       </div>
 
@@ -251,6 +252,68 @@ export function AiDesignStep({
             isUploading={uploadingType === "logo_dark"}
             accept="image/png,image/svg+xml,image/webp"
           />
+        </div>
+      </section>
+
+      {/* About you — fed to the AI as prompt hints */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <UserRound className="h-4 w-4 text-v2-ink-muted" />
+          <h3 className="text-sm font-semibold text-v2-ink">About you</h3>
+        </div>
+        <p className="text-sm text-v2-ink-muted">
+          These help the AI write your page. They appear in the design and seed
+          the headline and message.
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-v2-ink-subtle">
+              Display name
+            </label>
+            <Input
+              value={form.display_name || ""}
+              onChange={(e) => updateField("display_name", e.target.value)}
+              placeholder="The Standard — Tampa"
+              className="h-11 text-base"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-v2-ink-subtle">
+              Headline
+            </label>
+            <Input
+              value={form.headline || ""}
+              onChange={(e) => updateField("headline", e.target.value)}
+              placeholder="Join Our Team"
+              className="h-11 text-base"
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-medium text-v2-ink-subtle">
+            Subheadline
+          </label>
+          <Textarea
+            value={form.subheadline || ""}
+            onChange={(e) => updateField("subheadline", e.target.value)}
+            placeholder="Build your career in insurance"
+            className="min-h-[70px] text-sm"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-medium text-v2-ink-subtle">
+            About you
+          </label>
+          <Textarea
+            value={form.about_text || ""}
+            onChange={(e) => updateField("about_text", e.target.value)}
+            placeholder="Tell prospects about your agency, your culture, and the opportunity…"
+            className="min-h-[110px] text-sm"
+          />
+          <p className="text-sm text-v2-ink-subtle">
+            A short paragraph about your agency — the AI uses it to write the
+            page copy.
+          </p>
         </div>
       </section>
 
@@ -298,7 +361,7 @@ export function AiDesignStep({
             {refImages.length < MAX_REF_IMAGES && (
               <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-v2-ring text-v2-ink-subtle hover:border-info/50 hover:text-info">
                 <ImagePlus className="h-4 w-4" />
-                <span className="text-[10px]">Add</span>
+                <span className="text-xs">Add</span>
                 <input
                   type="file"
                   accept={ALLOWED_TYPES.join(",")}
@@ -312,7 +375,7 @@ export function AiDesignStep({
               </label>
             )}
           </div>
-          <p className="text-[11px] text-v2-ink-subtle">
+          <p className="text-sm text-v2-ink-subtle">
             Optionally attach up to {MAX_REF_IMAGES} screenshots/photos for
             style inspiration (palette, mood, layout). The AI uses them as a
             reference — it won&apos;t copy logos or text.
@@ -342,7 +405,7 @@ export function AiDesignStep({
           <p className="text-xs text-destructive">{composer.error}</p>
         )}
         {composer.notes.length > 0 && (
-          <p className="text-[11px] text-v2-ink-subtle">
+          <p className="text-sm text-v2-ink-subtle">
             Adjusted automatically: {composer.notes.join(" ")}
           </p>
         )}

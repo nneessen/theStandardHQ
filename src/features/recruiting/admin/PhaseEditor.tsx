@@ -60,7 +60,153 @@ interface PhaseEditorProps {
   readOnly?: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Shared PhaseFormDialog
+// ---------------------------------------------------------------------------
+
+interface PhaseFormDialogCreateProps {
+  mode: "create";
+  open: boolean;
+  formData: CreatePhaseInput;
+  isPending: boolean;
+  onFieldChange: (updates: Partial<CreatePhaseInput>) => void;
+  onSubmit: () => void;
+  onClose: () => void;
+}
+
+interface PhaseFormDialogEditProps {
+  mode: "edit";
+  open: boolean;
+  formData: PipelinePhase;
+  isPending: boolean;
+  onFieldChange: (updates: Partial<PipelinePhase>) => void;
+  onSubmit: () => void;
+  onClose: () => void;
+}
+
+type PhaseFormDialogProps =
+  | PhaseFormDialogCreateProps
+  | PhaseFormDialogEditProps;
+
+function PhaseFormDialog(props: PhaseFormDialogProps) {
+  const { mode, open, formData, isPending, onFieldChange, onSubmit, onClose } =
+    props;
+
+  const isCreate = mode === "create";
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md p-4 bg-card">
+        <DialogHeader>
+          <DialogTitle className="text-lg">
+            {isCreate ? "Add Phase" : "Edit Phase"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
+              Phase Name
+            </Label>
+            <Input
+              value={formData.phase_name}
+              onChange={(e) => onFieldChange({ phase_name: e.target.value })}
+              placeholder={isCreate ? "e.g., Background Check" : undefined}
+              className="h-9 text-sm bg-background border-border"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
+              Description
+            </Label>
+            <Textarea
+              value={formData.phase_description || ""}
+              onChange={(e) =>
+                onFieldChange({ phase_description: e.target.value })
+              }
+              placeholder="Optional description..."
+              className="text-sm min-h-14 bg-background border-border"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground dark:text-muted-foreground">
+              Estimated Days
+            </Label>
+            <Input
+              type="number"
+              value={formData.estimated_days ?? 7}
+              onChange={(e) =>
+                onFieldChange({
+                  estimated_days: parseInt(e.target.value) || 7,
+                })
+              }
+              className="h-9 text-sm w-20 bg-background border-border"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`${mode}_auto_advance`}
+              checked={formData.auto_advance}
+              onCheckedChange={(checked) =>
+                onFieldChange({ auto_advance: !!checked })
+              }
+            />
+            <label
+              htmlFor={`${mode}_auto_advance`}
+              className="text-sm text-muted-foreground cursor-pointer"
+            >
+              Auto-advance when all items complete
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={`${mode}_visible_to_recruit`}
+              checked={formData.visible_to_recruit !== false}
+              onCheckedChange={(checked) =>
+                onFieldChange({ visible_to_recruit: !!checked })
+              }
+            />
+            <label
+              htmlFor={`${mode}_visible_to_recruit`}
+              className="text-sm text-muted-foreground cursor-pointer"
+            >
+              Visible to recruits
+            </label>
+          </div>
+          {formData.visible_to_recruit === false && (
+            <p className="text-xs text-warning ml-5">
+              This phase will be hidden from recruits. They will see a
+              &quot;waiting&quot; state instead.
+            </p>
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 text-sm"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            className="h-9 text-sm"
+            onClick={onSubmit}
+            disabled={isPending}
+          >
+            {isPending && <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />}
+            {isCreate ? "Add Phase" : "Save Changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Sortable Phase Item Component
+// ---------------------------------------------------------------------------
+
 interface SortablePhaseItemProps {
   phase: PipelinePhase;
   index: number;
@@ -125,7 +271,7 @@ function SortablePhaseItem({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 w-5 p-0"
+          className="h-8 w-8 p-0"
           disabled={isFirst}
           onClick={(e) => {
             e.stopPropagation();
@@ -137,7 +283,7 @@ function SortablePhaseItem({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 w-5 p-0"
+          className="h-8 w-8 p-0"
           disabled={isLast}
           onClick={(e) => {
             e.stopPropagation();
@@ -146,29 +292,26 @@ function SortablePhaseItem({
         >
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </Button>
-        <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
           {isExpanded ? (
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           ) : (
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
           )}
         </Button>
-        <span className="text-[10px] text-muted-foreground font-mono w-5">
+        <span className="text-xs text-muted-foreground font-mono w-5">
           {index + 1}
         </span>
-        <span className="text-[11px] font-medium text-foreground flex-1">
+        <span className="text-sm font-medium text-foreground flex-1">
           {phase.phase_name}
         </span>
-        <Badge
-          variant="outline"
-          className="text-[9px] h-4 px-1.5 border-border"
-        >
+        <Badge variant="outline" className="text-xs h-5 px-1.5 border-border">
           {phase.estimated_days || 0} days
         </Badge>
         {phase.auto_advance && (
           <Badge
             variant="secondary"
-            className="text-[9px] h-4 px-1.5 bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]"
+            className="text-xs h-5 px-1.5 bg-[hsl(var(--info))]/10 text-[hsl(var(--info))]"
           >
             Auto
           </Badge>
@@ -176,7 +319,7 @@ function SortablePhaseItem({
         {!phase.visible_to_recruit && (
           <Badge
             variant="outline"
-            className="text-[9px] h-4 px-1.5 border-[hsl(var(--warning))]/50 text-[hsl(var(--warning))]"
+            className="text-xs h-5 px-1.5 border-[hsl(var(--warning))]/50 text-[hsl(var(--warning))]"
           >
             <EyeOff className="h-2.5 w-2.5 mr-0.5" />
             Hidden
@@ -187,7 +330,7 @@ function SortablePhaseItem({
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-8 w-8 p-0"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit();
@@ -198,7 +341,7 @@ function SortablePhaseItem({
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 w-5 p-0 text-destructive hover:text-destructive/80"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive/80"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
@@ -223,6 +366,22 @@ function SortablePhaseItem({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Default create form state
+// ---------------------------------------------------------------------------
+
+const DEFAULT_PHASE_FORM: CreatePhaseInput = {
+  phase_name: "",
+  phase_description: "",
+  estimated_days: 7,
+  auto_advance: false,
+  visible_to_recruit: true,
+};
+
+// ---------------------------------------------------------------------------
+// PhaseEditor (main export)
+// ---------------------------------------------------------------------------
+
 export function PhaseEditor({
   templateId,
   readOnly = false,
@@ -237,13 +396,8 @@ export function PhaseEditor({
   const [editingPhase, setEditingPhase] = useState<PipelinePhase | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [phaseForm, setPhaseForm] = useState<CreatePhaseInput>({
-    phase_name: "",
-    phase_description: "",
-    estimated_days: 7,
-    auto_advance: false,
-    visible_to_recruit: true,
-  });
+  const [phaseForm, setPhaseForm] =
+    useState<CreatePhaseInput>(DEFAULT_PHASE_FORM);
 
   const sortedPhases = [...(phases || [])].sort(
     (a, b) => a.phase_order - b.phase_order,
@@ -330,13 +484,7 @@ export function PhaseEditor({
       });
       toast.success("Phase created");
       setCreateDialogOpen(false);
-      setPhaseForm({
-        phase_name: "",
-        phase_description: "",
-        estimated_days: 7,
-        auto_advance: false,
-        visible_to_recruit: true,
-      });
+      setPhaseForm(DEFAULT_PHASE_FORM);
     } catch (_error) {
       toast.error("Failed to create phase");
     }
@@ -391,14 +539,14 @@ export function PhaseEditor({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-base font-medium uppercase tracking-wide text-muted-foreground">
           Pipeline Phases ({sortedPhases.length})
         </h3>
         {!readOnly && (
           <Button
             size="sm"
             variant="default"
-            className="h-7 px-3 text-[11px]"
+            className="h-9 px-3 text-sm"
             onClick={() => setCreateDialogOpen(true)}
           >
             <Plus className="h-3 w-3 mr-1.5" />
@@ -408,7 +556,7 @@ export function PhaseEditor({
       </div>
 
       {sortedPhases.length === 0 ? (
-        <div className="text-center py-6 text-[11px] text-muted-foreground">
+        <div className="text-center py-6 text-sm text-muted-foreground">
           No phases yet. Add your first phase to get started.
         </div>
       ) : (
@@ -444,257 +592,50 @@ export function PhaseEditor({
       )}
 
       {/* Create Phase Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-card">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Add Phase</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-3">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                Phase Name
-              </Label>
-              <Input
-                value={phaseForm.phase_name}
-                onChange={(e) =>
-                  setPhaseForm({ ...phaseForm, phase_name: e.target.value })
-                }
-                placeholder="e.g., Background Check"
-                className="h-7 text-[11px] bg-background border-border"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                Description
-              </Label>
-              <Textarea
-                value={phaseForm.phase_description || ""}
-                onChange={(e) =>
-                  setPhaseForm({
-                    ...phaseForm,
-                    phase_description: e.target.value,
-                  })
-                }
-                placeholder="Optional description..."
-                className="text-[11px] min-h-14 bg-background border-border"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                Estimated Days
-              </Label>
-              <Input
-                type="number"
-                value={phaseForm.estimated_days || 7}
-                onChange={(e) =>
-                  setPhaseForm({
-                    ...phaseForm,
-                    estimated_days: parseInt(e.target.value) || 7,
-                  })
-                }
-                className="h-7 text-[11px] w-20 bg-background border-border"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="auto_advance"
-                checked={phaseForm.auto_advance}
-                onCheckedChange={(checked) =>
-                  setPhaseForm({ ...phaseForm, auto_advance: !!checked })
-                }
-              />
-              <label
-                htmlFor="auto_advance"
-                className="text-[11px] text-muted-foreground cursor-pointer"
-              >
-                Auto-advance when all items complete
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="visible_to_recruit"
-                checked={phaseForm.visible_to_recruit !== false}
-                onCheckedChange={(checked) =>
-                  setPhaseForm({ ...phaseForm, visible_to_recruit: !!checked })
-                }
-              />
-              <label
-                htmlFor="visible_to_recruit"
-                className="text-[11px] text-muted-foreground cursor-pointer"
-              >
-                Visible to recruits
-              </label>
-            </div>
-            {phaseForm.visible_to_recruit === false && (
-              <p className="text-[10px] text-warning ml-5">
-                This phase will be hidden from recruits. They will see a
-                &quot;waiting&quot; state instead.
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-[11px]"
-              onClick={() => setCreateDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-[11px]"
-              onClick={handleCreatePhase}
-              disabled={createPhase.isPending}
-            >
-              {createPhase.isPending && (
-                <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-              )}
-              Add Phase
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PhaseFormDialog
+        mode="create"
+        open={createDialogOpen}
+        formData={phaseForm}
+        isPending={createPhase.isPending}
+        onFieldChange={(updates) =>
+          setPhaseForm((prev) => ({ ...prev, ...updates }))
+        }
+        onSubmit={handleCreatePhase}
+        onClose={() => setCreateDialogOpen(false)}
+      />
 
       {/* Edit Phase Dialog */}
-      <Dialog open={!!editingPhase} onOpenChange={() => setEditingPhase(null)}>
-        <DialogContent className="max-w-md p-3 bg-card">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Edit Phase</DialogTitle>
-          </DialogHeader>
-          {editingPhase && (
-            <div className="space-y-3 py-3">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                  Phase Name
-                </Label>
-                <Input
-                  value={editingPhase.phase_name}
-                  onChange={(e) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      phase_name: e.target.value,
-                    })
-                  }
-                  className="h-7 text-[11px] bg-background border-border"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                  Description
-                </Label>
-                <Textarea
-                  value={editingPhase.phase_description || ""}
-                  onChange={(e) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      phase_description: e.target.value,
-                    })
-                  }
-                  className="text-[11px] min-h-14 bg-background border-border"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                  Estimated Days
-                </Label>
-                <Input
-                  type="number"
-                  value={editingPhase.estimated_days || 7}
-                  onChange={(e) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      estimated_days: parseInt(e.target.value) || 7,
-                    })
-                  }
-                  className="h-7 text-[11px] w-20 bg-background border-border"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="edit_auto_advance"
-                  checked={editingPhase.auto_advance}
-                  onCheckedChange={(checked) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      auto_advance: !!checked,
-                    })
-                  }
-                />
-                <label
-                  htmlFor="edit_auto_advance"
-                  className="text-[11px] text-muted-foreground cursor-pointer"
-                >
-                  Auto-advance when all items complete
-                </label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="edit_visible_to_recruit"
-                  checked={editingPhase.visible_to_recruit}
-                  onCheckedChange={(checked) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      visible_to_recruit: !!checked,
-                    })
-                  }
-                />
-                <label
-                  htmlFor="edit_visible_to_recruit"
-                  className="text-[11px] text-muted-foreground cursor-pointer"
-                >
-                  Visible to recruits
-                </label>
-              </div>
-              {!editingPhase.visible_to_recruit && (
-                <p className="text-[10px] text-warning ml-5">
-                  This phase will be hidden from recruits. They will see a
-                  &quot;waiting&quot; state instead.
-                </p>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-[11px]"
-              onClick={() => setEditingPhase(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-[11px]"
-              onClick={handleUpdatePhase}
-              disabled={updatePhase.isPending}
-            >
-              {updatePhase.isPending && (
-                <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-              )}
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {editingPhase && (
+        <PhaseFormDialog
+          mode="edit"
+          open={!!editingPhase}
+          formData={editingPhase}
+          isPending={updatePhase.isPending}
+          onFieldChange={(updates) =>
+            setEditingPhase((prev) => (prev ? { ...prev, ...updates } : null))
+          }
+          onSubmit={handleUpdatePhase}
+          onClose={() => setEditingPhase(null)}
+        />
+      )}
 
       {/* Delete Confirmation */}
       <Dialog
         open={!!deleteConfirmId}
         onOpenChange={() => setDeleteConfirmId(null)}
       >
-        <DialogContent className="max-w-sm p-3 bg-card">
+        <DialogContent className="max-w-sm p-4 bg-card">
           <DialogHeader>
-            <DialogTitle className="text-sm">Delete Phase?</DialogTitle>
+            <DialogTitle className="text-lg">Delete Phase?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             This will permanently delete this phase and all its checklist items.
           </p>
           <DialogFooter>
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-[11px]"
+              className="h-9 text-sm"
               onClick={() => setDeleteConfirmId(null)}
             >
               Cancel
@@ -702,7 +643,7 @@ export function PhaseEditor({
             <Button
               variant="destructive"
               size="sm"
-              className="h-7 text-[11px]"
+              className="h-9 text-sm"
               onClick={() =>
                 deleteConfirmId && handleDeletePhase(deleteConfirmId)
               }
