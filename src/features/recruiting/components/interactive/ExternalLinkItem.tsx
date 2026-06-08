@@ -35,7 +35,13 @@ export function ExternalLinkItem({
       return;
     }
 
-    window.open(metadata.url, "_blank");
+    // Honor the admin's open_in_new_tab choice (default = new tab). noopener
+    // guards against reverse-tabnabbing when opening externally.
+    window.open(
+      metadata.url,
+      metadata.open_in_new_tab === false ? "_self" : "_blank",
+      metadata.open_in_new_tab === false ? undefined : "noopener,noreferrer",
+    );
 
     if (!hasClicked) {
       try {
@@ -62,6 +68,7 @@ export function ExternalLinkItem({
     progressId,
     metadata?.url,
     metadata?.completion_method,
+    metadata?.open_in_new_tab,
     hasClicked,
     onComplete,
   ]);
@@ -122,6 +129,14 @@ export function ExternalLinkItem({
         <ExternalLink className="h-3.5 w-3.5" />
         {metadata.link_text}
       </Button>
+
+      {/* Expected duration hint (honors the admin's configured estimate) */}
+      {typeof metadata.expected_duration_minutes === "number" &&
+        metadata.expected_duration_minutes > 0 && (
+          <span className="text-xs text-v2-ink-muted">
+            ~{metadata.expected_duration_minutes} min
+          </span>
+        )}
 
       {/* Status indicator */}
       {hasClicked && (

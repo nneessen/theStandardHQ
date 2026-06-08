@@ -70,10 +70,9 @@ const ITEM_TYPES: { value: ChecklistItemType; label: string }[] = [
     value: "manual_approval",
     label: CHECKLIST_ITEM_TYPE_LABELS.manual_approval,
   },
-  {
-    value: "automated_check",
-    label: CHECKLIST_ITEM_TYPE_LABELS.automated_check,
-  },
+  // "automated_check" intentionally omitted: it has no runtime renderer (it is not
+  // in INTERACTIVE_ITEM_TYPES and PhaseChecklist has no special-case for it), so
+  // offering it here created an item type that does nothing. 0 rows exist on prod.
   {
     value: "scheduling_booking",
     label: CHECKLIST_ITEM_TYPE_LABELS.scheduling_booking,

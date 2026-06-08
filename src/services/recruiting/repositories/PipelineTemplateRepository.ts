@@ -16,6 +16,8 @@ export interface PipelineTemplateEntity {
   createdBy: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  /** Owning IMO — carried through so the admin UI can show/verify tenancy. */
+  imoId: string | null;
 }
 
 // Create/update types
@@ -102,11 +104,33 @@ export class PipelineTemplateRepository extends BaseRepository<
    * Set a template as the default (unsets others)
    */
   async setDefault(id: string): Promise<PipelineTemplateEntity> {
-    // First, unset all templates as default
-    await this.client
+    // Resolve the target's IMO so we only flip defaults WITHIN that tenant.
+    // Without this scoping a super-admin (whose RLS is unconditional) would
+    // clear is_default on every IMO's templates, corrupting other tenants'
+    // default pipelines.
+    const { data: target, error: targetError } = await this.client
+      .from(this.tableName)
+      .select("imo_id")
+      .eq("id", id)
+      .single();
+
+    if (targetError) {
+      throw this.handleError(targetError, "setDefault:lookup");
+    }
+
+    const targetImoId = (target as { imo_id: string | null }).imo_id;
+
+    // Unset default only within the same IMO (NULL-IMO templates form their own
+    // shared scope and must not clobber tenant-owned defaults).
+    let unset = this.client
       .from(this.tableName)
       .update({ is_default: false })
       .neq("id", id);
+    unset =
+      targetImoId === null
+        ? unset.is("imo_id", null)
+        : unset.eq("imo_id", targetImoId);
+    await unset;
 
     // Then set the specified one as default
     const { data, error } = await this.client
@@ -174,6 +198,7 @@ export class PipelineTemplateRepository extends BaseRepository<
       createdBy: row.created_by,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      imoId: row.imo_id ?? null,
     };
   }
 

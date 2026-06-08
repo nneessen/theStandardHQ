@@ -89,6 +89,8 @@ export interface PipelineTemplate {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  /** Owning IMO — used by the admin list to show/verify tenancy. */
+  imo_id?: string | null;
 }
 
 export interface PipelinePhase {

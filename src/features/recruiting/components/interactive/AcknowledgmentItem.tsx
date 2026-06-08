@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
 import type {
   AcknowledgmentMetadata,
@@ -108,10 +108,19 @@ export function AcknowledgmentItem({
   const canComplete =
     acknowledged && (!metadata.require_scroll || scrollCompleted);
 
+  const contentType = metadata.content_type ?? "inline_text";
+
   return (
     <div className="space-y-2">
-      {/* Content to acknowledge */}
-      {metadata.content && (
+      {/* Document title / heading, when provided */}
+      {metadata.document_title && (
+        <p className="text-xs font-medium text-v2-ink leading-tight">
+          {metadata.document_title}
+        </p>
+      )}
+
+      {/* Content to acknowledge — rendered according to content_type */}
+      {metadata.content && contentType === "inline_text" && (
         <ScrollArea
           ref={scrollRef}
           className="max-h-[120px] rounded border border-v2-ring p-2"
@@ -120,6 +129,31 @@ export function AcknowledgmentItem({
             {metadata.content}
           </div>
         </ScrollArea>
+      )}
+
+      {metadata.content && contentType === "document_url" && (
+        <div className="rounded border border-v2-ring p-2">
+          <a
+            href={metadata.content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-primary underline underline-offset-2 hover:no-underline"
+          >
+            <ExternalLink className="h-3 w-3 shrink-0" />
+            Open document
+          </a>
+        </div>
+      )}
+
+      {metadata.content && contentType === "terms_reference" && (
+        <div className="rounded border border-v2-ring p-2 flex items-center gap-1.5">
+          <FileText className="h-3.5 w-3.5 shrink-0 text-v2-ink-muted" />
+          <span className="text-xs text-v2-ink-muted">
+            {metadata.document_title
+              ? `${metadata.document_title} (${metadata.content})`
+              : metadata.content}
+          </span>
+        </div>
       )}
 
       {/* Scroll requirement notice */}

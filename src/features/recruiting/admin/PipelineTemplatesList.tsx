@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useImo } from "@/contexts/ImoContext";
+import { useAllActiveImos } from "@/hooks/imo";
 import {
   useTemplates,
   useCreateTemplate,
@@ -58,7 +59,21 @@ export function PipelineTemplatesList({
   currentUserId,
   isStaffRole,
 }: PipelineTemplatesListProps) {
-  const { effectiveImoId } = useImo();
+  const { effectiveImoId, imo, isViewingAllImos, isSuperAdmin } = useImo();
+  const { data: allActiveImos } = useAllActiveImos({ enabled: isSuperAdmin });
+  // Resolve the name of the IMO a new template will be stamped with, so the
+  // creator can never silently create it under the wrong tenant (the FFG
+  // mis-stamp root cause). For super-admins this follows the acting IMO; for
+  // everyone else it is their home IMO.
+  const targetImoName =
+    allActiveImos?.find((i) => i.id === effectiveImoId)?.name ??
+    (imo && imo.id === effectiveImoId ? imo.name : null);
+  // Short IMO label for a template row (super-admins see templates across IMOs,
+  // so labeling avoids the FFG-vs-Epic-Life confusion the owner reported).
+  const imoLabel = (id: string | null | undefined) => {
+    const match = allActiveImos?.find((i) => i.id === id);
+    return match?.code || match?.name || null;
+  };
   const { data: templates, isLoading } = useTemplates();
   const createTemplate = useCreateTemplate();
   const deleteTemplate = useDeleteTemplate();
@@ -98,6 +113,12 @@ export function PipelineTemplatesList({
   const handleCreate = async () => {
     if (!newTemplate.name.trim()) {
       toast.error("Template name is required");
+      return;
+    }
+    if (!effectiveImoId) {
+      toast.error(
+        "Select a specific IMO (not All IMOs) before creating a template.",
+      );
       return;
     }
 
@@ -184,6 +205,12 @@ export function PipelineTemplatesList({
         <Button
           size="sm"
           className="h-7 px-3 text-[11px]"
+          disabled={isViewingAllImos}
+          title={
+            isViewingAllImos
+              ? "Switch from All IMOs to a specific IMO to create a template"
+              : undefined
+          }
           onClick={() =>
             isRegularUser
               ? setConsultationWarningOpen(true)
@@ -237,6 +264,11 @@ export function PipelineTemplatesList({
               >
                 <TableCell className="p-2 text-[11px] font-medium text-foreground">
                   {template.name}
+                  {isSuperAdmin && imoLabel(template.imo_id) && (
+                    <span className="ml-1.5 text-[9px] font-normal uppercase tracking-wide text-muted-foreground">
+                      {imoLabel(template.imo_id)}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="p-2 text-[11px] text-muted-foreground truncate max-w-64">
                   {template.description || "-"}
@@ -344,6 +376,14 @@ export function PipelineTemplatesList({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-3">
+            <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
+              <p className="text-[10px] text-muted-foreground">
+                Creating template for
+              </p>
+              <p className="text-[12px] font-semibold text-foreground">
+                {targetImoName ?? "your IMO"}
+              </p>
+            </div>
             <div className="space-y-1.5">
               <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Name

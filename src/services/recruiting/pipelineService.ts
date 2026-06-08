@@ -372,6 +372,7 @@ function mapTemplateEntityToType(
     created_by: entity.createdBy ?? undefined,
     created_at: entity.createdAt ?? new Date().toISOString(),
     updated_at: entity.updatedAt ?? new Date().toISOString(),
+    imo_id: entity.imoId,
   };
 }
 

@@ -1,6 +1,6 @@
 // src/features/recruiting/components/interactive/QuizItem.tsx
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   RotateCcw,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { QuizMetadata, QuizResponse } from "@/types/recruiting.types";
@@ -42,6 +43,14 @@ export function QuizItem({
     canRetry: boolean;
     attemptsRemaining: number | null;
   } | null>(null);
+
+  // Timer: deadline-based so answer selections don't reset it
+  const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<
+    number | null
+  >(null);
+  const deadlineRef = useRef<number | null>(null);
+  // Stable ref to the force-submit function so the timer interval doesn't capture stale closures
+  const forceSubmitRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   // Shuffle questions if configured
   const questions = useMemo(() => {
@@ -99,70 +108,120 @@ export function QuizItem({
     }
   }, [currentQuestionIndex]);
 
-  const handleSubmitQuiz = useCallback(async () => {
-    // Check all questions answered
-    const unanswered = questions.filter((q) => !answers[q.id]?.length);
-    if (unanswered.length > 0) {
-      toast.error(
-        `Please answer all questions (${unanswered.length} remaining)`,
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await checklistResponseService.submitQuizAttempt(
-        progressId,
-        answers,
-        metadata,
-      );
-
-      if (!result.success) {
-        toast.error(result.error || "Failed to submit quiz");
-        return;
+  const handleSubmitQuiz = useCallback(
+    async (force = false) => {
+      // Check all questions answered (skip guard when auto-submitting on timeout)
+      if (!force) {
+        const unanswered = questions.filter((q) => !answers[q.id]?.length);
+        if (unanswered.length > 0) {
+          toast.error(
+            `Please answer all questions (${unanswered.length} remaining)`,
+          );
+          return;
+        }
       }
 
-      const details = result.completionDetails as {
-        score_percent: number;
-        passed: boolean;
-        can_retry: boolean;
-        attempts_remaining: number | null;
-      };
-
-      setLastAttemptResult({
-        passed: details.passed,
-        score: details.score_percent,
-        canRetry: details.can_retry,
-        attemptsRemaining: details.attempts_remaining,
-      });
-      setShowResults(true);
-
-      if (details.passed) {
-        toast.success(`Quiz passed with ${details.score_percent}%!`);
-        onComplete?.();
-      } else if (details.can_retry) {
-        toast.info(
-          `Score: ${details.score_percent}%. Required: ${metadata.passing_score_percent}%. You can retry.`,
+      setIsSubmitting(true);
+      try {
+        const result = await checklistResponseService.submitQuizAttempt(
+          progressId,
+          answers,
+          metadata,
         );
-      } else {
-        toast.error(
-          `Score: ${details.score_percent}%. Required: ${metadata.passing_score_percent}%. No more retries.`,
-        );
+
+        if (!result.success) {
+          toast.error(result.error || "Failed to submit quiz");
+          return;
+        }
+
+        const details = result.completionDetails as {
+          score_percent: number;
+          passed: boolean;
+          can_retry: boolean;
+          attempts_remaining: number | null;
+        };
+
+        setLastAttemptResult({
+          passed: details.passed,
+          score: details.score_percent,
+          canRetry: details.can_retry,
+          attemptsRemaining: details.attempts_remaining,
+        });
+        setShowResults(true);
+
+        if (details.passed) {
+          toast.success(`Quiz passed with ${details.score_percent}%!`);
+          onComplete?.();
+        } else if (details.can_retry) {
+          toast.info(
+            `Score: ${details.score_percent}%. Required: ${metadata.passing_score_percent}%. You can retry.`,
+          );
+        } else {
+          toast.error(
+            `Score: ${details.score_percent}%. Required: ${metadata.passing_score_percent}%. No more retries.`,
+          );
+        }
+      } catch (error) {
+        console.error("Failed to submit quiz:", error);
+        toast.error("Failed to submit quiz");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error("Failed to submit quiz:", error);
-      toast.error("Failed to submit quiz");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [progressId, answers, questions, metadata, onComplete]);
+    },
+    [progressId, answers, questions, metadata, onComplete],
+  );
 
   const handleRetry = useCallback(() => {
     setAnswers({});
     setCurrentQuestionIndex(0);
     setShowResults(false);
     setLastAttemptResult(null);
-  }, []);
+    // Reset timer deadline so a fresh countdown starts on the next attempt
+    if (metadata.time_limit_minutes) {
+      deadlineRef.current =
+        Date.now() + metadata.time_limit_minutes * 60 * 1000;
+      setTimeRemainingSeconds(metadata.time_limit_minutes * 60);
+    }
+  }, [metadata.time_limit_minutes]);
+
+  // Keep forceSubmitRef current so the timer interval always calls the latest closure
+  useEffect(() => {
+    forceSubmitRef.current = () => handleSubmitQuiz(true);
+  });
+
+  // Countdown timer — initialise deadline once on mount (or after retry via deadlineRef)
+  useEffect(() => {
+    if (!metadata.time_limit_minutes) return;
+
+    // Set deadline only when it hasn't been set yet (fresh mount)
+    if (deadlineRef.current === null) {
+      deadlineRef.current =
+        Date.now() + metadata.time_limit_minutes * 60 * 1000;
+      setTimeRemainingSeconds(metadata.time_limit_minutes * 60);
+    }
+
+    const interval = setInterval(() => {
+      // No-op when quiz is already completed / showing results / submitting
+      if (showResults || isSubmitting) return;
+
+      const remaining = Math.max(
+        0,
+        Math.round((deadlineRef.current! - Date.now()) / 1000),
+      );
+      setTimeRemainingSeconds(remaining);
+
+      if (remaining === 0) {
+        clearInterval(interval);
+        toast.warning("Time's up! Submitting your current answers.");
+        void forceSubmitRef.current();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+    // Intentionally omit showResults/isSubmitting from deps — we read them inside the callback
+    // to avoid resetting the interval on every state change. The interval refs are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata.time_limit_minutes]);
 
   // If already passed
   if (existingResponse?.passed) {
@@ -207,6 +266,58 @@ export function QuizItem({
           </div>
         </div>
 
+        {/* Correct-answer breakdown — only when show_correct_answers is enabled */}
+        {metadata.show_correct_answers && (
+          <div className="space-y-1.5">
+            {questions.map((q, idx) => {
+              const selected = answers[q.id] ?? [];
+              const correctIds = q.options
+                .filter((o) => o.is_correct)
+                .map((o) => o.id);
+              const isCorrect =
+                selected.length === correctIds.length &&
+                correctIds.every((id) => selected.includes(id));
+              return (
+                <div key={q.id} className="rounded border p-1.5 space-y-0.5">
+                  <p className="text-[10px] font-medium text-v2-ink flex items-center gap-1">
+                    {isCorrect ? (
+                      <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
+                    ) : (
+                      <XCircle className="h-3 w-3 text-destructive shrink-0" />
+                    )}
+                    Q{idx + 1}: {q.question_text}
+                  </p>
+                  <div className="space-y-0.5 pl-4">
+                    {q.options.map((opt) => {
+                      const wasSelected = selected.includes(opt.id);
+                      return (
+                        <p
+                          key={opt.id}
+                          className={`text-[10px] ${
+                            opt.is_correct
+                              ? "text-success font-medium"
+                              : wasSelected
+                                ? "text-destructive line-through"
+                                : "text-v2-ink-muted"
+                          }`}
+                        >
+                          {opt.is_correct ? "✓ " : wasSelected ? "✗ " : "  "}
+                          {opt.label}
+                        </p>
+                      );
+                    })}
+                    {q.explanation && (
+                      <p className="text-[10px] text-v2-ink-muted italic">
+                        {q.explanation}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {lastAttemptResult.canRetry && (
           <div className="flex items-center gap-2">
             <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
@@ -248,6 +359,11 @@ export function QuizItem({
           {metadata.passing_score_percent}% pass
         </Badge>
       </div>
+
+      {/* Description — only when set */}
+      {metadata.description && (
+        <p className="text-[10px] text-v2-ink-muted">{metadata.description}</p>
+      )}
 
       {/* Progress */}
       <div className="space-y-0.5">
@@ -331,15 +447,23 @@ export function QuizItem({
         </Button>
 
         <div className="flex items-center gap-2">
-          {metadata.time_limit_minutes && (
-            <span className="text-[10px] text-warning">
-              {metadata.time_limit_minutes}min limit
+          {timeRemainingSeconds !== null && (
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-mono ${
+                timeRemainingSeconds <= 60 ? "text-destructive" : "text-warning"
+              }`}
+            >
+              <Clock className="h-3 w-3" />
+              {String(Math.floor(timeRemainingSeconds / 60)).padStart(2, "0")}:
+              {String(timeRemainingSeconds % 60).padStart(2, "0")}
             </span>
           )}
 
           {currentQuestionIndex === totalQuestions - 1 ? (
             <Button
-              onClick={handleSubmitQuiz}
+              onClick={() => {
+                void handleSubmitQuiz();
+              }}
               disabled={
                 isSubmitting || Object.keys(answers).length < totalQuestions
               }

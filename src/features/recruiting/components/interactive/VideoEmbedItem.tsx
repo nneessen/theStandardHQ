@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, Play, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -59,6 +61,10 @@ export function VideoEmbedItem({
   onComplete,
 }: VideoEmbedItemProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Gate state for require_full_watch: tracks whether the user has opened the
+  // video (iframe received focus/click) and explicitly confirmed full viewing.
+  const [videoOpened, setVideoOpened] = useState(false);
+  const [watchConfirmed, setWatchConfirmed] = useState(false);
 
   const embedUrl =
     metadata?.platform && metadata?.video_id
@@ -144,13 +150,17 @@ export function VideoEmbedItem({
 
       {/* Video embed */}
       {embedUrl ? (
-        <div className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark">
+        <div
+          className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark"
+          onClick={() => setVideoOpened(true)}
+        >
           <iframe
             src={embedUrl}
             title={metadata.title || `${platformName} Video`}
             className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            onFocus={() => setVideoOpened(true)}
           />
         </div>
       ) : (
@@ -162,16 +172,40 @@ export function VideoEmbedItem({
         </div>
       )}
 
-      {/* Requirement note and button inline */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {metadata.require_full_watch && (
-          <p className="text-[10px] text-warning">Watch entire video</p>
-        )}
+      {/* require_full_watch gate: explicit confirmation checkbox */}
+      {metadata.require_full_watch && (
+        <div className="flex items-start gap-2 pt-1">
+          <Checkbox
+            id={`watch-confirm-${progressId}`}
+            checked={watchConfirmed}
+            onCheckedChange={(checked) => setWatchConfirmed(checked === true)}
+            disabled={!videoOpened || isDisabled}
+            className="mt-0.5 h-3.5 w-3.5"
+          />
+          <Label
+            htmlFor={`watch-confirm-${progressId}`}
+            className={`text-[10px] leading-snug cursor-pointer ${
+              !videoOpened || isDisabled ? "text-v2-ink-muted" : "text-v2-ink"
+            }`}
+          >
+            I have watched the entire video
+            {!videoOpened && (
+              <span className="ml-1 text-warning">(open the video first)</span>
+            )}
+          </Label>
+        </div>
+      )}
 
-        {/* Mark as Watched Button */}
+      {/* Mark as Watched Button */}
+      <div className="flex items-center gap-2 flex-wrap">
         <Button
           onClick={handleMarkWatched}
-          disabled={isSubmitting || isDisabled || !embedUrl}
+          disabled={
+            isSubmitting ||
+            isDisabled ||
+            !embedUrl ||
+            (metadata.require_full_watch === true && !watchConfirmed)
+          }
           size="sm"
           className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
         >

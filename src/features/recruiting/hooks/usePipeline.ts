@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { pipelineService } from "@/services/recruiting/pipelineService";
+import { useImo } from "@/contexts/ImoContext";
 import type {
   CreateTemplateInput,
   UpdateTemplateInput,
@@ -16,8 +17,12 @@ import type {
 // ========================================
 
 export function useTemplates() {
+  // Key by the effective IMO so switching tenants (super-admin acting-IMO, or
+  // a fresh login) invalidates the cache instead of serving the prior IMO's
+  // templates. invalidateQueries(["pipeline-templates"]) still prefix-matches.
+  const { effectiveImoId } = useImo();
   return useQuery({
-    queryKey: ["pipeline-templates"],
+    queryKey: ["pipeline-templates", effectiveImoId],
     queryFn: () => pipelineService.getTemplates(),
   });
 }
@@ -31,8 +36,9 @@ export function useTemplate(id: string | undefined) {
 }
 
 export function useActiveTemplate() {
+  const { effectiveImoId } = useImo();
   return useQuery({
-    queryKey: ["pipeline-template", "active"],
+    queryKey: ["pipeline-template", "active", effectiveImoId],
     queryFn: () => pipelineService.getActiveTemplate(),
   });
 }
