@@ -285,6 +285,21 @@ export function RecruitingPageWizard() {
   const [slugError, setSlugError] = useState("");
   const [slugSaving, setSlugSaving] = useState(false);
 
+  // AuthContext loads the profile async, so user?.recruiter_slug can be empty on
+  // the first paint — leaving the link step blank and the preview disabled even
+  // for a returning user who already saved a slug. Re-seed once it arrives, unless
+  // the user has already started typing a slug.
+  const slugSeededRef = useRef(false);
+  useEffect(() => {
+    if (slugSeededRef.current) return;
+    const existing = user?.recruiter_slug;
+    if (existing) {
+      setSlug((prev) => prev || existing);
+      setCurrentSlug((prev) => prev || existing);
+      slugSeededRef.current = true;
+    }
+  }, [user?.recruiter_slug]);
+
   // Save feedback
   const [savingBranding, setSavingBranding] = useState(false);
   const [savedTick, setSavedTick] = useState(false);

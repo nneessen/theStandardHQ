@@ -18,7 +18,6 @@ import {
   mergeWithDefaults,
 } from "@/lib/recruiting-theme";
 import { AiComposedLayout } from "../layouts/AiComposedLayout";
-import { NickCustomLayout } from "../layouts/NickCustomLayout";
 import {
   validateDesignSpec,
   legacyThemeToSpec,
@@ -220,13 +219,9 @@ export function PublicJoinPage() {
     onFormSuccess: (leadId: string) => setSubmittedLeadId(leadId),
   };
 
-  // Nick's custom layout for his personal page
-  if (recruiterId === "the-standard") {
-    return <NickCustomLayout {...layoutProps} />;
-  }
-
-  // Everyone else renders through the AI block composer (validated spec or the
-  // legacy-theme fallback computed above).
+  // All recruiting pages render through the AI block composer — a validated design
+  // spec when the recruiter has built one, otherwise the legacy-theme fallback
+  // computed above. The builder is the single source of truth for every page.
   return <AiComposedLayout spec={resolvedSpec} {...layoutProps} />;
 }
 
