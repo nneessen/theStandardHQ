@@ -6,7 +6,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 import { replaceTemplateVariables } from "../_shared/templateVariables.ts";
-import { isEmailSuppressed } from "../_shared/email-compliance.ts";
+import {
+  isEmailSuppressed,
+  appendComplianceFooter,
+  buildListUnsubscribeHeader,
+} from "../_shared/email-compliance.ts";
+import { normalizePhoneNumber } from "../_shared/phone.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -211,37 +216,53 @@ async function executeAutomation(
     );
     const shouldSendSms = ["sms", "all"].includes(commType);
 
-    // Send Email via Mailgun — skip suppressed recipients (CAN-SPAM/consent).
+    // Send Email via Mailgun — one message per recipient so each gets a CAN-SPAM
+    // unsubscribe footer + List-Unsubscribe header; skip suppressed addresses and
+    // record only those Mailgun actually accepted.
+    const sentEmails: string[] = [];
     if (shouldSendEmail && emails.length > 0 && automation.email_subject) {
       const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
       const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
 
-      const allowedEmails: string[] = [];
-      for (const addr of [...new Set(emails)]) {
-        if (!(await isEmailSuppressed(supabase, addr)))
-          allowedEmails.push(addr);
-      }
-
-      if (MAILGUN_API_KEY && MAILGUN_DOMAIN && allowedEmails.length > 0) {
-        const emailBody = substituteVars(automation.email_body_html || "");
+      if (MAILGUN_API_KEY && MAILGUN_DOMAIN) {
         const emailSubject = substituteVars(automation.email_subject);
+        const baseBody = substituteVars(automation.email_body_html || "");
 
-        const form = new FormData();
-        form.append(
-          "from",
-          `The Standard HQ <notifications@${MAILGUN_DOMAIN}>`,
-        );
-        form.append("to", allowedEmails.join(", "));
-        form.append("subject", emailSubject);
-        form.append("html", emailBody);
+        for (const addr of [...new Set(emails)]) {
+          if (await isEmailSuppressed(supabase, addr)) continue;
 
-        await fetch(`https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`, {
-          method: "POST",
-          headers: {
-            Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
-          },
-          body: form,
-        });
+          const form = new FormData();
+          form.append(
+            "from",
+            `The Standard HQ <notifications@${MAILGUN_DOMAIN}>`,
+          );
+          form.append("to", addr);
+          form.append("subject", emailSubject);
+          form.append("html", await appendComplianceFooter(baseBody, addr));
+          form.append(
+            "h:List-Unsubscribe",
+            await buildListUnsubscribeHeader(addr),
+          );
+          form.append("h:List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
+
+          const resp = await fetch(
+            `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Basic ${btoa(`api:${MAILGUN_API_KEY}`)}`,
+              },
+              body: form,
+            },
+          );
+          if (resp.ok) {
+            sentEmails.push(addr);
+          } else {
+            console.error(
+              `[AutomationReminders] Mailgun send failed (${resp.status}) for ${addr}`,
+            );
+          }
+        }
       }
     }
 
@@ -271,7 +292,10 @@ async function executeAutomation(
       }
     }
 
-    // Send SMS via Twilio
+    // Send SMS via Twilio — normalize to E.164 FIRST so the opt-out check actually
+    // matches (suppressions are stored E.164); fail safe (skip) on an indeterminate
+    // suppression result, and record only numbers Twilio accepted.
+    const sentPhones: string[] = [];
     if (shouldSendSms && phoneNumbers.length > 0 && automation.sms_message) {
       const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
       const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -280,12 +304,25 @@ async function executeAutomation(
       if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && MY_TWILIO_NUMBER) {
         const smsMessage = substituteVars(automation.sms_message);
 
-        for (const phone of [...new Set(phoneNumbers)]) {
-          // Skip numbers that have opted out of SMS.
-          const { data: smsSuppressed } = await supabase.rpc("is_suppressed", {
-            p_channel: "sms",
-            p_contact: phone,
-          });
+        const e164Numbers = new Set<string>();
+        for (const raw of phoneNumbers) {
+          const n = normalizePhoneNumber(raw);
+          if (n) e164Numbers.add(n);
+        }
+
+        for (const phone of e164Numbers) {
+          const { data: smsSuppressed, error: supErr } = await supabase.rpc(
+            "is_suppressed",
+            { p_channel: "sms", p_contact: phone },
+          );
+          if (supErr) {
+            // TCPA: never text a number whose opt-in status we can't confirm.
+            console.error(
+              `[AutomationReminders] is_suppressed(sms) error for ${phone}:`,
+              supErr.message,
+            );
+            continue;
+          }
           if (smsSuppressed === true) continue;
 
           const form = new URLSearchParams();
@@ -293,7 +330,7 @@ async function executeAutomation(
           form.append("From", MY_TWILIO_NUMBER);
           form.append("Body", smsMessage);
 
-          await fetch(
+          const resp = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
             {
               method: "POST",
@@ -304,6 +341,13 @@ async function executeAutomation(
               body: form,
             },
           );
+          if (resp.ok) {
+            sentPhones.push(phone);
+          } else {
+            console.error(
+              `[AutomationReminders] Twilio send failed (${resp.status}) for ${phone}`,
+            );
+          }
         }
       }
     }
@@ -316,8 +360,8 @@ async function executeAutomation(
         metadata: {
           trigger: automation.trigger_type,
           context,
-          recipientEmails: [...new Set(emails)],
-          recipientPhones: [...new Set(phoneNumbers)],
+          recipientEmails: sentEmails,
+          recipientPhones: sentPhones,
           recipientUserIds: [...new Set(userIds)],
         },
       })

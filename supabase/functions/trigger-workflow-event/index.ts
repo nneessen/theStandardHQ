@@ -85,7 +85,7 @@ serve(async (req) => {
 
       const { data: callerProfile } = await adminSupabase
         .from("user_profiles")
-        .select("imo_id")
+        .select("imo_id, is_super_admin")
         .eq("id", authData.user.id)
         .maybeSingle();
 
@@ -99,7 +99,23 @@ serve(async (req) => {
         );
       }
 
+      // Default to the caller's home IMO. For SUPER-ADMINS ONLY, honor the acting
+      // IMO from their auth metadata (set by the app's IMO switcher) so a super-admin
+      // acting as a tenant fires/stamps that tenant's workflows — mirroring the DB's
+      // get_effective_imo_id(). The is_super_admin gate is on the trusted profile,
+      // never the user-settable metadata, so a non-super-admin cannot self-scope.
+      // "__all_imos__" => no scoping (null), like the service-role path.
       callerImoId = callerProfile.imo_id;
+      if (callerProfile.is_super_admin) {
+        const actingImoId = (
+          authData.user.user_metadata as Record<string, unknown> | undefined
+        )?.acting_imo_id;
+        if (actingImoId === "__all_imos__") {
+          callerImoId = null;
+        } else if (typeof actingImoId === "string" && actingImoId.length > 0) {
+          callerImoId = actingImoId;
+        }
+      }
     }
 
     const body: TriggerEventRequest = await req.json();
