@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 import { replaceTemplateVariables } from "../_shared/templateVariables.ts";
+import { isEmailSuppressed } from "../_shared/email-compliance.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -210,12 +211,18 @@ async function executeAutomation(
     );
     const shouldSendSms = ["sms", "all"].includes(commType);
 
-    // Send Email via Mailgun
+    // Send Email via Mailgun — skip suppressed recipients (CAN-SPAM/consent).
     if (shouldSendEmail && emails.length > 0 && automation.email_subject) {
       const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
       const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
 
-      if (MAILGUN_API_KEY && MAILGUN_DOMAIN) {
+      const allowedEmails: string[] = [];
+      for (const addr of [...new Set(emails)]) {
+        if (!(await isEmailSuppressed(supabase, addr)))
+          allowedEmails.push(addr);
+      }
+
+      if (MAILGUN_API_KEY && MAILGUN_DOMAIN && allowedEmails.length > 0) {
         const emailBody = substituteVars(automation.email_body_html || "");
         const emailSubject = substituteVars(automation.email_subject);
 
@@ -224,7 +231,7 @@ async function executeAutomation(
           "from",
           `The Standard HQ <notifications@${MAILGUN_DOMAIN}>`,
         );
-        form.append("to", [...new Set(emails)].join(", "));
+        form.append("to", allowedEmails.join(", "));
         form.append("subject", emailSubject);
         form.append("html", emailBody);
 
@@ -274,6 +281,13 @@ async function executeAutomation(
         const smsMessage = substituteVars(automation.sms_message);
 
         for (const phone of [...new Set(phoneNumbers)]) {
+          // Skip numbers that have opted out of SMS.
+          const { data: smsSuppressed } = await supabase.rpc("is_suppressed", {
+            p_channel: "sms",
+            p_contact: phone,
+          });
+          if (smsSuppressed === true) continue;
+
           const form = new URLSearchParams();
           form.append("To", phone);
           form.append("From", MY_TWILIO_NUMBER);
