@@ -109,11 +109,11 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         icon: IdCard,
         label: "Licensing",
         href: "/the-standard-team",
-        // `public` is required so the resolver returns the item at the
-        // public branch; `requiresLicensingWorkspace` then gates it on the
-        // licensing-workspace access check (7-day trial → Pro/Team).
+        // Free for every agent: the hub's SureLC links + My Documents tabs are
+        // always available. The paywall now lives ONLY on the Writing Numbers
+        // tab (gated inside the tab via useLicensingWorkspaceAccess), so the nav
+        // item itself is public and no longer requires workspace access.
         public: true,
-        requiresLicensingWorkspace: true,
       },
     ],
   },

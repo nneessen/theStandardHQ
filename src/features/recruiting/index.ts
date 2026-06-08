@@ -26,6 +26,14 @@ export { useRecruitsChecklistSummary } from "./hooks/useRecruitsChecklistSummary
 export type { ChecklistSummary } from "./hooks/useRecruitsChecklistSummary";
 export { AutomationDialog } from "./admin/AutomationDialog";
 
+// Document management (reused by the Licensing hub "My Documents" self-service view)
+export {
+  useRecruitDocuments,
+  useDeleteDocument,
+} from "./hooks/useRecruitDocuments";
+export { UploadDocumentDialog } from "./components/UploadDocumentDialog";
+export { DocumentViewerDialog } from "./components/DocumentViewerDialog";
+
 // Components
 export { RecruitDetailPanel } from "./components/RecruitDetailPanel";
 export { AddRecruitDialog } from "./components/AddRecruitDialog";

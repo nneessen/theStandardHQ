@@ -69,7 +69,10 @@ import { LeaderboardNamingPage } from "./features/messages/components/Leaderboar
 import { TermsPage, PrivacyPage, AccessibilityPage } from "./features/legal";
 import { WorkflowAdminPage } from "./features/workflows";
 import { LeaderboardPage } from "./features/leaderboard";
-import { TheStandardTeamRoutePage } from "./features/the-standard-team";
+import {
+  LicensingHubPage,
+  type LicensingHubTab,
+} from "./features/the-standard-team";
 import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
@@ -923,18 +926,28 @@ const leadVendorsRoute = createRoute({
   ),
 });
 
-// Writing Numbers route (legacy path kept for backwards compatibility).
-// Old `?tab=writing-numbers|state-licenses` search params are silently ignored.
+// Licensing hub route (legacy path /the-standard-team kept for backwards
+// compatibility). Free tabs: SureLC + My Documents; Writing Numbers stays gated
+// inside its own tab. `?tab=` deep-links a specific tab.
 const theStandardTeamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "the-standard-team",
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tab?: LicensingHubTab } => {
+    const tab = search.tab;
+    return tab === "surelc" || tab === "documents" || tab === "writing-numbers"
+      ? { tab }
+      : {};
+  },
   component: TheStandardTeamRouteComponent,
 });
 
 function TheStandardTeamRouteComponent() {
+  const { tab } = theStandardTeamRoute.useSearch();
   return (
     <RouteGuard noRecruits noStaffRoles>
-      <TheStandardTeamRoutePage />
+      <LicensingHubPage initialTab={tab} />
     </RouteGuard>
   );
 }
