@@ -35,20 +35,10 @@ export function FileDownloadItem({
 
   // minimum_review_time_seconds enforcement
   const reviewSeconds = metadata?.minimum_review_time_seconds ?? 0;
-  // Track remaining dwell time. Start at full value only if download already
-  // recorded when the component mounts; otherwise starts at 0 and resets on
-  // first download click.
+  // Track remaining dwell time. Start at full value on mount whenever
+  // reviewSeconds > 0 so the gate always applies regardless of require_download.
   const [reviewSecondsRemaining, setReviewSecondsRemaining] = useState<number>(
-    () => {
-      if (reviewSeconds > 0 && (existingResponse?.downloaded ?? false)) {
-        // Download was already recorded before this mount; begin countdown
-        // immediately so returning users still have to wait the full time
-        // (or 0 if this is a re-render after a previous complete — but
-        // existingResponse?.acknowledged guards that path above).
-        return reviewSeconds;
-      }
-      return 0;
-    },
+    () => (reviewSeconds > 0 ? reviewSeconds : 0),
   );
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -67,10 +57,11 @@ export function FileDownloadItem({
     }, 1000);
   }, []);
 
-  // If the component mounts with a pre-existing download and a review time,
-  // begin the countdown immediately (handles page-refresh mid-dwell scenario).
+  // Start the dwell countdown on mount whenever a review time is configured,
+  // regardless of require_download. This ensures the gate always applies even
+  // when download is not required.
   useEffect(() => {
-    if (reviewSeconds > 0 && (existingResponse?.downloaded ?? false)) {
+    if (reviewSeconds > 0) {
       startCountdown(reviewSeconds);
     }
     return () => {
@@ -92,8 +83,13 @@ export function FileDownloadItem({
         await checklistResponseService.recordFileDownload(progressId);
         setHasDownloaded(true);
         toast.success("Download started");
-        // Begin the dwell-time countdown on first download
-        if (reviewSeconds > 0) {
+        // Begin the dwell-time countdown on first download only if not
+        // already counting down (mount effect starts it on mount).
+        if (
+          reviewSeconds > 0 &&
+          timerRef.current === null &&
+          reviewSecondsRemaining === 0
+        ) {
           startCountdown(reviewSeconds);
         }
       } catch (error) {
@@ -105,6 +101,7 @@ export function FileDownloadItem({
     metadata?.file_url,
     hasDownloaded,
     reviewSeconds,
+    reviewSecondsRemaining,
     startCountdown,
   ]);
 
@@ -115,10 +112,9 @@ export function FileDownloadItem({
   const requireDownload = metadata?.require_download !== false;
   const downloadBlocked = requireDownload && !hasDownloaded;
 
-  // Dwell-time gate: only active after the download has happened AND the
-  // configured minimum has not yet elapsed.
-  const dwellBlocked =
-    reviewSeconds > 0 && hasDownloaded && reviewSecondsRemaining > 0;
+  // Dwell-time gate: active whenever the configured minimum has not yet elapsed,
+  // regardless of whether a download was required.
+  const dwellBlocked = reviewSeconds > 0 && reviewSecondsRemaining > 0;
 
   const handleAcknowledge = useCallback(async () => {
     if (downloadBlocked) {

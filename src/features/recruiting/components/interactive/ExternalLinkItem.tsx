@@ -35,33 +35,58 @@ export function ExternalLinkItem({
       return;
     }
 
-    // Honor the admin's open_in_new_tab choice (default = new tab). noopener
-    // guards against reverse-tabnabbing when opening externally.
-    window.open(
-      metadata.url,
-      metadata.open_in_new_tab === false ? "_self" : "_blank",
-      metadata.open_in_new_tab === false ? undefined : "noopener,noreferrer",
-    );
-
-    if (!hasClicked) {
-      try {
-        await checklistResponseService.recordExternalLinkClick(progressId);
-        setHasClicked(true);
-      } catch (error) {
-        console.error("Failed to record link click:", error);
-      }
-    }
-
-    if (metadata?.completion_method === "return_url") {
-      try {
-        const result =
-          await checklistResponseService.completeExternalLink(progressId);
-        if (result.success) {
-          toast.success("Task completed!");
-          onComplete?.();
+    if (metadata.open_in_new_tab === false) {
+      // Same-tab navigation: persist click (and return_url completion) BEFORE
+      // navigating so the fetches are not cancelled by the page teardown.
+      if (!hasClicked) {
+        try {
+          await checklistResponseService.recordExternalLinkClick(progressId);
+          setHasClicked(true);
+        } catch (error) {
+          console.error("Failed to record link click:", error);
         }
-      } catch (error) {
-        console.error("Failed to auto-complete:", error);
+      }
+
+      if (metadata.completion_method === "return_url") {
+        try {
+          const result =
+            await checklistResponseService.completeExternalLink(progressId);
+          if (result.success) {
+            toast.success("Task completed!");
+            onComplete?.();
+          }
+        } catch (error) {
+          console.error("Failed to auto-complete:", error);
+        }
+      }
+
+      // Navigate last so the awaits above complete on the live page.
+      window.location.href = metadata.url;
+    } else {
+      // New tab: open synchronously in the click handler to avoid popup
+      // blockers, then await recording on the still-live current page.
+      window.open(metadata.url, "_blank", "noopener,noreferrer");
+
+      if (!hasClicked) {
+        try {
+          await checklistResponseService.recordExternalLinkClick(progressId);
+          setHasClicked(true);
+        } catch (error) {
+          console.error("Failed to record link click:", error);
+        }
+      }
+
+      if (metadata.completion_method === "return_url") {
+        try {
+          const result =
+            await checklistResponseService.completeExternalLink(progressId);
+          if (result.success) {
+            toast.success("Task completed!");
+            onComplete?.();
+          }
+        } catch (error) {
+          console.error("Failed to auto-complete:", error);
+        }
       }
     }
   }, [

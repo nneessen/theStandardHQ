@@ -26,18 +26,26 @@ export function AcknowledgmentItem({
   existingResponse,
   onComplete,
 }: AcknowledgmentItemProps) {
+  // Scroll completion only makes sense for inline text. Persisted require_scroll
+  // can linger after the content type changes (AcknowledgmentConfig keeps the
+  // flag), so derive an effective flag that is false for non-inline content —
+  // otherwise document_url / terms_reference items can never be completed.
+  const scrollRequired =
+    metadata.require_scroll === true &&
+    (metadata.content_type ?? "inline_text") === "inline_text";
+
   const [acknowledged, setAcknowledged] = useState(
     existingResponse?.acknowledged ?? false,
   );
   const [scrollCompleted, setScrollCompleted] = useState(
-    existingResponse?.scroll_completed ?? !metadata.require_scroll,
+    existingResponse?.scroll_completed ?? !scrollRequired,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Track scroll completion
   useEffect(() => {
-    if (!metadata.require_scroll || scrollCompleted) return;
+    if (!scrollRequired || scrollCompleted) return;
 
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
@@ -52,7 +60,7 @@ export function AcknowledgmentItem({
 
     scrollElement.addEventListener("scroll", handleScroll);
     return () => scrollElement.removeEventListener("scroll", handleScroll);
-  }, [metadata.require_scroll, scrollCompleted]);
+  }, [scrollRequired, scrollCompleted]);
 
   const handleSubmit = useCallback(async () => {
     if (!acknowledged) {
@@ -60,7 +68,7 @@ export function AcknowledgmentItem({
       return;
     }
 
-    if (metadata.require_scroll && !scrollCompleted) {
+    if (scrollRequired && !scrollCompleted) {
       toast.error("Please scroll through the entire content first");
       return;
     }
@@ -87,13 +95,7 @@ export function AcknowledgmentItem({
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    progressId,
-    acknowledged,
-    scrollCompleted,
-    metadata.require_scroll,
-    onComplete,
-  ]);
+  }, [progressId, acknowledged, scrollCompleted, scrollRequired, onComplete]);
 
   // If already acknowledged and completed
   if (existingResponse?.acknowledged) {
@@ -105,8 +107,7 @@ export function AcknowledgmentItem({
     );
   }
 
-  const canComplete =
-    acknowledged && (!metadata.require_scroll || scrollCompleted);
+  const canComplete = acknowledged && (!scrollRequired || scrollCompleted);
 
   const contentType = metadata.content_type ?? "inline_text";
 
@@ -157,7 +158,7 @@ export function AcknowledgmentItem({
       )}
 
       {/* Scroll requirement notice */}
-      {metadata.require_scroll && !scrollCompleted && (
+      {scrollRequired && !scrollCompleted && (
         <p className="text-[10px] text-warning">
           Scroll through entire content before acknowledging
         </p>
@@ -170,9 +171,7 @@ export function AcknowledgmentItem({
             id={`ack-${progressId}`}
             checked={acknowledged}
             onCheckedChange={(checked) => setAcknowledged(checked === true)}
-            disabled={
-              isSubmitting || (metadata.require_scroll && !scrollCompleted)
-            }
+            disabled={isSubmitting || (scrollRequired && !scrollCompleted)}
             className="mt-0.5"
           />
           <label

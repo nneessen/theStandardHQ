@@ -71,6 +71,10 @@ export interface SubmitLeadResponse {
   lead_id?: string;
   error?: string;
   message?: string;
+  /** True when the submission was rejected by the per-recruiter/IP rate limit
+   *  (submit_recruiting_lead returns this flag) so the form can show a distinct
+   *  "slow down" message instead of a generic error. */
+  rate_limited?: boolean;
 }
 
 // Public recruiter info for landing page

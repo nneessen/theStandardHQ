@@ -51,6 +51,9 @@ export function QuizItem({
   const deadlineRef = useRef<number | null>(null);
   // Stable ref to the force-submit function so the timer interval doesn't capture stale closures
   const forceSubmitRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  // Mirror of the live "is the timer allowed to fire" guard so the interval never
+  // reads a stale showResults/isSubmitting closure captured at effect-creation time.
+  const canTickRef = useRef(true);
 
   // Shuffle questions if configured
   const questions = useMemo(() => {
@@ -184,16 +187,25 @@ export function QuizItem({
     }
   }, [metadata.time_limit_minutes]);
 
-  // Keep forceSubmitRef current so the timer interval always calls the latest closure
+  // Keep forceSubmitRef + canTickRef current so the timer interval always calls the
+  // latest closure and reads the live guard, never values frozen at interval creation.
   useEffect(() => {
     forceSubmitRef.current = () => handleSubmitQuiz(true);
+    canTickRef.current = !(showResults || isSubmitting);
   });
 
-  // Countdown timer — initialise deadline once on mount (or after retry via deadlineRef)
+  // Countdown timer — deps-driven so it arms exactly when an attempt is in progress.
+  // Listing showResults/isSubmitting/existingResponse?.passed in the deps means React
+  // tears down the prior interval (cleanup) and re-evaluates on every relevant transition:
+  //  - completed/submitting -> early-return, no interval left running (clears the no-op tick)
+  //  - retry flips showResults true->false -> the effect re-runs and arms a FRESH interval
+  //  - already-passed quiz -> never arms
   useEffect(() => {
     if (!metadata.time_limit_minutes) return;
+    // Don't arm the timer for a completed quiz, a shown result, or while a submit is in flight.
+    if (existingResponse?.passed || showResults || isSubmitting) return;
 
-    // Set deadline only when it hasn't been set yet (fresh mount)
+    // Set deadline only when it hasn't been set yet (fresh mount; retry pre-sets it).
     if (deadlineRef.current === null) {
       deadlineRef.current =
         Date.now() + metadata.time_limit_minutes * 60 * 1000;
@@ -201,8 +213,9 @@ export function QuizItem({
     }
 
     const interval = setInterval(() => {
-      // No-op when quiz is already completed / showing results / submitting
-      if (showResults || isSubmitting) return;
+      // Belt-and-suspenders: the live guard ref blocks a force-submit even if a tick
+      // races a results/submit transition before this effect's cleanup runs.
+      if (!canTickRef.current) return;
 
       const remaining = Math.max(
         0,
@@ -218,10 +231,12 @@ export function QuizItem({
     }, 1000);
 
     return () => clearInterval(interval);
-    // Intentionally omit showResults/isSubmitting from deps — we read them inside the callback
-    // to avoid resetting the interval on every state change. The interval refs are stable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metadata.time_limit_minutes]);
+  }, [
+    metadata.time_limit_minutes,
+    showResults,
+    isSubmitting,
+    existingResponse?.passed,
+  ]);
 
   // If already passed
   if (existingResponse?.passed) {

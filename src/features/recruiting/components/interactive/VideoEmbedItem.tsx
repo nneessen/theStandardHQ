@@ -61,9 +61,6 @@ export function VideoEmbedItem({
   onComplete,
 }: VideoEmbedItemProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Gate state for require_full_watch: tracks whether the user has opened the
-  // video (iframe received focus/click) and explicitly confirmed full viewing.
-  const [videoOpened, setVideoOpened] = useState(false);
   const [watchConfirmed, setWatchConfirmed] = useState(false);
 
   const embedUrl =
@@ -150,17 +147,13 @@ export function VideoEmbedItem({
 
       {/* Video embed */}
       {embedUrl ? (
-        <div
-          className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark"
-          onClick={() => setVideoOpened(true)}
-        >
+        <div className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark">
           <iframe
             src={embedUrl}
             title={metadata.title || `${platformName} Video`}
             className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            onFocus={() => setVideoOpened(true)}
           />
         </div>
       ) : (
@@ -179,19 +172,16 @@ export function VideoEmbedItem({
             id={`watch-confirm-${progressId}`}
             checked={watchConfirmed}
             onCheckedChange={(checked) => setWatchConfirmed(checked === true)}
-            disabled={!videoOpened || isDisabled}
+            disabled={isDisabled}
             className="mt-0.5 h-3.5 w-3.5"
           />
           <Label
             htmlFor={`watch-confirm-${progressId}`}
             className={`text-[10px] leading-snug cursor-pointer ${
-              !videoOpened || isDisabled ? "text-v2-ink-muted" : "text-v2-ink"
+              isDisabled ? "text-v2-ink-muted" : "text-v2-ink"
             }`}
           >
             I have watched the entire video
-            {!videoOpened && (
-              <span className="ml-1 text-warning">(open the video first)</span>
-            )}
           </Label>
         </div>
       )}
