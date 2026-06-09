@@ -4,14 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -259,137 +251,128 @@ export function PipelineTemplatesList({
           </Button>
         </div>
       ) : (
-        /* Templates Table */
-        <div className="border border-border bg-card rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="h-8 bg-background border-b border-border">
-                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Name
-                </TableHead>
-                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Description
-                </TableHead>
-                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
-                  Status
-                </TableHead>
-                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-20">
-                  Default
-                </TableHead>
-                <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground w-40">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {templates.map((template) => (
-                <TableRow
-                  key={template.id}
-                  className="h-9 hover:bg-background border-b border-border/60 last:border-0"
-                >
-                  <TableCell className="p-2 text-[11px] font-medium text-foreground">
-                    {template.name}
+        /* Templates Grid — two-column cards, spacious and readable */
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          {templates.map((template) => {
+            const canModify = canModifyTemplate(
+              template.created_by,
+              template.name,
+            );
+            return (
+              <div
+                key={template.id}
+                className="group flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+              >
+                {/* Header — title + default star + status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate text-[15px] font-semibold leading-tight text-foreground">
+                        {template.name}
+                      </h3>
+                      {template.is_default && (
+                        <Star className="h-4 w-4 shrink-0 text-warning fill-amber-500" />
+                      )}
+                    </div>
                     {isSuperAdmin && imoLabel(template.imo_id) && (
-                      <span className="ml-1.5 text-[9px] font-normal uppercase tracking-wide text-muted-foreground">
+                      <span className="mt-1 inline-block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                         {imoLabel(template.imo_id)}
                       </span>
                     )}
-                  </TableCell>
-                  <TableCell className="p-2 text-[11px] text-muted-foreground truncate max-w-64">
-                    {template.description || "-"}
-                  </TableCell>
-                  <TableCell className="p-2">
-                    <Badge
-                      variant={template.is_active ? "default" : "secondary"}
-                      className="text-[9px] h-4 px-1.5"
-                    >
-                      {template.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="p-2">
-                    {template.is_default ? (
+                  </div>
+                  <Badge
+                    variant={template.is_active ? "default" : "secondary"}
+                    className="shrink-0 text-[10px] h-5 px-2"
+                  >
+                    {template.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+
+                {/* Description */}
+                <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-[13px] leading-snug text-muted-foreground">
+                  {template.description || "No description"}
+                </p>
+
+                {/* Footer — set default + actions */}
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+                  {template.is_default ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
                       <Star className="h-3.5 w-3.5 text-warning fill-amber-500" />
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() => handleSetDefault(template.id)}
-                        disabled={setDefaultTemplate.isPending || !isAdmin}
-                        title={
-                          !isAdmin
-                            ? "Only admins can set the default template"
-                            : undefined
-                        }
-                      >
-                        <Star className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                    )}
-                  </TableCell>
-                  <TableCell className="p-2">
-                    <div className="flex items-center gap-1">
-                      {/* Duplicate — promoted to labeled outline button (clone-as-primary affordance) */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 px-2 text-[10px] font-medium gap-1"
-                        onClick={() => {
-                          setDuplicateName(`${template.name} (Copy)`);
-                          setDuplicateTemplateId(template.id);
-                        }}
-                        disabled={isRegularUser}
-                        title={
-                          isRegularUser
-                            ? "Only admins and staff can duplicate templates"
-                            : "Duplicate this template — fastest way to build a new pipeline"
-                        }
-                      >
-                        <Copy className="h-3 w-3" />
-                        Duplicate
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() => onSelectTemplate(template.id)}
-                        disabled={
-                          !canModifyTemplate(template.created_by, template.name)
-                        }
-                        title={
-                          !canModifyTemplate(template.created_by, template.name)
-                            ? "You can only edit your own templates"
-                            : "Edit template"
-                        }
-                      >
-                        <Edit2
-                          className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "text-muted-foreground dark:text-muted-foreground" : "text-muted-foreground"}`}
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                        onClick={() => setDeleteConfirmId(template.id)}
-                        disabled={
-                          template.is_default ||
-                          !canModifyTemplate(template.created_by, template.name)
-                        }
-                        title={
-                          !canModifyTemplate(template.created_by, template.name)
-                            ? "You can only delete your own templates"
-                            : undefined
-                        }
-                      >
-                        <Trash2
-                          className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "" : "opacity-30"}`}
-                        />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      Default
+                    </span>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-[11px] gap-1.5 text-muted-foreground"
+                      onClick={() => handleSetDefault(template.id)}
+                      disabled={setDefaultTemplate.isPending || !isAdmin}
+                      title={
+                        !isAdmin
+                          ? "Only admins can set the default template"
+                          : "Make this the default template"
+                      }
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                      Set default
+                    </Button>
+                  )}
+
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2.5 text-[11px] font-medium gap-1.5"
+                      onClick={() => {
+                        setDuplicateName(`${template.name} (Copy)`);
+                        setDuplicateTemplateId(template.id);
+                      }}
+                      disabled={isRegularUser}
+                      title={
+                        isRegularUser
+                          ? "Only admins and staff can duplicate templates"
+                          : "Duplicate this template — fastest way to build a new pipeline"
+                      }
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Duplicate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2.5 text-[11px] font-medium gap-1.5"
+                      onClick={() => onSelectTemplate(template.id)}
+                      disabled={!canModify}
+                      title={
+                        !canModify
+                          ? "You can only edit your own templates"
+                          : "Edit template"
+                      }
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                      onClick={() => setDeleteConfirmId(template.id)}
+                      disabled={template.is_default || !canModify}
+                      title={
+                        !canModify
+                          ? "You can only delete your own templates"
+                          : "Delete template"
+                      }
+                    >
+                      <Trash2
+                        className={`h-3.5 w-3.5 ${canModify ? "" : "opacity-30"}`}
+                      />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
