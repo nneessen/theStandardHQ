@@ -164,7 +164,12 @@ export const CallAudioPlayer = forwardRef<
         ref={audioRef}
         src={signedUrl}
         preload="metadata"
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        onLoadedMetadata={(e) => {
+          // Streamed webm/ogg can report Infinity until fully buffered; Infinity
+          // is truthy, so `|| 0` wouldn't catch it and would break scrub/markers.
+          const d = e.currentTarget.duration;
+          setDuration(Number.isFinite(d) && d > 0 ? d : 0);
+        }}
         onTimeUpdate={(e) => {
           const t = e.currentTarget.currentTime;
           setCurrentTime(t);

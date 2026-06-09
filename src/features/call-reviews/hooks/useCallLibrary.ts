@@ -163,7 +163,14 @@ export function useUpdateRoleMap(recordingId: string) {
         .eq("id", recordingId);
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => {
+    onSuccess: (_data, roleMap) => {
+      // Optimistically patch the cached recording so the transcript doesn't flash
+      // the old labels between setFlipped(false) and the background refetch.
+      queryClient.setQueryData(
+        callReviewKeys.recording(recordingId),
+        (old: CallRecordingRow | null | undefined) =>
+          old ? { ...old, speaker_role_map: roleMap } : old,
+      );
       queryClient.invalidateQueries({
         queryKey: callReviewKeys.recording(recordingId),
       });

@@ -37,8 +37,9 @@ export function TranscriptPanel({
     let idx = -1;
     for (let i = 0; i < segments.length; i++) {
       const start = segments[i].start;
-      if (start != null && start <= currentTime + 0.25) idx = i;
-      else break;
+      if (start == null) continue; // skip segments without timing, don't stop
+      if (start <= currentTime + 0.25) idx = i;
+      else break; // segments are time-ordered → first future start ends the scan
     }
     return idx;
   }, [segments, currentTime]);

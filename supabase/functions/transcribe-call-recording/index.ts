@@ -111,7 +111,7 @@ serve(async (req) => {
   const { data: recording, error: loadErr } = await db
     .from("kpi_call_recordings")
     .select(
-      "id, imo_id, agent_id, storage_bucket, storage_path, original_filename, mime_type, transcription_status",
+      "id, imo_id, agent_id, storage_bucket, storage_path, original_filename, mime_type, file_size_bytes, transcription_status",
     )
     .eq("id", recordingId)
     .maybeSingle();
@@ -185,6 +185,28 @@ serve(async (req) => {
     );
   }
 
+  // ── 7b. Zero-byte guard (file_size_bytes is captured at upload) ─────────────
+  // An empty file would make Deepgram reject with a 400 and strand the row in
+  // 'failed'; skip it up front with a clear message (no wasted API call).
+  if (recording.file_size_bytes === 0) {
+    await adminClient
+      .from("kpi_call_recordings")
+      .update({
+        transcription_status: "skipped",
+        transcription_error: "Recording file is empty (0 bytes).",
+      })
+      .eq("id", recording.id);
+    return json(
+      {
+        ok: false,
+        recording_id: recording.id,
+        status: "skipped",
+        error: "Recording file is empty.",
+      },
+      400,
+    );
+  }
+
   // Everything below can leave a terminal status; the catch-all guarantees we
   // never strand a row in 'processing'.
   try {
@@ -220,14 +242,27 @@ serve(async (req) => {
       punctuate: "true",
       language: "en",
     });
-    const resp = await fetch(`https://api.deepgram.com/v1/listen?${params}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: signed.signedUrl }),
-    });
+    // Bound the synchronous Deepgram call so a very long recording fails cleanly
+    // (clear message) instead of stalling until the platform kills the function.
+    let resp: Response;
+    try {
+      resp = await fetch(`https://api.deepgram.com/v1/listen?${params}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: signed.signedUrl }),
+        signal: AbortSignal.timeout(280_000),
+      });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "TimeoutError") {
+        throw new Error(
+          "Transcription timed out — the recording may be too long. Split it into shorter segments and re-upload.",
+        );
+      }
+      throw e;
+    }
     if (!resp.ok) {
       // Status only — never the response body (may echo transcript content).
       console.error("transcribe-call-recording deepgram error", resp.status);
@@ -241,9 +276,13 @@ serve(async (req) => {
 
     // Diarized segments: one per utterance, carrying the speaker index. This is
     // the new shape the transcript UI reads (Whisper segments had no speaker).
-    const utterances = Array.isArray(result.results?.utterances)
-      ? result.results!.utterances!
-      : [];
+    // Filter out any null/non-object array elements before reading fields — a
+    // malformed response with a null utterance would otherwise crash the .map/loop.
+    const utterances = (
+      Array.isArray(result.results?.utterances)
+        ? result.results!.utterances!
+        : []
+    ).filter((u): u is DeepgramUtterance => u != null && typeof u === "object");
     const segments = utterances.length
       ? utterances.map((u, i) => ({
           id: i,

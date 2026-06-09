@@ -16,14 +16,33 @@ export const callReviewKeys = {
     [...callReviewKeys.all, "scripts", imoId] as const,
 };
 
-/** A recording is "settling" while transcription or analysis is in flight. */
+// Stop polling a row that has sat in a non-terminal state without any status
+// change for this long — a stuck pipeline (e.g. a silently-failed analysis
+// dispatch) must not drive an unbounded 5s refetch loop.
+const SETTLE_MAX_AGE_MS = 15 * 60 * 1000;
+
+/** A recording is "settling" while transcription or analysis is in flight —
+ *  but only until it has been idle in that state past SETTLE_MAX_AGE_MS. */
 export function isSettling(
   row:
-    | { transcription_status: string; analysis_status: string }
+    | {
+        transcription_status: string;
+        analysis_status: string;
+        updated_at?: string | null;
+        created_at?: string | null;
+      }
     | null
     | undefined,
 ): boolean {
   if (!row) return false;
   const inFlight = (s: string) => s === "pending" || s === "processing";
-  return inFlight(row.transcription_status) || inFlight(row.analysis_status);
+  if (!inFlight(row.transcription_status) && !inFlight(row.analysis_status)) {
+    return false;
+  }
+  const ts = row.updated_at ?? row.created_at;
+  if (ts) {
+    const age = Date.now() - new Date(ts).getTime();
+    if (Number.isFinite(age) && age > SETTLE_MAX_AGE_MS) return false;
+  }
+  return true;
 }

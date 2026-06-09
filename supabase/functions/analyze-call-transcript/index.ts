@@ -231,10 +231,26 @@ serve(async (req) => {
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
     if (!apiKey) throw new Error("Analysis is not configured.");
 
-    await adminClient
+    // Write-permission gate: claim the row by setting 'processing' under the USER
+    // client, so the recording's UPDATE RLS (owner / upline / IMO admin) applies.
+    // An IMO-wide *reader* without write access affects 0 rows → 403 (analysis is
+    // a curation write, consistent with what role-correction already requires).
+    // The automatic background fire from transcribe runs under the uploader's JWT
+    // (the owner), so it passes.
+    const { data: claimed, error: claimErr } = await db
       .from("kpi_call_recordings")
       .update({ analysis_status: "processing" })
-      .eq("id", rec.id);
+      .eq("id", rec.id)
+      .select("id")
+      .maybeSingle();
+    if (claimErr)
+      throw new Error(`Could not start analysis: ${claimErr.message}`);
+    if (!claimed) {
+      return json(
+        { error: "You don't have permission to analyze this recording." },
+        403,
+      );
+    }
 
     const runId = crypto.randomUUID();
     const duration =
@@ -251,6 +267,23 @@ serve(async (req) => {
     const segById = new Map<number, Segment>();
     for (const s of segments)
       if (typeof s.id === "number") segById.set(s.id, s);
+
+    // Recompute per-speaker talk time from the CURRENT role map, so a corrected
+    // map (after a flip + forced re-analysis) also fixes the talk-time split that
+    // transcribe wrote from the original heuristic. agent → talk_time_seconds.
+    let agentTalk = 0;
+    let clientTalk = 0;
+    const speakerSet = new Set<number>();
+    for (const s of segments) {
+      if (typeof s.speaker === "number") speakerSet.add(s.speaker);
+      if (typeof s.start === "number" && typeof s.end === "number") {
+        const d = Math.max(0, s.end - s.start);
+        const role = roleOf(s.speaker);
+        if (role === "agent") agentTalk += d;
+        else if (role === "client") clientTalk += d;
+      }
+    }
+    const hasTalk = speakerSet.size > 0;
 
     // ── 7. DETERMINISTIC word-track detection (agent speech, anchored timings) ──
     const { data: tracks } = await adminClient
@@ -453,6 +486,11 @@ Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
       analyzed_at: new Date().toISOString(),
       last_analysis_run_id: runId,
     };
+    if (hasTalk) {
+      update.talk_time_seconds = Math.round(agentTalk);
+      update.client_talk_seconds = Math.round(clientTalk);
+      update.speaker_count = speakerSet.size;
+    }
     if (rec.caller_age == null && typeof demo.age === "number")
       update.caller_age = Math.round(demo.age);
     if (
