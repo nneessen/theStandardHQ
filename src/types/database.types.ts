@@ -5711,10 +5711,69 @@ export type Database = {
           },
         ];
       };
+      kpi_call_markers: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          end_seconds: number | null;
+          id: string;
+          imo_id: string;
+          label: string;
+          marker_type: string;
+          note: string | null;
+          recording_id: string;
+          start_seconds: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string;
+          end_seconds?: number | null;
+          id?: string;
+          imo_id: string;
+          label: string;
+          marker_type?: string;
+          note?: string | null;
+          recording_id: string;
+          start_seconds: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          end_seconds?: number | null;
+          id?: string;
+          imo_id?: string;
+          label?: string;
+          marker_type?: string;
+          note?: string | null;
+          recording_id?: string;
+          start_seconds?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_call_markers_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_call_markers_recording_id_fkey";
+            columns: ["recording_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_recordings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kpi_call_recordings: {
         Row: {
           acquisition_cost: number | null;
           agent_id: string;
+          ai_key_moments: Json | null;
+          ai_summary: string | null;
           analysis_model: string | null;
           analysis_status: string;
           analyzed_at: string | null;
@@ -5722,10 +5781,12 @@ export type Database = {
           call_direction: string;
           caller_age: number | null;
           caller_age_band: string | null;
+          caller_existing_coverage: string | null;
           caller_gender: string | null;
           caller_name: string | null;
           caller_state: string | null;
           caller_zip: string | null;
+          client_talk_seconds: number | null;
           created_at: string;
           duration_seconds: number | null;
           file_size_bytes: number | null;
@@ -5735,15 +5796,22 @@ export type Database = {
           metadata: Json;
           mime_type: string | null;
           notes: string | null;
+          objection_count: number | null;
+          objection_events: Json | null;
           original_filename: string | null;
           outcome: string | null;
           policies_count: number;
           premium_amount: number | null;
+          smoke_screen_count: number | null;
+          speaker_count: number | null;
+          speaker_role_map: Json | null;
           storage_bucket: string;
           storage_path: string;
           talk_time_seconds: number | null;
+          total_hold_seconds: number | null;
           transcribed_at: string | null;
           transcript_language: string | null;
+          transcript_provider: string | null;
           transcript_segments: Json | null;
           transcript_text: string | null;
           transcription_error: string | null;
@@ -5755,6 +5823,8 @@ export type Database = {
         Insert: {
           acquisition_cost?: number | null;
           agent_id: string;
+          ai_key_moments?: Json | null;
+          ai_summary?: string | null;
           analysis_model?: string | null;
           analysis_status?: string;
           analyzed_at?: string | null;
@@ -5762,10 +5832,12 @@ export type Database = {
           call_direction?: string;
           caller_age?: number | null;
           caller_age_band?: string | null;
+          caller_existing_coverage?: string | null;
           caller_gender?: string | null;
           caller_name?: string | null;
           caller_state?: string | null;
           caller_zip?: string | null;
+          client_talk_seconds?: number | null;
           created_at?: string;
           duration_seconds?: number | null;
           file_size_bytes?: number | null;
@@ -5775,15 +5847,22 @@ export type Database = {
           metadata?: Json;
           mime_type?: string | null;
           notes?: string | null;
+          objection_count?: number | null;
+          objection_events?: Json | null;
           original_filename?: string | null;
           outcome?: string | null;
           policies_count?: number;
           premium_amount?: number | null;
+          smoke_screen_count?: number | null;
+          speaker_count?: number | null;
+          speaker_role_map?: Json | null;
           storage_bucket?: string;
           storage_path: string;
           talk_time_seconds?: number | null;
+          total_hold_seconds?: number | null;
           transcribed_at?: string | null;
           transcript_language?: string | null;
+          transcript_provider?: string | null;
           transcript_segments?: Json | null;
           transcript_text?: string | null;
           transcription_error?: string | null;
@@ -5795,6 +5874,8 @@ export type Database = {
         Update: {
           acquisition_cost?: number | null;
           agent_id?: string;
+          ai_key_moments?: Json | null;
+          ai_summary?: string | null;
           analysis_model?: string | null;
           analysis_status?: string;
           analyzed_at?: string | null;
@@ -5802,10 +5883,12 @@ export type Database = {
           call_direction?: string;
           caller_age?: number | null;
           caller_age_band?: string | null;
+          caller_existing_coverage?: string | null;
           caller_gender?: string | null;
           caller_name?: string | null;
           caller_state?: string | null;
           caller_zip?: string | null;
+          client_talk_seconds?: number | null;
           created_at?: string;
           duration_seconds?: number | null;
           file_size_bytes?: number | null;
@@ -5815,15 +5898,22 @@ export type Database = {
           metadata?: Json;
           mime_type?: string | null;
           notes?: string | null;
+          objection_count?: number | null;
+          objection_events?: Json | null;
           original_filename?: string | null;
           outcome?: string | null;
           policies_count?: number;
           premium_amount?: number | null;
+          smoke_screen_count?: number | null;
+          speaker_count?: number | null;
+          speaker_role_map?: Json | null;
           storage_bucket?: string;
           storage_path?: string;
           talk_time_seconds?: number | null;
+          total_hold_seconds?: number | null;
           transcribed_at?: string | null;
           transcript_language?: string | null;
+          transcript_provider?: string | null;
           transcript_segments?: Json | null;
           transcript_text?: string | null;
           transcription_error?: string | null;
@@ -14965,6 +15055,7 @@ export type Database = {
           event_name: string;
           fired_at: string | null;
           id: string;
+          imo_id: string | null;
           workflows_triggered: number | null;
         };
         Insert: {
@@ -14973,6 +15064,7 @@ export type Database = {
           event_name: string;
           fired_at?: string | null;
           id?: string;
+          imo_id?: string | null;
           workflows_triggered?: number | null;
         };
         Update: {
@@ -14981,6 +15073,7 @@ export type Database = {
           event_name?: string;
           fired_at?: string | null;
           id?: string;
+          imo_id?: string | null;
           workflows_triggered?: number | null;
         };
         Relationships: [];
@@ -19174,6 +19267,7 @@ export type Database = {
       };
       invoke_account_lifecycle_daily: { Args: never; Returns: undefined };
       invoke_ai_smart_view_sync: { Args: never; Returns: undefined };
+      invoke_automation_reminders: { Args: never; Returns: undefined };
       invoke_slack_auto_complete_first_sale: {
         Args: never;
         Returns: undefined;
@@ -19233,6 +19327,7 @@ export type Database = {
         Args: { p_agent: string };
         Returns: boolean;
       };
+      kpi_same_imo_agent: { Args: { p_agent: string }; Returns: boolean };
       list_agency_underwriting_sessions_v1: {
         Args: { p_page?: number; p_page_size?: number; p_search?: string };
         Returns: {

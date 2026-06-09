@@ -1,17 +1,23 @@
-// transcribe-call-recording — Whisper transcription for an uploaded inbound-call
-// recording (Epic Life /kpi feature).
+// transcribe-call-recording — Deepgram diarized transcription for an uploaded
+// inbound-call recording (Epic Life /kpi + /call-reviews training feature).
 //
 // POST { recording_id } with a user JWT. The function:
 //   1. authenticates the caller (real 401 — RLS-empty is not authentication),
 //   2. loads the recording with the USER-scoped client so RLS enforces visibility
 //      (404 if the caller can't see it),
 //   3. gates the feature to Epic Life IMOs via is_epic_life_imo (403 otherwise),
-//   4. rate-limits (~10/hr/user), is idempotent, downloads the audio with the
-//      admin client, transcribes with OpenAI Whisper, and writes the transcript
-//      (with per-segment timing) back to the row.
+//   4. rate-limits (~10/hr/user), is idempotent, then transcribes with Deepgram
+//      nova-2 (diarize + utterances) and writes the diarized transcript, per-speaker
+//      talk-time, and a flippable speaker→role map back to the row,
+//   5. fires analyze-call-transcript in the background (never blocks/breaks this).
+//
+// WHY Deepgram (replaced Whisper): Whisper has no speaker diarization and caps
+// uploads at 25 MB. Deepgram returns transcript + speaker labels + per-speaker
+// timing in one call, and — because we hand it a short-lived SIGNED URL instead of
+// downloading the audio here — there is no file-size/edge-memory cap at all.
 //
 // PII: the spoken words may contain client PII. NEVER console.log the transcript,
-// the audio, or any Whisper response body — status codes only.
+// a signed URL, or any Deepgram response body — status codes only.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
@@ -21,11 +27,9 @@ import {
 } from "../_shared/supabase-client.ts";
 import { enforceRateLimit } from "../_shared/rate-limit.ts";
 
-// Whisper hard-caps uploads at 25 MB. A larger file is left usable (recording +
-// manual KPIs still work) but skipped for transcription — not marked failed.
-const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
-
-// Whisper's accepted container/extension set (the subset this feature allows).
+// Container/extension set Deepgram handles (superset of the old Whisper list;
+// matches the call-recordings bucket's allowed MIME types). No size cap: Deepgram
+// fetches the audio itself from the signed URL, so nothing is buffered here.
 const ALLOWED_EXTENSIONS = new Set([
   "mp3",
   "mp4",
@@ -34,20 +38,31 @@ const ALLOWED_EXTENSIONS = new Set([
   "m4a",
   "wav",
   "webm",
+  "aac",
+  "ogg",
+  "oga",
+  "flac",
 ]);
 
-interface VerboseSegment {
-  id?: number;
+// How long Deepgram has to fetch the audio from the signed URL.
+const SIGNED_URL_TTL_SECONDS = 600;
+
+interface DeepgramUtterance {
   start?: number;
   end?: number;
-  text?: string;
+  transcript?: string;
+  speaker?: number;
 }
 
-interface WhisperVerboseJson {
-  text?: string;
-  language?: string;
-  duration?: number;
-  segments?: VerboseSegment[];
+interface DeepgramResponse {
+  metadata?: { duration?: number };
+  results?: {
+    channels?: Array<{
+      detected_language?: string;
+      alternatives?: Array<{ transcript?: string }>;
+    }>;
+    utterances?: DeepgramUtterance[];
+  };
 }
 
 function fileExtension(path: string | null | undefined): string | null {
@@ -114,9 +129,8 @@ serve(async (req) => {
   // ── 4. Epic Life feature gate (fail closed: error OR false → 403) ───────────
   // Run on the admin (service_role) client: is_epic_life_imo is a PURE function
   // of its argument (caller-independent), so this is semantically identical to a
-  // user-client call but immune to function-EXECUTE grant gaps that would
-  // otherwise fail closed and 403 every legitimate user. We pass the recording's
-  // imo_id, which the caller already proved visibility to via the RLS load above.
+  // user-client call but immune to function-EXECUTE grant gaps. We pass the
+  // recording's imo_id, which the caller proved visibility to via the RLS load.
   const adminClient = createSupabaseAdminClient();
   const { data: isEpic, error: gateErr } = await adminClient.rpc(
     "is_epic_life_imo",
@@ -129,7 +143,7 @@ serve(async (req) => {
     );
   }
 
-  // ── 5. Rate limit: ~10/hr/user (request axis only — Whisper, not Anthropic) ─
+  // ── 5. Rate limit: ~10/hr/user (request axis only — Deepgram, not Anthropic) ─
   const limited = await enforceRateLimit(
     adminClient,
     {
@@ -147,10 +161,7 @@ serve(async (req) => {
     return json({ ok: true, recording_id: recording.id, status });
   }
 
-  // ── 7. Format guard (knowable from the path; reject before downloading) ─────
-  // Deviation from the literal contract order (download-then-validate): the
-  // extension is derivable from storage_path, so we validate first to avoid
-  // downloading a file we will reject. Same terminal outcome ('skipped').
+  // ── 7. Format guard (knowable from the path; reject before any work) ────────
   const ext =
     fileExtension(recording.storage_path) ??
     fileExtension(recording.original_filename);
@@ -160,7 +171,7 @@ serve(async (req) => {
       .update({
         transcription_status: "skipped",
         transcription_error:
-          "Unsupported audio format; allowed: mp3, mp4, mpeg, mpga, m4a, wav, webm",
+          "Unsupported audio format; allowed: mp3, mp4, m4a, wav, webm, aac, ogg, flac",
       })
       .eq("id", recording.id);
     return json(
@@ -177,6 +188,9 @@ serve(async (req) => {
   // Everything below can leave a terminal status; the catch-all guarantees we
   // never strand a row in 'processing'.
   try {
+    const apiKey = Deno.env.get("DEEPGRAM_API_KEY");
+    if (!apiKey) throw new Error("Transcription is not configured.");
+
     // Mark in-flight (admin — the worker owns the lifecycle column).
     const { error: procErr } = await adminClient
       .from("kpi_call_recordings")
@@ -185,84 +199,91 @@ serve(async (req) => {
     if (procErr)
       throw new Error(`Could not mark processing: ${procErr.message}`);
 
-    // Download the audio (admin — bypasses storage RLS; access already gated).
+    // Short-lived signed URL — Deepgram fetches the (private) audio itself, so we
+    // never download/buffer it here (no size cap, no edge-memory ceiling).
     const bucket = recording.storage_bucket || "call-recordings";
-    const { data: blob, error: dlErr } = await adminClient.storage
+    const { data: signed, error: signErr } = await adminClient.storage
       .from(bucket)
-      .download(recording.storage_path);
-    if (dlErr || !blob) {
+      .createSignedUrl(recording.storage_path, SIGNED_URL_TTL_SECONDS);
+    if (signErr || !signed?.signedUrl) {
       throw new Error(
-        `Could not download recording: ${dlErr?.message ?? "no data"}`,
+        `Could not sign recording URL: ${signErr?.message ?? "no url"}`,
       );
     }
 
-    // ── Size guard → skipped (NOT failed): recording stays usable ─────────────
-    if (blob.size > MAX_AUDIO_BYTES) {
-      await adminClient
-        .from("kpi_call_recordings")
-        .update({
-          transcription_status: "skipped",
-          transcription_error:
-            "Recording exceeds the 25 MB transcription limit; re-upload as mono ~64 kbps",
-        })
-        .eq("id", recording.id);
-      return json(
-        {
-          ok: false,
-          recording_id: recording.id,
-          status: "skipped",
-          error:
-            "Recording exceeds the 25 MB transcription limit. Re-upload as mono ~64 kbps to enable transcription.",
-        },
-        413,
-      );
-    }
-    if (blob.size === 0) {
-      throw new Error("Recording file is empty.");
-    }
-
-    const apiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!apiKey) throw new Error("Transcription is not configured.");
-
-    // ── Whisper call (verbose_json → per-segment timing) ──────────────────────
-    const upstream = new FormData();
-    const uploadName =
-      recording.original_filename && recording.original_filename.includes(".")
-        ? recording.original_filename
-        : `recording.${ext}`;
-    upstream.append("file", blob, uploadName);
-    upstream.append("model", "whisper-1");
-    upstream.append("response_format", "verbose_json");
-    upstream.append("timestamp_granularities[]", "segment");
-    upstream.append("language", "en");
-
-    const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    // ── Deepgram prerecorded: nova-2 + diarization + utterances ───────────────
+    const params = new URLSearchParams({
+      model: "nova-2",
+      diarize: "true",
+      utterances: "true",
+      smart_format: "true",
+      punctuate: "true",
+      language: "en",
+    });
+    const resp = await fetch(`https://api.deepgram.com/v1/listen?${params}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: upstream,
+      headers: {
+        Authorization: `Token ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: signed.signedUrl }),
     });
     if (!resp.ok) {
       // Status only — never the response body (may echo transcript content).
-      console.error("transcribe-call-recording whisper error", resp.status);
+      console.error("transcribe-call-recording deepgram error", resp.status);
       throw new Error(`Transcription service returned ${resp.status}.`);
     }
 
-    const result = (await resp.json()) as WhisperVerboseJson;
+    const result = (await resp.json()) as DeepgramResponse;
+    const alt = result.results?.channels?.[0]?.alternatives?.[0];
     const transcriptText =
-      typeof result.text === "string" ? result.text.trim() : "";
+      typeof alt?.transcript === "string" ? alt.transcript.trim() : "";
 
-    // Persist only the fields we need from each segment (id, start, end, text).
-    const segments = Array.isArray(result.segments)
-      ? result.segments.map((s) => ({
-          id: s.id,
-          start: s.start,
-          end: s.end,
-          text: typeof s.text === "string" ? s.text.trim() : s.text,
+    // Diarized segments: one per utterance, carrying the speaker index. This is
+    // the new shape the transcript UI reads (Whisper segments had no speaker).
+    const utterances = Array.isArray(result.results?.utterances)
+      ? result.results!.utterances!
+      : [];
+    const segments = utterances.length
+      ? utterances.map((u, i) => ({
+          id: i,
+          start: typeof u.start === "number" ? u.start : null,
+          end: typeof u.end === "number" ? u.end : null,
+          text: typeof u.transcript === "string" ? u.transcript.trim() : "",
+          speaker: typeof u.speaker === "number" ? u.speaker : null,
         }))
       : null;
 
+    // Per-speaker talk time + role map. Heuristic: on an inbound call the AGENT
+    // answers first, so the first utterance's speaker → 'agent', others → 'client'.
+    // The map is stored so the UI can flip it with one click if the call opened
+    // differently. talk_time_seconds (existing column) holds AGENT talk time.
+    const talkBySpeaker = new Map<number, number>();
+    for (const u of utterances) {
+      if (typeof u.speaker !== "number") continue;
+      const dur =
+        typeof u.start === "number" && typeof u.end === "number"
+          ? Math.max(0, u.end - u.start)
+          : 0;
+      talkBySpeaker.set(u.speaker, (talkBySpeaker.get(u.speaker) ?? 0) + dur);
+    }
+    const firstSpeaker =
+      utterances.find((u) => typeof u.speaker === "number")?.speaker ?? null;
+    const speakerRoleMap: Record<string, "agent" | "client"> = {};
+    let agentTalk = 0;
+    let clientTalk = 0;
+    for (const [spk, secs] of talkBySpeaker) {
+      const role = spk === firstSpeaker ? "agent" : "client";
+      speakerRoleMap[String(spk)] = role;
+      if (role === "agent") agentTalk += secs;
+      else clientTalk += secs;
+    }
+    const hasSpeakers = talkBySpeaker.size > 0;
+
     const durationSeconds =
-      typeof result.duration === "number" ? Math.round(result.duration) : null;
+      typeof result.metadata?.duration === "number"
+        ? Math.round(result.metadata.duration)
+        : null;
 
     const { error: saveErr } = await adminClient
       .from("kpi_call_recordings")
@@ -270,8 +291,14 @@ serve(async (req) => {
         transcript_text: transcriptText,
         transcript_segments: segments,
         duration_seconds: durationSeconds,
-        transcript_language: result.language ?? "en",
-        transcription_model: "whisper-1",
+        talk_time_seconds: hasSpeakers ? Math.round(agentTalk) : null,
+        client_talk_seconds: hasSpeakers ? Math.round(clientTalk) : null,
+        speaker_count: hasSpeakers ? talkBySpeaker.size : null,
+        speaker_role_map: hasSpeakers ? speakerRoleMap : null,
+        transcript_language:
+          result.results?.channels?.[0]?.detected_language ?? "en",
+        transcript_provider: "deepgram",
+        transcription_model: "nova-2",
         transcribed_at: new Date().toISOString(),
         transcription_status: "completed",
         transcription_error: null,
@@ -280,15 +307,37 @@ serve(async (req) => {
     if (saveErr)
       throw new Error(`Could not save transcript: ${saveErr.message}`);
 
-    // TODO Phase 3: fire-and-forget call to analyze-call-transcript (word-track
-    // detection + AI phrase discovery). Do not block this response on it.
+    // ── Fire analyze-call-transcript in the background ────────────────────────
+    // Word-track detection + objection extraction + AI demographics. Never blocks
+    // or fails this response; harmlessly no-ops until that function is deployed.
+    try {
+      const analyzeUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/analyze-call-transcript`;
+      const fire = fetch(analyzeUrl, {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recording_id: recording.id }),
+      })
+        .then(() => {})
+        .catch(() => {});
+      const runtime = (
+        globalThis as {
+          EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void };
+        }
+      ).EdgeRuntime;
+      if (runtime?.waitUntil) runtime.waitUntil(fire);
+    } catch {
+      /* never fail transcription on analysis dispatch */
+    }
 
     return json({ ok: true, recording_id: recording.id, status: "completed" });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Transcription failed.";
     // Best-effort terminal status so a thrown error never strands 'processing'.
-    // Store only our own message — never a Whisper/transcript body.
+    // Store only our own message — never a Deepgram/transcript body.
     await adminClient
       .from("kpi_call_recordings")
       .update({
