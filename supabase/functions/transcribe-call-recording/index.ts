@@ -161,6 +161,31 @@ serve(async (req) => {
     return json({ ok: true, recording_id: recording.id, status });
   }
 
+  // ── 6b. Write-permission gate ───────────────────────────────────────────────
+  // The IMO-wide SELECT policy lets any IMO member READ this recording, but
+  // (re)transcribing it is a WRITE that triggers a service_role mutation + an
+  // external API call on the recording's audio. Claim the row by setting
+  // 'processing' under the USER client so the recording's UPDATE RLS
+  // (owner / upline / IMO admin) applies; an IMO-wide *reader* affects 0 rows →
+  // 403, before any admin write happens. (Mirrors analyze-call-transcript.) The
+  // uploader owns the row, so the normal upload→transcribe path passes.
+  const { data: claimed, error: claimErr } = await db
+    .from("kpi_call_recordings")
+    .update({ transcription_status: "processing", transcription_error: null })
+    .eq("id", recording.id)
+    .select("id")
+    .maybeSingle();
+  if (claimErr) {
+    console.error("transcribe-call-recording claim error", claimErr.code ?? "");
+    return json({ error: "Failed to start transcription." }, 500);
+  }
+  if (!claimed) {
+    return json(
+      { error: "You don't have permission to transcribe this recording." },
+      403,
+    );
+  }
+
   // ── 7. Format guard (knowable from the path; reject before any work) ────────
   const ext =
     fileExtension(recording.storage_path) ??
@@ -213,13 +238,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get("DEEPGRAM_API_KEY");
     if (!apiKey) throw new Error("Transcription is not configured.");
 
-    // Mark in-flight (admin — the worker owns the lifecycle column).
-    const { error: procErr } = await adminClient
-      .from("kpi_call_recordings")
-      .update({ transcription_status: "processing", transcription_error: null })
-      .eq("id", recording.id);
-    if (procErr)
-      throw new Error(`Could not mark processing: ${procErr.message}`);
+    // (Row already claimed as 'processing' under the user client in step 6b.)
 
     // Short-lived signed URL — Deepgram fetches the (private) audio itself, so we
     // never download/buffer it here (no size cap, no edge-memory ceiling).
