@@ -131,10 +131,18 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   // ── 1. Parse body ──────────────────────────────────────────────────────────
+  // `force` re-runs analysis on an already-completed recording (used when the
+  // speaker→role map was corrected, or word tracks were edited). The automatic
+  // background fire from transcribe-call-recording omits it (stays idempotent).
   let recordingId: string | null = null;
+  let force = false;
   try {
-    const body = (await req.json()) as { recording_id?: unknown };
+    const body = (await req.json()) as {
+      recording_id?: unknown;
+      force?: unknown;
+    };
     if (typeof body?.recording_id === "string") recordingId = body.recording_id;
+    force = body?.force === true;
   } catch {
     return json({ error: "Expected JSON body with recording_id." }, 400);
   }
@@ -186,9 +194,11 @@ serve(async (req) => {
   if (limited) return limited;
 
   // ── 6. Idempotency / preconditions ──────────────────────────────────────────
+  // A completed analysis is only re-run on an explicit force (e.g. after the
+  // speaker→role map was corrected); processing is never re-entered.
   if (
     rec.analysis_status === "processing" ||
-    rec.analysis_status === "completed"
+    (rec.analysis_status === "completed" && !force)
   ) {
     return json({
       ok: true,

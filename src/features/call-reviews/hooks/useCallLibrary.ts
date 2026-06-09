@@ -121,14 +121,15 @@ export function useRetryTranscription() {
   });
 }
 
-/** Run (or re-run) the AI analysis pass on a completed transcript. */
+/** Run (or re-run) the AI analysis pass. User-initiated → force a re-run even
+ * if a prior analysis already completed (e.g. after correcting speaker roles). */
 export function useAnalyzeCall() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (recordingId: string) => {
       const { error } = await supabase.functions.invoke(
         "analyze-call-transcript",
-        { body: { recording_id: recordingId } },
+        { body: { recording_id: recordingId, force: true } },
       );
       if (error) throw new Error(error.message);
     },
@@ -144,6 +145,35 @@ export function useAnalyzeCall() {
     },
     onError: (e) =>
       toast.error(e instanceof Error ? e.message : "Analysis failed"),
+  });
+}
+
+/**
+ * Persist a corrected speaker→role map (the diarization "first speaker = agent"
+ * heuristic can be wrong). Succeeds for the call owner / upline / IMO admin
+ * (recording UPDATE RLS); a viewer without write access gets a clear error.
+ */
+export function useUpdateRoleMap(recordingId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (roleMap: Record<string, "agent" | "client">) => {
+      const { error } = await supabase
+        .from("kpi_call_recordings")
+        .update({ speaker_role_map: roleMap })
+        .eq("id", recordingId);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: callReviewKeys.recording(recordingId),
+      });
+    },
+    onError: (e) =>
+      toast.error(
+        e instanceof Error
+          ? `Couldn't save speaker labels: ${e.message}`
+          : "Couldn't save speaker labels",
+      ),
   });
 }
 

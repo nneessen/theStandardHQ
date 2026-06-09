@@ -5,7 +5,14 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, RefreshCw, ArrowLeftRight } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  RefreshCw,
+  ArrowLeftRight,
+  Save,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +22,7 @@ import {
   useCallRecordingSignedUrl,
   useAnalyzeCall,
   useRetryTranscription,
+  useUpdateRoleMap,
 } from "../hooks/useCallLibrary";
 import { useCallMarkers } from "../hooks/useCallMarkers";
 import {
@@ -69,6 +77,7 @@ export function CallReviewDetailPage({
 
   const analyzeMutation = useAnalyzeCall();
   const retryMutation = useRetryTranscription();
+  const updateRoleMap = useUpdateRoleMap(recordingId);
 
   const playerRef = useRef<CallPlayerHandle>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -79,6 +88,8 @@ export function CallReviewDetailPage({
     () => parseSegments(recording?.transcript_segments),
     [recording?.transcript_segments],
   );
+  // Display map honors the local flip for instant reading; the stored map is the
+  // source of truth for analysis until the correction is persisted.
   const roleMap = useMemo(() => {
     const base = parseRoleMap(recording?.speaker_role_map);
     return flipped ? flipRoles(base) : base;
@@ -87,6 +98,28 @@ export function CallReviewDetailPage({
   const seekTo = (seconds: number) => {
     playerRef.current?.seek(seconds);
     playerRef.current?.play();
+  };
+
+  // Persist the corrected (flipped) speaker→role map, then re-run analysis if it
+  // had already completed — because word-track detection AND objection extraction
+  // both key off this map, a wrong mapping silently inverts the analysis.
+  const saveCorrectedRoles = () => {
+    if (!recording) return;
+    const clean: Record<string, "agent" | "client"> = {};
+    for (const [k, v] of Object.entries(roleMap)) {
+      if (v === "agent" || v === "client") clean[k] = v;
+    }
+    updateRoleMap.mutate(clean, {
+      onSuccess: () => {
+        setFlipped(false); // stored map now equals the displayed map
+        if (recording.analysis_status === "completed") {
+          analyzeMutation.mutate(recordingId);
+          toast.success("Speaker labels saved — re-analyzing the call");
+        } else {
+          toast.success("Speaker labels saved");
+        }
+      },
+    });
   };
 
   if (isLoading) {
@@ -247,13 +280,31 @@ export function CallReviewDetailPage({
 
             <TabsContent value="transcript" className="p-3">
               {segments.length > 0 && (
-                <div className="flex justify-end mb-1">
+                <div className="flex justify-end items-center gap-1 mb-1">
+                  {flipped && (
+                    <Button
+                      size="sm"
+                      className="h-6 text-[10px]"
+                      onClick={saveCorrectedRoles}
+                      disabled={
+                        updateRoleMap.isPending || analyzeMutation.isPending
+                      }
+                      title="Save these speaker labels and re-run analysis with them"
+                    >
+                      {updateRoleMap.isPending ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <Save className="h-3 w-3 mr-1" />
+                      )}
+                      Save &amp; re-analyze
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-6 text-[10px] text-v2-ink-muted"
                     onClick={() => setFlipped((f) => !f)}
-                    title="Swap which speaker is the agent"
+                    title="Swap which speaker is the agent (for reading); Save to persist + re-analyze"
                   >
                     <ArrowLeftRight className="h-3 w-3 mr-1" /> Flip speakers
                   </Button>

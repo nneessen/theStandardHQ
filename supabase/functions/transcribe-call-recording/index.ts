@@ -312,16 +312,28 @@ serve(async (req) => {
     // or fails this response; harmlessly no-ops until that function is deployed.
     try {
       const analyzeUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/analyze-call-transcript`;
+      // The functions gateway requires BOTH apikey and Authorization (the browser
+      // client sends both; a raw edge→edge fetch must too, or it 401s before the
+      // function runs). Log a non-ok/failed dispatch (status only — never content)
+      // instead of swallowing it, so a stuck analysis is diagnosable.
       const fire = fetch(analyzeUrl, {
         method: "POST",
         headers: {
           Authorization: authHeader,
+          apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ recording_id: recording.id }),
       })
-        .then(() => {})
-        .catch(() => {});
+        .then((r) => {
+          if (!r.ok) console.error("analyze dispatch non-ok", r.status);
+        })
+        .catch((e) =>
+          console.error(
+            "analyze dispatch failed",
+            e instanceof Error ? e.message : "",
+          ),
+        );
       const runtime = (
         globalThis as {
           EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void };

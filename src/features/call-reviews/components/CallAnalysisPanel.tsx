@@ -73,6 +73,24 @@ export function CallAnalysisPanel({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end -mb-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 text-[10px] text-v2-ink-muted"
+          onClick={onAnalyze}
+          disabled={isAnalyzing}
+          title="Re-run AI analysis (e.g. after correcting speaker labels or editing word tracks)"
+        >
+          {isAnalyzing ? (
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          ) : (
+            <Sparkles className="h-3 w-3 mr-1" />
+          )}
+          Re-analyze
+        </Button>
+      </div>
+
       {/* Summary */}
       {recording.ai_summary && (
         <div className="rounded-lg border border-v2-ring bg-v2-canvas/60 p-3">

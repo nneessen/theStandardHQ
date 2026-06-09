@@ -6,6 +6,14 @@
 > beside the transcript. Reuses the existing `/kpi` `kpi_*` data layer + storage bucket
 > and the `training-modules` presentation player/markers system.
 
+## STATUS — P0–P3 ALL SHIPPED (Jun 9, 2026)
+P0 schema + P1 Deepgram diarization committed `05b4578e`; P2 Claude analysis + P3 full UI
+committed `48e0c53a` (both → origin/main). Migrations `20260609074223` + `20260609081428` applied
+LOCAL+PROD. tsc/eslint/`npm run build`/`deno check`/`scripts/check-call-reviews.mjs` all green.
+**ONLY REMAINING = owner-gated deploy** (see P1/P2 deploy notes below) + a browser runtime test.
+GATING NOTE: the nav/route is `public:true` + `noRecruits` (NOT epiclife-email-gated — that would
+hide it from regular agents); Epic-Life scoping is enforced by RLS + the edge-fn `is_epic_life_imo` gate.
+
 ## OWNER DECISIONS (locked Jun 9, 2026)
 - **Visibility:** OPEN IMO-wide — every approved agent can listen to every recording in the IMO.
 - **Upload/curation:** ANY agent uploads & shares — uploads flow straight into the shared library.
