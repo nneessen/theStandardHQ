@@ -97,6 +97,16 @@ const KpiPage = lazy(() =>
     default: m.KpiPage,
   })),
 );
+const CallReviewsPage = lazy(() =>
+  import("./features/call-reviews").then((m) => ({
+    default: m.CallReviewsPage,
+  })),
+);
+const CallReviewDetailPage = lazy(() =>
+  import("./features/call-reviews").then((m) => ({
+    default: m.CallReviewDetailPage,
+  })),
+);
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
   () => import("./features/underwriting/components/Wizard"),
@@ -691,6 +701,30 @@ const kpiRoute = createRoute({
   ),
 });
 
+// Call Reviews — all-agents training library of live call recordings (open to
+// every approved agent; recruits excluded; IMO-scoped by RLS, not by email).
+const callReviewsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "call-reviews",
+  component: () => (
+    <RouteGuard noRecruits>
+      <CallReviewsPage />
+    </RouteGuard>
+  ),
+});
+const callReviewDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "call-reviews/$recordingId",
+  component: function CallReviewDetailRouteComponent() {
+    const { recordingId } = callReviewDetailRoute.useParams();
+    return (
+      <RouteGuard noRecruits>
+        <CallReviewDetailPage recordingId={recordingId} />
+      </RouteGuard>
+    );
+  },
+});
+
 // Close AI Builder - AI-generated email/SMS templates + workflows for Close CRM
 const closeAiBuilderRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1213,6 +1247,8 @@ const routeTree = rootRoute.addChildren([
   voiceAgentRoute,
   closeKpiRoute,
   kpiRoute,
+  callReviewsRoute,
+  callReviewDetailRoute,
   closeAiBuilderRoute,
   roadmapListRoute,
   roadmapEditorRoute,

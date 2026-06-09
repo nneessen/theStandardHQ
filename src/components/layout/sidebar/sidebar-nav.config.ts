@@ -21,6 +21,7 @@ import {
   Store,
   Megaphone,
   GraduationCap,
+  Headphones,
   PhoneCall,
   PhoneIncoming,
   Sparkles,
@@ -128,6 +129,15 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // The /agent-roadmap route auto-routes by role (admins → manage view,
         // agents → their checklist) and is RLS-scoped per agency/IMO, so a
         // single item is correct for everyone. Visible to all agents.
+        public: true,
+      },
+      {
+        icon: Headphones,
+        label: "Call Reviews",
+        href: "/call-reviews",
+        // All-agents shared training library of live call recordings (diarized
+        // transcript + AI analysis + markers). Open to every approved agent;
+        // recruits are excluded at the route. Data is IMO-scoped via RLS.
         public: true,
       },
     ],
