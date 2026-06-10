@@ -21,7 +21,7 @@ vi.mock("../../../../lib/date", () => ({
   formatDateForDB: vi.fn(() => "2024-01-15"),
   parseLocalDate: vi.fn((dateString: string) => {
     if (!dateString) return new Date();
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day, 0, 0, 0, 0);
   }),
 }));
@@ -137,17 +137,26 @@ describe("validatePolicyForm", () => {
   });
 
   it("validates required client name", () => {
-    const errors = validatePolicyForm({ ...validFormData, clientName: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, clientName: "" },
+      products,
+    );
     expect(errors.clientName).toBe("Client name is required");
   });
 
   it("validates required state", () => {
-    const errors = validatePolicyForm({ ...validFormData, clientState: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, clientState: "" },
+      products,
+    );
     expect(errors.clientState).toBe("State is required");
   });
 
   it("validates required date of birth", () => {
-    const errors = validatePolicyForm({ ...validFormData, clientDOB: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, clientDOB: "" },
+      products,
+    );
     expect(errors.clientDOB).toBe("Date of birth is required");
   });
 
@@ -156,7 +165,7 @@ describe("validatePolicyForm", () => {
     const futureYear = new Date().getFullYear() + 1;
     const errors = validatePolicyForm(
       { ...validFormData, clientDOB: `${futureYear}-06-15` },
-      products
+      products,
     );
     expect(errors.clientDOB).toBe("Date of birth must result in age 1-120");
   });
@@ -164,7 +173,7 @@ describe("validatePolicyForm", () => {
   it("validates DOB age range (too old)", () => {
     const errors = validatePolicyForm(
       { ...validFormData, clientDOB: "1800-01-01" },
-      products
+      products,
     );
     expect(errors.clientDOB).toBe("Date of birth must result in age 1-120");
   });
@@ -172,18 +181,24 @@ describe("validatePolicyForm", () => {
   it("validates invalid date format", () => {
     const errors = validatePolicyForm(
       { ...validFormData, clientDOB: "invalid-date" },
-      products
+      products,
     );
     expect(errors.clientDOB).toBe("Invalid date format");
   });
 
   it("validates required carrier", () => {
-    const errors = validatePolicyForm({ ...validFormData, carrierId: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, carrierId: "" },
+      products,
+    );
     expect(errors.carrierId).toBe("Carrier is required");
   });
 
   it("validates required product", () => {
-    const errors = validatePolicyForm({ ...validFormData, productId: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, productId: "" },
+      products,
+    );
     expect(errors.productId).toBe("Product is required");
   });
 
@@ -195,9 +210,11 @@ describe("validatePolicyForm", () => {
         product: "term_life" as const,
         termLength: undefined,
       },
-      products
+      products,
     );
-    expect(errors.termLength).toBe("Term length is required for term life products");
+    expect(errors.termLength).toBe(
+      "Term length is required for term life products",
+    );
   });
 
   it("does not require term length for non-term products", () => {
@@ -208,26 +225,54 @@ describe("validatePolicyForm", () => {
         product: "whole_life" as const,
         termLength: undefined,
       },
-      products
+      products,
     );
     expect(errors.termLength).toBeUndefined();
   });
 
   it("validates premium greater than zero", () => {
-    const errors = validatePolicyForm({ ...validFormData, premium: 0 }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, premium: 0 },
+      products,
+    );
     expect(errors.premium).toBe("Premium must be greater than $0");
   });
 
   it("validates commission percentage range", () => {
     const errors = validatePolicyForm(
       { ...validFormData, commissionPercentage: 250 },
-      products
+      products,
     );
-    expect(errors.commissionPercentage).toBe("Commission must be between 0-200%");
+    expect(errors.commissionPercentage).toBe(
+      "Commission must be between 0-200%",
+    );
+  });
+
+  it("allows blank (0) commission for manual entry", () => {
+    // Manual commission entry: leaving commission blank records a $0 advance
+    // now and is filled in later — it must NOT be a validation error.
+    const errors = validatePolicyForm(
+      { ...validFormData, commissionPercentage: 0 },
+      products,
+    );
+    expect(errors.commissionPercentage).toBeUndefined();
+  });
+
+  it("rejects negative commission", () => {
+    const errors = validatePolicyForm(
+      { ...validFormData, commissionPercentage: -5 },
+      products,
+    );
+    expect(errors.commissionPercentage).toBe(
+      "Commission must be between 0-200%",
+    );
   });
 
   it("validates required submit date", () => {
-    const errors = validatePolicyForm({ ...validFormData, submitDate: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, submitDate: "" },
+      products,
+    );
     expect(errors.submitDate).toBe("Submit date is required");
   });
 
@@ -235,17 +280,17 @@ describe("validatePolicyForm", () => {
     const futureYear = new Date().getFullYear() + 1;
     const errors = validatePolicyForm(
       { ...validFormData, submitDate: `${futureYear}-06-15` },
-      products
+      products,
     );
     expect(errors.submitDate).toBe("Submit date cannot be in the future");
   });
 
   it("allows today's date as submit date", () => {
     const today = new Date();
-    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     const errors = validatePolicyForm(
       { ...validFormData, submitDate: todayString },
-      products
+      products,
     );
     expect(errors.submitDate).toBeUndefined();
   });
@@ -253,13 +298,16 @@ describe("validatePolicyForm", () => {
   it("allows past dates as submit date", () => {
     const errors = validatePolicyForm(
       { ...validFormData, submitDate: "2020-01-15" },
-      products
+      products,
     );
     expect(errors.submitDate).toBeUndefined();
   });
 
   it("validates required effective date", () => {
-    const errors = validatePolicyForm({ ...validFormData, effectiveDate: "" }, products);
+    const errors = validatePolicyForm(
+      { ...validFormData, effectiveDate: "" },
+      products,
+    );
     expect(errors.effectiveDate).toBe("Effective date is required");
   });
 });
@@ -276,7 +324,7 @@ describe("usePolicyForm hook", () => {
 
   it("initializes with empty form for new policy", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     expect(result.current.formData.clientName).toBe("");
@@ -298,7 +346,7 @@ describe("usePolicyForm hook", () => {
     } as unknown as Policy;
 
     const { result } = renderHook(() =>
-      usePolicyForm({ policyId: "policy-1", policy, products: mockProducts })
+      usePolicyForm({ policyId: "policy-1", policy, products: mockProducts }),
     );
 
     expect(result.current.formData.clientName).toBe("Jane Doe");
@@ -309,7 +357,7 @@ describe("usePolicyForm hook", () => {
 
   it("handles input change correctly", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -323,7 +371,7 @@ describe("usePolicyForm hook", () => {
 
   it("parses numeric fields correctly", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -337,7 +385,7 @@ describe("usePolicyForm hook", () => {
 
   it("clears error when field is edited", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     // Set an error
@@ -359,7 +407,7 @@ describe("usePolicyForm hook", () => {
 
   it("resets product when carrier changes", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     // Set initial values
@@ -384,7 +432,7 @@ describe("usePolicyForm hook", () => {
 
   it("does not reset product when same carrier selected", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     // Set initial values
@@ -408,7 +456,7 @@ describe("usePolicyForm hook", () => {
 
   it("updates product type when product is selected", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -421,7 +469,7 @@ describe("usePolicyForm hook", () => {
 
   it("clears term length when switching to non-term product", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     // Set term length for term product
@@ -443,7 +491,7 @@ describe("usePolicyForm hook", () => {
 
   it("handles term length change", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -455,7 +503,7 @@ describe("usePolicyForm hook", () => {
 
   it("handles DOB change", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -467,7 +515,7 @@ describe("usePolicyForm hook", () => {
 
   it("ignores empty select values", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     act(() => {
@@ -488,7 +536,7 @@ describe("usePolicyForm hook", () => {
   it("validateForm returns false and shows toast for invalid form", async () => {
     const { toast } = await import("sonner");
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     let isValid: boolean;
@@ -503,7 +551,7 @@ describe("usePolicyForm hook", () => {
 
   it("resetForm restores initial state", () => {
     const { result } = renderHook(() =>
-      usePolicyForm({ products: mockProducts })
+      usePolicyForm({ products: mockProducts }),
     );
 
     // Modify form

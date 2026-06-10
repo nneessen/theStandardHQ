@@ -169,16 +169,14 @@ export function usePolicyCommission({
     }
 
     if (productId && compGuideData) {
-      // Use comp_guide commission rate (contract-level based)
+      // A real comp_guide entry exists → pre-fill the rate (contract-level based).
       setCommissionPercentage(compGuideData.commission_percentage * 100);
     } else if (productId && !compGuideData && !compGuideLoading) {
-      // Fallback to product commission rate
-      const selectedProduct = products.find((p) => p.id === productId);
-      setCommissionPercentage(
-        selectedProduct?.commission_percentage
-          ? selectedProduct.commission_percentage * 100
-          : 0,
-      );
+      // No comp_guide entry (e.g. Epic Life, which has no comp guides yet).
+      // Intentionally do NOT fall back to the product's stored percentage —
+      // that value is carried over from FFG and is not the agent's own comp.
+      // Leave the field blank so the agent enters their own commission manually.
+      setCommissionPercentage(0);
     }
   }, [
     productId,

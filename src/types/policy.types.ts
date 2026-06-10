@@ -150,6 +150,12 @@ export interface NewPolicyForm {
   annualPremium?: number;
   paymentFrequency: PaymentFrequency;
   commissionPercentage: number;
+  /**
+   * Optional flat-dollar advance the agent enters by hand, overriding the
+   * percentage-derived advance. Manual-commission entry only (no comp guide).
+   * Not a policies column — used solely to seed the commission record.
+   */
+  manualAdvanceAmount?: number | null;
 
   notes?: string;
 }
@@ -215,6 +221,12 @@ export interface CreatePolicyData {
   monthlyPremium: number;
   paymentFrequency: PaymentFrequency;
   commissionPercentage: number;
+  /**
+   * Transient: agent-entered flat advance amount. Consumed by
+   * PolicyService.create() to seed the commission record; never written to the
+   * policies row (PolicyRepository.transformToDB whitelists columns).
+   */
+  manualAdvanceAmount?: number | null;
   notes?: string;
   status?: PolicyStatus;
   lifecycleStatus?: PolicyLifecycleStatus | null;

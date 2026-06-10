@@ -26,7 +26,6 @@ interface PolicyFormPolicySectionProps {
   policyId?: string;
   annualPremium: number;
   expectedCommission: number;
-  productCommissionRates: Record<string, number>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, value: string) => void;
 }
@@ -39,12 +38,15 @@ export const PolicyFormPolicySection: React.FC<
   policyId,
   annualPremium,
   expectedCommission,
-  productCommissionRates,
   onInputChange,
   onSelectChange,
 }) => {
   // Show lifecycle status dropdown only when status is approved
   const showLifecycleStatus = formData.status === "approved";
+
+  // Whether the agent typed a flat-dollar advance that overrides the % math.
+  const usingManualAdvance =
+    !!formData.manualAdvanceAmount && formData.manualAdvanceAmount > 0;
 
   // Commission details are a Pro feature
   const { hasAccess: canViewCommissions } = useFeatureAccess("dashboard");
@@ -299,59 +301,84 @@ export const PolicyFormPolicySection: React.FC<
               </p>
             </div>
             <div className="px-3 py-2.5 space-y-2">
-              <div className="flex justify-between items-center text-[11px]">
+              {/* Manual commission entry — agent enters their own comp. */}
+              <div className="grid grid-cols-2 gap-2 pb-1">
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="commissionPercentage"
+                    className="text-[11px] text-muted-foreground"
+                  >
+                    Your Commission %
+                  </Label>
+                  <Input
+                    id="commissionPercentage"
+                    type="number"
+                    inputMode="decimal"
+                    name="commissionPercentage"
+                    value={formData.commissionPercentage || ""}
+                    onChange={onInputChange}
+                    className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.commissionPercentage ? "border-destructive" : "border-input"}`}
+                    placeholder="85"
+                    step="0.01"
+                    min="0"
+                    max="200"
+                  />
+                  {displayErrors.commissionPercentage && (
+                    <span className="text-[10px] text-destructive">
+                      {displayErrors.commissionPercentage}
+                    </span>
+                  )}
+                </div>
+                {!policyId && (
+                  <div className="flex flex-col gap-1">
+                    <Label
+                      htmlFor="manualAdvanceAmount"
+                      className="text-[11px] text-muted-foreground"
+                    >
+                      Advance $ (optional)
+                    </Label>
+                    <Input
+                      id="manualAdvanceAmount"
+                      type="number"
+                      inputMode="decimal"
+                      name="manualAdvanceAmount"
+                      value={formData.manualAdvanceAmount || ""}
+                      onChange={onInputChange}
+                      className="h-8 text-[11px] bg-v2-card-tinted border-input"
+                      placeholder="auto"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground -mt-1">
+                Enter your own comp — the advance is calculated from it. Or type
+                a flat advance to override.
+              </p>
+              <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-border dark:border-border/40">
                 <span className="text-muted-foreground">Annual Premium</span>
                 <strong className="text-[hsl(var(--info))] font-semibold font-mono">
                   ${annualPremium.toFixed(2)}
                 </strong>
               </div>
-              {(() => {
-                const baseRate =
-                  formData.productId &&
-                  productCommissionRates[formData.productId]
-                    ? productCommissionRates[formData.productId] * 100
-                    : formData.commissionPercentage;
-                const effectiveRate = formData.commissionPercentage;
-                const hasTermAdjustment =
-                  Math.abs(baseRate - effectiveRate) > 0.001;
-
-                if (hasTermAdjustment) {
-                  return (
-                    <>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-muted-foreground">
-                          Product Comp
-                        </span>
-                        <strong className="text-foreground font-semibold">
-                          {baseRate.toFixed(2)}%
-                        </strong>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-muted-foreground text-[10px]">
-                          Effective Rate (term-adjusted)
-                        </span>
-                        <strong className="text-warning font-semibold">
-                          {effectiveRate.toFixed(2)}%
-                        </strong>
-                      </div>
-                    </>
-                  );
-                }
-
-                return (
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-muted-foreground">
-                      Commission Rate
-                    </span>
-                    <strong className="text-foreground font-semibold">
-                      {baseRate.toFixed(2)}%
-                    </strong>
-                  </div>
-                );
-              })()}
+              <div className="flex justify-between items-center text-[11px]">
+                <span className="text-muted-foreground">Commission Rate</span>
+                {usingManualAdvance ? (
+                  <span className="text-[10px] italic text-muted-foreground">
+                    flat advance entered
+                  </span>
+                ) : (
+                  <strong className="text-foreground font-semibold">
+                    {(formData.commissionPercentage || 0).toFixed(2)}%
+                  </strong>
+                )}
+              </div>
               <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-border dark:border-border/40">
                 <span className="text-muted-foreground">
-                  Expected Advance (9 mo)
+                  {usingManualAdvance
+                    ? "Expected Advance (manual)"
+                    : "Expected Advance (9 mo)"}
                 </span>
                 <strong className="text-success font-semibold font-mono">
                   ${expectedCommission.toFixed(2)}

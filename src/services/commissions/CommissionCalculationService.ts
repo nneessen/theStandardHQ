@@ -103,6 +103,13 @@ class CommissionCalculationService {
     contractCompLevel?: number;
     advanceMonths?: number;
     termLength?: number; // Term length for term_life products (affects commission rate)
+    /**
+     * Manual commission entry: the agent's own comp rate as a DECIMAL
+     * (0.85 = 85%). When provided, the comp_guide lookup and contract-level
+     * requirement are bypassed and this rate is used verbatim (the form has
+     * already applied any term modifier). Carrier advance caps still apply.
+     */
+    manualRate?: number;
   }): Promise<CalculationResult | null> {
     // Validation
     if (!data.carrierId) {
@@ -140,109 +147,143 @@ class CommissionCalculationService {
       }
       const carrier = carrierResult.data;
 
-      // Determine contract comp level
-      let contractCompLevel = data.contractCompLevel;
-      const userId = data.userId;
-      if (!contractCompLevel && userId) {
-        try {
-          const user = await userService.getById(userId);
-          if (user && user.contract_level !== null) {
-            // Database returns snake_case: contract_level (not contractCompLevel)
-            contractCompLevel = user.contract_level;
+      // Advance period (industry standard 9 months unless overridden).
+      const advanceMonths = data.advanceMonths || 9;
+
+      // Resolve the commission rate (stored everywhere as a DECIMAL, e.g. 0.95).
+      const isManualRate =
+        data.manualRate !== undefined && data.manualRate !== null;
+      let commissionRate: number;
+      let contractCompLevel = data.contractCompLevel ?? 0;
+
+      if (isManualRate) {
+        // MANUAL commission entry: the agent typed their own comp rate. Use it
+        // verbatim — no comp_guide lookup, no contract-level requirement, and no
+        // term modifier (the form already applied it). The carrier was still
+        // fetched above so advance caps continue to apply.
+        commissionRate = data.manualRate as number;
+      } else {
+        // AUTO (comp_guide) path — legacy behavior for IMOs with comp guides.
+        // Determine contract comp level
+        const userId = data.userId;
+        if (!contractCompLevel && userId) {
+          try {
+            const user = await userService.getById(userId);
+            if (user && user.contract_level !== null) {
+              // Database returns snake_case: contract_level (not contractCompLevel)
+              contractCompLevel = user.contract_level;
+            }
+          } catch (error) {
+            logger.warn(
+              "Could not get user contract comp level",
+              error instanceof Error ? error : String(error),
+              "CommissionCalculationService",
+            );
           }
-        } catch (error) {
+        }
+
+        if (!contractCompLevel) {
+          throw new CalculationError(
+            "Commission",
+            "Contract comp level not found",
+            {
+              userId,
+              carrierId: data.carrierId,
+            },
+          );
+        }
+
+        // Get commission percentage from comp guide (with retry for external service)
+        // Note: product_type in comp_guide is an enum, so pass the raw product type directly
+        // CRITICAL: Pass productId for accurate lookup when available
+        const rateResult = await withRetry(
+          () =>
+            compGuideService.getCommissionRate(
+              carrier.name,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
+              data.product as any, // Cast to any - product types match DB enum values
+              contractCompLevel,
+              data.productId, // Pass productId for accurate comp_guide lookup
+            ),
+          { maxAttempts: 3 },
+        );
+
+        if (rateResult.error || !rateResult.data) {
+          // No comp_guide entry found - return null to allow fallback to manual calculation
+          // This is a data configuration issue, not a code error
           logger.warn(
-            "Could not get user contract comp level",
-            error instanceof Error ? error : String(error),
+            "No comp_guide rate found for carrier/product/level combination",
+            {
+              carrierName: carrier.name,
+              product: data.product,
+              contractCompLevel,
+            },
             "CommissionCalculationService",
           );
+          return null;
+        }
+
+        // IMPORTANT: comp_guide stores rates as decimals (e.g., 0.95 = 95%, 1.1 = 110%)
+        // Do NOT divide by 100 - the rate is already in the correct format
+        commissionRate = rateResult.data;
+
+        // Apply term-based commission modifier for term_life products
+        // Short-term policies (10, 15 years) may have reduced commission rates
+        if (data.product === "term_life" && data.termLength && data.productId) {
+          const { productService } = await import("../index");
+          const productResponse = await productService.getById(data.productId);
+
+          if (productResponse.success && productResponse.data?.metadata) {
+            const metadata = productResponse.data.metadata as ProductMetadata;
+            if (metadata.termCommissionModifiers) {
+              const modifier = getTermModifier(
+                metadata.termCommissionModifiers,
+                data.termLength,
+              );
+
+              if (modifier !== 0) {
+                const originalRate = commissionRate;
+                commissionRate = applyTermModifier(commissionRate, modifier);
+
+                logger.info(
+                  "CommissionCalculation",
+                  "Applied term commission modifier",
+                  JSON.stringify({
+                    termLength: data.termLength,
+                    modifier,
+                    originalRate,
+                    adjustedRate: commissionRate,
+                    productId: data.productId,
+                  }),
+                );
+              }
+            }
+          }
         }
       }
 
-      if (!contractCompLevel) {
-        throw new CalculationError(
-          "Commission",
-          "Contract comp level not found",
-          {
-            userId,
-            carrierId: data.carrierId,
-          },
-        );
-      }
-
-      // Get commission percentage from comp guide (with retry for external service)
-      // Note: product_type in comp_guide is an enum, so pass the raw product type directly
-      // CRITICAL: Pass productId for accurate lookup when available
-      const rateResult = await withRetry(
-        () =>
-          compGuideService.getCommissionRate(
-            carrier.name,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-            data.product as any, // Cast to any - product types match DB enum values
-            contractCompLevel,
-            data.productId, // Pass productId for accurate comp_guide lookup
-          ),
-        { maxAttempts: 3 },
-      );
-
-      if (rateResult.error || !rateResult.data) {
-        // No comp_guide entry found - return null to allow fallback to manual calculation
-        // This is a data configuration issue, not a code error
-        logger.warn(
-          "No comp_guide rate found for carrier/product/level combination",
-          {
-            carrierName: carrier.name,
-            product: data.product,
-            contractCompLevel,
-          },
-          "CommissionCalculationService",
-        );
-        return null;
+      // A 0% rate (the agent left commission blank for manual entry) yields a
+      // $0 advance. Short-circuit BEFORE calculateCappedAdvance — its underlying
+      // calculateAdvance rejects a non-positive rate, so without this guard a
+      // blank commission would throw instead of recording the intended $0 row.
+      if (commissionRate <= 0) {
+        return {
+          advanceAmount: 0,
+          commissionRate: 0,
+          compGuidePercentage: 0,
+          isAutoCalculated: !isManualRate,
+          contractCompLevel,
+          originalAdvance: null,
+          overageAmount: null,
+          overageStartMonth: null,
+          isCapped: false,
+        };
       }
 
       // Calculate commission ADVANCE amount with carrier cap applied
       // BUSINESS RULE: Advance = Monthly Premium × Advance Months × Commission Rate
       // Some carriers have advance caps (e.g., Mutual of Omaha = $3,000)
       // When advance exceeds cap, overage is paid as-earned after recoupment
-      const advanceMonths = data.advanceMonths || 9; // Industry standard
-      // IMPORTANT: comp_guide stores rates as decimals (e.g., 0.95 = 95%, 1.1 = 110%)
-      // Do NOT divide by 100 - the rate is already in the correct format
-      let commissionRate = rateResult.data;
-
-      // Apply term-based commission modifier for term_life products
-      // Short-term policies (10, 15 years) may have reduced commission rates
-      if (data.product === "term_life" && data.termLength && data.productId) {
-        const { productService } = await import("../index");
-        const productResponse = await productService.getById(data.productId);
-
-        if (productResponse.success && productResponse.data?.metadata) {
-          const metadata = productResponse.data.metadata as ProductMetadata;
-          if (metadata.termCommissionModifiers) {
-            const modifier = getTermModifier(
-              metadata.termCommissionModifiers,
-              data.termLength,
-            );
-
-            if (modifier !== 0) {
-              const originalRate = commissionRate;
-              commissionRate = applyTermModifier(commissionRate, modifier);
-
-              logger.info(
-                "CommissionCalculation",
-                "Applied term commission modifier",
-                JSON.stringify({
-                  termLength: data.termLength,
-                  modifier,
-                  originalRate,
-                  adjustedRate: commissionRate,
-                  productId: data.productId,
-                }),
-              );
-            }
-          }
-        }
-      }
-
       // Use capped advance calculation (handles carrier advance caps)
       const cappedResult = commissionLifecycleService.calculateCappedAdvance({
         monthlyPremium: data.monthlyPremium,
@@ -253,11 +294,14 @@ class CommissionCalculationService {
 
       logger.info(
         "CommissionCalculation",
-        "Advance calculated using comp guide",
+        isManualRate
+          ? "Advance calculated using manual (agent-entered) rate"
+          : "Advance calculated using comp guide",
         JSON.stringify({
           monthlyPremium: data.monthlyPremium,
           advanceMonths,
           commissionRate,
+          isManualRate,
           advanceAmount: cappedResult.advanceAmount,
           originalAdvance: cappedResult.originalAdvance,
           isCapped: cappedResult.isCapped,
@@ -271,7 +315,7 @@ class CommissionCalculationService {
         advanceAmount: cappedResult.advanceAmount, // This is the ADVANCE (capped if applicable)
         commissionRate,
         compGuidePercentage: commissionRate,
-        isAutoCalculated: true,
+        isAutoCalculated: !isManualRate,
         contractCompLevel,
         // Capped advance fields
         originalAdvance: cappedResult.isCapped
@@ -328,6 +372,18 @@ class CommissionCalculationService {
       contractCompLevel?: number;
       termLength?: number;
       autoCalculate?: boolean;
+      /**
+       * Manual commission entry: the agent's own comp rate as a DECIMAL
+       * (0.85 = 85%). When provided, the comp_guide lookup is bypassed and this
+       * rate drives the advance (carrier caps still apply). 0 → a $0 advance.
+       */
+      commissionRateOverride?: number | null;
+      /**
+       * Manual commission entry: a flat-dollar advance the agent typed by hand.
+       * When > 0 this is used verbatim as the advance amount, overriding both
+       * the comp_guide lookup AND the percentage-derived figure.
+       */
+      manualAmount?: number | null;
     },
   ): Promise<Commission> {
     try {
@@ -338,8 +394,24 @@ class CommissionCalculationService {
         policyContext?.monthlyPremium ||
         (policyContext?.annualPremium ? policyContext.annualPremium / 12 : 0);
 
-      // If auto-calculation is requested and we have the required data
-      if (
+      const hasFlatOverride =
+        policyContext?.manualAmount !== undefined &&
+        policyContext?.manualAmount !== null;
+      const hasRateOverride =
+        policyContext?.commissionRateOverride !== undefined &&
+        policyContext?.commissionRateOverride !== null;
+
+      if (hasFlatOverride) {
+        // MANUAL flat-dollar advance: take the agent's figure as-is. No
+        // comp_guide, no rate math, no carrier cap (a hand-entered advance is
+        // assumed final).
+        finalData.amount = policyContext.manualAmount as number;
+        finalData.advanceMonths = commissionData.advanceMonths || 9;
+        finalData.originalAdvance = null;
+        finalData.overageAmount = null;
+        finalData.overageStartMonth = null;
+      } else if (
+        // If auto-calculation is requested and we have the required data
         policyContext?.autoCalculate !== false &&
         policyContext?.carrierId &&
         policyContext?.product &&
@@ -354,6 +426,11 @@ class CommissionCalculationService {
           contractCompLevel: policyContext.contractCompLevel,
           advanceMonths: commissionData.advanceMonths,
           termLength: policyContext.termLength,
+          // MANUAL commission entry: when an override rate is supplied we use it
+          // verbatim and skip the comp_guide lookup entirely.
+          manualRate: hasRateOverride
+            ? (policyContext.commissionRateOverride as number)
+            : undefined,
         });
 
         if (calculation) {
@@ -363,6 +440,11 @@ class CommissionCalculationService {
           finalData.originalAdvance = calculation.originalAdvance;
           finalData.overageAmount = calculation.overageAmount;
           finalData.overageStartMonth = calculation.overageStartMonth;
+        } else if (hasRateOverride) {
+          // Unreachable in practice (a supplied rate never returns null), but
+          // guard defensively: fall back to a $0 advance rather than throwing.
+          finalData.amount = 0;
+          finalData.advanceMonths = commissionData.advanceMonths || 9;
         } else {
           // CRITICAL: comp_guide lookup failed - DO NOT fall back to a wrong rate
           // This means there's no comp_guide entry for this carrier/product/contract_level combination
@@ -542,15 +624,49 @@ class CommissionCalculationService {
           }),
         );
 
-        const calculation = await this.calculateCommissionWithCompGuide({
-          carrierId: policy.carrierId,
-          productId: policy.productId,
-          product: policy.product,
-          monthlyPremium,
-          userId: policy.userId,
-          advanceMonths,
-          termLength: policy.termLength ?? undefined, // For term_life commission modifiers
-        });
+        // Try comp_guide first (carrier/product may have changed). For IMOs
+        // without comp guides (e.g. Epic Life) this either returns null OR throws
+        // ("Contract comp level not found") — in BOTH cases fall back to the
+        // policy's stored, manually entered rate rather than failing the recalc
+        // (the throw would otherwise be swallowed by useUpdatePolicy, silently
+        // leaving a stale commission).
+        let calculation: CalculationResult | null = null;
+        try {
+          calculation = await this.calculateCommissionWithCompGuide({
+            carrierId: policy.carrierId,
+            productId: policy.productId,
+            product: policy.product,
+            monthlyPremium,
+            userId: policy.userId,
+            advanceMonths,
+            termLength: policy.termLength ?? undefined, // For term_life commission modifiers
+          });
+        } catch (compGuideError) {
+          logger.warn(
+            "CommissionCalculation",
+            "comp_guide recalculation unavailable — falling back to manual rate",
+            compGuideError instanceof Error
+              ? compGuideError.message
+              : String(compGuideError),
+          );
+          calculation = null;
+        }
+
+        if (!calculation) {
+          // No comp_guide entry (e.g. Epic Life). Use the policy's stored manual
+          // rate verbatim — mirroring the ADD path. Still applies carrier advance
+          // caps and short-circuits a 0 rate to a $0 advance.
+          calculation = await this.calculateCommissionWithCompGuide({
+            carrierId: policy.carrierId,
+            productId: policy.productId,
+            product: policy.product,
+            monthlyPremium,
+            userId: policy.userId,
+            advanceMonths,
+            termLength: policy.termLength ?? undefined,
+            manualRate: policy.commissionPercentage ?? 0,
+          });
+        }
 
         if (calculation) {
           advanceAmount = calculation.advanceAmount;
@@ -559,40 +675,48 @@ class CommissionCalculationService {
           overageAmount = calculation.overageAmount ?? null;
           overageStartMonth = calculation.overageStartMonth ?? null;
         } else {
-          throw new CalculationError(
-            "Commission",
-            "No comp_guide entry found for carrier/product/contract_level combination during recalculation",
-            {
-              policyId,
-              carrierId: policy.carrierId,
-              product: policy.product,
-            },
-          );
+          // Unreachable: the manualRate path returns null only if the carrier
+          // cannot be fetched. Guard defensively with a $0 advance rather than
+          // throwing and failing the whole recalculation.
+          advanceAmount = 0;
+          commissionRate = 0;
         }
       } else {
-        // Simple premium change - use existing rate from policy with carrier cap
+        // Simple premium change - use the existing (manually entered) rate from
+        // the policy with carrier cap.
         commissionRate = policy.commissionPercentage;
 
-        // Get carrier to check for advance cap
-        const { carrierService } = await import("../index");
-        const carrierResult = await carrierService.getById(policy.carrierId);
-        const advanceCap = carrierResult.success
-          ? carrierResult.data?.advance_cap
-          : undefined;
+        if (commissionRate <= 0) {
+          // Blank/0 manual commission → $0 advance. Short-circuit BEFORE
+          // calculateCappedAdvance, whose underlying calculateAdvance rejects a
+          // non-positive rate; without this guard editing the premium of a
+          // blank-comp policy would throw (and the throw is swallowed by
+          // useUpdatePolicy, silently leaving a stale commission).
+          advanceAmount = 0;
+          commissionRate = 0;
+        } else {
+          // Get carrier to check for advance cap
+          const { carrierService } = await import("../index");
+          const carrierResult = await carrierService.getById(policy.carrierId);
+          const advanceCap = carrierResult.success
+            ? carrierResult.data?.advance_cap
+            : undefined;
 
-        // Apply carrier cap if applicable
-        const cappedResult = commissionLifecycleService.calculateCappedAdvance({
-          monthlyPremium,
-          advanceMonths,
-          commissionRate,
-          advanceCap: advanceCap ?? undefined,
-        });
+          // Apply carrier cap if applicable
+          const cappedResult =
+            commissionLifecycleService.calculateCappedAdvance({
+              monthlyPremium,
+              advanceMonths,
+              commissionRate,
+              advanceCap: advanceCap ?? undefined,
+            });
 
-        advanceAmount = cappedResult.advanceAmount;
-        if (cappedResult.isCapped) {
-          originalAdvance = cappedResult.originalAdvance;
-          overageAmount = cappedResult.overageAmount;
-          overageStartMonth = cappedResult.overageStartMonth;
+          advanceAmount = cappedResult.advanceAmount;
+          if (cappedResult.isCapped) {
+            originalAdvance = cappedResult.originalAdvance;
+            overageAmount = cappedResult.overageAmount;
+            overageStartMonth = cappedResult.overageStartMonth;
+          }
         }
       }
 

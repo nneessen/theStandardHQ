@@ -276,10 +276,16 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     formData.premium,
     formData.paymentFrequency,
   );
-  const expectedCommission = calculateExpectedCommission(
-    annualPremium,
-    formData.commissionPercentage,
-  );
+  // Manual commission entry: a hand-entered flat advance (if any) wins over the
+  // percentage-derived figure; otherwise compute the 9-month advance from the
+  // agent's own comp %.
+  const expectedCommission =
+    formData.manualAdvanceAmount && formData.manualAdvanceAmount > 0
+      ? formData.manualAdvanceAmount
+      : calculateExpectedCommission(
+          annualPremium,
+          formData.commissionPercentage,
+        );
 
   return (
     <form
@@ -320,7 +326,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
             policyId={policyId}
             annualPremium={annualPremium}
             expectedCommission={expectedCommission}
-            productCommissionRates={productCommissionRates}
             onInputChange={handleInputChange}
             onSelectChange={handleSelectChange}
           />

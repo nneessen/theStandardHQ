@@ -123,10 +123,15 @@ class PolicyService {
     // Create policy record
     const policy = await this.repository.create(normalizedData);
 
-    // Create commission record for this policy
+    // Create commission record for this policy.
+    //
+    // MANUAL COMMISSION ENTRY: comp_guide auto-calculation is paused. The agent
+    // enters their own comp on the policy form, so we pass that rate (decimal,
+    // e.g. 0.85) as `commissionRateOverride` — the commission service uses it
+    // verbatim and never consults comp_guide. An optional flat-dollar advance
+    // (`manualAdvanceAmount`) overrides the percentage-derived figure. A blank
+    // commission yields a $0 advance row (fill in later) rather than an error.
     try {
-      // DO NOT pass commissionRate - it MUST be looked up from comp_guide
-      // using the user's contract_level, not the policy's stored percentage
       await commissionService.createWithAutoCalculation(
         {
           policyId: policy.id,
@@ -137,12 +142,18 @@ class PolicyService {
         },
         {
           carrierId: policy.carrierId,
-          productId: policy.productId, // CRITICAL: Pass productId for accurate comp_guide lookup
+          productId: policy.productId,
           product: policy.product,
-          termLength: policy.termLength ?? undefined, // For term_life commission modifiers
+          termLength: policy.termLength ?? undefined,
           annualPremium: policy.annualPremium,
           monthlyPremium: policy.monthlyPremium,
           autoCalculate: true,
+          // Agent's own comp rate (decimal) entered on the form — drives the
+          // advance instead of a comp_guide lookup.
+          commissionRateOverride: policy.commissionPercentage ?? 0,
+          // Optional hand-entered flat advance; transient field stripped before
+          // the policies INSERT (see PolicyRepository.transformToDB whitelist).
+          manualAmount: policyData.manualAdvanceAmount ?? undefined,
         },
       );
       console.log(`Commission created for policy ${policy.id}`);

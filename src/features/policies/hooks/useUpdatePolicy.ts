@@ -76,7 +76,12 @@ function isBasicUpdateParams(
 
 /**
  * Checks if any fields that affect commission calculation have changed
- * This triggers commission recalculation when premium, carrier, or product changes
+ * This triggers commission recalculation when premium, carrier, product, or the
+ * (manually entered) commission percentage changes.
+ *
+ * commissionPercentage is included so the documented manual-commission workflow
+ * works end-to-end: an agent can save a policy with a blank/0 commission ($0
+ * advance) and later edit just the % to populate the advance.
  */
 function requiresCommissionRecalc(updates: Partial<CreatePolicyData>): boolean {
   return (
@@ -84,7 +89,8 @@ function requiresCommissionRecalc(updates: Partial<CreatePolicyData>): boolean {
     updates.monthlyPremium !== undefined ||
     updates.carrierId !== undefined ||
     updates.productId !== undefined ||
-    updates.product !== undefined
+    updates.product !== undefined ||
+    updates.commissionPercentage !== undefined
   );
 }
 

@@ -17,7 +17,6 @@ import {
 import {
   calculatePaymentAmount,
   validatePremium,
-  validateCommissionPercentage,
 } from "../../../utils/policyCalculations";
 import { formatPhoneNumber } from "../../../types/client.types";
 
@@ -83,6 +82,7 @@ export function createInitialFormData(
       ),
       paymentFrequency: policy.paymentFrequency || "monthly",
       commissionPercentage: (policy.commissionPercentage || 0) * 100,
+      manualAdvanceAmount: null,
       status: policy.status || "pending",
       lifecycleStatus: policy.lifecycleStatus ?? null,
       notes: policy.notes || "",
@@ -108,6 +108,7 @@ export function createInitialFormData(
     premium: 0,
     paymentFrequency: "monthly" as PaymentFrequency,
     commissionPercentage: 0,
+    manualAdvanceAmount: null,
     status: "pending" as PolicyStatus,
     lifecycleStatus: null,
     notes: "",
@@ -166,7 +167,12 @@ export function validatePolicyForm(
     newErrors.premium = "Premium must be greater than $0";
   }
 
-  if (!validateCommissionPercentage(formData.commissionPercentage)) {
+  // Commission is entered manually and may be left blank (0) to record a $0
+  // advance now and fill it in later. Only reject negatives / out-of-range.
+  if (
+    formData.commissionPercentage < 0 ||
+    formData.commissionPercentage > 200
+  ) {
     newErrors.commissionPercentage = "Commission must be between 0-200%";
   }
 
@@ -198,7 +204,12 @@ export function usePolicyForm({
 
       setFormData((prev) => ({
         ...prev,
-        [name]: ["clientAge", "premium"].includes(name)
+        [name]: [
+          "clientAge",
+          "premium",
+          "commissionPercentage",
+          "manualAdvanceAmount",
+        ].includes(name)
           ? parseFloat(value) || 0
           : value,
       }));

@@ -90,6 +90,12 @@ export function transformFormToCreateData(
     monthlyPremium,
     paymentFrequency: form.paymentFrequency,
     commissionPercentage: commissionPercent / 100, // Convert to decimal (95% → 0.95)
+    // Flat-dollar advance override (manual commission entry). Kept as-is (NOT a
+    // percentage); null when the agent left it blank so the % drives the advance.
+    manualAdvanceAmount:
+      form.manualAdvanceAmount && form.manualAdvanceAmount > 0
+        ? form.manualAdvanceAmount
+        : null,
     notes: form.notes || undefined,
   };
 }

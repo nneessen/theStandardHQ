@@ -102,6 +102,11 @@ class CommissionService {
       contractCompLevel?: number;
       termLength?: number;
       autoCalculate?: boolean;
+      // Manual commission entry: agent's own comp rate (decimal) used verbatim
+      // in place of a comp_guide lookup.
+      commissionRateOverride?: number | null;
+      // Manual commission entry: hand-entered flat-dollar advance override.
+      manualAmount?: number | null;
     },
   ): Promise<Commission> {
     return commissionCalculationService.createWithAutoCalculation(

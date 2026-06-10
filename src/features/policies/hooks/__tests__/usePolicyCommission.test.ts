@@ -1,7 +1,7 @@
 // src/features/policies/hooks/__tests__/usePolicyCommission.test.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import {
   usePolicyCommission,
   useUserContractLevel,
@@ -168,7 +168,10 @@ describe("usePolicyCommission", () => {
     });
   });
 
-  it("falls back to product commission when comp_guide unavailable", async () => {
+  it("stays blank (0) when comp_guide unavailable instead of using the product's stored percentage", async () => {
+    // Manual commission entry: with no comp_guide entry we deliberately do NOT
+    // fall back to the product's stored percentage (carried over from FFG and
+    // not the agent's own comp). The field stays blank for manual entry.
     mockUseCompGuide.mockReturnValue({ data: null, isLoading: false });
 
     const { result } = renderHook(() =>
@@ -181,9 +184,12 @@ describe("usePolicyCommission", () => {
       }),
     );
 
-    await waitFor(() => {
-      expect(result.current.commissionPercentage).toBe(85);
+    // Flush pending async effects (the batch rate fetch) inside act, then
+    // assert the per-policy field never left 0.
+    await act(async () => {
+      await Promise.resolve();
     });
+    expect(result.current.commissionPercentage).toBe(0);
   });
 
   it("applies term modifier to base commission rate", async () => {
