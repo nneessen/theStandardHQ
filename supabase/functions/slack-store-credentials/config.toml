@@ -1,3 +1,0 @@
-# supabase/functions/slack-store-credentials/config.toml
-# Disable platform-level JWT verification - we handle auth ourselves in the function
-verify_jwt = false

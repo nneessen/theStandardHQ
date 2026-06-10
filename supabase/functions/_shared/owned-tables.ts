@@ -478,12 +478,6 @@ export const WIPE_ONLY_TABLES: OwnedTable[] = [
     wipe: "explicit",
   },
   {
-    table: "user_slack_preferences",
-    ownerColumn: "user_id",
-    export: false,
-    wipe: "explicit",
-  },
-  {
     table: "subscription_events",
     ownerColumn: "user_id",
     export: false,
@@ -646,7 +640,6 @@ export const WIPE_ONLY_TABLES: OwnedTable[] = [
 //     modules the user authored) survive and the delete is unblocked.
 // ---------------------------------------------------------------------------
 export const ACTOR_REFS_TO_NULL: { table: string; column: string }[] = [
-  { table: "agency_slack_credentials", column: "created_by" },
   { table: "carrier_contract_requests", column: "updated_by" },
   { table: "carrier_contract_requests", column: "created_by" },
   { table: "carrier_contracts", column: "created_by" },

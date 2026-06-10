@@ -40,7 +40,8 @@
     "https://esm.sh/@anthropic-ai/sdk@0.24.0": "593801bf9c7685433333e3add5b3414c8a22abb25ccbb13f0bd9e8510822cf51",
     "https://esm.sh/@anthropic-ai/sdk@0.39.0": "063508334fb72da1dc091fd51266e2c4e055019fdf95e287976bcb3ac9228795",
     "https://esm.sh/@supabase/supabase-js@2.38.0": "654d01dd4aeff8e98fd4d9c6095bc0703a6158a8aab0e723f0d0ed1f9d808011",
-    "https://esm.sh/@supabase/supabase-js@2.47.10": "8352fea62a92ad2fef32bc6a1aa529a5d2da0c939819f41767dd1480f0f30d70"
+    "https://esm.sh/@supabase/supabase-js@2.47.10": "8352fea62a92ad2fef32bc6a1aa529a5d2da0c939819f41767dd1480f0f30d70",
+    "https://esm.sh/date-fns@3.3.1": "1cc85eb97a7285d159fc192f1fb5b94494553b3fe3277b3198bcc8900ce63969"
   },
   "workspace": {
     "dependencies": [

@@ -12,7 +12,10 @@ import {
   startOfQuarter,
   subQuarters,
 } from "https://esm.sh/date-fns@3.3.1";
-import { EPIC_LIFE_IMO_ID } from "../_shared/slack-auth.ts";
+// EPIC_LIFE_IMO_ID was previously imported from _shared/slack-auth.ts, which has
+// been removed with the rest of the Slack integration. It is not Slack-specific —
+// it gates Epic Life out of scheduled reports — so it is inlined here.
+const EPIC_LIFE_IMO_ID = "89514211-f2bd-4440-9527-90a472c5e622";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
