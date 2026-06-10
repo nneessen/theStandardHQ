@@ -28,7 +28,6 @@ import AdminControlCenter from "./features/admin/components/AdminControlCenter";
 // PermissionGuard reserved for future granular route permissions
 // import { PermissionGuard } from "./components/auth/PermissionGuard";
 import { RouteGuard } from "./components/auth/RouteGuard";
-import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import {
   OverrideDashboard,
   DownlinePerformance,
@@ -887,8 +886,8 @@ const accessibilityRoute = createRoute({
   component: AccessibilityPage,
 });
 
-// Billing route - subscription management. Self-serve sign-ups are disabled, so
-// only users with an active paid subscription (or super-admins) may access it.
+// Billing route - subscription management. Hidden from all users for now;
+// only super-admins may access it (e.g. to manage Stripe).
 const billingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "billing",
@@ -923,12 +922,8 @@ const billingRoute = createRoute({
         : undefined,
   }),
   component: () => (
-    // Restrict to paid subscribers only while self-serve sign-ups are disabled;
-    // when re-enabled, /billing reopens to everyone so they can subscribe.
-    <RouteGuard
-      allowPending
-      requiresPaidSubscription={!NEW_SUBSCRIPTIONS_ENABLED}
-    >
+    // Hidden from all users for now — only super-admins may reach Billing.
+    <RouteGuard superAdminOnly>
       <BillingPage />
     </RouteGuard>
   ),

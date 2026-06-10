@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
-import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import type { SidebarNavigationGroup, SidebarNavigationItem } from "./types";
 
 export const footerSidebarItems: SidebarNavigationItem[] = [
@@ -38,10 +37,8 @@ export const footerSidebarItems: SidebarNavigationItem[] = [
     icon: Wallet,
     label: "Billing",
     href: "/billing",
-    public: true,
-    // While self-serve sign-ups are disabled, only paid subscribers see Billing
-    // (to manage/cancel). When re-enabled, it returns to all users.
-    requiresPaidSubscription: !NEW_SUBSCRIPTIONS_ENABLED,
+    // Hidden from all users for now; only super-admins see Billing.
+    superAdminOnly: true,
   },
   { icon: Settings, label: "Settings", href: "/settings", public: true },
 ];
