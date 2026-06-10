@@ -8,7 +8,7 @@
 // Persisting re-runs analysis so objections/word-tracks/talk-time follow the fix.
 
 import { useMemo, useState } from "react";
-import { Loader2, Save, ArrowLeftRight } from "lucide-react";
+import { Loader2, Save, ArrowLeftRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   roleOfSpeaker,
@@ -33,6 +33,8 @@ interface Props {
   roleMap: Record<string, SpeakerRole>;
   onSave: (map: Record<string, "agent" | "client">) => void;
   saving: boolean;
+  onRedetect: () => void;
+  redetecting: boolean;
 }
 
 export function SpeakerRoleEditor({
@@ -40,6 +42,8 @@ export function SpeakerRoleEditor({
   roleMap,
   onSave,
   saving,
+  onRedetect,
+  redetecting,
 }: Props) {
   const speakers = useMemo<SpeakerInfo[]>(() => {
     const byId = new Map<number, SpeakerInfo>();
@@ -94,6 +98,21 @@ export function SpeakerRoleEditor({
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-medium text-v2-ink">Who's who?</p>
         <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-[10px] text-v2-ink-muted"
+            onClick={onRedetect}
+            disabled={redetecting || saving}
+            title="Let the AI re-classify who's the agent / client / automated from the transcript content"
+          >
+            {redetecting ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3 mr-1" />
+            )}
+            Auto-detect (AI)
+          </Button>
           {speakers.length === 2 && (
             <Button
               size="sm"

@@ -262,9 +262,16 @@ export function useAnalyzeCall() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (recordingId: string) => {
+      // Manual re-analysis preserves the current/just-corrected speaker→role map.
       const { error } = await supabase.functions.invoke(
         "analyze-call-transcript",
-        { body: { recording_id: recordingId, force: true } },
+        {
+          body: {
+            recording_id: recordingId,
+            force: true,
+            skip_role_detection: true,
+          },
+        },
       );
       if (error) throw new Error(error.message);
     },
@@ -280,6 +287,41 @@ export function useAnalyzeCall() {
     },
     onError: (e) =>
       toast.error(e instanceof Error ? e.message : "Analysis failed"),
+  });
+}
+
+/** Re-run analysis AND let the AI re-detect speaker roles from transcript content
+ *  (agent = whoever gives the intro; automated IVR = excluded). Overwrites the
+ *  stored role map — use when the labels are wrong and you'd rather the AI redo
+ *  them than fix each speaker by hand. */
+export function useRedetectSpeakers() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (recordingId: string) => {
+      const { error } = await supabase.functions.invoke(
+        "analyze-call-transcript",
+        {
+          body: {
+            recording_id: recordingId,
+            force: true,
+            skip_role_detection: false,
+          },
+        },
+      );
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, recordingId) => {
+      toast.success("Re-detecting speakers with AI…");
+      queryClient.invalidateQueries({
+        queryKey: callReviewKeys.recording(recordingId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: callReviewKeys.detections(recordingId),
+      });
+      queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Re-detect failed"),
   });
 }
 

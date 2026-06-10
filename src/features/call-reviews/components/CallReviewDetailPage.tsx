@@ -15,6 +15,7 @@ import {
   useCallRecording,
   useCallRecordingSignedUrl,
   useAnalyzeCall,
+  useRedetectSpeakers,
   useRetryTranscription,
   useUpdateRoleMap,
 } from "../hooks/useCallLibrary";
@@ -61,6 +62,7 @@ export function CallReviewDetailPage({
   const { data: scripts, isLoading: scriptsLoading } = useCallScripts();
 
   const analyzeMutation = useAnalyzeCall();
+  const redetectSpeakers = useRedetectSpeakers();
   const retryMutation = useRetryTranscription();
   const updateRoleMap = useUpdateRoleMap(recordingId);
 
@@ -262,6 +264,8 @@ export function CallReviewDetailPage({
                       saving={
                         updateRoleMap.isPending || analyzeMutation.isPending
                       }
+                      onRedetect={() => redetectSpeakers.mutate(recordingId)}
+                      redetecting={redetectSpeakers.isPending}
                     />
                   )}
                 </div>

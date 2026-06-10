@@ -64,6 +64,7 @@ interface ClaudeKeyMoment {
   kind?: string;
 }
 interface ClaudeResult {
+  speaker_roles?: Record<string, string>;
   summary?: string;
   objections?: ClaudeObjection[];
   key_moments?: ClaudeKeyMoment[];
@@ -136,13 +137,18 @@ serve(async (req) => {
   // background fire from transcribe-call-recording omits it (stays idempotent).
   let recordingId: string | null = null;
   let force = false;
+  let skipRoleDetection = false;
   try {
     const body = (await req.json()) as {
       recording_id?: unknown;
       force?: unknown;
+      skip_role_detection?: unknown;
     };
     if (typeof body?.recording_id === "string") recordingId = body.recording_id;
     force = body?.force === true;
+    // When true, keep the stored speaker→role map (a human correction) instead of
+    // re-detecting roles. The automatic fire from transcribe omits it → detects.
+    skipRoleDetection = body?.skip_role_detection === true;
   } catch {
     return json({ error: "Expected JSON body with recording_id." }, 400);
   }
@@ -261,12 +267,98 @@ serve(async (req) => {
     const segments: Segment[] = Array.isArray(rec.transcript_segments)
       ? (rec.transcript_segments as Segment[])
       : [];
-    const roleMap = (rec.speaker_role_map ?? {}) as Record<string, string>;
-    const roleOf = (spk: number | null | undefined): string =>
-      spk == null ? "unknown" : (roleMap[String(spk)] ?? "unknown");
     const segById = new Map<number, Segment>();
     for (const s of segments)
       if (typeof s.id === "number") segById.set(s.id, s);
+
+    // ── 6. Claude: SPEAKER ROLES (from content) + objections / summary / demographics.
+    // The transcript is labeled by SPEAKER NUMBER, not role — so the model decides
+    // who is the agent / client / automated from what is actually said, instead of
+    // inheriting transcribe's positional "first speaker = agent" guess (wrong on
+    // inbound calls that open with an IVR/hold message). Talk-time + word-track
+    // matching below then key off the model's classification.
+    const diarized = segments
+      .map((s) => {
+        const spk =
+          typeof s.speaker === "number" ? `Speaker ${s.speaker}` : "Speaker ?";
+        const t = typeof s.text === "string" ? s.text : "";
+        return `[#${s.id ?? "?"}] ${spk}: ${t}`;
+      })
+      .join("\n");
+
+    const system = `You are an insurance sales call-coaching analyst. You read a diarized phone-sales call transcript and return ONLY a raw JSON object. No markdown, no code fences, no prose.
+
+The transcript lines are labeled by SPEAKER NUMBER ("Speaker 0", "Speaker 1", …); diarization does NOT tell you who is who — you must decide. These are INBOUND calls. The AGENT is the salesperson who answers and runs the call: greets/answers ("thank you for calling", "how can I help you"), introduces themselves by name, asks qualifying questions, and pitches. The CLIENT is the caller/prospect who has a need and raises objections. A speaker that ONLY delivers an automated system / IVR / hold message ("please hold while we connect you…", menu prompts) is "other" — it is NOT the agent. Classify EACH speaker number from what they actually say.
+
+You understand life-insurance phone sales: objections come from the CLIENT (price, "need to talk to my spouse", "let me think about it", "already covered", health concerns, distrust, timing). A SMOKE SCREEN is a stall or non-genuine objection used to end the call rather than a real concern. NEVER infer protected characteristics for discriminatory purposes; demographics are for training analytics only and must come from what is actually said.`;
+
+    const userPrompt = `Analyze this call. Each line is prefixed with a segment id like [#3] and a speaker number.
+
+TRANSCRIPT:
+${diarized}
+
+Return JSON with this EXACT schema (use the segment id the moment occurs in; omit fields you cannot determine):
+{
+  "speaker_roles": { "<every speaker number that appears>": "agent" | "client" | "other" },
+  "summary": "2-3 sentence summary of the call and its outcome",
+  "objections": [{ "segment_id": number, "quote": "verbatim CLIENT words", "type": "price|spouse_consult|think_about_it|already_covered|health|trust|timing|other", "is_smoke_screen": boolean, "handled": boolean, "resolution": "how the agent responded, 1 sentence" }],
+  "key_moments": [{ "segment_id": number, "label": "short label", "kind": "rapport|discovery|pitch|objection|close|compliance|other" }],
+  "demographics": { "age": number|null, "age_band": "under_30|30_39|40_49|50_59|60_69|70_plus|unknown", "gender": "male|female|other|unknown", "state": "USPS 2-letter or null", "existing_coverage": "what coverage the client already has, or null" }
+}
+Classify a role for every speaker number present. Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
+
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: ANALYSIS_MODEL,
+      max_tokens: MAX_TOKENS,
+      system,
+      messages: [{ role: "user", content: userPrompt }],
+    });
+    const tokensUsed =
+      (response.usage?.input_tokens ?? 0) +
+      (response.usage?.output_tokens ?? 0);
+    await recordAiTokens(adminClient, userId, tokensUsed);
+    if (response.stop_reason === "max_tokens") {
+      throw new Error("Analysis response was truncated. Try again.");
+    }
+    const rawText = response.content
+      .filter(
+        (b): b is { type: "text"; text: string } =>
+          b.type === "text" && "text" in b,
+      )
+      .map((b) => b.text)
+      .join("");
+    const parsed = parseStructuredJson<ClaudeResult>(rawText);
+
+    // ── 7. Effective speaker→role map. Use Claude's content-based classification,
+    // UNLESS this is a manual re-analysis preserving a human correction
+    // (skip_role_detection). "other"/automated speakers are omitted → unknown →
+    // excluded from talk-time and word-track matching.
+    const pickAgentClient = (
+      src: Record<string, unknown>,
+    ): Record<string, "agent" | "client"> => {
+      const out: Record<string, "agent" | "client"> = {};
+      for (const [k, v] of Object.entries(src))
+        if (v === "agent" || v === "client") out[String(k)] = v;
+      return out;
+    };
+    const storedRoleMap = pickAgentClient(
+      (rec.speaker_role_map ?? {}) as Record<string, unknown>,
+    );
+    let effectiveRoleMap: Record<string, "agent" | "client">;
+    if (skipRoleDetection) {
+      effectiveRoleMap = storedRoleMap;
+    } else {
+      const detected =
+        parsed.speaker_roles && typeof parsed.speaker_roles === "object"
+          ? pickAgentClient(parsed.speaker_roles as Record<string, unknown>)
+          : {};
+      // Fall back to whatever was stored only if the model returned nothing usable.
+      effectiveRoleMap =
+        Object.keys(detected).length > 0 ? detected : storedRoleMap;
+    }
+    const roleOf = (spk: number | null | undefined): string =>
+      spk == null ? "unknown" : (effectiveRoleMap[String(spk)] ?? "unknown");
 
     // Recompute per-speaker talk time from the CURRENT role map, so a corrected
     // map (after a flip + forced re-analysis) also fixes the talk-time split that
@@ -363,58 +455,8 @@ serve(async (req) => {
         throw new Error(`Could not save detections: ${detErr.message}`);
     }
 
-    // ── 8. Claude: objections / smoke-screens / demographics / summary ──────────
-    const diarized = segments
-      .map((s) => {
-        const r = roleOf(s.speaker);
-        const who =
-          r === "agent" ? "AGENT" : r === "client" ? "CLIENT" : "SPEAKER";
-        const t = typeof s.text === "string" ? s.text : "";
-        return `[#${s.id ?? "?"}] ${who}: ${t}`;
-      })
-      .join("\n");
-
-    const system = `You are an insurance sales call-coaching analyst. You read a diarized phone-sales call transcript (AGENT = the salesperson, CLIENT = the prospect) and return ONLY a raw JSON object. No markdown, no code fences, no prose.
-
-You understand life-insurance phone sales: objections come from the CLIENT (price, "need to talk to my spouse", "let me think about it", "already covered", health concerns, distrust, timing). A SMOKE SCREEN is a stall or non-genuine objection used to end the call rather than a real concern. NEVER infer protected characteristics for discriminatory purposes; demographics are for training analytics only and must come from what is actually said.`;
-
-    const userPrompt = `Analyze this call. Each line is prefixed with a segment id like [#3].
-
-TRANSCRIPT:
-${diarized}
-
-Return JSON with this EXACT schema (use the segment id the moment occurs in; omit fields you cannot determine):
-{
-  "summary": "2-3 sentence summary of the call and its outcome",
-  "objections": [{ "segment_id": number, "quote": "verbatim client words", "type": "price|spouse_consult|think_about_it|already_covered|health|trust|timing|other", "is_smoke_screen": boolean, "handled": boolean, "resolution": "how the agent responded, 1 sentence" }],
-  "key_moments": [{ "segment_id": number, "label": "short label", "kind": "rapport|discovery|pitch|objection|close|compliance|other" }],
-  "demographics": { "age": number|null, "age_band": "under_30|30_39|40_49|50_59|60_69|70_plus|unknown", "gender": "male|female|other|unknown", "state": "USPS 2-letter or null", "existing_coverage": "what coverage the client already has, or null" }
-}
-Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
-
-    const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model: ANALYSIS_MODEL,
-      max_tokens: MAX_TOKENS,
-      system,
-      messages: [{ role: "user", content: userPrompt }],
-    });
-    const tokensUsed =
-      (response.usage?.input_tokens ?? 0) +
-      (response.usage?.output_tokens ?? 0);
-    await recordAiTokens(adminClient, userId, tokensUsed);
-
-    if (response.stop_reason === "max_tokens") {
-      throw new Error("Analysis response was truncated. Try again.");
-    }
-    const rawText = response.content
-      .filter(
-        (b): b is { type: "text"; text: string } =>
-          b.type === "text" && "text" in b,
-      )
-      .map((b) => b.text)
-      .join("");
-    const parsed = parseStructuredJson<ClaudeResult>(rawText);
+    // (Claude analysis + speaker-role detection ran above in section 6, so the
+    // talk-time split and word-track matching key off the model's classification.)
 
     // Re-anchor LLM segment references to real segment timings (never trust an
     // LLM-produced timestamp). Drop anything that can't be anchored to a segment.
@@ -490,6 +532,12 @@ Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
       update.talk_time_seconds = Math.round(agentTalk);
       update.client_talk_seconds = Math.round(clientTalk);
       update.speaker_count = speakerSet.size;
+    }
+    // Persist the (re-)detected speaker→role map so the transcript UI shows the
+    // corrected labels. Skipped on a manual re-analysis (keeps the human map).
+    if (!skipRoleDetection) {
+      update.speaker_role_map =
+        Object.keys(effectiveRoleMap).length > 0 ? effectiveRoleMap : null;
     }
     if (rec.caller_age == null && typeof demo.age === "number")
       update.caller_age = Math.round(demo.age);
