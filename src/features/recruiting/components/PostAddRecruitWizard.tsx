@@ -1,8 +1,7 @@
 // src/features/recruiting/components/PostAddRecruitWizard.tsx
 // Shows AFTER a recruit is successfully added. Walks the user through:
 //   1. Picking a pipeline template (or skipping)
-//   2. Explaining the two Slack notification buttons (and optionally posting "new recruit" now)
-//   3. Recap + handoff to the recruit's profile
+//   2. Recap + handoff to the recruit's profile
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -17,10 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
-  Hash,
   ListChecks,
   Loader2,
   Mail,
@@ -36,15 +33,6 @@ import {
   selectDefaultRecruitTemplate,
 } from "../utils/template-filters";
 import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
-import { useCurrentUserProfile } from "@/hooks/admin";
-import {
-  buildNewRecruitMessage,
-  findRecruitChannel,
-  findRecruitIntegration,
-  useSendRecruitSlackNotification,
-  useSlackChannelsById,
-  useSlackIntegrations,
-} from "@/hooks/slack";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import type { PipelineTemplate } from "@/types/recruiting.types";
@@ -61,7 +49,7 @@ interface PostAddRecruitWizardProps {
   onComplete: () => void;
 }
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2;
 
 export function PostAddRecruitWizard({
   open,
@@ -80,29 +68,16 @@ export function PostAddRecruitWizard({
   const [enrolledTemplateName, setEnrolledTemplateName] = useState<
     string | null
   >(null);
-  const [slackPosted, setSlackPosted] = useState(false);
 
   const { data: allTemplates, isLoading: templatesLoading } = useTemplates();
   const initializeProgress = useInitializeRecruitProgress();
 
-  const { data: currentUserProfile } = useCurrentUserProfile();
-  const isSuperAdmin = currentUserProfile?.is_super_admin === true;
   // Only the two DEFAULT-named templates are user-pickable; everything else is
-  // legacy / system-only and stays hidden from the picker. Super-admins see
-  // every template.
+  // legacy / system-only and stays hidden from the picker.
   const templates = useMemo(
-    () =>
-      filterUserSelectableTemplates(allTemplates, { includeAll: isSuperAdmin }),
-    [allTemplates, isSuperAdmin],
+    () => filterUserSelectableTemplates(allTemplates, { includeAll: false }),
+    [allTemplates],
   );
-  const { data: slackIntegrations = [] } = useSlackIntegrations();
-  const recruitIntegration = findRecruitIntegration(slackIntegrations);
-  const { data: slackChannels = [] } = useSlackChannelsById(
-    recruitIntegration?.id,
-  );
-  const recruitChannel = findRecruitChannel(recruitIntegration, slackChannels);
-  const sendSlack = useSendRecruitSlackNotification();
-  const slackReady = !!recruitIntegration && !!recruitChannel;
 
   // Default to the "default" template once templates load. For an already-
   // licensed recruit, prefer the DEFAULT Licensed Agent Pipeline; otherwise
@@ -120,7 +95,6 @@ export function PostAddRecruitWizard({
       setStep(1);
       setPipelineSkipped(skippedPipeline);
       setEnrolledTemplateName(null);
-      setSlackPosted(false);
     }
   }, [open, skippedPipeline]);
 
@@ -147,30 +121,6 @@ export function PostAddRecruitWizard({
     } catch (err) {
       // Hook fires its own toast on error
       console.error("[PostAddRecruitWizard] initialize failed", err);
-    }
-  };
-
-  const handlePostSlackNow = async () => {
-    if (!recruitId || !slackReady || !currentUserProfile?.imo_id) return;
-    const msg = buildNewRecruitMessage({
-      first_name: recruitName.split(" ")[0] ?? recruitName,
-      last_name: recruitName.split(" ").slice(1).join(" ") || null,
-      email: null,
-      upline_name: null,
-    });
-    try {
-      await sendSlack.mutateAsync({
-        integrationId: recruitIntegration!.id,
-        channelId: recruitChannel!.id,
-        text: msg.text,
-        blocks: msg.blocks,
-        notificationType: "new_recruit",
-        recruitId,
-        imoId: currentUserProfile.imo_id,
-      });
-      setSlackPosted(true);
-    } catch (err) {
-      console.error("[PostAddRecruitWizard] slack send failed", err);
     }
   };
 
@@ -219,21 +169,10 @@ export function PostAddRecruitWizard({
             />
           )}
           {step === 2 && (
-            <Step2Slack
-              recruitName={recruitName}
-              isLicensed={isLicensed}
-              slackReady={slackReady}
-              slackPosted={slackPosted}
-              slackPending={sendSlack.isPending}
-              onPostNow={handlePostSlackNow}
-            />
-          )}
-          {step === 3 && (
-            <Step3Done
+            <Step2Done
               recruitName={recruitName}
               isLicensed={isLicensed}
               pipelineRecap={finalRecapPipeline}
-              slackPosted={slackPosted}
             />
           )}
         </div>
@@ -254,17 +193,6 @@ export function PostAddRecruitWizard({
           </Button>
 
           <div className="flex items-center gap-2">
-            {step > 1 && step < 3 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[11px]"
-                onClick={() => setStep((s) => (s - 1) as Step)}
-              >
-                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
-                Back
-              </Button>
-            )}
             {step === 1 && (
               <Button
                 size="sm"
@@ -280,16 +208,6 @@ export function PostAddRecruitWizard({
               </Button>
             )}
             {step === 2 && (
-              <Button
-                size="sm"
-                className="h-8 text-[11px]"
-                onClick={() => setStep(3)}
-              >
-                Continue
-                <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-              </Button>
-            )}
-            {step === 3 && (
               <Button
                 size="sm"
                 className="h-8 text-[11px]"
@@ -320,8 +238,7 @@ function StepIndicator({
 }) {
   const steps: { id: Step; label: string }[] = [
     { id: 1, label: skippedPipeline ? "Pipeline (skipped)" : "Pipeline" },
-    { id: 2, label: "Slack" },
-    { id: 3, label: "Done" },
+    { id: 2, label: "Done" },
   ];
   return (
     <ol className="mt-3 flex items-center gap-2">
@@ -402,8 +319,7 @@ function Step1Pipeline({
           won&apos;t appear in pipeline reports or get phase-based reminders.
         </p>
         <p className="text-[12px] text-muted-foreground">
-          You can still send Slack notifications and manage them like any other
-          user — that&apos;s up next.
+          You can still manage them like any other user from their profile.
         </p>
       </div>
     );
@@ -568,158 +484,16 @@ function Step1Pipeline({
   );
 }
 
-// ─── Step 2: Slack ──────────────────────────────────────────────────────
+// ─── Step 2: Done / handoff ─────────────────────────────────────────────
 
-function Step2Slack({
-  recruitName,
-  isLicensed,
-  slackReady,
-  slackPosted,
-  slackPending,
-  onPostNow,
-}: {
-  recruitName: string;
-  isLicensed: boolean;
-  slackReady: boolean;
-  slackPosted: boolean;
-  slackPending: boolean;
-  onPostNow: () => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <div className="flex items-center gap-2 mb-1.5">
-          <Hash className="h-4 w-4 text-foreground" />
-          <h3 className="text-[14px] font-semibold tracking-tight text-foreground">
-            Tell your team in Slack
-          </h3>
-        </div>
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-          On {recruitName.split(" ")[0] || "their"}&apos;s profile you&apos;ll
-          see two Slack buttons under <strong>Actions → Communications</strong>.
-          Here&apos;s when to use each one:
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Slack: new recruit */}
-        <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex h-6 w-6 rounded-md bg-info/10 text-info ring-1 ring-info/30 items-center justify-center">
-                <Hash className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-[12px] font-semibold text-foreground">
-                Slack: new recruit
-              </span>
-            </div>
-            {slackPosted && (
-              <Badge
-                variant="outline"
-                className="text-[9px] h-4 px-1.5 bg-success/10 text-success border-success/40"
-              >
-                <Check className="h-2.5 w-2.5 mr-0.5" />
-                Sent
-              </Badge>
-            )}
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Click this to <strong>announce a new recruit</strong> in your
-            recruiting Slack channel. Post it now even if they aren&apos;t
-            licensed yet — it just lets the team know someone joined the
-            pipeline.
-          </p>
-          {slackReady ? (
-            <Button
-              size="sm"
-              variant={slackPosted ? "outline" : "default"}
-              className="h-7 text-[11px] mt-auto"
-              disabled={slackPosted || slackPending}
-              onClick={onPostNow}
-            >
-              {slackPending ? (
-                <>
-                  <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                  Posting…
-                </>
-              ) : slackPosted ? (
-                <>
-                  <Check className="h-3 w-3 mr-1.5" />
-                  Posted to Slack
-                </>
-              ) : (
-                <>
-                  <Hash className="h-3 w-3 mr-1.5" />
-                  Post to Slack now
-                </>
-              )}
-            </Button>
-          ) : (
-            <Link
-              to="/settings"
-              className="mt-auto inline-flex items-center justify-center gap-1.5 h-7 text-[11px] rounded-md border border-warning/40 text-warning hover:bg-warning/10 px-2"
-            >
-              Set up Slack in Settings
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          )}
-        </div>
-
-        {/* Slack: NPN */}
-        <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex h-6 w-6 rounded-md bg-success/10 text-success ring-1 ring-success/30 items-center justify-center">
-                <Hash className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-[12px] font-semibold text-foreground">
-                Slack: NPN
-              </span>
-            </div>
-            {isLicensed && (
-              <Badge
-                variant="outline"
-                className="text-[9px] h-4 px-1.5 bg-success/10 text-success border-success/40"
-              >
-                NPN ready
-              </Badge>
-            )}
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Click this <strong>once they get their NPN</strong> (National
-            Producer Number). Announces they&apos;re licensed and ready to write
-            business.{" "}
-            <strong>Requires NPN to be set on their profile first</strong> —
-            until then this button is disabled.
-          </p>
-          <div className="mt-auto text-[10px] uppercase tracking-[0.16em] font-semibold text-muted-foreground">
-            {isLicensed
-              ? "Available from their profile"
-              : "Available once NPN is added"}
-          </div>
-        </div>
-      </div>
-
-      <p className="text-[11px] text-muted-foreground italic">
-        Both buttons post once per recruit — they flip to a green &ldquo;Sent ✓
-        &rdquo; state after firing.
-      </p>
-    </div>
-  );
-}
-
-// ─── Step 3: Done / handoff ─────────────────────────────────────────────
-
-function Step3Done({
+function Step2Done({
   recruitName,
   isLicensed,
   pipelineRecap,
-  slackPosted,
 }: {
   recruitName: string;
   isLicensed: boolean;
   pipelineRecap: string | null;
-  slackPosted: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -751,15 +525,6 @@ function Step3Done({
         >
           {isLicensed ? "Licensed" : "Unlicensed"}
         </Badge>
-        {slackPosted && (
-          <Badge
-            variant="outline"
-            className="text-[10px] h-5 px-2 bg-info/10 text-info border-info/40"
-          >
-            <Hash className="h-3 w-3 mr-1" />
-            Slack: new recruit posted
-          </Badge>
-        )}
       </div>
 
       <div>
@@ -782,13 +547,6 @@ function Step3Done({
             label="Advance them through phases"
             hint="As they finish tasks in the current phase"
           />
-          {!isLicensed && (
-            <DoneLine
-              icon={<Hash className="h-3.5 w-3.5" />}
-              label="Add NPN, then post the NPN announcement"
-              hint="Edit NPN inline on the profile to unlock the Slack: NPN button"
-            />
-          )}
         </ul>
       </div>
     </div>

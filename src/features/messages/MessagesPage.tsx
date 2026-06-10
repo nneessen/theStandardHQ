@@ -343,10 +343,7 @@ export function MessagesPage() {
 
           {activeTab === "settings" && (
             <div className="h-full overflow-hidden">
-              <MessagesSettingsContainer
-                showSlack={!isStaffOnlyUser}
-                showInstagram={!isStaffOnlyUser}
-              />
+              <MessagesSettingsContainer showInstagram={!isStaffOnlyUser} />
             </div>
           )}
 

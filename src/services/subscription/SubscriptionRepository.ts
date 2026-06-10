@@ -33,7 +33,6 @@ export interface SubscriptionFeatures {
   // Messaging features
   email: boolean;
   sms: boolean;
-  slack: boolean;
   instagram_messaging: boolean;
   // Instagram sub-features
   instagram_scheduled_messages: boolean;

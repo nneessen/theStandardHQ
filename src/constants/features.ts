@@ -154,12 +154,6 @@ export const FEATURE_REGISTRY: Record<string, FeatureDefinition> = {
     description: "Send SMS messages from the platform",
     category: "messaging",
   },
-  slack: {
-    key: "slack",
-    displayName: "Slack Integration",
-    description: "Connect and message via Slack channels",
-    category: "messaging",
-  },
   instagram_messaging: {
     key: "instagram_messaging",
     displayName: "Instagram Messaging",

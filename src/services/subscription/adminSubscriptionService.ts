@@ -911,7 +911,6 @@ class AdminSubscriptionService {
         // Messaging features
         email: false,
         sms: false,
-        slack: false,
         instagram_messaging: false,
         instagram_scheduled_messages: false,
         instagram_templates: false,

@@ -17,7 +17,6 @@ import {
   useToggleSchedulingIntegration,
 } from "@/hooks/integrations";
 import { IntegrationDialog } from "./components/IntegrationDialog";
-import { SlackIntegrationCard } from "./components/slack";
 import { InstagramIntegrationCard } from "./components/instagram";
 import { GmailIntegrationCard } from "./components/gmail";
 import { ElevenLabsIntegrationCard } from "./components/elevenlabs/ElevenLabsIntegrationCard";
@@ -128,7 +127,6 @@ export function IntegrationsTab() {
         <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
           Messaging Integrations
         </h3>
-        <SlackIntegrationCard />
         <InstagramIntegrationCard />
       </div>
 

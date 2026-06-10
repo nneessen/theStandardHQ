@@ -60,9 +60,6 @@ export * from "./audit";
 // Integration hooks
 export * from "./integrations";
 
-// Slack hooks
-export * from "./slack";
-
 // Instagram hooks
 export * from "./instagram";
 

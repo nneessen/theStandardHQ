@@ -20,7 +20,6 @@ import {
   Calendar,
   CheckCircle2,
   ArrowRight,
-  Hash,
   Send,
   Trash2,
   Lock,
@@ -57,16 +56,6 @@ import { useRecruitDocuments } from "../hooks/useRecruitDocuments";
 import { useRecruitEmails } from "../hooks/useRecruitEmails";
 import { useRecruitActivityLog } from "../hooks/useRecruitActivity";
 import { useResendInvite } from "../hooks/useAuthUser";
-import {
-  useSlackIntegrations,
-  useSlackChannelsById,
-  useRecruitNotificationStatus,
-  useSendRecruitSlackNotification,
-  findRecruitIntegration,
-  findRecruitChannel,
-  buildNewRecruitMessage,
-  buildNpnReceivedMessage,
-} from "@/hooks/slack";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -192,9 +181,6 @@ export function RecruitDetailPage() {
   const [unenrollDialogOpen, setUnenrollDialogOpen] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockReason, setBlockReason] = useState("");
-  const [slackSendingType, setSlackSendingType] = useState<
-    "new_recruit" | "npn_received" | null
-  >(null);
 
   // ─── Entity ───────────────────────────────────────────────────────
   const isInvitation = recruit?.id?.startsWith("invitation-") ?? false;
@@ -274,17 +260,6 @@ export function RecruitDetailPage() {
   const resendInvitation = useResendInvitation();
   const updateRecruit = useUpdateRecruit();
 
-  // ─── Slack ────────────────────────────────────────────────────────
-  const { data: slackIntegrations = [] } = useSlackIntegrations();
-  const recruitIntegration = findRecruitIntegration(slackIntegrations);
-  const { data: slackChannels = [] } = useSlackChannelsById(
-    recruitIntegration?.id,
-  );
-  const recruitChannel = findRecruitChannel(recruitIntegration, slackChannels);
-  const { data: notificationStatus } =
-    useRecruitNotificationStatus(recruitIdForQueries);
-  const sendSlackNotification = useSendRecruitSlackNotification();
-
   // ─── Derived ──────────────────────────────────────────────────────
   const phases: PhaseWithChecklist[] = useMemo(
     () => (template?.phases || []) as PhaseWithChecklist[],
@@ -331,12 +306,6 @@ export function RecruitDetailPage() {
             canRevert,
             hasPipelineProgress: !!hasPipelineProgress,
             recruit,
-            slack: {
-              recruitIntegration,
-              recruitChannel,
-              imoId: currentUserProfile?.imo_id ?? null,
-              notificationStatus,
-            },
             loading: {
               isAdvancing: advancePhase.isPending,
               isReverting: revertPhase.isPending,
@@ -345,7 +314,6 @@ export function RecruitDetailPage() {
               isResendingInvite:
                 resendInvite.isPending || resendInvitation.isPending,
               isCancellingInvitation: cancelInvitation.isPending,
-              isSendingSlack: sendSlackNotification.isPending,
             },
           })
         : null,
@@ -355,10 +323,6 @@ export function RecruitDetailPage() {
       canRevert,
       hasPipelineProgress,
       recruit,
-      recruitIntegration,
-      recruitChannel,
-      currentUserProfile?.imo_id,
-      notificationStatus,
       advancePhase.isPending,
       revertPhase.isPending,
       initializeProgress.isPending,
@@ -366,7 +330,6 @@ export function RecruitDetailPage() {
       resendInvite.isPending,
       resendInvitation.isPending,
       cancelInvitation.isPending,
-      sendSlackNotification.isPending,
     ],
   );
 
@@ -486,53 +449,6 @@ export function RecruitDetailPage() {
     } catch (error) {
       toast.error("Failed to unenroll recruit");
       console.error("[RecruitDetailPage] Unenroll failed:", error);
-    }
-  };
-
-  const handleSendSlackNotification = async (
-    notificationType: "new_recruit" | "npn_received",
-  ) => {
-    if (!recruit) return;
-    if (notificationType === "npn_received" && !recruit.npn) {
-      toast.error("Set the recruit's NPN first, then post.");
-      return;
-    }
-    if (!recruitIntegration || !currentUserProfile?.imo_id) {
-      toast.error("No connected Slack workspace for your IMO.");
-      return;
-    }
-    if (!recruitChannel) {
-      toast.error(
-        "No recruit channel found. Open Settings → Integrations → Slack to pick one.",
-      );
-      return;
-    }
-    setSlackSendingType(notificationType);
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upline = (recruit as any).upline as
-        | { first_name?: string; last_name?: string; email?: string }
-        | undefined;
-      const uplineName =
-        upline?.first_name && upline?.last_name
-          ? `${upline.first_name} ${upline.last_name}`
-          : upline?.email || null;
-      const recruitWithUpline = { ...recruit, upline_name: uplineName };
-      const msg =
-        notificationType === "new_recruit"
-          ? buildNewRecruitMessage(recruitWithUpline)
-          : buildNpnReceivedMessage(recruitWithUpline);
-      await sendSlackNotification.mutateAsync({
-        integrationId: recruitIntegration.id,
-        channelId: recruitChannel.id,
-        text: msg.text,
-        blocks: msg.blocks,
-        notificationType,
-        recruitId: recruit.id,
-        imoId: currentUserProfile.imo_id!,
-      });
-    } finally {
-      setSlackSendingType(null);
     }
   };
 
@@ -812,7 +728,7 @@ export function RecruitDetailPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Pipeline group */}
                 {entity.kind === "registered" && (
                   <ActionGroup label="Pipeline">
@@ -890,60 +806,6 @@ export function RecruitDetailPage() {
                       onClick={handleCancelInvitation}
                     >
                       Cancel Invitation
-                    </BigButton>
-                  </ActionGroup>
-                )}
-
-                {/* Communications group */}
-                {entity.kind === "registered" && (
-                  <ActionGroup label="Communications">
-                    <BigButton
-                      icon={
-                        notificationStatus?.newRecruitSent ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Hash className="h-4 w-4" />
-                        )
-                      }
-                      tone={
-                        notificationStatus?.newRecruitSent ? "success" : "muted"
-                      }
-                      disabled={policy.newRecruitSlackDisabled}
-                      loading={
-                        slackSendingType === "new_recruit" &&
-                        sendSlackNotification.isPending
-                      }
-                      onClick={() => handleSendSlackNotification("new_recruit")}
-                    >
-                      {notificationStatus?.newRecruitSent
-                        ? "Slack: New (sent)"
-                        : "Slack: New recruit"}
-                    </BigButton>
-                    <BigButton
-                      icon={
-                        notificationStatus?.npnReceivedSent ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Hash className="h-4 w-4" />
-                        )
-                      }
-                      tone={
-                        notificationStatus?.npnReceivedSent
-                          ? "success"
-                          : "muted"
-                      }
-                      disabled={policy.npnSlackDisabled}
-                      loading={
-                        slackSendingType === "npn_received" &&
-                        sendSlackNotification.isPending
-                      }
-                      onClick={() =>
-                        handleSendSlackNotification("npn_received")
-                      }
-                    >
-                      {notificationStatus?.npnReceivedSent
-                        ? "Slack: NPN (sent)"
-                        : "Slack: NPN"}
                     </BigButton>
                   </ActionGroup>
                 )}

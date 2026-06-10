@@ -28,8 +28,6 @@ import { searchUsersForAssignment } from "@/services/users/userSearchService";
 import { getDisplayName } from "../../../types/user.types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RoleName } from "@/types/permissions.types";
-// eslint-disable-next-line no-restricted-imports
-import { MyCarrierContractsCard } from "@/features/contracting/components/MyCarrierContractsCard";
 import { toast } from "sonner";
 
 export function UserProfile() {
@@ -370,8 +368,7 @@ export function UserProfile() {
               Use your trial to play around with the workspace, manage your
               entire team&apos;s writing numbers, see which agents have which
               carrier contracts, compare which states agents are licensed in,
-              and more. Free plan users can still use the carrier contract
-              toggles below in Profile after the trial.
+              and more.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -431,7 +428,7 @@ export function UserProfile() {
                 )}
               </Button>
               <p className="mt-1 text-[9px] text-v2-ink-subtle">
-                JPG, PNG, or GIF · Max 5MB · Used in Slack leaderboard posts
+                JPG, PNG, or GIF · Max 5MB
               </p>
               {photoError && (
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-destructive">
@@ -733,9 +730,6 @@ export function UserProfile() {
               </div>
             </div>
           </div>
-
-          {/* Carrier Contracts Card */}
-          {user?.id && <MyCarrierContractsCard agentId={user.id} />}
         </>
       )}
     </div>

@@ -24,17 +24,9 @@ export interface InstagramAnalytics {
   templateUses: number;
 }
 
-export interface SlackAnalytics {
-  totalSent: number;
-  delivered: number;
-  failed: number;
-  successRate: number;
-}
-
 export interface MessagingAnalytics {
   email: EmailAnalytics;
   instagram: InstagramAnalytics;
-  slack: SlackAnalytics;
   period: "7d" | "30d" | "90d";
 }
 
@@ -78,21 +70,6 @@ export function calculateInstagramMetrics(
     deliveryRate: totalSent > 0 ? Math.round((delivered / totalSent) * 100) : 0,
     readRate: totalSent > 0 ? Math.round((read / totalSent) * 100) : 0,
     templateUses,
-  };
-}
-
-export function calculateSlackMetrics(
-  messages: { status: string | null }[],
-): SlackAnalytics {
-  const totalSent = messages.length;
-  const delivered = messages.filter((m) => m.status === "delivered").length;
-  const failed = messages.filter((m) => m.status === "failed").length;
-
-  return {
-    totalSent,
-    delivered,
-    failed,
-    successRate: totalSent > 0 ? Math.round((delivered / totalSent) * 100) : 0,
   };
 }
 
@@ -177,33 +154,6 @@ async function fetchInstagramAnalytics(
   return calculateInstagramMetrics(messages || [], templateUses);
 }
 
-async function fetchSlackAnalytics(
-  imoId: string,
-  days: number,
-): Promise<SlackAnalytics> {
-  const startDate = getStartDate(days);
-
-  // Single query with JOIN to avoid N+1
-  const { data: messages, error } = await supabase
-    .from("slack_messages")
-    .select(
-      `
-      status,
-      integration:slack_integrations!inner(
-        imo_id
-      )
-    `,
-    )
-    .eq("integration.imo_id", imoId)
-    .gte("sent_at", startDate);
-
-  if (error) {
-    throw new Error(`Failed to fetch Slack analytics: ${error.message}`);
-  }
-
-  return calculateSlackMetrics(messages || []);
-}
-
 export function useMessagingAnalytics(period: "7d" | "30d" | "90d" = "30d") {
   const { user } = useAuth();
   const { data: profile } = useCurrentUserProfile();
@@ -233,23 +183,16 @@ export function useMessagingAnalytics(period: "7d" | "30d" | "90d" = "30d") {
             readRate: 0,
             templateUses: 0,
           },
-          slack: {
-            totalSent: 0,
-            delivered: 0,
-            failed: 0,
-            successRate: 0,
-          },
           period,
         };
       }
 
-      const [email, instagram, slack] = await Promise.all([
+      const [email, instagram] = await Promise.all([
         fetchEmailAnalytics(userId, days),
         fetchInstagramAnalytics(userId, imoId, days),
-        fetchSlackAnalytics(imoId, days),
       ]);
 
-      return { email, instagram, slack, period };
+      return { email, instagram, period };
     },
     enabled: !!userId && !!imoId,
     staleTime: 5 * 60 * 1000, // 5 minutes

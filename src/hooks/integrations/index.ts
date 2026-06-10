@@ -13,10 +13,3 @@ export {
   useToggleSchedulingIntegration,
   useRecruiterSchedulingIntegrations,
 } from "./useSchedulingIntegrations";
-
-export {
-  useUploadWorkspaceLogo,
-  useDeleteWorkspaceLogo,
-  useWorkspaceLogoOperations,
-  WORKSPACE_LOGO_SIZE,
-} from "./useSlackWorkspaceLogo";

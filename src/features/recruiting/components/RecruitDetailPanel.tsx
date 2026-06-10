@@ -69,18 +69,6 @@ import { useUpdateRecruit } from "../hooks/useRecruitMutations";
 import { useResendInvite } from "../hooks/useAuthUser";
 import { toast } from "sonner";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
-import {
-  useSlackIntegrations,
-  useSlackChannelsById,
-  useRecruitNotificationStatus,
-  useSendRecruitSlackNotification,
-} from "@/hooks/slack";
-import {
-  findRecruitIntegration,
-  findRecruitChannel,
-  buildNewRecruitMessage,
-  buildNpnReceivedMessage,
-} from "@/hooks/slack";
 import type {
   RecruitEntity,
   RecruitPermissions,
@@ -198,17 +186,6 @@ export function RecruitDetailPanel({
   const resendInvite = useResendInvite();
   const updateRecruit = useUpdateRecruit();
 
-  // ─── Slack ────────────────────────────────────────────────────────
-  const { data: slackIntegrations = [] } = useSlackIntegrations();
-  const recruitIntegration = findRecruitIntegration(slackIntegrations);
-  const { data: slackChannels = [] } = useSlackChannelsById(
-    recruitIntegration?.id,
-  );
-  const recruitChannel = findRecruitChannel(recruitIntegration, slackChannels);
-  const { data: notificationStatus } =
-    useRecruitNotificationStatus(recruitIdForQueries);
-  const sendSlackNotification = useSendRecruitSlackNotification();
-
   // ─── Handlers ─────────────────────────────────────────────────────
   const handleAdvancePhase = async (): Promise<void> => {
     if (!currentPhase) return;
@@ -313,44 +290,6 @@ export function RecruitDetailPanel({
     }
   };
 
-  const handleSendSlackNotification = async (
-    notificationType: "new_recruit" | "npn_received",
-  ): Promise<void> => {
-    if (!recruitIntegration || !currentUserProfile?.imo_id) {
-      toast.error("No connected Slack workspace for your IMO.");
-      return;
-    }
-    if (!recruitChannel) {
-      toast.error(
-        "No recruit channel found. Open Settings → Integrations → Slack to pick one.",
-      );
-      return;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
-    const upline = (recruit as any).upline as
-      | { first_name?: string; last_name?: string; email?: string }
-      | undefined;
-    const uplineName =
-      upline?.first_name && upline?.last_name
-        ? `${upline.first_name} ${upline.last_name}`
-        : upline?.email || null;
-    const recruitWithUpline = { ...recruit, upline_name: uplineName };
-    const msg =
-      notificationType === "new_recruit"
-        ? buildNewRecruitMessage(recruitWithUpline)
-        : buildNpnReceivedMessage(recruitWithUpline);
-    // mutateAsync rejects on error; hook's onError fires the toast
-    await sendSlackNotification.mutateAsync({
-      integrationId: recruitIntegration.id,
-      channelId: recruitChannel.id,
-      text: msg.text,
-      blocks: msg.blocks,
-      notificationType,
-      recruitId: recruit.id,
-      imoId: currentUserProfile.imo_id!,
-    });
-  };
-
   // ─── Loading state ────────────────────────────────────────────────
   if (progressLoading || currentPhaseLoading || templateLoading) {
     return (
@@ -446,12 +385,6 @@ export function RecruitDetailPanel({
           hasPipelineProgress={!!hasPipelineProgress}
           currentPhase={currentPhase}
           canRevert={canRevert}
-          slack={{
-            recruitIntegration,
-            recruitChannel,
-            imoId: currentUserProfile?.imo_id ?? null,
-            notificationStatus,
-          }}
           actions={{
             onAdvancePhase: handleAdvancePhase,
             onBlockPhase: handleBlockPhase,
@@ -462,7 +395,6 @@ export function RecruitDetailPanel({
             onResendInvite: handleResendInvite,
             onCancelInvitation: handleCancelInvitation,
             onDeleteOpen: () => setDeleteDialogOpen(true),
-            onSendSlackNotification: handleSendSlackNotification,
           }}
           loading={{
             isAdvancing: advancePhase.isPending,
@@ -471,7 +403,6 @@ export function RecruitDetailPanel({
             isUnenrolling: unenrollPipeline.isPending,
             isResendingInvite: resendInvite.isPending,
             isCancellingInvitation: cancelInvitation.isPending,
-            isSendingSlack: sendSlackNotification.isPending,
           }}
         />
       </div>

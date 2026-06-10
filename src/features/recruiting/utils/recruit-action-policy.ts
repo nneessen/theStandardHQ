@@ -4,7 +4,6 @@
 import type {
   RecruitEntity,
   PhaseProgress,
-  RecruitSlackContext,
   RecruitActionLoading,
   RecruitActionPolicy,
 } from "../types/recruit-detail.types";
@@ -16,7 +15,6 @@ export interface PolicyInput {
   canRevert: boolean;
   hasPipelineProgress: boolean;
   recruit: UserProfile;
-  slack: RecruitSlackContext;
   loading: RecruitActionLoading;
 }
 
@@ -29,15 +27,10 @@ export function getRecruitActionPolicy(
     canRevert,
     hasPipelineProgress,
     recruit,
-    slack,
     loading,
   } = input;
   const isBlocked = currentPhase?.status === "blocked";
   const hasPhase = !!currentPhase;
-  // Visibility: buttons show for any registered recruit. Integration/channel
-  // resolution is deferred to the click handler, which surfaces a toast if
-  // the workspace isn't connected or the channel can't be resolved.
-  const slackVisible = entity.kind === "registered";
 
   return {
     canAdvance: hasPhase && !isBlocked && !loading.isAdvancing,
@@ -50,11 +43,5 @@ export function getRecruitActionPolicy(
       entity.kind === "invitation" &&
       !!entity.invitationId &&
       !loading.isCancellingInvitation,
-    showNewRecruitSlack: slackVisible,
-    showNpnSlack: slackVisible,
-    newRecruitSlackDisabled:
-      !!slack.notificationStatus?.newRecruitSent || loading.isSendingSlack,
-    npnSlackDisabled:
-      !!slack.notificationStatus?.npnReceivedSent || loading.isSendingSlack,
   };
 }

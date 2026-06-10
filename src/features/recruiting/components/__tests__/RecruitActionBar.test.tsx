@@ -9,7 +9,6 @@ import type {
   PhaseProgress,
   RecruitActionCallbacks,
   RecruitActionLoading,
-  RecruitSlackContext,
 } from "../../types/recruit-detail.types";
 import type { UserProfile } from "@/types/hierarchy.types";
 
@@ -62,21 +61,6 @@ const noLoadingStates: RecruitActionLoading = {
   isUnenrolling: false,
   isResendingInvite: false,
   isCancellingInvitation: false,
-  isSendingSlack: false,
-};
-
-const noSlack: RecruitSlackContext = {
-  recruitIntegration: null,
-  recruitChannel: null,
-  imoId: null,
-  notificationStatus: undefined,
-};
-
-const activeSlack: RecruitSlackContext = {
-  recruitIntegration: { id: "int-1" },
-  recruitChannel: { id: "ch-1", name: "new-agents" },
-  imoId: "imo-1",
-  notificationStatus: { newRecruitSent: false, npnReceivedSent: false },
 };
 
 function makeActions(
@@ -92,7 +76,6 @@ function makeActions(
     onResendInvite: vi.fn().mockResolvedValue(undefined),
     onCancelInvitation: vi.fn().mockResolvedValue(undefined),
     onDeleteOpen: vi.fn(),
-    onSendSlackNotification: vi.fn().mockResolvedValue(undefined),
   };
   return { ...base, ...overrides };
 }
@@ -103,7 +86,6 @@ interface RenderProps {
   hasPipelineProgress?: boolean;
   currentPhase?: PhaseProgress | null;
   canRevert?: boolean;
-  slack?: RecruitSlackContext;
   actions?: RecruitActionCallbacks;
   loading?: RecruitActionLoading;
 }
@@ -119,7 +101,6 @@ function renderBar(props: RenderProps = {}) {
         hasPipelineProgress={props.hasPipelineProgress ?? true}
         currentPhase={props.currentPhase ?? activePhase}
         canRevert={props.canRevert ?? false}
-        slack={props.slack ?? noSlack}
         actions={actions}
         loading={props.loading ?? noLoadingStates}
       />,
@@ -348,68 +329,5 @@ describe("registered entity — pipeline", () => {
     await waitFor(() => expect(actions.onBlockPhase).toHaveBeenCalledTimes(1));
     // Reason still visible
     expect(screen.getByLabelText("Reason")).toHaveValue("Some reason");
-  });
-});
-
-// ─── Slack buttons ────────────────────────────────────────────────────────────
-
-describe("Slack buttons", () => {
-  it("still render with no slack integration (resolved on click)", () => {
-    renderBar({ slack: noSlack });
-    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
-    expect(screen.getByText(/Slack: NPN/i)).toBeInTheDocument();
-  });
-
-  it("shows New Recruit button when agent_status is unlicensed", () => {
-    renderBar({ slack: activeSlack });
-    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
-  });
-
-  it("still shows New Recruit button when agent_status is licensed", () => {
-    const licensedRecruit = {
-      ...baseRecruit,
-      agent_status: "licensed",
-    } as UserProfile;
-    render(
-      <RecruitActionBar
-        entity={registeredEntity}
-        permissions={canManagePerms}
-        recruit={licensedRecruit}
-        hasPipelineProgress={true}
-        currentPhase={activePhase}
-        canRevert={false}
-        slack={activeSlack}
-        actions={makeActions()}
-        loading={noLoadingStates}
-      />,
-    );
-    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
-  });
-
-  it("shows NPN button even when recruit has no npn (guard on click)", () => {
-    const noNpnRecruit = { ...baseRecruit, npn: null } as UserProfile;
-    render(
-      <RecruitActionBar
-        entity={registeredEntity}
-        permissions={canManagePerms}
-        recruit={noNpnRecruit}
-        hasPipelineProgress={true}
-        currentPhase={activePhase}
-        canRevert={false}
-        slack={activeSlack}
-        actions={makeActions()}
-        loading={noLoadingStates}
-      />,
-    );
-    expect(screen.getByText(/Slack: NPN/i)).toBeInTheDocument();
-  });
-
-  it("renders without hardcoded channel name (channelLabel uses recruitChannel.name)", () => {
-    // Verify the component renders with an active slack channel — this implicitly
-    // confirms the channelLabel code path ran without error. Deep tooltip text
-    // is verified through unit tests of getRecruitActionPolicy.
-    renderBar({ slack: activeSlack });
-    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
-    expect(screen.getByText(/Slack: NPN/i)).toBeInTheDocument();
   });
 });

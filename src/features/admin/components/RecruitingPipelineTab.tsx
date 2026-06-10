@@ -240,8 +240,7 @@ export function RecruitingPipelineTab({
         >
           <SheetTitle className="sr-only">Recruit Details</SheetTitle>
           <SheetDescription className="sr-only">
-            View and manage recruit pipeline progress, documents, and Slack
-            notifications
+            View and manage recruit pipeline progress and documents
           </SheetDescription>
           {selectedRecruit && (
             <RecruitDetailPanel

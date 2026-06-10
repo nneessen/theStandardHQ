@@ -472,8 +472,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       Licensing status determines next steps
                     </span>{" "}
                     — If the recruit is <em>not already licensed</em>, they are
-                    added as "unlicensed" and their details can be posted to the
-                    Slack recruit channel.
+                    added as "unlicensed" and you can track their progress
+                    through the onboarding pipeline.
                   </li>
                   <li>
                     <span className="font-medium text-v2-ink-subtle">
@@ -484,11 +484,11 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   </li>
                   <li>
                     <span className="font-medium text-v2-ink-subtle">
-                      NPN received triggers a second notification
+                      NPN received unlocks full agent status
                     </span>{" "}
                     — When the recruit's NPN (National Producer Number) is
-                    entered, a second Slack notification is posted requesting
-                    email #2 be sent.
+                    entered, they are ready to advance to the next phase and be
+                    graduated to a full agent.
                   </li>
                   <li>
                     <span className="font-medium text-v2-ink-subtle">

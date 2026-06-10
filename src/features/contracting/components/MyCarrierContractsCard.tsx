@@ -17,10 +17,6 @@ interface AgentCarrierContractsCardProps {
   disableToggle?: boolean;
 }
 
-interface MyCarrierContractsCardProps {
-  agentId: string;
-}
-
 export function AgentCarrierContractsCard({
   agentId,
   title = "Carrier Contracts",
@@ -122,17 +118,5 @@ export function AgentCarrierContractsCard({
         <p className="text-[9px] text-v2-ink-subtle">{description}</p>
       </div>
     </div>
-  );
-}
-
-export function MyCarrierContractsCard({
-  agentId,
-}: MyCarrierContractsCardProps) {
-  return (
-    <AgentCarrierContractsCard
-      agentId={agentId}
-      title="My Carrier Contracts"
-      description="Toggle carriers you are actively contracted with. This helps your downline see which carriers are available."
-    />
   );
 }

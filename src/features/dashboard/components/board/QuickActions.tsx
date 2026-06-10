@@ -4,7 +4,6 @@ import {
   Send,
   Receipt,
   MessageSquare,
-  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
 import { Board, JarvisOrbView, T } from "@/components/board";
@@ -56,7 +55,6 @@ export function QuickActions({
     ...(showDiscord
       ? [{ icon: MessageSquare, label: "Discord", soon: true }]
       : []),
-    { icon: MessagesSquare, label: "Slack", soon: true },
   ];
 
   return (

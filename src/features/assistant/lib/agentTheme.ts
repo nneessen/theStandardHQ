@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Flame,
   GraduationCap,
-  Hash,
   Mail,
   Newspaper,
   ScrollText,
@@ -102,12 +101,6 @@ export const AGENT_THEME: Record<string, AgentTheme> = {
     accent: "#60a5fa",
     icon: Calendar,
     tagline: "Reading your schedule",
-  },
-  slack: {
-    label: "Slack",
-    accent: "#c084fc",
-    icon: Hash,
-    tagline: "Working the channels",
   },
   workflow: {
     label: "Workflow Builder",

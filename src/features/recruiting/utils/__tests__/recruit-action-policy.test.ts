@@ -4,7 +4,6 @@ import { getRecruitActionPolicy } from "../recruit-action-policy";
 import type { PolicyInput } from "../recruit-action-policy";
 import type {
   PhaseProgress,
-  RecruitSlackContext,
   RecruitActionLoading,
 } from "../../types/recruit-detail.types";
 import type { UserProfile } from "@/types/hierarchy.types";
@@ -18,13 +17,6 @@ const baseRecruit: Partial<UserProfile> = {
   npn: "NPN123",
 };
 
-const baseSlack: RecruitSlackContext = {
-  recruitIntegration: { id: "int-1" },
-  recruitChannel: { id: "ch-1", name: "new-agents" },
-  imoId: "imo-1",
-  notificationStatus: { newRecruitSent: false, npnReceivedSent: false },
-};
-
 const noLoadingStates: RecruitActionLoading = {
   isAdvancing: false,
   isReverting: false,
@@ -32,7 +24,6 @@ const noLoadingStates: RecruitActionLoading = {
   isUnenrolling: false,
   isResendingInvite: false,
   isCancellingInvitation: false,
-  isSendingSlack: false,
 };
 
 const activePhase: PhaseProgress = {
@@ -52,7 +43,6 @@ function buildInput(overrides: Partial<PolicyInput> = {}): PolicyInput {
     canRevert: false,
     hasPipelineProgress: true,
     recruit: baseRecruit as UserProfile,
-    slack: baseSlack,
     loading: noLoadingStates,
   };
   return { ...base, ...overrides };
@@ -192,128 +182,5 @@ describe("canCancelInvitation", () => {
       }),
     );
     expect(result.canCancelInvitation).toBe(true);
-  });
-});
-
-// ─── Slack visibility ─────────────────────────────────────────────────────────
-
-describe("showNewRecruitSlack", () => {
-  it("is true even when recruitIntegration is null (resolved at click time)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
-    );
-    expect(result.showNewRecruitSlack).toBe(true);
-  });
-
-  it("is true even when recruitChannel is null (resolved at click time)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({ slack: { ...baseSlack, recruitChannel: null } }),
-    );
-    expect(result.showNewRecruitSlack).toBe(true);
-  });
-
-  it("is true even when agent_status is licensed (button always visible)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({
-        recruit: { ...baseRecruit, agent_status: "licensed" } as UserProfile,
-      }),
-    );
-    expect(result.showNewRecruitSlack).toBe(true);
-  });
-
-  it("is true when all conditions are met", () => {
-    const result = getRecruitActionPolicy(buildInput());
-    expect(result.showNewRecruitSlack).toBe(true);
-  });
-
-  it("is false for invitation entities (not registered)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({
-        entity: {
-          kind: "invitation",
-          recruit: baseRecruit as UserProfile,
-          invitationId: "inv-1",
-          invitationStatus: "pending",
-        },
-      }),
-    );
-    expect(result.showNewRecruitSlack).toBe(false);
-  });
-});
-
-describe("showNpnSlack", () => {
-  it("is true even when npn is null (button always visible, guard on click)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({ recruit: { ...baseRecruit, npn: null } as UserProfile }),
-    );
-    expect(result.showNpnSlack).toBe(true);
-  });
-
-  it("is true when npn exists and integration is present", () => {
-    const result = getRecruitActionPolicy(buildInput());
-    expect(result.showNpnSlack).toBe(true);
-  });
-
-  it("is true even when recruitIntegration is null (resolved at click time)", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
-    );
-    expect(result.showNpnSlack).toBe(true);
-  });
-
-  it("is false for invitation entities", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({
-        entity: {
-          kind: "invitation",
-          recruit: baseRecruit as UserProfile,
-          invitationId: "inv-1",
-          invitationStatus: "pending",
-        },
-      }),
-    );
-    expect(result.showNpnSlack).toBe(false);
-  });
-});
-
-// ─── Slack disabled states ────────────────────────────────────────────────────
-
-describe("newRecruitSlackDisabled", () => {
-  it("is true when newRecruitSent is true", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({
-        slack: {
-          ...baseSlack,
-          notificationStatus: { newRecruitSent: true, npnReceivedSent: false },
-        },
-      }),
-    );
-    expect(result.newRecruitSlackDisabled).toBe(true);
-  });
-
-  it("is true when isSendingSlack is true", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({ loading: { ...noLoadingStates, isSendingSlack: true } }),
-    );
-    expect(result.newRecruitSlackDisabled).toBe(true);
-  });
-
-  it("is false when not yet sent and not currently sending", () => {
-    const result = getRecruitActionPolicy(buildInput());
-    expect(result.newRecruitSlackDisabled).toBe(false);
-  });
-});
-
-describe("npnSlackDisabled", () => {
-  it("is true when npnReceivedSent is true", () => {
-    const result = getRecruitActionPolicy(
-      buildInput({
-        slack: {
-          ...baseSlack,
-          notificationStatus: { newRecruitSent: false, npnReceivedSent: true },
-        },
-      }),
-    );
-    expect(result.npnSlackDisabled).toBe(true);
   });
 });

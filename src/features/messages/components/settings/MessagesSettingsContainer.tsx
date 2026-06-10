@@ -2,21 +2,18 @@
 // Main settings container with horizontal sub-tabs for messaging preferences
 
 import { useState } from "react";
-import { Mail, MessageSquare, Instagram } from "lucide-react";
+import { Mail, Instagram } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmailSettingsPanel } from "./EmailSettingsPanel";
-import { SlackSettingsPanel } from "./SlackSettingsPanel";
 import { InstagramSettingsPanel } from "./InstagramSettingsPanel";
 
-type SettingsTab = "email" | "slack" | "instagram";
+type SettingsTab = "email" | "instagram";
 
 interface MessagesSettingsContainerProps {
-  showSlack?: boolean;
   showInstagram?: boolean;
 }
 
 export function MessagesSettingsContainer({
-  showSlack = true,
   showInstagram = true,
 }: MessagesSettingsContainerProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("email");
@@ -47,15 +44,6 @@ export function MessagesSettingsContainer({
             <Mail className="h-3 w-3 mr-1.5" />
             Email
           </TabsTrigger>
-          {showSlack && (
-            <TabsTrigger
-              value="slack"
-              className="h-7 px-3 text-[11px] data-[state=active]:bg-v2-ring dark:data-[state=active]:bg-v2-ring data-[state=active]:shadow-none rounded-md"
-            >
-              <MessageSquare className="h-3 w-3 mr-1.5" />
-              Slack
-            </TabsTrigger>
-          )}
           {showInstagram && (
             <TabsTrigger
               value="instagram"
@@ -71,11 +59,6 @@ export function MessagesSettingsContainer({
           <TabsContent value="email" className="h-full mt-0 p-4">
             <EmailSettingsPanel />
           </TabsContent>
-          {showSlack && (
-            <TabsContent value="slack" className="h-full mt-0 p-4">
-              <SlackSettingsPanel />
-            </TabsContent>
-          )}
           {showInstagram && (
             <TabsContent value="instagram" className="h-full mt-0 p-4">
               <InstagramSettingsPanel />

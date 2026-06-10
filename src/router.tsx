@@ -64,7 +64,6 @@ import PresentationRecordPage from "./features/training-modules/components/prese
 import PresentationDetailPage from "./features/training-modules/components/presentations/PresentationDetailPage";
 import { ContractingPage } from "./features/contracting/ContractingPage";
 import { MessagesPage } from "./features/messages";
-import { LeaderboardNamingPage } from "./features/messages/components/LeaderboardNamingPage";
 import { TermsPage, PrivacyPage, AccessibilityPage } from "./features/legal";
 import { WorkflowAdminPage } from "./features/workflows";
 import { LeaderboardPage } from "./features/leaderboard";
@@ -869,17 +868,6 @@ const messagesRoute = createRoute({
   ),
 });
 
-// Slack leaderboard naming route - requires auth, blocks recruits
-const slackNameLeaderboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "slack/name-leaderboard",
-  component: () => (
-    <RouteGuard noRecruits>
-      <LeaderboardNamingPage />
-    </RouteGuard>
-  ),
-});
-
 // Legal routes - public, no auth required
 const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1237,7 +1225,6 @@ const routeTree = rootRoute.addChildren([
   trainerDashboardRoute,
   contractingRoute,
   messagesRoute,
-  slackNameLeaderboardRoute,
   termsRoute,
   privacyRoute,
   accessibilityRoute,

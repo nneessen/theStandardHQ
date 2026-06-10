@@ -26,16 +26,13 @@ import {
   Loader2,
   CheckCircle2,
   Clock,
-  Check,
   RotateCcw,
   X,
   Trash2,
   Undo2,
-  Hash,
   GraduationCap,
 } from "lucide-react";
 import { INVITATION_STATUS_LABELS } from "@/types/recruiting.types";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { GraduateToAgentDialog } from "@/features/admin";
 import type {
@@ -44,7 +41,6 @@ import type {
   PhaseProgress,
   RecruitActionCallbacks,
   RecruitActionLoading,
-  RecruitSlackContext,
   RecruitActionPolicy,
 } from "../types/recruit-detail.types";
 import { getRecruitActionPolicy } from "../utils/recruit-action-policy";
@@ -56,7 +52,6 @@ interface RecruitActionBarProps {
   hasPipelineProgress: boolean;
   currentPhase: PhaseProgress | null | undefined;
   canRevert: boolean;
-  slack: RecruitSlackContext;
   actions: RecruitActionCallbacks;
   loading: RecruitActionLoading;
 }
@@ -83,10 +78,6 @@ const HINT = {
     "Permanently delete this recruit and all their progress. Cannot be undone.",
   graduate:
     "Promote to a full agent. Sets their NPN, removes the recruit role, audit-logged.",
-  slackNew:
-    "Post a 'new recruit' announcement to your recruiting Slack channel.",
-  slackNpn:
-    "Post 'NPN received' to your recruiting Slack channel. Requires NPN to be set first.",
 } as const;
 
 const buttonBase =
@@ -320,99 +311,6 @@ function PipelineActionBar({
   );
 }
 
-interface SlackActionBarProps {
-  policy: RecruitActionPolicy;
-  loading: RecruitActionLoading;
-  slack: RecruitSlackContext;
-  recruit: UserProfile;
-  sendingType: "new_recruit" | "npn_received" | null;
-  onSendNew: () => void;
-  onSendNpn: () => void;
-}
-
-function SlackActionBar({
-  policy,
-  loading,
-  slack,
-  recruit,
-  sendingType,
-  onSendNew,
-  onSendNpn,
-}: SlackActionBarProps) {
-  return (
-    <>
-      {policy.showNewRecruitSlack && (
-        <ActionTooltip
-          hint={
-            slack.notificationStatus?.newRecruitSent
-              ? "New-recruit announcement already sent. Click would send again."
-              : HINT.slackNew
-          }
-        >
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={policy.newRecruitSlackDisabled}
-            onClick={onSendNew}
-            className={cn(
-              buttonBase,
-              slack.notificationStatus?.newRecruitSent &&
-                "text-success border-success",
-            )}
-          >
-            {sendingType === "new_recruit" && loading.isSendingSlack ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : slack.notificationStatus?.newRecruitSent ? (
-              <Check className="h-3 w-3 mr-1" />
-            ) : (
-              <Hash className="h-3 w-3 mr-1" />
-            )}
-            {slack.notificationStatus?.newRecruitSent
-              ? "Sent"
-              : "Slack: new recruit"}
-          </Button>
-        </ActionTooltip>
-      )}
-      {policy.showNpnSlack && (
-        <ActionTooltip
-          hint={
-            slack.notificationStatus?.npnReceivedSent
-              ? "NPN-received already sent. Click would send again."
-              : HINT.slackNpn
-          }
-        >
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={policy.npnSlackDisabled}
-            onClick={() => {
-              if (!recruit.npn) {
-                toast.error("Set the recruit's NPN first, then post.");
-                return;
-              }
-              onSendNpn();
-            }}
-            className={cn(
-              buttonBase,
-              slack.notificationStatus?.npnReceivedSent &&
-                "text-success border-success",
-            )}
-          >
-            {sendingType === "npn_received" && loading.isSendingSlack ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : slack.notificationStatus?.npnReceivedSent ? (
-              <Check className="h-3 w-3 mr-1" />
-            ) : (
-              <Hash className="h-3 w-3 mr-1" />
-            )}
-            {slack.notificationStatus?.npnReceivedSent ? "Sent" : "Slack: NPN"}
-          </Button>
-        </ActionTooltip>
-      )}
-    </>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RecruitActionBar({
@@ -422,14 +320,10 @@ export function RecruitActionBar({
   hasPipelineProgress,
   currentPhase,
   canRevert,
-  slack,
   actions,
   loading,
 }: RecruitActionBarProps) {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const [sendingNotificationType, setSendingNotificationType] = useState<
-    "new_recruit" | "npn_received" | null
-  >(null);
 
   const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
@@ -447,7 +341,6 @@ export function RecruitActionBar({
     canRevert,
     hasPipelineProgress,
     recruit,
-    slack,
     loading,
   });
 
@@ -503,33 +396,6 @@ export function RecruitActionBar({
 
         {!isInvitation && (
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-            <SlackActionBar
-              policy={policy}
-              loading={loading}
-              slack={slack}
-              recruit={recruit}
-              sendingType={sendingNotificationType}
-              onSendNew={async () => {
-                setSendingNotificationType("new_recruit");
-                try {
-                  await actions.onSendSlackNotification("new_recruit");
-                } catch {
-                  // hook's onError fires toast; spinner resets via finally
-                } finally {
-                  setSendingNotificationType(null);
-                }
-              }}
-              onSendNpn={async () => {
-                setSendingNotificationType("npn_received");
-                try {
-                  await actions.onSendSlackNotification("npn_received");
-                } catch {
-                  // hook's onError fires toast; spinner resets via finally
-                } finally {
-                  setSendingNotificationType(null);
-                }
-              }}
-            />
             <ActionTooltip hint={HINT.graduate}>
               <Button
                 size="sm"

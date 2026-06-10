@@ -20,7 +20,6 @@ const DEFAULTS: AssistantPreferences = {
     "recruiting",
     "coaching",
     "calendar",
-    "slack",
     "workflow",
     "data-quality",
   ],

@@ -40,11 +40,6 @@ export interface PhaseProgress {
   status: PhaseProgressStatus;
 }
 
-export interface RecruitNotificationStatus {
-  newRecruitSent: boolean;
-  npnReceivedSent: boolean;
-}
-
 /** Mutating callbacks return Promise<void>; non-mutating stay void */
 export interface RecruitActionCallbacks {
   onAdvancePhase: () => Promise<void>;
@@ -56,9 +51,6 @@ export interface RecruitActionCallbacks {
   onResendInvite: () => Promise<void>;
   onCancelInvitation: () => Promise<void>;
   onDeleteOpen: () => void;
-  onSendSlackNotification: (
-    type: "new_recruit" | "npn_received",
-  ) => Promise<void>;
 }
 
 export interface RecruitActionLoading {
@@ -68,14 +60,6 @@ export interface RecruitActionLoading {
   isUnenrolling: boolean;
   isResendingInvite: boolean;
   isCancellingInvitation: boolean;
-  isSendingSlack: boolean;
-}
-
-export interface RecruitSlackContext {
-  recruitIntegration: { id: string } | null;
-  recruitChannel: { id: string; name?: string } | null;
-  imoId: string | null;
-  notificationStatus: RecruitNotificationStatus | undefined;
 }
 
 export interface RecruitActionPolicy {
@@ -86,8 +70,4 @@ export interface RecruitActionPolicy {
   canUnenroll: boolean;
   canResendInvite: boolean;
   canCancelInvitation: boolean;
-  showNewRecruitSlack: boolean;
-  showNpnSlack: boolean;
-  newRecruitSlackDisabled: boolean;
-  npnSlackDisabled: boolean;
 }

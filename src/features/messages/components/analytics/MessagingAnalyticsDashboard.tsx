@@ -8,7 +8,6 @@ import { useMessagingAnalytics } from "../../hooks/useMessagingAnalytics";
 import { useEmailQuota } from "../../hooks/useSendEmail";
 import { EmailKpiCard } from "./EmailKpiCard";
 import { InstagramKpiCard } from "./InstagramKpiCard";
-import { SlackKpiCard } from "./SlackKpiCard";
 import { QuotaUsageCard } from "./QuotaUsageCard";
 
 type Period = "7d" | "30d" | "90d";
@@ -103,7 +102,6 @@ export function MessagingAnalyticsDashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <EmailKpiCard data={analytics?.email} />
               <InstagramKpiCard data={analytics?.instagram} />
-              <SlackKpiCard data={analytics?.slack} />
               <QuotaUsageCard
                 dailyUsed={quota?.dailyUsed ?? 0}
                 dailyLimit={quota?.dailyLimit ?? 50}
