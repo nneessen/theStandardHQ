@@ -166,7 +166,11 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         icon: Trophy,
         label: "Leaderboard",
         href: "/leaderboard",
-        subscriptionFeature: "leaderboard",
+        // Always-on for every approved agent (recruits are excluded at the
+        // route via noRecruits). Previously gated by the paid "leaderboard"
+        // subscription feature; made universal so all agents see it regardless
+        // of billing. Leaderboard data is IMO-scoped via RLS.
+        public: true,
       },
       {
         icon: Store,
@@ -308,7 +312,9 @@ export const staffSidebarGroups: SidebarNavigationGroup[] = [
         icon: Trophy,
         label: "Leaderboard",
         href: "/leaderboard",
-        subscriptionFeature: "leaderboard",
+        // Always-on (see regularSidebarGroups Leaderboard note). Staff roles
+        // already bypassed the subscription gate; kept public for consistency.
+        public: true,
       },
     ],
   },

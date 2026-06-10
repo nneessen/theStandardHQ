@@ -229,12 +229,15 @@ const analyticsRoute = createRoute({
   ),
 });
 
-// Leaderboard route - gated by leaderboard subscription feature
+// Leaderboard route - always-on for every approved agent (recruits excluded).
+// Previously gated by the paid "leaderboard" subscription feature; made
+// universal so all agents can reach it regardless of billing. Data is
+// IMO-scoped via RLS.
 const leaderboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "leaderboard",
   component: () => (
-    <RouteGuard noRecruits subscriptionFeature="leaderboard">
+    <RouteGuard noRecruits>
       <LeaderboardPage />
     </RouteGuard>
   ),
