@@ -8,11 +8,18 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
 import { useAnalyticsData } from "@/hooks";
+import { ANALYTICS_CONSTANTS } from "@/constants/financial";
 
 const GRADIENT_ID = "growthCommissionGradient";
+
+// Renewal-rate multiplier expressed as a percentage string (e.g. "2.5%"),
+// derived from the single source of truth so the footnote can never drift.
+const RENEWAL_RATE_PCT_LABEL = `${(
+  ANALYTICS_CONSTANTS.RENEWAL_RATE_MULTIPLIER * 100
+).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
 /** Per-point confidence colour: idx 0-3 = green, 4-7 = amber, 8-11 = red */
 function confidenceColor(idx: number): string {
@@ -160,7 +167,12 @@ export function GrowthChartPanel() {
     [renewals],
   );
 
-  const firstGrowthRate = growth[0]?.growthRate ?? 0;
+  // `growth[].growthRate` is a MONTHLY rate; the forecast chart spans 12 months,
+  // so the headline shows the compounded next-12-month growth (clearly labeled),
+  // not the raw per-month figure (which read as a misleadingly small number).
+  const monthlyGrowthRate = growth[0]?.growthRate ?? 0;
+  const annualGrowthPct = (Math.pow(1 + monthlyGrowthRate / 100, 12) - 1) * 100;
+  const growthUp = annualGrowthPct >= 0;
 
   if (isLoading) {
     return (
@@ -224,11 +236,23 @@ export function GrowthChartPanel() {
                 justifyContent: "flex-end",
               }}
             >
-              <TrendingUp size={16} color={T.green} style={{ flexShrink: 0 }} />
+              {growthUp ? (
+                <TrendingUp
+                  size={16}
+                  color={T.green}
+                  style={{ flexShrink: 0 }}
+                />
+              ) : (
+                <TrendingDown
+                  size={16}
+                  color={T.red}
+                  style={{ flexShrink: 0 }}
+                />
+              )}
               <Num
-                text={`${firstGrowthRate.toFixed(1)}%`}
+                text={`${growthUp ? "+" : ""}${annualGrowthPct.toFixed(1)}%`}
                 size="lg"
-                color={T.green}
+                color={growthUp ? T.green : T.red}
               />
             </div>
             <div
@@ -238,7 +262,7 @@ export function GrowthChartPanel() {
                 marginTop: 2,
               }}
             >
-              projected growth
+              projected · next 12 mo
             </div>
           </div>
         )}
@@ -343,8 +367,8 @@ export function GrowthChartPanel() {
             }}
           >
             <strong style={{ color: T.mut }}>Note:</strong> Renewal revenue is
-            an estimate based on 25% of first-year commission rates. Actual
-            renewal rates vary by carrier and product.
+            an estimate based on {RENEWAL_RATE_PCT_LABEL} of first-year
+            commission. Actual renewal rates vary by carrier and product.
           </div>
         </>
       )}

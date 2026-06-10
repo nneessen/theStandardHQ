@@ -260,9 +260,11 @@ export function AnalyticsHero() {
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: 10,
-            flexShrink: 0,
-            width: 340,
-            minWidth: 240,
+            // Fluid: grow/shrink and wrap below the verdict on narrow screens
+            // instead of forcing a hard 340px width that overflows the card.
+            flex: "1 1 280px",
+            maxWidth: 340,
+            minWidth: 0,
           }}
         >
           {/* MTD Written — always real */}

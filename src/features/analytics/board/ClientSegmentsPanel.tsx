@@ -1,7 +1,7 @@
 // src/features/analytics/board/ClientSegmentsPanel.tsx
 import { Users } from "lucide-react";
 import { useAnalyticsData } from "@/hooks";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import { Board, Cap, AnimatedNumber, EmptyState, T } from "@/components/board";
 
 export function ClientSegmentsPanel() {
@@ -120,10 +120,11 @@ export function ClientSegmentsPanel() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
+          gap: 12,
           marginBottom: 20,
         }}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <Cap>Client Segments</Cap>
           <div
             style={{
@@ -135,7 +136,7 @@ export function ClientSegmentsPanel() {
             Value tiers
           </div>
         </div>
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
           <AnimatedNumber value={totalAP} prefix="$" size="lg" />
           <div
             style={{
@@ -152,14 +153,22 @@ export function ClientSegmentsPanel() {
       </div>
 
       {/* Segments table */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <table
           style={{
             width: "100%",
+            tableLayout: "fixed",
             borderCollapse: "collapse",
             fontVariantNumeric: "tabular-nums",
           }}
         >
+          <colgroup>
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "27%" }} />
+            <col style={{ width: "24%" }} />
+            <col style={{ width: "17%" }} />
+          </colgroup>
           <thead>
             <tr>
               {(
@@ -174,7 +183,10 @@ export function ClientSegmentsPanel() {
                     color: T.mut2,
                     textAlign: col === "Tier" ? "left" : "right",
                     paddingBottom: 10,
-                    paddingLeft: col !== "Tier" ? 18 : 0,
+                    paddingLeft: col !== "Tier" ? 8 : 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {col}
@@ -205,8 +217,11 @@ export function ClientSegmentsPanel() {
                     font: `600 15.5px ${T.data}`,
                     color: T.ink,
                     textAlign: "right",
-                    paddingLeft: 18,
+                    paddingLeft: 8,
                     fontVariantNumeric: "tabular-nums",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {row.clients}
@@ -216,30 +231,39 @@ export function ClientSegmentsPanel() {
                     font: `600 15.5px ${T.data}`,
                     color: T.cream,
                     textAlign: "right",
-                    paddingLeft: 18,
+                    paddingLeft: 8,
                     fontVariantNumeric: "tabular-nums",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {formatCurrency(row.totalAP)}
+                  {formatCompactCurrency(row.totalAP)}
                 </td>
                 <td
                   style={{
                     font: `600 15.5px ${T.data}`,
                     color: T.mut,
                     textAlign: "right",
-                    paddingLeft: 18,
+                    paddingLeft: 8,
                     fontVariantNumeric: "tabular-nums",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {formatCurrency(row.avgAP)}
+                  {formatCompactCurrency(row.avgAP)}
                 </td>
                 <td
                   style={{
                     font: `700 15.5px ${T.data}`,
                     color: row.color,
                     textAlign: "right",
-                    paddingLeft: 18,
+                    paddingLeft: 8,
                     fontVariantNumeric: "tabular-nums",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {row.mixPct.toFixed(1)}%

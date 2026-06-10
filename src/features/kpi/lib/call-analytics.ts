@@ -9,6 +9,7 @@
 // PostgREST returning a NUMERIC column as a string on some deployments.
 
 import {
+  CALL_OUTCOME_OPTIONS,
   CALLER_AGE_BAND_OPTIONS,
   CALLER_GENDER_OPTIONS,
 } from "../types/kpi.types";
@@ -95,6 +96,14 @@ export interface GenderStat {
   count: number;
 }
 
+export interface OutcomeStat {
+  outcome: string;
+  label: string;
+  count: number;
+  /** count ÷ total calls × 100; 0 when calls = 0. */
+  pct: number;
+}
+
 export interface LengthBucketStat {
   label: string;
   count: number;
@@ -119,6 +128,7 @@ export interface CallAnalytics {
   byDay: DayStat[];
   byAgeBand: AgeBandStat[];
   byGender: GenderStat[];
+  byOutcome: OutcomeStat[];
   byLengthBucket: LengthBucketStat[];
   byAgent: AgentStat[];
 }
@@ -159,6 +169,11 @@ const GENDER_LABEL = new Map(
   CALLER_GENDER_OPTIONS.map((o) => [o.value, o.label] as const),
 );
 const GENDER_ORDER = CALLER_GENDER_OPTIONS.map((o) => o.value);
+
+const OUTCOME_LABEL = new Map(
+  CALL_OUTCOME_OPTIONS.map((o) => [o.value as string, o.label] as const),
+);
+const OUTCOME_ORDER = CALL_OUTCOME_OPTIONS.map((o) => o.value as string);
 
 /** Length buckets, in display order. Upper bound is exclusive (seconds). */
 export const LENGTH_BUCKETS: ReadonlyArray<{ label: string; max: number }> = [
@@ -215,6 +230,7 @@ export function aggregateCallAnalytics(
   const dayMap = new Map<number, Bucket>();
   const ageMap = new Map<string, Bucket>();
   const genderMap = new Map<string, number>();
+  const outcomeMap = new Map<string, number>();
   const lengthMap = new Map<string, Bucket>();
   const agentMap = new Map<string, Bucket & { policies: number }>();
 
@@ -277,6 +293,10 @@ export function aggregateCallAnalytics(
     if (r.caller_gender) {
       genderMap.set(r.caller_gender, (genderMap.get(r.caller_gender) ?? 0) + 1);
     }
+
+    // by outcome (null/blank → "unknown" so every call is accounted for)
+    const outcomeKey = r.outcome || "unknown";
+    outcomeMap.set(outcomeKey, (outcomeMap.get(outcomeKey) ?? 0) + 1);
 
     // by length bucket
     if (duration != null) {
@@ -348,6 +368,22 @@ export function aggregateCallAnalytics(
     count: genderMap.get(g)!,
   }));
 
+  // Outcome mix: known outcomes first (in canonical order), then any unmapped
+  // keys (e.g. "unknown") appended, both filtered to those actually present.
+  const presentOutcomes = [
+    ...OUTCOME_ORDER.filter((o) => outcomeMap.has(o)),
+    ...[...outcomeMap.keys()].filter((o) => !OUTCOME_LABEL.has(o)),
+  ];
+  const byOutcome: OutcomeStat[] = presentOutcomes.map((o) => {
+    const count = outcomeMap.get(o)!;
+    return {
+      outcome: o,
+      label: OUTCOME_LABEL.get(o) ?? (o === "unknown" ? "Unknown" : o),
+      count,
+      pct: calls > 0 ? (count / calls) * 100 : 0,
+    };
+  });
+
   const byLengthBucket: LengthBucketStat[] = LENGTH_BUCKETS.map((bucket) => {
     const b = lengthMap.get(bucket.label) ?? emptyBucket();
     return {
@@ -384,6 +420,7 @@ export function aggregateCallAnalytics(
     byDay,
     byAgeBand,
     byGender,
+    byOutcome,
     byLengthBucket,
     byAgent,
   };

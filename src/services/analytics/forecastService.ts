@@ -56,7 +56,33 @@ export interface SeasonalityPattern {
 }
 
 /**
- * Forecast policy renewals for the next 12 months
+ * The next annual anniversary of `effectiveDate` that falls strictly after
+ * `from` (always within the next 12 months).
+ */
+function nextAnniversary(effectiveDate: Date, from: Date): Date {
+  let anniv = new Date(
+    from.getFullYear(),
+    effectiveDate.getMonth(),
+    effectiveDate.getDate(),
+  );
+  if (anniv <= from) {
+    anniv = new Date(
+      from.getFullYear() + 1,
+      effectiveDate.getMonth(),
+      effectiveDate.getDate(),
+    );
+  }
+  return anniv;
+}
+
+/**
+ * Forecast policy renewals for the next 12 months.
+ *
+ * Renewal (trail) commission is booked on each annual policy ANNIVERSARY for
+ * in-force policies — NOT at term expiration. This book is whole-life / final-
+ * expense (no term length), so anchoring on the anniversary is what makes the
+ * forecast meaningful; a term-expiration model excluded the entire book.
+ * (Owner-confirmed Jun 10, 2026 — model annual-anniversary trail.)
  */
 export function forecastRenewals(policies: Policy[]): RenewalForecast[] {
   const forecasts: RenewalForecast[] = [];
@@ -68,14 +94,12 @@ export function forecastRenewals(policies: Policy[]): RenewalForecast[] {
     const forecastMonthStr = format(forecastMonth, "yyyy-MM");
     const forecastMonthLabel = format(forecastMonth, "MMM yyyy");
 
-    // Find policies that will be up for renewal this month
+    // Find in-force policies whose annual anniversary lands in this month.
     const renewalPolicies = policies.filter((policy) => {
-      if (policy.lifecycleStatus !== "active" || !policy.termLength)
-        return false;
+      if (policy.lifecycleStatus !== "active") return false;
 
-      // Calculate renewal date
       const effectiveDate = parseLocalDate(policy.effectiveDate);
-      const renewalDate = addMonths(effectiveDate, policy.termLength * 12);
+      const renewalDate = nextAnniversary(effectiveDate, now);
       const renewalMonth = format(renewalDate, "yyyy-MM");
 
       return renewalMonth === forecastMonthStr;

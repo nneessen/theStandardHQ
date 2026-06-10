@@ -103,7 +103,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -133,7 +134,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -174,7 +176,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -222,7 +225,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `);
 
@@ -331,7 +335,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -369,7 +374,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -399,7 +405,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -474,7 +481,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           ),
           commissions (
             id,
@@ -518,7 +526,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -630,7 +639,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           )
         `,
         )
@@ -716,7 +726,8 @@ export class PolicyRepository extends BaseRepository<
             email,
             phone,
             address,
-            date_of_birth
+            date_of_birth,
+            state
           ),
           products!policies_product_id_fkey(*)
         `); // Include client and product details
@@ -1133,8 +1144,11 @@ export class PolicyRepository extends BaseRepository<
       }
 
       clientData = {
+        id: dbRecord.clients.id || undefined,
         name: dbRecord.clients.name || "Unknown",
-        state: address.state || "Unknown",
+        // Prefer the dedicated clients.state column; fall back to legacy
+        // address-embedded state for older clients that only stored it there.
+        state: dbRecord.clients.state || address.state || "Unknown",
         // Use calculated age from DOB, fallback to legacy address.age for existing clients
         age: age || address.age || 0,
         dateOfBirth: dbRecord.clients.date_of_birth || undefined,

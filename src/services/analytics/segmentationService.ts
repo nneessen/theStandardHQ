@@ -60,11 +60,13 @@ export interface ClientLifetimeValue {
 export function segmentClientsByValue(
   policies: Policy[],
 ): ClientSegmentationSummary {
-  // Group policies by client
+  // Group policies by client. Key on the stable clients.id so two distinct
+  // clients who happen to share a name are NOT merged into one segment;
+  // fall back to name only for legacy rows without an id.
   const clientMap = new Map<string, Policy[]>();
 
   policies.forEach((policy) => {
-    const clientKey = policy.client?.name || "unknown";
+    const clientKey = policy.client?.id || policy.client?.name || "unknown";
     if (!clientMap.has(clientKey)) {
       clientMap.set(clientKey, []);
     }
@@ -140,22 +142,19 @@ export function segmentClientsByValue(
   const mediumValue = clientSegments.filter((c) => c.tier === "medium");
   const lowValue = clientSegments.filter((c) => c.tier === "low");
 
-  const avgPremiumByTier: Record<ClientValueTier, number> = {
-    high:
-      highValue.reduce((sum, c) => sum + c.avgPremium, 0) /
-      (highValue.length || 1),
-    medium:
-      mediumValue.reduce((sum, c) => sum + c.avgPremium, 0) /
-      (mediumValue.length || 1),
-    low:
-      lowValue.reduce((sum, c) => sum + c.avgPremium, 0) /
-      (lowValue.length || 1),
-  };
-
   const totalPremiumByTier: Record<ClientValueTier, number> = {
     high: highValue.reduce((sum, c) => sum + c.totalPremium, 0),
     medium: mediumValue.reduce((sum, c) => sum + c.totalPremium, 0),
     low: lowValue.reduce((sum, c) => sum + c.totalPremium, 0),
+  };
+
+  // Average annual premium PER CLIENT in the tier (total tier premium ÷ client
+  // count). Previously this averaged each client's own per-policy average — a
+  // double-average that underweighted multi-policy clients.
+  const avgPremiumByTier: Record<ClientValueTier, number> = {
+    high: totalPremiumByTier.high / (highValue.length || 1),
+    medium: totalPremiumByTier.medium / (mediumValue.length || 1),
+    low: totalPremiumByTier.low / (lowValue.length || 1),
   };
 
   return {

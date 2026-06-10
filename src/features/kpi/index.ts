@@ -24,3 +24,23 @@ export type {
   CallTypeCreateForm,
   CallTypeUpdateForm,
 } from "./hooks/useCallTypes";
+
+// ─── Call analytics aggregations (reused by the /analytics board) ────────────
+export {
+  useKpiCallAnalytics,
+  useWordTrackEffectiveness,
+} from "./hooks/useCallAnalytics";
+export type {
+  CallAnalytics,
+  CallTotals,
+  StateStat,
+  HourStat,
+  DayStat,
+  AgeBandStat,
+  GenderStat,
+  OutcomeStat,
+  LengthBucketStat,
+  AgentStat,
+  WordTrackEffectiveness,
+  WordTrackEffectivenessRow,
+} from "./lib/call-analytics";

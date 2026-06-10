@@ -106,6 +106,7 @@ export function PremiumByStatePanel() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "baseline",
+                    gap: 8,
                     marginBottom: 5,
                   }}
                 >
@@ -115,6 +116,10 @@ export function PremiumByStatePanel() {
                       color: T.ink,
                       letterSpacing: "0.01em",
                       fontVariantNumeric: "tabular-nums",
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {row.state}
@@ -124,6 +129,7 @@ export function PremiumByStatePanel() {
                       font: `700 12px ${T.mono}`,
                       color: T.cream,
                       fontVariantNumeric: "tabular-nums",
+                      flexShrink: 0,
                     }}
                   >
                     {formatCompactCurrency(row.premium)}

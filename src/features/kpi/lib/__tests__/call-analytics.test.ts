@@ -131,6 +131,28 @@ describe("aggregateCallAnalytics", () => {
     });
   });
 
+  it("byOutcome: canonical order, counts, and pct of all calls", () => {
+    expect(a.byOutcome.map((o) => o.outcome)).toEqual([
+      "sold",
+      "not_sold",
+      "callback",
+    ]);
+    expect(a.byOutcome.map((o) => o.count)).toEqual([3, 2, 1]);
+    expect(a.byOutcome[0]).toMatchObject({ label: "Sold", count: 3 });
+    expect(a.byOutcome[0].pct).toBeCloseTo(50);
+    expect(a.byOutcome[1].pct).toBeCloseTo(33.333);
+    expect(a.byOutcome[2].pct).toBeCloseTo(16.667);
+  });
+
+  it("byOutcome maps null outcomes to an Unknown bucket", () => {
+    const withNull = aggregateCallAnalytics(
+      [rec({ id: "n1", outcome: null }), rec({ id: "n2", outcome: "sold" })],
+      new Map(),
+    );
+    const unknown = withNull.byOutcome.find((o) => o.outcome === "unknown");
+    expect(unknown).toMatchObject({ label: "Unknown", count: 1 });
+  });
+
   it("byAgeBand keeps canonical order and only present bands", () => {
     expect(a.byAgeBand.map((b) => b.band)).toEqual([
       "30_39",

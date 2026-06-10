@@ -129,6 +129,7 @@ export function ProductMixPanel() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "baseline",
+                    gap: 8,
                     marginBottom: 5,
                   }}
                 >
@@ -137,6 +138,10 @@ export function ProductMixPanel() {
                       font: `600 12px ${T.data}`,
                       color: T.ink,
                       letterSpacing: "0.01em",
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {row.label}
@@ -146,6 +151,7 @@ export function ProductMixPanel() {
                       display: "flex",
                       alignItems: "baseline",
                       gap: 8,
+                      flexShrink: 0,
                     }}
                   >
                     <span

@@ -8,7 +8,7 @@
 // bundle, and each is wrapped in its subscription gate.
 
 import { lazy, Suspense } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   BarChart3,
   Sparkles,
@@ -76,6 +76,29 @@ const CarriersPanel = lazy(() =>
   import("./board").then((m) => ({ default: m.CarriersPanel })),
 );
 
+// Inbound Calls section panels (always-visible; reuse the kpi call-analytics layer).
+const InboundCallsOverviewPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.InboundCallsOverviewPanel })),
+);
+const CallTimingPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.CallTimingPanel })),
+);
+const CallLengthPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.CallLengthPanel })),
+);
+const CallDemographicsPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.CallDemographicsPanel })),
+);
+const CallGeographyPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.CallGeographyPanel })),
+);
+const CallAgentLeaderboardPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.CallAgentLeaderboardPanel })),
+);
+const WordTrackEffectivenessPanel = lazy(() =>
+  import("./board").then((m) => ({ default: m.WordTrackEffectivenessPanel })),
+);
+
 /** A loading placeholder that holds a panel's footprint without layout shift. */
 function PanelSkeleton({ minHeight = 200 }: { minHeight?: number }) {
   return (
@@ -121,7 +144,9 @@ function Cell({
   const { hasAccess, isLoading } = useAnalyticsSectionAccess(section);
   if (isLoading || !hasAccess) return null;
   return (
-    <div style={{ gridColumn: `span ${span}`, minWidth: 0, height: "100%" }}>
+    <div
+      className={span === 2 ? "min-w-0 h-full xl:col-span-2" : "min-w-0 h-full"}
+    >
       <Suspense fallback={<PanelSkeleton minHeight={minHeight} />}>
         {children}
       </Suspense>
@@ -129,13 +154,40 @@ function Cell({
   );
 }
 
-const rowStyle = (cols: number): CSSProperties => ({
-  display: "grid",
-  gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-  gap: 16,
-  alignItems: "stretch",
-  marginBottom: 16,
-});
+/**
+ * Ungated grid cell for always-visible sections (e.g. Inbound Calls). Mirrors
+ * `Cell` (Suspense + min-width:0 + responsive span) but skips the subscription
+ * section-access check.
+ */
+function PlainCell({
+  span = 1,
+  minHeight,
+  children,
+}: {
+  span?: number;
+  minHeight?: number;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={span === 2 ? "min-w-0 h-full xl:col-span-2" : "min-w-0 h-full"}
+    >
+      <Suspense fallback={<PanelSkeleton minHeight={minHeight} />}>
+        {children}
+      </Suspense>
+    </div>
+  );
+}
+
+// Responsive row grids. Multi-column rows collapse to a single column on
+// narrow screens so panels never get crushed below their content width.
+// `gap-4`/`mb-4` = 16px to match the prior inline layout.
+const ROW_2 = "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-stretch";
+const ROW_3 =
+  "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4 items-stretch";
+// Rows containing a 2-wide panel: stack until xl, then 3 columns (1 + span-2).
+const ROW_3_WIDE = "grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4 items-stretch";
+const ROW_1 = "grid grid-cols-1 gap-4 mb-4";
 
 function AnalyticsDashboardContent() {
   const { timePeriod, setTimePeriod, customRange, setCustomRange, dateRange } =
@@ -283,7 +335,7 @@ function AnalyticsDashboardContent() {
             </div>
 
             {/* Trend | Growth */}
-            <div style={rowStyle(2)}>
+            <div className={ROW_2}>
               <Cell section="policy_status_breakdown" minHeight={360}>
                 <TrendChartPanel />
               </Cell>
@@ -293,7 +345,7 @@ function AnalyticsDashboardContent() {
             </div>
 
             {/* Action feed | Agent table (2-wide) */}
-            <div style={rowStyle(3)}>
+            <div className={ROW_3_WIDE}>
               <Cell section="game_plan" minHeight={420}>
                 <ActionFeedPanel />
               </Cell>
@@ -303,7 +355,7 @@ function AnalyticsDashboardContent() {
             </div>
 
             {/* Funnel | Segments | Pipeline */}
-            <div style={rowStyle(3)}>
+            <div className={ROW_3}>
               <Cell section="conversion_funnel" minHeight={300}>
                 <FunnelPanel />
               </Cell>
@@ -316,7 +368,7 @@ function AnalyticsDashboardContent() {
             </div>
 
             {/* Trend comparison (2-wide) | stack(Product mix + Premium by state) */}
-            <div style={rowStyle(3)}>
+            <div className={ROW_3_WIDE}>
               <Cell section="trend_comparison" span={2} minHeight={340}>
                 <TrendComparisonPanel />
               </Cell>
@@ -342,10 +394,70 @@ function AnalyticsDashboardContent() {
             </div>
 
             {/* Carriers (full width) */}
-            <div style={rowStyle(1)}>
+            <div className={ROW_1}>
               <Cell section="carriers_products" minHeight={240}>
                 <CarriersPanel />
               </Cell>
+            </div>
+
+            {/* ── Inbound Calls (always-visible; reuses the kpi call layer) ── */}
+            <div style={{ marginTop: 8, marginBottom: 16 }}>
+              <div
+                style={{
+                  font: `700 12px ${T.mono}`,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: T.mut2,
+                }}
+              >
+                Inbound Calls
+              </div>
+              <div
+                style={{
+                  font: `600 22px ${T.disp}`,
+                  color: T.ink,
+                  marginTop: 2,
+                }}
+              >
+                Call performance &amp; coaching
+              </div>
+            </div>
+
+            {/* Inbound overview (full width) */}
+            <div className={ROW_1}>
+              <PlainCell minHeight={220}>
+                <InboundCallsOverviewPanel />
+              </PlainCell>
+            </div>
+
+            {/* Timing | Demographics | Geography */}
+            <div className={ROW_3}>
+              <PlainCell minHeight={340}>
+                <CallTimingPanel />
+              </PlainCell>
+              <PlainCell minHeight={340}>
+                <CallDemographicsPanel />
+              </PlainCell>
+              <PlainCell minHeight={340}>
+                <CallGeographyPanel />
+              </PlainCell>
+            </div>
+
+            {/* Agent leaderboard (2-wide) | Call length */}
+            <div className={ROW_3_WIDE}>
+              <PlainCell span={2} minHeight={320}>
+                <CallAgentLeaderboardPanel />
+              </PlainCell>
+              <PlainCell minHeight={320}>
+                <CallLengthPanel />
+              </PlainCell>
+            </div>
+
+            {/* Word-track effectiveness (full width table) */}
+            <div className={ROW_1}>
+              <PlainCell minHeight={240}>
+                <WordTrackEffectivenessPanel />
+              </PlainCell>
             </div>
 
             {/* Upgrade banner — only when sections are locked */}

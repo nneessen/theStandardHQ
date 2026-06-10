@@ -14,3 +14,12 @@ export { TrendComparisonPanel } from "./TrendComparisonPanel";
 export { ProductMixPanel } from "./ProductMixPanel";
 export { PremiumByStatePanel } from "./PremiumByStatePanel";
 export { CarriersPanel } from "./CarriersPanel";
+
+// ─── Inbound Calls section (always-visible; reuses the kpi call-analytics layer) ─
+export { InboundCallsOverviewPanel } from "./inbound/InboundCallsOverviewPanel";
+export { CallTimingPanel } from "./inbound/CallTimingPanel";
+export { CallLengthPanel } from "./inbound/CallLengthPanel";
+export { CallDemographicsPanel } from "./inbound/CallDemographicsPanel";
+export { CallGeographyPanel } from "./inbound/CallGeographyPanel";
+export { CallAgentLeaderboardPanel } from "./inbound/CallAgentLeaderboardPanel";
+export { WordTrackEffectivenessPanel } from "./inbound/WordTrackEffectivenessPanel";

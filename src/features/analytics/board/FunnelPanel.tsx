@@ -179,10 +179,19 @@ export function FunnelPanel() {
             {stages.map((stage, idx) => {
               const pct = stage.count / maxCount;
               const prevCount = idx > 0 ? stages[idx - 1].count : 0;
+              // Raw step ratio can exceed 100% because stages come from
+              // different date bases (leads by purchase date vs policies by
+              // submit/status). Display is clamped to a funnel-sane ≤100%; the
+              // true ratio is surfaced in the tooltip when clamped.
+              const rawConvPct =
+                prevCount > 0 ? (stage.count / prevCount) * 100 : null;
               const convPct =
-                prevCount > 0
-                  ? ((stage.count / prevCount) * 100).toFixed(1)
-                  : null;
+                rawConvPct !== null ? Math.min(100, rawConvPct) : null;
+              const convTitle =
+                rawConvPct !== null && rawConvPct > 100
+                  ? `${rawConvPct.toFixed(0)}% of prior stage — exceeds 100% ` +
+                    `because stages span different time windows`
+                  : undefined;
 
               return (
                 <div key={stage.label}>
@@ -216,26 +225,28 @@ export function FunnelPanel() {
                       />
                       {convPct !== null && (
                         <span
+                          title={convTitle}
                           style={{
                             font: `700 10px ${T.mono}`,
                             letterSpacing: "0.1em",
                             color:
-                              Number(convPct) >= 50
+                              convPct >= 50
                                 ? T.green
-                                : Number(convPct) >= 25
+                                : convPct >= 25
                                   ? T.amber
                                   : T.red,
                             background:
-                              Number(convPct) >= 50
+                              convPct >= 50
                                 ? "rgba(95,208,138,0.12)"
-                                : Number(convPct) >= 25
+                                : convPct >= 25
                                   ? "rgba(244,180,58,0.12)"
                                   : "rgba(255,106,93,0.12)",
                             padding: "2px 6px",
                             borderRadius: 4,
+                            cursor: convTitle ? "help" : "default",
                           }}
                         >
-                          {convPct}%
+                          {convPct.toFixed(1)}%
                         </span>
                       )}
                     </div>

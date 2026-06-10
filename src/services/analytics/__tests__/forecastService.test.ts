@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { projectGrowth } from "../forecastService";
+import { projectGrowth, forecastRenewals } from "../forecastService";
+import { ANALYTICS_CONSTANTS } from "@/constants/financial";
 import type { Policy } from "@/types";
 
 function policyEffective(dateISO: string): Policy {
@@ -72,5 +73,73 @@ describe("forecastService.projectGrowth growth caps", () => {
     // mean would be ~82% and pin at the cap; assert we are NOT pinned.
     expect(result[0].growthRate).toBeLessThan(MONTHLY_CAP - 1);
     expect(Math.abs(result[0].growthRate)).toBeLessThan(1);
+  });
+});
+
+describe("forecastService.forecastRenewals (annual-anniversary model)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 5, 15)); // Jun 15, 2026
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function activePolicy(
+    over: Partial<Policy> & { effectiveDate: string },
+  ): Policy {
+    return {
+      id: "p",
+      lifecycleStatus: "active",
+      status: "approved",
+      annualPremium: 2000,
+      commissionPercentage: 0.9,
+      ...over,
+    } as unknown as Policy;
+  }
+
+  it("returns 12 forward monthly buckets", () => {
+    expect(forecastRenewals([])).toHaveLength(12);
+  });
+
+  it("buckets an active policy by its annual anniversary, NOT term expiration", () => {
+    // Effective Aug 20 (any year) → next anniversary Aug 20, 2026 ≈ 2 months out.
+    const result = forecastRenewals([
+      activePolicy({ effectiveDate: "2023-08-20" }),
+    ]);
+    const aug = result.find((r) => r.month === "2026-08");
+    expect(aug?.expectedRenewals).toBe(1);
+    // Every other month is empty (the policy renews once in the window).
+    const total = result.reduce((s, r) => s + r.expectedRenewals, 0);
+    expect(total).toBe(1);
+  });
+
+  it("INCLUDES policies with no termLength (the whole-life book fix)", () => {
+    // No termLength field at all — previously excluded → forecast was always 0.
+    const result = forecastRenewals([
+      activePolicy({ effectiveDate: "2022-09-10" }),
+    ]);
+    expect(result.reduce((s, r) => s + r.expectedRenewals, 0)).toBe(1);
+  });
+
+  it("estimates revenue as premium × comp% × renewal multiplier", () => {
+    const result = forecastRenewals([
+      activePolicy({
+        effectiveDate: "2023-08-20",
+        annualPremium: 2000,
+        commissionPercentage: 0.9,
+      }),
+    ]);
+    const aug = result.find((r) => r.month === "2026-08");
+    expect(aug?.expectedRevenue).toBeCloseTo(
+      2000 * 0.9 * ANALYTICS_CONSTANTS.RENEWAL_RATE_MULTIPLIER,
+    );
+  });
+
+  it("excludes non-active policies", () => {
+    const result = forecastRenewals([
+      activePolicy({ effectiveDate: "2023-08-20", lifecycleStatus: "lapsed" }),
+    ]);
+    expect(result.reduce((s, r) => s + r.expectedRenewals, 0)).toBe(0);
   });
 });

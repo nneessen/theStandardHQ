@@ -46,6 +46,8 @@ export type PaymentFrequency =
 
 // Base client interface with common properties
 export interface PolicyClientBase {
+  /** clients.id — stable identity for grouping (distinct clients can share a name). */
+  id?: string;
   name: string;
   state: string;
   age: number;
