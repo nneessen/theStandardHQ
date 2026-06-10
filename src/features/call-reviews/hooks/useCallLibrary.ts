@@ -3,8 +3,12 @@
 // Reads are IMO-wide (RLS widened in 20260609074223). Writes (retry/analyze) are
 // edge-function invocations under the user JWT.
 
-import { useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/services/base/supabase";
 import {
@@ -19,60 +23,191 @@ export interface AgentName {
   name: string;
 }
 
-export interface CallLibraryData {
-  recordings: CallRecordingRow[];
-  agentNames: Record<string, string>;
+// ── Server-side paginated library ───────────────────────────────────────────
+// The IMO library can hold thousands of recordings, so it is NEVER loaded whole.
+// Each page is a server-side .range() slice with every filter/search pushed into
+// the query (trigram-indexed ILIKE for search). Signed URLs stay lazy (per row,
+// only when a call is actually played) — never signed for a whole list.
+export const LIBRARY_PAGE_SIZE = 25;
+
+export interface CallLibraryFilters {
+  search: string;
+  outcome: string; // "all" | outcome value
+  agentId: string; // "all" | agent uuid
+  callTypeId: string; // "all" | call type uuid
+  showArchived: boolean;
 }
 
-async function fetchLibrary(): Promise<CallLibraryData> {
-  const { data, error } = await supabase
+export const DEFAULT_LIBRARY_FILTERS: CallLibraryFilters = {
+  search: "",
+  outcome: "all",
+  agentId: "all",
+  callTypeId: "all",
+  showArchived: false,
+};
+
+export type CallLibraryRow = CallRecordingRow & {
+  call_type?: { id: string; name: string } | null;
+};
+
+// Strip PostgREST .or()/ILIKE control chars so a search string can't break the
+// filter expression (the value is interpolated into a server-side filter).
+function sanitizeSearch(term: string): string {
+  return term
+    .trim()
+    .replace(/[%,()\\:*]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function fetchLibraryPage(
+  imoId: string,
+  filters: CallLibraryFilters,
+  from: number,
+): Promise<{ rows: CallLibraryRow[]; nextFrom: number | undefined }> {
+  let q = supabase
     .from("kpi_call_recordings")
-    .select("*")
+    .select("*, call_type:call_type_id(id,name)")
+    .eq("imo_id", imoId)
     .order("call_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  const recordings = (data ?? []) as CallRecordingRow[];
+    .order("created_at", { ascending: false })
+    .range(from, from + LIBRARY_PAGE_SIZE - 1);
 
-  // Resolve agent display names (agent_id → user_profiles). agent_id references
-  // auth.users, so there's no PostgREST embed — one extra scoped query.
-  const agentIds = Array.from(new Set(recordings.map((r) => r.agent_id)));
-  const agentNames: Record<string, string> = {};
-  if (agentIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("user_profiles")
-      .select("id, first_name, last_name")
-      .in("id", agentIds);
-    for (const p of profiles ?? []) {
-      const name = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
-      agentNames[p.id] = name || "Unknown agent";
-    }
+  if (!filters.showArchived) q = q.is("archived_at", null);
+  if (filters.outcome !== "all") q = q.eq("outcome", filters.outcome);
+  if (filters.agentId !== "all") q = q.eq("agent_id", filters.agentId);
+  if (filters.callTypeId !== "all")
+    q = q.eq("call_type_id", filters.callTypeId);
+
+  const term = sanitizeSearch(filters.search);
+  if (term) {
+    q = q.or(
+      `caller_name.ilike.%${term}%,original_filename.ilike.%${term}%,transcript_text.ilike.%${term}%`,
+    );
   }
-  return { recordings, agentNames };
+
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as CallLibraryRow[];
+  const nextFrom =
+    rows.length === LIBRARY_PAGE_SIZE ? from + LIBRARY_PAGE_SIZE : undefined;
+  return { rows, nextFrom };
 }
 
-export function useCallLibrary() {
+/** Paginated, server-filtered call library (infinite scroll). */
+export function useCallLibrary(filters: CallLibraryFilters) {
   const { imoId } = useKpiIdentity();
-  return useQuery({
-    queryKey: callReviewKeys.library(imoId ?? "none"),
-    queryFn: fetchLibrary,
+  return useInfiniteQuery({
+    queryKey: callReviewKeys.libraryPaged(imoId ?? "none", filters),
+    queryFn: ({ pageParam }) =>
+      fetchLibraryPage(imoId as string, filters, pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (last) => last.nextFrom,
     enabled: !!imoId,
     staleTime: 30_000,
     gcTime: 10 * 60_000,
     refetchInterval: (query) => {
-      const data = query.state.data as CallLibraryData | undefined;
-      return data?.recordings.some((r) => isSettling(r)) ? 5_000 : false;
+      const data = query.state.data as
+        | { pages: { rows: CallLibraryRow[] }[] }
+        | undefined;
+      const anySettling = data?.pages.some((p) =>
+        p.rows.some((r) => isSettling(r)),
+      );
+      return anySettling ? 5_000 : false;
     },
   });
 }
 
-async function fetchRecording(id: string): Promise<CallRecordingRow | null> {
+/**
+ * Bounded roster of the IMO's agents — powers the agent filter dropdown AND
+ * agent-name display (agent_id → name). A fixed-size set, NOT derived from the
+ * paginated recordings (which only hold one page at a time).
+ */
+export function useImoAgents(imoIdArg?: string) {
+  const { imoId: ctxImoId } = useKpiIdentity();
+  const imoId = imoIdArg ?? ctxImoId;
+  return useQuery({
+    queryKey: callReviewKeys.imoAgents(imoId ?? "none"),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, first_name, last_name")
+        .eq("imo_id", imoId as string)
+        .order("first_name", { ascending: true });
+      if (error) throw new Error(error.message);
+      const names: Record<string, string> = {};
+      const list: AgentName[] = [];
+      for (const p of data ?? []) {
+        const name =
+          `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() ||
+          "Unknown agent";
+        names[p.id] = name;
+        list.push({ id: p.id, name });
+      }
+      return { names, list };
+    },
+    enabled: !!imoId,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Archive (soft, reversible) or restore a recording. Governed by the recording
+ *  UPDATE RLS (owner / upline / IMO admin / super-admin). */
+export function useArchiveRecording() {
+  const queryClient = useQueryClient();
+  const { userId } = useKpiIdentity();
+  return useMutation({
+    mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      const { error } = await supabase
+        .from("kpi_call_recordings")
+        .update(
+          archive
+            ? { archived_at: new Date().toISOString(), archived_by: userId }
+            : { archived_at: null, archived_by: null },
+        )
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: (_d, { archive }) => {
+      toast.success(archive ? "Call archived" : "Call restored");
+      queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't archive call"),
+  });
+}
+
+/** Permanently delete a recording (row + audio object). Governed by the
+ *  recording DELETE RLS (owner / upline / IMO admin / super-admin). */
+export function useDeleteRecording() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rec: { id: string; storage_path: string }) => {
+      // Remove the audio object first (best-effort), then the row.
+      await recordingStorageService.remove(rec.storage_path).catch(() => {});
+      const { error } = await supabase
+        .from("kpi_call_recordings")
+        .delete()
+        .eq("id", rec.id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      toast.success("Call deleted");
+      queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't delete call"),
+  });
+}
+
+async function fetchRecording(id: string): Promise<CallLibraryRow | null> {
   const { data, error } = await supabase
     .from("kpi_call_recordings")
-    .select("*")
+    .select("*, call_type:call_type_id(id,name)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return (data as CallRecordingRow | null) ?? null;
+  return (data as CallLibraryRow | null) ?? null;
 }
 
 export function useCallRecording(id: string | undefined) {
@@ -182,17 +317,4 @@ export function useUpdateRoleMap(recordingId: string) {
           : "Couldn't save speaker labels",
       ),
   });
-}
-
-/** Distinct agents present in the library (for the agent filter). */
-export function useLibraryAgents(
-  data: CallLibraryData | undefined,
-): AgentName[] {
-  return useMemo(() => {
-    if (!data) return [];
-    const ids = Array.from(new Set(data.recordings.map((r) => r.agent_id)));
-    return ids
-      .map((id) => ({ id, name: data.agentNames[id] ?? "Unknown agent" }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [data]);
 }

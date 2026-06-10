@@ -17,3 +17,10 @@ export {
 } from "./lib/recording-status";
 export { formatCallDuration } from "./lib/format-call-duration";
 export * from "./types/kpi.types";
+
+// ─── Call Types (settings CRUD + upload dropdown) ────────────────────────────
+export { useCallTypes, useActiveCallTypes } from "./hooks/useCallTypes";
+export type {
+  CallTypeCreateForm,
+  CallTypeUpdateForm,
+} from "./hooks/useCallTypes";

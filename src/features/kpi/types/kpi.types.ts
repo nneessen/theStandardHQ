@@ -9,6 +9,10 @@
 
 import type { Database } from "@/types/database.types";
 
+// ─── Call Types ────────────────────────────────────────────────────────────
+
+export type CallType = Database["public"]["Tables"]["kpi_call_types"]["Row"];
+
 // ─── Table Row / Insert / Update aliases ───────────────────────────────────
 
 export type CallRecordingRow =

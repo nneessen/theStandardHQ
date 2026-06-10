@@ -5777,8 +5777,11 @@ export type Database = {
           analysis_model: string | null;
           analysis_status: string;
           analyzed_at: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
           call_at: string | null;
           call_direction: string;
+          call_type_id: string | null;
           caller_age: number | null;
           caller_age_band: string | null;
           caller_existing_coverage: string | null;
@@ -5828,8 +5831,11 @@ export type Database = {
           analysis_model?: string | null;
           analysis_status?: string;
           analyzed_at?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
           call_at?: string | null;
           call_direction?: string;
+          call_type_id?: string | null;
           caller_age?: number | null;
           caller_age_band?: string | null;
           caller_existing_coverage?: string | null;
@@ -5879,8 +5885,11 @@ export type Database = {
           analysis_model?: string | null;
           analysis_status?: string;
           analyzed_at?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
           call_at?: string | null;
           call_direction?: string;
+          call_type_id?: string | null;
           caller_age?: number | null;
           caller_age_band?: string | null;
           caller_existing_coverage?: string | null;
@@ -5925,6 +5934,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "kpi_call_recordings_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_call_recordings_call_type_id_fkey";
+            columns: ["call_type_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kpi_call_types: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          imo_id: string;
+          is_active: boolean;
+          name: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          imo_id: string;
+          is_active?: boolean;
+          name: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          imo_id?: string;
+          is_active?: boolean;
+          name?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_call_types_imo_id_fkey";
             columns: ["imo_id"];
             isOneToOne: false;
             referencedRelation: "imos";

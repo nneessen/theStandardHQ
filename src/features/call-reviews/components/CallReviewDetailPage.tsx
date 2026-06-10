@@ -5,13 +5,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Loader2,
-  RefreshCw,
-  ArrowLeftRight,
-  Save,
-} from "lucide-react";
+import { ArrowLeft, Loader2, ArrowLeftRight, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +35,7 @@ import { TranscriptPanel } from "./TranscriptPanel";
 import { CallMarkersPanel } from "./CallMarkersPanel";
 import { CallAnalysisPanel } from "./CallAnalysisPanel";
 import { CallScriptPanel } from "./CallScriptPanel";
+import { TranscriptionProgress } from "./TranscriptionProgress";
 
 const OUTCOME_LABEL = new Map<string, string>(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
@@ -153,10 +148,6 @@ export function CallReviewDetailPage({
     talkTotal > 0 && agentTalk != null
       ? Math.round((agentTalk / talkTotal) * 100)
       : null;
-  const transcribing =
-    recording.transcription_status === "pending" ||
-    recording.transcription_status === "processing";
-  const transcribeFailed = recording.transcription_status === "failed";
 
   return (
     <div className="max-w-6xl mx-auto px-3 py-4 space-y-4">
@@ -170,7 +161,8 @@ export function CallReviewDetailPage({
             <ArrowLeft className="h-3 w-3" /> Call Reviews
           </Link>
           <h1 className="text-lg font-semibold text-v2-ink truncate">
-            {recording.caller_name ||
+            {recording.call_type?.name ||
+              recording.caller_name ||
               recording.original_filename ||
               "Call recording"}
           </h1>
@@ -189,17 +181,6 @@ export function CallReviewDetailPage({
             {recording.caller_state && <span>· {recording.caller_state}</span>}
           </div>
         </div>
-        {transcribeFailed && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-[11px]"
-            onClick={() => retryMutation.mutate(recordingId)}
-            disabled={retryMutation.isPending}
-          >
-            <RefreshCw className="h-3 w-3 mr-1" /> Retry transcription
-          </Button>
-        )}
       </div>
 
       {/* Stat tiles */}
@@ -250,15 +231,11 @@ export function CallReviewDetailPage({
         onTimeUpdate={setCurrentTime}
       />
 
-      {transcribing && (
-        <div className="rounded-lg border border-v2-ring bg-v2-canvas/60 px-3 py-2 flex items-center gap-2">
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-v2-ink-subtle" />
-          <span className="text-[11px] text-v2-ink-muted">
-            Transcribing this call — the transcript and analysis appear
-            automatically when ready.
-          </span>
-        </div>
-      )}
+      <TranscriptionProgress
+        recording={recording}
+        onRetry={() => retryMutation.mutate(recordingId)}
+        retrying={retryMutation.isPending}
+      />
 
       {/* Body: tabs (left) + markers (right) */}
       <div className="grid lg:grid-cols-[1fr_340px] gap-4 items-start">

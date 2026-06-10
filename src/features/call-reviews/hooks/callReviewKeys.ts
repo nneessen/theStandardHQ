@@ -5,6 +5,10 @@ export const callReviewKeys = {
   all: ["call-reviews"] as const,
   library: (imoId: string) =>
     [...callReviewKeys.all, "library", imoId] as const,
+  libraryPaged: (imoId: string, filters: unknown) =>
+    [...callReviewKeys.all, "library", imoId, filters] as const,
+  imoAgents: (imoId: string) =>
+    [...callReviewKeys.all, "imo-agents", imoId] as const,
   recording: (id: string) => [...callReviewKeys.all, "recording", id] as const,
   signedUrl: (path: string) =>
     [...callReviewKeys.all, "signed-url", path] as const,

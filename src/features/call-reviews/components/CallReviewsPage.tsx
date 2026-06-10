@@ -1,14 +1,35 @@
 // src/features/call-reviews/components/CallReviewsPage.tsx
-// The Call Reviews library: every recording in the IMO (open training library),
-// searchable/filterable, plus an upload panel any agent can use. Clicking a row
-// opens the review screen. Reuses the kpi upload mutation + storage + status libs.
+// The Call Reviews library: a SERVER-SIDE paginated, server-filtered list of the
+// IMO's recordings (never loads the whole table), an upload panel (call-type +
+// validated audio), and per-row archive / delete. Clicking a row opens the
+// review screen. Reuses the kpi upload mutation + storage + status libs.
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Headphones, Upload, Search, Loader2, X, Check } from "lucide-react";
+import {
+  Headphones,
+  Upload,
+  Search,
+  Loader2,
+  X,
+  Check,
+  Archive,
+  ArchiveRestore,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useUploadRecording,
@@ -16,10 +37,21 @@ import {
   recordingStatusLabel,
   formatCallDuration,
   CALL_OUTCOME_OPTIONS,
+  useActiveCallTypes,
+  useKpiIdentity,
   type CallOutcome,
 } from "@/features/kpi";
-import { useCallLibrary, useLibraryAgents } from "../hooks/useCallLibrary";
+import {
+  useCallLibrary,
+  useImoAgents,
+  useArchiveRecording,
+  useDeleteRecording,
+  DEFAULT_LIBRARY_FILTERS,
+  type CallLibraryFilters,
+  type CallLibraryRow,
+} from "../hooks/useCallLibrary";
 import { callReviewKeys } from "../hooks/callReviewKeys";
+import { validateAudioFile, AUDIO_ACCEPT } from "../utils/audioUpload";
 
 const OUTCOME_LABEL = new Map<string, string>(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
@@ -35,28 +67,48 @@ const STATUS_CLASSES: Record<string, string> = {
   failed: "text-rose-700 border-rose-300",
 };
 
-export function CallReviewsPage() {
-  const { data, isLoading } = useCallLibrary();
-  const agents = useLibraryAgents(data);
-  const [search, setSearch] = useState("");
-  const [outcome, setOutcome] = useState<string>("all");
-  const [agentId, setAgentId] = useState<string>("all");
-  const [showUpload, setShowUpload] = useState(false);
+const ROW_GRID =
+  "grid grid-cols-[1fr_110px_84px_64px_84px_84px_72px] gap-2 items-center";
 
-  const recordings = useMemo(() => {
-    const all = data?.recordings ?? [];
-    const q = search.trim().toLowerCase();
-    return all.filter((r) => {
-      if (outcome !== "all" && r.outcome !== outcome) return false;
-      if (agentId !== "all" && r.agent_id !== agentId) return false;
-      if (q) {
-        const hay =
-          `${r.caller_name ?? ""} ${r.original_filename ?? ""} ${r.notes ?? ""} ${r.transcript_text ?? ""}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [data, search, outcome, agentId]);
+export function CallReviewsPage() {
+  const { imoId } = useKpiIdentity();
+  const [filters, setFilters] = useState<CallLibraryFilters>(
+    DEFAULT_LIBRARY_FILTERS,
+  );
+  const [searchInput, setSearchInput] = useState("");
+  const [showUpload, setShowUpload] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<CallLibraryRow | null>(null);
+
+  // Debounce the search box → one server query per pause, not per keystroke.
+  useEffect(() => {
+    const id = setTimeout(
+      () => setFilters((f) => ({ ...f, search: searchInput })),
+      350,
+    );
+    return () => clearTimeout(id);
+  }, [searchInput]);
+
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+  } = useCallLibrary(filters);
+  const { data: agentsData } = useImoAgents(imoId ?? undefined);
+  const { callTypes } = useActiveCallTypes(imoId ?? undefined);
+  const archiveMutation = useArchiveRecording();
+  const deleteMutation = useDeleteRecording();
+
+  const agentNames = agentsData?.names ?? {};
+  const agents = agentsData?.list ?? [];
+  const rows = data?.pages.flatMap((p) => p.rows) ?? [];
+
+  const setFilter = <K extends keyof CallLibraryFilters>(
+    key: K,
+    value: CallLibraryFilters[K],
+  ) => setFilters((f) => ({ ...f, [key]: value }));
 
   return (
     <div className="max-w-6xl mx-auto px-3 py-4 space-y-3">
@@ -80,22 +132,42 @@ export function CallReviewsPage() {
         </Button>
       </div>
 
-      {showUpload && <UploadPanel onDone={() => setShowUpload(false)} />}
+      {showUpload && (
+        <UploadPanel
+          callTypes={callTypes}
+          onDone={() => setShowUpload(false)}
+        />
+      )}
 
-      {/* Filters */}
+      {/* Filters (all server-side) */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
           <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search caller, file, notes, transcript…"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search caller, file, transcript…"
             className="h-8 text-xs pl-7"
           />
+          {isFetching && !isFetchingNextPage && (
+            <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-v2-ink-subtle" />
+          )}
         </div>
         <select
-          value={outcome}
-          onChange={(e) => setOutcome(e.target.value)}
+          value={filters.callTypeId}
+          onChange={(e) => setFilter("callTypeId", e.target.value)}
+          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+        >
+          <option value="all">All call types</option>
+          {callTypes.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={filters.outcome}
+          onChange={(e) => setFilter("outcome", e.target.value)}
           className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
         >
           <option value="all">All outcomes</option>
@@ -106,8 +178,8 @@ export function CallReviewsPage() {
           ))}
         </select>
         <select
-          value={agentId}
-          onChange={(e) => setAgentId(e.target.value)}
+          value={filters.agentId}
+          onChange={(e) => setFilter("agentId", e.target.value)}
           className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
         >
           <option value="all">All agents</option>
@@ -117,90 +189,217 @@ export function CallReviewsPage() {
             </option>
           ))}
         </select>
+        <Button
+          size="sm"
+          variant={filters.showArchived ? "default" : "outline"}
+          className="h-8 text-[11px]"
+          onClick={() => setFilter("showArchived", !filters.showArchived)}
+        >
+          <Archive className="h-3 w-3 mr-1" />
+          {filters.showArchived ? "Showing archived" : "Show archived"}
+        </Button>
       </div>
 
       {/* Library table */}
       <div className="rounded-xl border border-v2-ring bg-v2-card shadow-sm overflow-hidden">
-        <div className="grid grid-cols-[1fr_120px_90px_70px_90px_90px] gap-2 px-3 py-2 bg-v2-canvas/80 border-b border-v2-ring text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
+        <div
+          className={`${ROW_GRID} px-3 py-2 bg-v2-canvas/80 border-b border-v2-ring text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted`}
+        >
           <div>Call</div>
           <div>Agent</div>
           <div>Date</div>
           <div>Length</div>
           <div>Outcome</div>
           <div>Status</div>
+          <div className="text-right">Actions</div>
         </div>
         {isLoading ? (
           <div className="p-8 flex justify-center">
             <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
           </div>
-        ) : recordings.length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="p-8 text-center text-xs text-v2-ink-muted">
             No calls match. Upload a recording to start building the library.
           </div>
         ) : (
           <div className="divide-y divide-v2-ring/60">
-            {recordings.map((r) => {
+            {rows.map((r) => {
               const status = deriveRecordingStatus(r);
+              const archived = !!r.archived_at;
+              const title =
+                r.call_type?.name ||
+                r.caller_name ||
+                r.original_filename ||
+                "Call recording";
               return (
-                <Link
+                <div
                   key={r.id}
-                  to="/call-reviews/$recordingId"
-                  params={{ recordingId: r.id }}
-                  className="grid grid-cols-[1fr_120px_90px_70px_90px_90px] gap-2 px-3 py-2 items-center hover:bg-v2-canvas/70 text-xs"
+                  className={`${ROW_GRID} px-3 py-2 hover:bg-v2-canvas/70 text-xs group`}
                 >
-                  <div className="truncate text-v2-ink font-medium">
-                    {r.caller_name || r.original_filename || "Call recording"}
-                  </div>
-                  <div className="truncate text-v2-ink-muted text-[11px]">
-                    {data?.agentNames[r.agent_id] ?? "—"}
-                  </div>
-                  <div className="text-v2-ink-muted text-[11px] tabular-nums">
-                    {r.call_at ? new Date(r.call_at).toLocaleDateString() : "—"}
-                  </div>
-                  <div className="text-v2-ink-muted text-[11px] font-mono tabular-nums">
-                    {formatCallDuration(r.duration_seconds) ?? "—"}
-                  </div>
-                  <div>
-                    {r.outcome ? (
+                  <Link
+                    to="/call-reviews/$recordingId"
+                    params={{ recordingId: r.id }}
+                    className="contents"
+                  >
+                    <div className="truncate text-v2-ink font-medium flex items-center gap-1.5">
+                      {archived && (
+                        <Archive className="h-3 w-3 text-v2-ink-subtle shrink-0" />
+                      )}
+                      <span className="truncate">{title}</span>
+                    </div>
+                    <div className="truncate text-v2-ink-muted text-[11px]">
+                      {agentNames[r.agent_id] ?? "—"}
+                    </div>
+                    <div className="text-v2-ink-muted text-[11px] tabular-nums">
+                      {r.call_at
+                        ? new Date(r.call_at).toLocaleDateString()
+                        : "—"}
+                    </div>
+                    <div className="text-v2-ink-muted text-[11px] font-mono tabular-nums">
+                      {formatCallDuration(r.duration_seconds) ?? "—"}
+                    </div>
+                    <div>
+                      {r.outcome ? (
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] px-1 py-0 ${r.outcome === "sold" ? "text-emerald-600 border-emerald-300" : ""}`}
+                        >
+                          {OUTCOME_LABEL.get(r.outcome) ?? r.outcome}
+                        </Badge>
+                      ) : (
+                        <span className="text-v2-ink-subtle text-[11px]">
+                          —
+                        </span>
+                      )}
+                    </div>
+                    <div>
                       <Badge
                         variant="outline"
-                        className={`text-[9px] px-1 py-0 ${r.outcome === "sold" ? "text-emerald-600 border-emerald-300" : ""}`}
+                        className={`text-[9px] px-1 py-0 ${STATUS_CLASSES[status] ?? ""}`}
                       >
-                        {OUTCOME_LABEL.get(r.outcome) ?? r.outcome}
+                        {recordingStatusLabel(status)}
                       </Badge>
-                    ) : (
-                      <span className="text-v2-ink-subtle text-[11px]">—</span>
-                    )}
-                  </div>
-                  <div>
-                    <Badge
-                      variant="outline"
-                      className={`text-[9px] px-1 py-0 ${STATUS_CLASSES[status] ?? ""}`}
+                    </div>
+                  </Link>
+                  <div className="flex items-center justify-end gap-0.5">
+                    <button
+                      type="button"
+                      title={archived ? "Restore" : "Archive"}
+                      onClick={() =>
+                        archiveMutation.mutate({ id: r.id, archive: !archived })
+                      }
+                      disabled={archiveMutation.isPending}
+                      className="p-1 rounded text-v2-ink-subtle hover:text-v2-ink hover:bg-v2-ring/40"
                     >
-                      {recordingStatusLabel(status)}
-                    </Badge>
+                      {archived ? (
+                        <ArchiveRestore className="h-3.5 w-3.5" />
+                      ) : (
+                        <Archive className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete"
+                      onClick={() => setDeleteTarget(r)}
+                      className="p-1 rounded text-v2-ink-subtle hover:text-rose-600 hover:bg-rose-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
         )}
+
+        {hasNextPage && (
+          <div className="p-2 border-t border-v2-ring/60 flex justify-center">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px]"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : null}
+              Load more
+            </Button>
+          </div>
+        )}
       </div>
+      {rows.length > 0 && (
+        <p className="text-[10px] text-v2-ink-subtle text-center">
+          Showing {rows.length} call{rows.length === 1 ? "" : "s"}
+          {hasNextPage ? " — load more for older calls" : ""}
+        </p>
+      )}
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this call recording?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the recording and its audio file for the
+              whole team. This can’t be undone. To keep it but hide it from the
+              library, archive it instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-600 hover:bg-rose-700"
+              onClick={() => {
+                if (deleteTarget)
+                  deleteMutation.mutate({
+                    id: deleteTarget.id,
+                    storage_path: deleteTarget.storage_path,
+                  });
+                setDeleteTarget(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function UploadPanel({ onDone }: { onDone: () => void }) {
+interface UploadPanelProps {
+  callTypes: { id: string; name: string }[];
+  onDone: () => void;
+}
+
+function UploadPanel({ callTypes, onDone }: UploadPanelProps) {
   const queryClient = useQueryClient();
   const uploadMutation = useUploadRecording();
   const [file, setFile] = useState<File | null>(null);
-  const [callerName, setCallerName] = useState("");
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [callTypeId, setCallTypeId] = useState<string>("");
   const [outcome, setOutcome] = useState<CallOutcome | "">("");
   const [callAt, setCallAt] = useState("");
   const [premium, setPremium] = useState("");
   const [consent, setConsent] = useState(false);
 
-  const canSubmit = !!file && consent && !uploadMutation.isPending;
+  const onPickFile = (f: File | null) => {
+    if (!f) {
+      setFile(null);
+      setFileError(null);
+      return;
+    }
+    const err = validateAudioFile(f);
+    setFileError(err);
+    setFile(err ? null : f);
+  };
+
+  const canSubmit =
+    !!file && !fileError && consent && !uploadMutation.isPending;
 
   const submit = () => {
     if (!file) return;
@@ -208,12 +407,10 @@ function UploadPanel({ onDone }: { onDone: () => void }) {
       {
         file,
         meta: {
-          caller_name: callerName.trim() || null,
+          call_type_id: callTypeId || null,
           outcome: outcome || null,
           call_at: callAt ? new Date(callAt).toISOString() : null,
           premium_amount: premium ? Number(premium) : null,
-          // Record the consent acknowledgement alongside the recording (open
-          // IMO-wide library exposes client PII — captured for compliance).
           metadata: {
             consent_ack: true,
             consent_ack_at: new Date().toISOString(),
@@ -247,18 +444,25 @@ function UploadPanel({ onDone }: { onDone: () => void }) {
 
       <input
         type="file"
-        accept="audio/*,video/mp4"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        accept={AUDIO_ACCEPT}
+        onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
         className="block w-full text-xs text-v2-ink-muted file:mr-2 file:rounded file:border file:border-v2-ring file:bg-v2-card file:px-2 file:py-1 file:text-[11px]"
       />
+      {fileError && <p className="text-[11px] text-rose-600">{fileError}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Input
-          value={callerName}
-          onChange={(e) => setCallerName(e.target.value)}
-          placeholder="Caller name (optional)"
-          className="h-7 text-xs"
-        />
+        <select
+          value={callTypeId}
+          onChange={(e) => setCallTypeId(e.target.value)}
+          className="h-7 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+        >
+          <option value="">Call type (angle)…</option>
+          {callTypes.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
         <select
           value={outcome}
           onChange={(e) => setOutcome(e.target.value as CallOutcome | "")}
@@ -285,6 +489,13 @@ function UploadPanel({ onDone }: { onDone: () => void }) {
           className="h-7 text-xs"
         />
       </div>
+
+      {callTypes.length === 0 && (
+        <p className="text-[10px] text-amber-600">
+          No call types defined yet. A super-admin can add them in Settings →
+          Call types.
+        </p>
+      )}
 
       <label className="flex items-start gap-2 text-[11px] text-v2-ink-muted">
         <input

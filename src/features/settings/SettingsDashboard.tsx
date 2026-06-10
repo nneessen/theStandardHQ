@@ -20,6 +20,7 @@ import {
   Link2,
   Globe,
   Scale,
+  PhoneCall,
 } from "lucide-react";
 import { UserProfile } from "./components/UserProfile";
 import { LegalSettings } from "./legal/LegalSettings";
@@ -35,6 +36,7 @@ import { NotificationsSettingsPage } from "./notifications";
 import { IntegrationsTab } from "./integrations";
 import { AuditTrailPage } from "@/features/audit";
 import { LandingPageSettingsTab } from "./landing-page";
+import { CallTypesManagement } from "./call-types/CallTypesManagement";
 import {
   Select,
   SelectContent,
@@ -220,6 +222,15 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
             icon: Percent,
             visible: canManageCarriers,
             Component: CommissionRatesManagement,
+          },
+          {
+            id: "call-types",
+            label: "Call types",
+            description:
+              "Super-admin only — manage call type categories for recording uploads.",
+            icon: PhoneCall,
+            visible: canManageImos,
+            Component: CallTypesManagement,
           },
         ],
       },
