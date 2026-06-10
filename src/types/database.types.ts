@@ -2044,6 +2044,129 @@ export type Database = {
           },
         ];
       };
+      carrier_sponsorship_requests: {
+        Row: {
+          alternate_sponsor_id: string;
+          alternate_sponsor_upline_id: string | null;
+          approved_at: string | null;
+          carrier_id: string;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          normal_upline_id: string | null;
+          overall_status: string;
+          override_recipient_id: string | null;
+          reason: string | null;
+          requesting_agent_id: string;
+          sponsor_approval_status: string;
+          sponsor_approved_at: string | null;
+          sponsor_approved_by: string | null;
+          sponsor_upline_approval_status: string;
+          sponsor_upline_approved_at: string | null;
+          sponsor_upline_approved_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          alternate_sponsor_id: string;
+          alternate_sponsor_upline_id?: string | null;
+          approved_at?: string | null;
+          carrier_id: string;
+          created_at?: string;
+          id?: string;
+          imo_id: string;
+          normal_upline_id?: string | null;
+          overall_status?: string;
+          override_recipient_id?: string | null;
+          reason?: string | null;
+          requesting_agent_id: string;
+          sponsor_approval_status?: string;
+          sponsor_approved_at?: string | null;
+          sponsor_approved_by?: string | null;
+          sponsor_upline_approval_status?: string;
+          sponsor_upline_approved_at?: string | null;
+          sponsor_upline_approved_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          alternate_sponsor_id?: string;
+          alternate_sponsor_upline_id?: string | null;
+          approved_at?: string | null;
+          carrier_id?: string;
+          created_at?: string;
+          id?: string;
+          imo_id?: string;
+          normal_upline_id?: string | null;
+          overall_status?: string;
+          override_recipient_id?: string | null;
+          reason?: string | null;
+          requesting_agent_id?: string;
+          sponsor_approval_status?: string;
+          sponsor_approved_at?: string | null;
+          sponsor_approved_by?: string | null;
+          sponsor_upline_approval_status?: string;
+          sponsor_upline_approved_at?: string | null;
+          sponsor_upline_approved_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "carrier_sponsorship_requests_alternate_sponsor_id_fkey";
+            columns: ["alternate_sponsor_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_alternate_sponsor_id_fkey";
+            columns: ["alternate_sponsor_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_alternate_sponsor_id_fkey";
+            columns: ["alternate_sponsor_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_carrier_id_fkey";
+            columns: ["carrier_id"];
+            isOneToOne: false;
+            referencedRelation: "carriers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_requesting_agent_id_fkey";
+            columns: ["requesting_agent_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_requesting_agent_id_fkey";
+            columns: ["requesting_agent_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_sponsorship_requests_requesting_agent_id_fkey";
+            columns: ["requesting_agent_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       carrier_underwriting_criteria: {
         Row: {
           carrier_id: string;
@@ -5933,17 +6056,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "kpi_call_recordings_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-          {
             foreignKeyName: "kpi_call_recordings_call_type_id_fkey";
             columns: ["call_type_id"];
             isOneToOne: false;
             referencedRelation: "kpi_call_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_call_recordings_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
             referencedColumns: ["id"];
           },
         ];
@@ -16626,6 +16749,36 @@ export type Database = {
         };
         Returns: undefined;
       };
+      approve_sponsorship_request: {
+        Args: { p_approve: boolean; p_request_id: string };
+        Returns: {
+          alternate_sponsor_id: string;
+          alternate_sponsor_upline_id: string | null;
+          approved_at: string | null;
+          carrier_id: string;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          normal_upline_id: string | null;
+          overall_status: string;
+          override_recipient_id: string | null;
+          reason: string | null;
+          requesting_agent_id: string;
+          sponsor_approval_status: string;
+          sponsor_approved_at: string | null;
+          sponsor_approved_by: string | null;
+          sponsor_upline_approval_status: string;
+          sponsor_upline_approved_at: string | null;
+          sponsor_upline_approved_by: string | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "carrier_sponsorship_requests";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       approve_underwriting_rule_set: {
         Args: { p_notes?: string; p_rule_set_id: string };
         Returns: Json;
@@ -16762,6 +16915,36 @@ export type Database = {
       cancel_recruit_invitation: {
         Args: { p_invitation_id: string };
         Returns: Json;
+      };
+      cancel_sponsorship_request: {
+        Args: { p_request_id: string };
+        Returns: {
+          alternate_sponsor_id: string;
+          alternate_sponsor_upline_id: string | null;
+          approved_at: string | null;
+          carrier_id: string;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          normal_upline_id: string | null;
+          overall_status: string;
+          override_recipient_id: string | null;
+          reason: string | null;
+          requesting_agent_id: string;
+          sponsor_approval_status: string;
+          sponsor_approved_at: string | null;
+          sponsor_approved_by: string | null;
+          sponsor_upline_approval_status: string;
+          sponsor_upline_approved_at: string | null;
+          sponsor_upline_approved_by: string | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "carrier_sponsorship_requests";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       cascade_agency_assignment: {
         Args: { p_agency_id: string; p_imo_id: string; p_owner_id: string };
@@ -17093,6 +17276,40 @@ export type Database = {
           p_schedule_name: string;
         };
         Returns: string;
+      };
+      create_sponsorship_request: {
+        Args: {
+          p_alternate_sponsor_id: string;
+          p_carrier_id: string;
+          p_reason?: string;
+        };
+        Returns: {
+          alternate_sponsor_id: string;
+          alternate_sponsor_upline_id: string | null;
+          approved_at: string | null;
+          carrier_id: string;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          normal_upline_id: string | null;
+          overall_status: string;
+          override_recipient_id: string | null;
+          reason: string | null;
+          requesting_agent_id: string;
+          sponsor_approval_status: string;
+          sponsor_approved_at: string | null;
+          sponsor_approved_by: string | null;
+          sponsor_upline_approval_status: string;
+          sponsor_upline_approved_at: string | null;
+          sponsor_upline_approved_by: string | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "carrier_sponsorship_requests";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       create_workflow_run: {
         Args: { context_param?: Json; workflow_id_param: string };
@@ -17785,6 +18002,14 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_eligible_sponsors: {
+        Args: { p_carrier_id: string };
+        Returns: {
+          agent_id: string;
+          agent_name: string;
+          contract_level: number;
+        }[];
+      };
       get_imo_admin: { Args: { p_imo_id: string }; Returns: string };
       get_imo_contract_stats: {
         Args: { p_imo_id: string };
@@ -18277,6 +18502,22 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      get_my_downline_contracts: {
+        Args: never;
+        Returns: {
+          agent_id: string;
+          agent_name: string;
+          approved_date: string;
+          carrier_id: string;
+          carrier_name: string;
+          contract_level: number;
+          requested_date: string;
+          status: string;
+          submitted_date: string;
+          updated_at: string;
+          writing_number: string;
+        }[];
+      };
       get_my_imo_id: { Args: never; Returns: string };
       get_my_notification_preferences: {
         Args: never;
@@ -18333,6 +18574,40 @@ export type Database = {
           total_deliveries: number;
         }[];
       };
+      get_my_sponsorship_inbox: {
+        Args: never;
+        Returns: {
+          alternate_sponsor_id: string;
+          carrier_id: string;
+          carrier_name: string;
+          created_at: string;
+          id: string;
+          my_step: string;
+          overall_status: string;
+          reason: string;
+          requester_name: string;
+          requesting_agent_id: string;
+          sponsor_approval_status: string;
+          sponsor_name: string;
+          sponsor_upline_approval_status: string;
+        }[];
+      };
+      get_my_sponsorships: {
+        Args: never;
+        Returns: {
+          alternate_sponsor_id: string;
+          approved_at: string;
+          carrier_id: string;
+          carrier_name: string;
+          created_at: string;
+          id: string;
+          overall_status: string;
+          reason: string;
+          sponsor_approval_status: string;
+          sponsor_name: string;
+          sponsor_upline_approval_status: string;
+        }[];
+      };
       get_my_team_leaderboard: {
         Args: { p_end_date?: string; p_limit?: number; p_start_date?: string };
         Returns: {
@@ -18342,6 +18617,15 @@ export type Database = {
           member_name: string;
           policy_count: number;
           rank_overall: number;
+        }[];
+      };
+      get_newly_eligible_carriers: {
+        Args: never;
+        Returns: {
+          approved_date: string;
+          carrier_id: string;
+          carrier_name: string;
+          upline_id: string;
         }[];
       };
       get_or_create_usage_tracking: {
@@ -19834,6 +20118,34 @@ export type Database = {
           last_name: string;
           roles: string[];
         }[];
+      };
+      set_carrier_contract_status: {
+        Args: {
+          p_agent_id: string;
+          p_carrier_id: string;
+          p_status: string;
+          p_writing_number?: string;
+        };
+        Returns: {
+          agent_id: string;
+          approved_date: string | null;
+          carrier_id: string;
+          created_at: string | null;
+          created_by: string | null;
+          id: string;
+          notes: string | null;
+          requested_date: string | null;
+          status: string;
+          submitted_date: string | null;
+          updated_at: string | null;
+          writing_number: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "carrier_contracts";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       set_default_decision_tree: {
         Args: { p_imo_id: string; p_tree_id: string };
