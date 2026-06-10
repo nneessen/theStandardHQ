@@ -26,6 +26,13 @@ interface PolicyFormPolicySectionProps {
   policyId?: string;
   annualPremium: number;
   expectedCommission: number;
+  /**
+   * The agent's contract level from their profile, shown read-only for
+   * confirmation. `null` when no level is configured on the profile.
+   */
+  contractLevel: number | null;
+  /** True while the contract level is still being fetched (avoids a "Not set" flash). */
+  contractLevelLoading?: boolean;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, value: string) => void;
 }
@@ -38,6 +45,8 @@ export const PolicyFormPolicySection: React.FC<
   policyId,
   annualPremium,
   expectedCommission,
+  contractLevel,
+  contractLevelLoading = false,
   onInputChange,
   onSelectChange,
 }) => {
@@ -301,14 +310,38 @@ export const PolicyFormPolicySection: React.FC<
               </p>
             </div>
             <div className="px-3 py-2.5 space-y-2">
-              {/* Manual commission entry — agent enters their own comp. */}
+              {/* Read-only confirmation of the agent's stored contract level.
+                  It is shown so the agent can verify it's correct; it is NOT
+                  multiplied into the rate — the Product Comp % they enter is
+                  the rate the advance is calculated from. */}
+              <div className="flex items-center justify-between rounded-md border border-border/60 dark:border-border/50 bg-background/70 dark:bg-card/40 px-2.5 py-1.5">
+                <span className="text-[10px] text-muted-foreground">
+                  Your contract level
+                </span>
+                {contractLevelLoading ? (
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    …
+                  </span>
+                ) : contractLevel != null ? (
+                  <span className="text-[11px] font-semibold text-foreground font-mono">
+                    {contractLevel}
+                  </span>
+                ) : (
+                  <span className="text-[10px] italic text-muted-foreground">
+                    Not set — add it in Settings
+                  </span>
+                )}
+              </div>
+
+              {/* Manual commission entry — the agent enters the PRODUCT comp,
+                  which is the rate the advance is calculated from. */}
               <div className="grid grid-cols-2 gap-2 pb-1">
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="commissionPercentage"
                     className="text-[11px] text-muted-foreground"
                   >
-                    Your Commission %
+                    Product Comp %
                   </Label>
                   <Input
                     id="commissionPercentage"
@@ -318,7 +351,7 @@ export const PolicyFormPolicySection: React.FC<
                     value={formData.commissionPercentage || ""}
                     onChange={onInputChange}
                     className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.commissionPercentage ? "border-destructive" : "border-input"}`}
-                    placeholder="85"
+                    placeholder="100"
                     step="0.01"
                     min="0"
                     max="200"
@@ -353,8 +386,10 @@ export const PolicyFormPolicySection: React.FC<
                 )}
               </div>
               <p className="text-[10px] text-muted-foreground -mt-1">
-                Enter your own comp — the advance is calculated from it. Or type
-                a flat advance to override.
+                Enter the product comp % — the advance is calculated from it.
+                Your contract level above is already saved in your profile, so
+                you don't need to re-enter it.
+                {!policyId && " Or type a flat advance to override."}
               </p>
               <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-border dark:border-border/40">
                 <span className="text-muted-foreground">Annual Premium</span>

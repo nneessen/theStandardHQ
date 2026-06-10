@@ -174,8 +174,8 @@ export function usePolicyCommission({
     } else if (productId && !compGuideData && !compGuideLoading) {
       // No comp_guide entry (e.g. Epic Life, which has no comp guides yet).
       // Intentionally do NOT fall back to the product's stored percentage —
-      // that value is carried over from FFG and is not the agent's own comp.
-      // Leave the field blank so the agent enters their own commission manually.
+      // that value is carried over from FFG and is not this product's comp.
+      // Leave the field blank so the agent enters the product comp manually.
       setCommissionPercentage(0);
     }
   }, [
@@ -195,19 +195,39 @@ export function usePolicyCommission({
   };
 }
 
+export interface UserContractLevel {
+  /** Resolved contract level — falls back to `fallbackLevel` when unset. */
+  level: number;
+  /** True only when an explicit contract level is stored on the profile. */
+  isConfigured: boolean;
+  /** True while the profile lookup is still in flight (first paint). */
+  isLoading: boolean;
+}
+
 /**
- * Hook to fetch user's contract level from the database
+ * Hook to fetch the user's contract level from the database.
+ *
+ * Returns the resolved `level` (used elsewhere for comp_guide lookups), an
+ * `isConfigured` flag so the UI can distinguish a real level from the fallback
+ * default (it shows "Not set" rather than a misleading "100" when the profile
+ * has none), and `isLoading` so the UI can avoid flashing "Not set" before the
+ * fetch resolves for an agent who actually has a level.
  */
 export function useUserContractLevel(
   userId: string | undefined,
   fallbackLevel: number = 100,
-): number {
+): UserContractLevel {
   const [contractLevel, setContractLevel] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(!!userId);
 
   useEffect(() => {
     const fetchContractLevel = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
 
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("user_profiles")
         .select("contract_level")
@@ -220,16 +240,22 @@ export function useUserContractLevel(
           error,
         );
         // Fall through to use fallback level
+        setIsLoading(false);
         return;
       }
 
       if (data?.contract_level) {
         setContractLevel(data.contract_level);
       }
+      setIsLoading(false);
     };
 
     fetchContractLevel();
   }, [userId]);
 
-  return contractLevel ?? fallbackLevel;
+  return {
+    level: contractLevel ?? fallbackLevel,
+    isConfigured: contractLevel !== null,
+    isLoading,
+  };
 }

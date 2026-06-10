@@ -244,7 +244,7 @@ describe("validatePolicyForm", () => {
       products,
     );
     expect(errors.commissionPercentage).toBe(
-      "Commission must be between 0-200%",
+      "Product comp must be between 0-200%",
     );
   });
 
@@ -264,7 +264,7 @@ describe("validatePolicyForm", () => {
       products,
     );
     expect(errors.commissionPercentage).toBe(
-      "Commission must be between 0-200%",
+      "Product comp must be between 0-200%",
     );
   });
 

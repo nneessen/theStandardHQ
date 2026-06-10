@@ -33,6 +33,7 @@ function renderSection(
     form: Partial<NewPolicyForm>;
     policyId?: string;
     expectedCommission: number;
+    contractLevel: number | null;
   }> = {},
 ) {
   const form = { ...baseForm, ...(overrides.form ?? {}) };
@@ -44,6 +45,9 @@ function renderSection(
       policyId={overrides.policyId}
       annualPremium={form.annualPremium ?? 0}
       expectedCommission={overrides.expectedCommission ?? 1912.5}
+      contractLevel={
+        overrides.contractLevel === undefined ? 110 : overrides.contractLevel
+      }
       onInputChange={onInputChange}
       onSelectChange={vi.fn()}
     />,
@@ -52,17 +56,26 @@ function renderSection(
 }
 
 describe("PolicyFormPolicySection — manual commission entry", () => {
-  it("renders an editable 'Your Commission %' field bound to the form", () => {
+  it("renders an editable 'Product Comp %' field bound to the form", () => {
     const { onInputChange } = renderSection();
-    const input = screen.getByLabelText(
-      "Your Commission %",
-    ) as HTMLInputElement;
+    const input = screen.getByLabelText("Product Comp %") as HTMLInputElement;
     expect(input).toBeTruthy();
     expect(input.value).toBe("85");
     fireEvent.change(input, {
       target: { value: "70", name: "commissionPercentage" },
     });
     expect(onInputChange).toHaveBeenCalled();
+  });
+
+  it("shows the agent's stored contract level read-only for confirmation", () => {
+    renderSection({ contractLevel: 110 });
+    expect(screen.getByText("Your contract level")).toBeTruthy();
+    expect(screen.getByText("110")).toBeTruthy();
+  });
+
+  it("shows 'Not set' when no contract level is configured", () => {
+    renderSection({ contractLevel: null });
+    expect(screen.getByText(/Not set/)).toBeTruthy();
   });
 
   it("shows the flat-$ advance override for NEW policies", () => {

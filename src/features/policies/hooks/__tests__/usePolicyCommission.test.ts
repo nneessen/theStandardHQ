@@ -301,19 +301,22 @@ describe("useUserContractLevel", () => {
     vi.clearAllMocks();
   });
 
-  it("returns fallback when userId is undefined", () => {
+  it("returns fallback (unconfigured, not loading) when userId is undefined", () => {
     const { result } = renderHook(() => useUserContractLevel(undefined, 100));
 
-    expect(result.current).toBe(100);
+    expect(result.current.level).toBe(100);
+    expect(result.current.isConfigured).toBe(false);
+    expect(result.current.isLoading).toBe(false);
   });
 
   it("returns custom fallback when specified", () => {
     const { result } = renderHook(() => useUserContractLevel(undefined, 75));
 
-    expect(result.current).toBe(75);
+    expect(result.current.level).toBe(75);
+    expect(result.current.isConfigured).toBe(false);
   });
 
-  it("fetches contract level from database", async () => {
+  it("fetches contract level from database and marks it configured", async () => {
     mockSingle.mockResolvedValue({
       data: { contract_level: 85 },
       error: null,
@@ -322,11 +325,13 @@ describe("useUserContractLevel", () => {
     const { result } = renderHook(() => useUserContractLevel("user-123", 100));
 
     await waitFor(() => {
-      expect(result.current).toBe(85);
+      expect(result.current.level).toBe(85);
     });
+    expect(result.current.isConfigured).toBe(true);
+    expect(result.current.isLoading).toBe(false);
   });
 
-  it("returns fallback on database error", async () => {
+  it("returns fallback (unconfigured) on database error", async () => {
     mockSingle.mockResolvedValue({
       data: null,
       error: { message: "Not found" },
@@ -334,7 +339,8 @@ describe("useUserContractLevel", () => {
 
     const { result } = renderHook(() => useUserContractLevel("user-123", 100));
 
-    // Should remain at fallback
-    expect(result.current).toBe(100);
+    // Should remain at fallback and stay unconfigured
+    expect(result.current.level).toBe(100);
+    expect(result.current.isConfigured).toBe(false);
   });
 });

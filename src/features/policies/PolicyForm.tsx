@@ -70,10 +70,11 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   }, [isSubmitting, onSubmittingChange]);
   const { data: carriers = [] } = useCarriers();
 
-  const userContractLevel = useUserContractLevel(
-    user?.id,
-    user?.contract_level || 100,
-  );
+  const {
+    level: userContractLevel,
+    isConfigured: contractLevelConfigured,
+    isLoading: contractLevelLoading,
+  } = useUserContractLevel(user?.id, user?.contract_level || 100);
 
   // Track carrierId separately for the products query.
   // For edit mode: initialized from policy so products load immediately.
@@ -278,7 +279,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   );
   // Manual commission entry: a hand-entered flat advance (if any) wins over the
   // percentage-derived figure; otherwise compute the 9-month advance from the
-  // agent's own comp %.
+  // product comp % the agent entered.
   const expectedCommission =
     formData.manualAdvanceAmount && formData.manualAdvanceAmount > 0
       ? formData.manualAdvanceAmount
@@ -326,6 +327,8 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
             policyId={policyId}
             annualPremium={annualPremium}
             expectedCommission={expectedCommission}
+            contractLevel={contractLevelConfigured ? userContractLevel : null}
+            contractLevelLoading={contractLevelLoading}
             onInputChange={handleInputChange}
             onSelectChange={handleSelectChange}
           />

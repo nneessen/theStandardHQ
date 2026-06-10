@@ -167,13 +167,13 @@ export function validatePolicyForm(
     newErrors.premium = "Premium must be greater than $0";
   }
 
-  // Commission is entered manually and may be left blank (0) to record a $0
-  // advance now and fill it in later. Only reject negatives / out-of-range.
+  // The product comp is entered manually and may be left blank (0) to record a
+  // $0 advance now and fill it in later. Only reject negatives / out-of-range.
   if (
     formData.commissionPercentage < 0 ||
     formData.commissionPercentage > 200
   ) {
-    newErrors.commissionPercentage = "Commission must be between 0-200%";
+    newErrors.commissionPercentage = "Product comp must be between 0-200%";
   }
 
   return newErrors;
