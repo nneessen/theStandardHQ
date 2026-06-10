@@ -1,10 +1,10 @@
 // src/features/contracting/ContractingPage.tsx
-// Main page component for Contracting Hub
+// Entry for the /contracting route — the Contracting Hub (Concept C).
 
-import { ContractingDashboard } from "./components/ContractingDashboard";
+import { ContractingHubPage } from "./ContractingHubPage";
 
-export function ContractingPage() {
-  return <ContractingDashboard />;
+export function ContractingPage({ initialTab }: { initialTab?: string }) {
+  return <ContractingHubPage initialTab={initialTab} />;
 }
 
 export default ContractingPage;

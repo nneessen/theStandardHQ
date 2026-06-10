@@ -15,7 +15,10 @@ export type NotificationType =
   | "phase_advanced"
   | "checklist_item_completed"
   | "email_received"
-  | "pipeline_automation";
+  | "pipeline_automation"
+  | "carrier_eligible"
+  | "sponsorship_request"
+  | "sponsorship_decision";
 
 export interface Notification {
   id: string;
@@ -77,6 +80,14 @@ export interface NotificationMetadata {
   // For email notifications
   email_id?: string;
   email_subject?: string;
+
+  // For contracting hub (carrier_eligible / sponsorship_request / sponsorship_decision)
+  carrier_id?: string;
+  carrier_name?: string;
+  upline_id?: string;
+  upline_name?: string;
+  sponsorship_id?: string;
+  decision?: "approved" | "denied";
 
   // Navigation
   link?: string; // Where to navigate when clicked

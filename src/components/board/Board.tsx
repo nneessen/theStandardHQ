@@ -56,6 +56,10 @@ export const Board = React.forwardRef<HTMLDivElement, BoardProps>(
         borderRadius: 12,
         padding: pad,
         boxShadow: T.panelShadow,
+        // Allow the card to shrink within a grid/flex track and never spill
+        // past its column on narrow screens.
+        minWidth: 0,
+        maxWidth: "100%",
         ...style,
       }}
       {...rest}

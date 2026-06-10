@@ -26,6 +26,7 @@ import {
   PhoneIncoming,
   Sparkles,
   IdCard,
+  FileCheck,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -105,6 +106,15 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         href: "/hierarchy",
         permission: "nav.team_dashboard",
         subscriptionFeature: "hierarchy",
+      },
+      {
+        icon: FileCheck,
+        label: "Contracting",
+        href: "/contracting",
+        // Open to every approved (non-recruit) agent: track your own carrier
+        // contracting + eligibility alerts and file different-upline requests;
+        // uplines manage their downline. (Route guard handles noRecruits.)
+        public: true,
       },
       {
         icon: IdCard,

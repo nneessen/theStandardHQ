@@ -828,17 +828,28 @@ const trainerDashboardRoute = createRoute({
   ),
 });
 
-// Contracting route - for trainers, contracting managers, and admins
-// Staff have IMO-wide contract management access
+// Contracting Hub - open to all approved (non-recruit) agents. Agents track their own
+// contracting + eligibility alerts and file different-upline requests; uplines manage
+// their downline. Tabs: mine | downline. (Sponsorship approvals live in the always-on
+// Action Center, shown on both tabs — legacy ?tab=approvals deep-links resolve to mine.)
 const contractingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "contracting",
-  component: () => (
-    <RouteGuard permission="nav.contracting_hub" noRecruits allowPending>
-      <ContractingPage />
-    </RouteGuard>
-  ),
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => {
+    const tab = search.tab;
+    return tab === "mine" || tab === "downline" ? { tab } : {};
+  },
+  component: ContractingRouteComponent,
 });
+
+function ContractingRouteComponent() {
+  const { tab } = contractingRoute.useSearch();
+  return (
+    <RouteGuard noRecruits>
+      <ContractingPage initialTab={tab} />
+    </RouteGuard>
+  );
+}
 
 // Messages route - Communications Hub, requires email subscription feature
 const messagesRoute = createRoute({

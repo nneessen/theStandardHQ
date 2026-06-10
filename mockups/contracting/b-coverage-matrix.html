@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept B · Coverage Matrix — Contracting</title>
+<style>
+  :root{--bg:#f1f5f9;--panel:#fff;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--muted:#64748b;--faint:#94a3b8;--indigo:#4f46e5;--indigo-soft:#eef2ff}
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  .switcher{display:flex;gap:6px;align-items:center;background:#0f172a;padding:7px 14px;font-size:12px;position:sticky;top:0;z-index:40}
+  .switcher .lbl{color:#94a3b8;margin-right:4px}
+  .switcher a{color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;border:1px solid transparent}
+  .switcher a:hover{background:#1e293b}
+  .switcher a.active{background:var(--indigo);color:#fff}
+  .switcher .home{margin-left:auto;color:#94a3b8}
+  .appbar{background:#fff;border-bottom:1px solid var(--border);padding:0 18px;display:flex;align-items:center;gap:18px}
+  .appbar h1{font-size:15px;margin:0;padding:12px 0}
+  .tabs{display:flex;gap:2px;margin-left:8px}
+  .tabs button{border:0;background:transparent;padding:14px 14px;font-size:13px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+  .tabs button.on{color:var(--indigo);border-bottom-color:var(--indigo);font-weight:600}
+  .tabs .badge{background:#e0e7ff;color:#4338ca;border-radius:999px;font-size:11px;font-weight:700;padding:0 7px;margin-left:5px}
+  .page{padding:14px 18px}
+  .strip{display:flex;align-items:center;gap:10px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:9px 14px;margin-bottom:12px;font-size:13px;color:#4c1d95}
+  .strip b{color:#5b21b6}
+  .strip .right{margin-left:auto}
+  .minibtn{border:1px solid #c4b5fd;background:#fff;color:#6d28d9;border-radius:7px;padding:4px 11px;font-size:12px;font-weight:600;cursor:pointer}
+  .filters{display:flex;gap:8px;align-items:center;margin-bottom:10px;font-size:12.5px;color:var(--muted)}
+  .filters select{border:1px solid var(--border2);border-radius:7px;padding:5px 8px;font-size:12.5px;background:#fff;color:#334155}
+  .filters .right{margin-left:auto}
+  .ghostbtn{border:1px solid var(--border2);background:#fff;border-radius:7px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:#334155}
+  /* matrix */
+  .matrixwrap{overflow:auto;border:1px solid var(--border);border-radius:10px;background:#fff;position:relative}
+  table.matrix{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+  table.matrix th,table.matrix td{padding:0;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+  table.matrix thead th{position:sticky;top:0;background:#f8fafc;z-index:3;text-align:center;padding:7px 8px;font-weight:600;color:#334155;white-space:nowrap}
+  table.matrix thead th .agg{display:block;font-size:11px;color:var(--faint);font-weight:700;margin-top:2px}
+  .stick{position:sticky;left:0;background:#fff;z-index:2;text-align:left;padding:8px 12px!important;min-width:190px;border-right:1px solid var(--border2)!important}
+  thead .stick{z-index:5;background:#f8fafc}
+  .agentcell{font-weight:600}
+  .agentcell .dep{font-size:11px;color:var(--faint);font-weight:400}
+  tr.you .stick{background:#eef2ff}
+  tr.you{background:#f5f7ff}
+  .cell{text-align:center;padding:7px 8px;cursor:pointer}
+  .cell:hover{background:#f8fafc}
+  .chip{display:inline-block;padding:1px 6px;border-radius:999px;font-size:10.5px;font-weight:700;line-height:1.6}
+  .chip.approved{background:#dcfce7;color:#15803d}
+  .chip.submitted{background:#fef3c7;color:#b45309}
+  .chip.requested{background:#dbeafe;color:#1d4ed8}
+  .chip.denied{background:#fee2e2;color:#b91c1c}
+  .chip.eligible{background:#ede9fe;color:#6d28d9}
+  .wn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#15803d}
+  .dash{color:#cbd5e1;font-weight:700}
+  .legend{font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+  .legend span b{color:#334155}
+  /* popover */
+  .pop{position:fixed;width:260px;background:#fff;border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 30px rgba(15,23,42,.18);padding:12px;display:none;z-index:70}
+  .pop h4{margin:0 0 8px;font-size:13px}
+  .pop label{display:block;font-size:11px;color:var(--muted);margin:8px 0 3px}
+  .pop select,.pop input{width:100%;border:1px solid var(--border2);border-radius:7px;padding:5px 7px;font-size:12.5px}
+  .pop .row{display:flex;gap:6px;margin-top:10px}
+  .pop button{flex:1;border-radius:7px;padding:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:#fff;color:#334155}
+  .pop button.p{background:var(--indigo);border-color:var(--indigo);color:#fff}
+  /* generic tables for other tabs */
+  .panel{display:none}
+  .panel.on{display:block}
+  table.tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:12.5px}
+  table.tbl th{background:#f8fafc;text-align:left;padding:8px 12px;color:#475569;font-weight:600;border-bottom:1px solid var(--border)}
+  table.tbl td{padding:8px 12px;border-bottom:1px solid var(--border)}
+  .sec{font-size:12px;font-weight:700;color:#334155;margin:16px 0 8px;text-transform:uppercase;letter-spacing:.03em}
+  .tablehead{display:flex;align-items:center;margin:0 0 8px}
+  .tablehead .right{margin-left:auto;display:flex;gap:8px}
+  .approve{background:#16a34a;border:0;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .deny{background:#fff;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .role{font-size:11px;font-weight:700;color:#6d28d9;background:#ede9fe;border-radius:999px;padding:1px 8px}
+  .inbox{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff}
+  .inbox .meta{font-size:12.5px;color:#334155;margin:6px 0}
+  .inbox .meta b{color:#0f172a}
+  .step{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="switcher">
+    <span class="lbl">Mockup:</span>
+    <a href="a-pipeline-board.html">A · Pipeline Board</a>
+    <a class="active" href="b-coverage-matrix.html">B · Coverage Matrix</a>
+    <a href="c-roster-inbox.html">C · Roster + Inbox</a>
+    <a class="home" href="index.html">↩ all mockups</a>
+  </div>
+
+  <div class="appbar">
+    <h1>Contracting</h1>
+    <div class="tabs" id="tabs">
+      <button class="on" data-p="matrix">Coverage Matrix</button>
+      <button data-p="mine">My Requests</button>
+      <button data-p="approvals">Approvals <span class="badge">2</span></button>
+    </div>
+  </div>
+
+  <div class="page">
+    <!-- MATRIX PANEL -->
+    <div class="panel on" id="p-matrix">
+      <div class="strip">▲ <b>3 carriers</b> newly available to you: Mutual of Omaha · North American · Foresters Financial <span class="right"><button class="minibtn">Review →</button></span></div>
+      <div class="filters">
+        <span>Carrier</span><select><option>All</option></select>
+        <span>Status</span><select><option>All</option></select>
+        <span>Agent</span><select><option>All downlines</option></select>
+        <span class="right"><button class="ghostbtn">Export CSV</button></span>
+      </div>
+      <div class="matrixwrap">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th class="stick" style="text-align:left">Agent</th>
+              <th>Americo<span class="agg">4/9 ✓</span></th>
+              <th>Mutual of Omaha<span class="agg">3/9 ✓</span></th>
+              <th>North American<span class="agg">2/9 ✓</span></th>
+              <th>Foresters<span class="agg">5/9 ✓</span></th>
+              <th>Transamerica<span class="agg">3/9 ✓</span></th>
+              <th>Am. Amicable<span class="agg">2/9 ✓</span></th>
+              <th>AIG<span class="agg">1/9 ✓</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="you">
+              <td class="stick"><span class="agentcell">★ You — Nick Neessen</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">102938</span></td>
+              <td class="cell"><span class="chip eligible">NEW</span></td>
+              <td class="cell"><span class="chip eligible">NEW</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">882771</span></td>
+              <td class="cell"><span class="chip submitted">⧗</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip denied">✗</span></td>
+            </tr>
+            <tr>
+              <td class="stick"><span class="agentcell">Sarah Chen <span class="dep">↳ L2</span></span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">883291</span></td>
+              <td class="cell"><span class="chip submitted">⧗</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">441029</span></td>
+              <td class="cell"><span class="chip requested">•</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+            </tr>
+            <tr>
+              <td class="stick"><span class="agentcell">James Park <span class="dep">↳ L2</span></span></td>
+              <td class="cell"><span class="chip requested">•</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">773104</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">118842</span></td>
+              <td class="cell"><span class="chip submitted">⧗</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+            </tr>
+            <tr>
+              <td class="stick"><span class="agentcell">Maria Santos <span class="dep">↳ L3 via Sarah</span></span></td>
+              <td class="cell"><span class="chip denied">✗</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">229184</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip submitted">⧗</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">552093</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+            </tr>
+            <tr>
+              <td class="stick"><span class="agentcell">Tom Rivera <span class="dep">↳ L2</span></span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">771992</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+            </tr>
+            <tr>
+              <td class="stick"><span class="agentcell">Aisha Kim <span class="dep">↳ L3</span></span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">640012</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">640013</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip approved">✓</span> <span class="wn">640014</span></td>
+              <td class="cell"><span class="chip submitted">⧗</span></td>
+              <td class="cell"><span class="dash">—</span></td>
+              <td class="cell"><span class="chip requested">•</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><b class="dash">—</b> not started</span>
+        <span><span class="chip requested">•</span> requested</span>
+        <span><span class="chip submitted">⧗</span> submitted</span>
+        <span><span class="chip approved">✓</span> approved + writing#</span>
+        <span><span class="chip denied">✗</span> denied</span>
+        <span><span class="chip eligible">NEW</span> newly eligible (your row)</span>
+        <span style="color:var(--faint)">Tip: click any cell to edit status / writing #</span>
+      </div>
+    </div>
+
+    <!-- MY REQUESTS PANEL -->
+    <div class="panel" id="p-mine">
+      <div class="strip">▲ <b>3 carriers</b> newly available: Mutual of Omaha · North American · Foresters <span class="right"><button class="minibtn">Start request →</button></span></div>
+      <div class="tablehead"><div class="sec" style="margin:0">My carrier contracts</div><div class="right"><button class="ghostbtn">+ New request</button><button class="ghostbtn">Request alternate sponsor…</button></div></div>
+      <table class="tbl">
+        <thead><tr><th>Carrier</th><th>Status</th><th>Writing #</th><th>Requested</th><th>Approved</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Americo</td><td><span class="chip approved">Approved</span></td><td class="wn">AM-102938</td><td>09/15/26</td><td>10/01/26</td><td>—</td></tr>
+          <tr><td>Foresters Financial</td><td><span class="chip approved">Approved</span></td><td class="wn">FF-882771</td><td>09/15/26</td><td>10/05/26</td><td>—</td></tr>
+          <tr><td>Mutual of Omaha</td><td><span class="chip eligible">NEW · eligible</span></td><td>—</td><td>—</td><td>—</td><td>Upline approved</td></tr>
+          <tr><td>North American</td><td><span class="chip eligible">NEW · eligible</span></td><td>—</td><td>—</td><td>—</td><td>Upline approved</td></tr>
+          <tr><td>Transamerica</td><td><span class="chip submitted">Submitted</span></td><td>—</td><td>11/01/26</td><td>pending</td><td>—</td></tr>
+          <tr><td>AIG</td><td><span class="chip denied">Denied</span></td><td>—</td><td>10/10/26</td><td>—</td><td>re-request available</td></tr>
+        </tbody>
+      </table>
+      <div class="sec">Alternate-sponsor requests</div>
+      <table class="tbl">
+        <thead><tr><th>Carrier</th><th>Alternate sponsor</th><th>Status</th><th>Requested</th></tr></thead>
+        <tbody><tr><td>National Western</td><td>Bob Thornton</td><td><span class="chip submitted">⧗ Awaiting sponsor</span></td><td>11/02/26</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- APPROVALS PANEL -->
+    <div class="panel" id="p-approvals">
+      <div class="sec">Approvals inbox — alternate-sponsor requests</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Requests where you are the proposed alternate sponsor, or the sponsor's upline.</div>
+      <div class="inbox">
+        <div><span class="role">Your role: alternate sponsor</span></div>
+        <div class="meta"><b>Lisa Monroe</b> (L3, under Tom Rivera) · Carrier: <b>National Western</b></div>
+        <div class="meta">Reason: “Tom Rivera has &lt; 6 mo activity on this carrier.” · Your NWL <span class="wn">NW-449201</span> ✓ Approved</div>
+        <div class="step">Also needs: ★ your upline (Carol Davis) — pending</div>
+        <div class="tablehead"><div class="right"><button class="deny">Deny</button><button class="approve">Approve as sponsor →</button></div></div>
+      </div>
+      <div class="inbox">
+        <div><span class="role">Your role: sponsor's upline (final)</span></div>
+        <div class="meta"><b>Kevin Walsh</b> (L2, under Sarah Chen) · Carrier: <b>Americo</b></div>
+        <div class="meta">Alt sponsor: <b>Derek Mills</b> (Americo ✓ <span class="wn">AM-773199</span>) · Sponsor approved ✓ Nov 03</div>
+        <div class="tablehead"><div class="right"><button class="deny">Deny</button><button class="approve">Approve (final) →</button></div></div>
+      </div>
+      <div class="sec">Recently completed</div>
+      <table class="tbl">
+        <thead><tr><th>Agent</th><th>Carrier</th><th>Alt sponsor</th><th>Your role</th><th>Outcome</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr><td>Anna Reyes</td><td>Foresters</td><td>James Park</td><td>Co-approver</td><td><span class="chip approved">Approved</span></td><td>10/28/26</td></tr>
+          <tr><td>Dan Cole</td><td>Mutual of Omaha</td><td>Sarah Chen</td><td>Alt sponsor</td><td><span class="chip denied">Denied</span></td><td>10/15/26</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- cell popover -->
+  <div class="pop" id="pop">
+    <h4 id="popTitle">James Park × Americo</h4>
+    <label>Status</label>
+    <select><option>● Requested</option><option>⧗ Submitted</option><option>✓ Approved</option><option>✗ Denied</option></select>
+    <label>Writing #</label>
+    <input type="text" placeholder="—" />
+    <div class="row"><button onclick="hidePop()">Detail…</button><button class="p" onclick="hidePop()">Save</button></div>
+  </div>
+
+<script>
+  const tabs=document.getElementById('tabs');
+  tabs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    [...tabs.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('p-'+b.dataset.p).classList.add('on');});
+  const pop=document.getElementById('pop');
+  document.querySelectorAll('#p-matrix .cell').forEach(c=>c.addEventListener('click',ev=>{
+    const tr=c.closest('tr');const agent=tr.querySelector('.agentcell').textContent.trim().replace('★ ','');
+    const idx=[...c.parentNode.children].indexOf(c);
+    const carrier=document.querySelectorAll('#p-matrix thead th')[idx].childNodes[0].textContent.trim();
+    document.getElementById('popTitle').textContent=agent+' × '+carrier;
+    const r=c.getBoundingClientRect();pop.style.display='block';
+    let x=r.left;if(x+270>window.innerWidth)x=window.innerWidth-275;
+    pop.style.left=x+'px';pop.style.top=(r.bottom+6)+'px';ev.stopPropagation();}));
+  function hidePop(){pop.style.display='none';}
+  document.addEventListener('click',e=>{if(!pop.contains(e.target)&&!e.target.classList.contains('cell'))hidePop();});
+</script>
+</body>
+</html>

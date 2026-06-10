@@ -1,0 +1,398 @@
+// src/features/contracting/components/hub/MyContractingPanel.tsx
+// "As a downline/agent" (mockup C — My Contracting): a single board card with a
+// status chipstrip, my per-carrier table (Carrier · Status · Writing # · Submitted
+// · Approved), and the path to contract under a different upline when I'm blocked.
+// Newly-eligible carriers live in the always-on Action Center, not here.
+
+import { useEffect, useMemo, useState } from "react";
+import { Search, UserPlus, X, Loader2, IdCard } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Board, EmptyState, StatusDot, T } from "@/components/board";
+import { Pager } from "./Pager";
+import { StatusTag, statusColor } from "./StatusTag";
+import { RequestDifferentUplineDialog } from "./RequestDifferentUplineDialog";
+import {
+  useMyContracts,
+  useMySponsorships,
+  useCancelSponsorship,
+} from "../../hooks/useContractingHub";
+
+const ROWS_PAGE = 25;
+
+const cardHead: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: "9px 14px",
+  borderBottom: `1px solid ${T.line}`,
+};
+const chipstrip: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 18,
+  padding: "10px 14px",
+  borderBottom: `1px solid ${T.line}`,
+  flexWrap: "wrap",
+};
+const rowStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: "9px 14px",
+  borderBottom: `1px solid ${T.line}`,
+};
+const colHead: React.CSSProperties = {
+  ...rowStyle,
+  padding: "7px 14px",
+  color: T.mut2,
+  font: `700 10px ${T.mono}`,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+};
+const dateCol: React.CSSProperties = {
+  width: 70,
+  textAlign: "right",
+  font: `500 11px ${T.data}`,
+  color: T.mut2,
+  fontVariantNumeric: "tabular-nums",
+};
+
+function CountChip({
+  label,
+  n,
+  tone,
+}: {
+  label: string;
+  n: number;
+  tone: string;
+}) {
+  const on = n > 0;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <StatusDot
+        color={on ? tone : T.mut2}
+        size={7}
+        glow={on && tone === T.green}
+      />
+      <span style={{ font: `800 13px ${T.mono}`, color: on ? tone : T.mut2 }}>
+        {n}
+      </span>
+      <span
+        style={{ font: `600 11.5px ${T.data}`, color: on ? T.mut : T.mut2 }}
+      >
+        {label}
+      </span>
+    </span>
+  );
+}
+
+export function MyContractingPanel() {
+  const contracts = useMyContracts();
+  const sponsorships = useMySponsorships();
+  const cancelMut = useCancelSponsorship();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogCarrier, setDialogCarrier] = useState<string | null>(null);
+
+  const rows = useMemo(() => contracts.data ?? [], [contracts.data]);
+  const counts = useMemo(() => {
+    const c = { approved: 0, inProgress: 0, denied: 0 };
+    for (const r of rows) {
+      if (r.status === "approved") c.approved++;
+      else if (r.status === "submitted" || r.status === "pending")
+        c.inProgress++;
+      else if (r.status === "denied") c.denied++;
+    }
+    return c;
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = q
+      ? rows.filter((r) => r.carrierName.toLowerCase().includes(q))
+      : rows;
+    return list
+      .slice()
+      .sort((a, b) => a.carrierName.localeCompare(b.carrierName));
+  }, [rows, search]);
+
+  useEffect(() => setPage(1), [search]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PAGE));
+  const pageSafe = Math.min(page, totalPages);
+  const pageRows = filtered.slice(
+    (pageSafe - 1) * ROWS_PAGE,
+    pageSafe * ROWS_PAGE,
+  );
+
+  const isLoading = contracts.isLoading;
+
+  const openDialog = (carrierId: string | null) => {
+    setDialogCarrier(carrierId);
+    setDialogOpen(true);
+  };
+
+  return (
+    <Board
+      pad={0}
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
+      {/* header */}
+      <div style={cardHead}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ font: `700 15px ${T.disp}`, color: T.ink }}>
+            My carrier contracting
+          </div>
+          <div style={{ font: `500 11px ${T.data}`, color: T.mut2 }}>
+            {rows.length} carrier{rows.length === 1 ? "" : "s"} ·{" "}
+            {counts.approved} approved
+          </div>
+        </div>
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div style={{ position: "relative" }}>
+            <Search
+              className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2"
+              style={{ color: T.mut2 }}
+            />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search carriers"
+              className="h-8 pl-7 text-xs w-48"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => openDialog(null)}
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            Request different upline
+          </Button>
+        </div>
+      </div>
+
+      {/* chipstrip */}
+      <div style={chipstrip}>
+        <CountChip label="approved" n={counts.approved} tone={T.green} />
+        <CountChip label="in progress" n={counts.inProgress} tone={T.blue} />
+        <CountChip label="denied" n={counts.denied} tone={T.red} />
+      </div>
+
+      {/* table */}
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+        {isLoading ? (
+          <Loading label="Loading your carriers…" />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={<IdCard size={20} />}
+            title={
+              rows.length === 0
+                ? "No carrier contracts yet"
+                : "No carriers match"
+            }
+            hint={
+              rows.length === 0
+                ? "When your upline is approved for a carrier, it shows in the Action Center’s “Newly eligible” box and you can start a request."
+                : "Adjust the search to find a carrier."
+            }
+            pad={40}
+          />
+        ) : (
+          <>
+            <div style={colHead}>
+              <span style={{ flex: 1, minWidth: 0 }}>Carrier</span>
+              <span style={{ width: 128 }}>Status</span>
+              <span style={{ width: 120, textAlign: "right" }}>Writing #</span>
+              <span style={{ width: 70, textAlign: "right" }}>Submitted</span>
+              <span style={{ width: 70, textAlign: "right" }}>Approved</span>
+              <span style={{ width: 96 }} />
+            </div>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {pageRows.map((r) => {
+                const blocked = r.status === "denied";
+                return (
+                  <li
+                    key={r.carrierId}
+                    className="hover:bg-white/[0.03]"
+                    style={rowStyle}
+                  >
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <StatusDot
+                        color={statusColor(r.status)}
+                        size={8}
+                        glow={r.status === "approved"}
+                      />
+                      <span
+                        style={{
+                          font: `600 13px ${T.data}`,
+                          color: T.ink,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {r.carrierName}
+                      </span>
+                    </span>
+                    <span style={{ width: 128 }}>
+                      <StatusTag status={r.status} />
+                    </span>
+                    <span
+                      style={{
+                        width: 120,
+                        textAlign: "right",
+                        font: `700 12.5px ${T.mono}`,
+                        fontVariantNumeric: "tabular-nums",
+                        color: r.writingNumber ? T.cream : T.mut2,
+                      }}
+                    >
+                      {r.writingNumber ?? "—"}
+                    </span>
+                    <span style={dateCol}>{r.submittedDate ?? "—"}</span>
+                    <span style={dateCol}>{r.approvedDate ?? "—"}</span>
+                    <span
+                      style={{
+                        width: 96,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      {blocked && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          className="shrink-0"
+                          onClick={() => openDialog(r.carrierId)}
+                        >
+                          <UserPlus className="h-3 w-3" />
+                          Try alt upline
+                        </Button>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            <Pager
+              page={pageSafe}
+              pageSize={ROWS_PAGE}
+              total={filtered.length}
+              onPage={setPage}
+            />
+          </>
+        )}
+
+        {/* my outgoing sponsorship requests */}
+        {(sponsorships.data?.length ?? 0) > 0 && (
+          <div style={{ paddingBottom: 8 }}>
+            <div
+              style={{
+                padding: "12px 14px 8px",
+                font: `700 11px ${T.mono}`,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: T.mut2,
+              }}
+            >
+              My alternate-sponsor requests
+            </div>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {sponsorships.data!.map((s) => {
+                const pending =
+                  s.overallStatus === "pending_sponsor" ||
+                  s.overallStatus === "pending_sponsor_upline";
+                return (
+                  <li key={s.id} style={rowStyle}>
+                    <StatusDot color={statusColor(s.overallStatus)} size={8} />
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        font: `600 13px ${T.data}`,
+                        color: T.ink,
+                      }}
+                    >
+                      {s.carrierName}
+                      <span
+                        style={{
+                          font: `500 11px ${T.data}`,
+                          color: T.mut2,
+                          marginLeft: 8,
+                        }}
+                      >
+                        under {s.sponsorName}
+                      </span>
+                    </span>
+                    <StatusTag status={s.overallStatus} />
+                    {pending && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => cancelMut.mutate(s.id)}
+                        disabled={cancelMut.isPending}
+                      >
+                        <X className="h-3 w-3" />
+                        Cancel
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <RequestDifferentUplineDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        defaultCarrierId={dialogCarrier}
+      />
+    </Board>
+  );
+}
+
+function Loading({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: 128,
+        gap: 8,
+        font: `500 12px ${T.data}`,
+        color: T.mut,
+      }}
+    >
+      <Loader2 className="h-4 w-4 animate-spin" />
+      {label}
+    </div>
+  );
+}

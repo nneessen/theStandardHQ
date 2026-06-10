@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Concept A · Pipeline Board — Contracting</title>
+<style>
+  :root{--bg:#f1f5f9;--panel:#fff;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--muted:#64748b;--faint:#94a3b8;--indigo:#4f46e5;--indigo-soft:#eef2ff}
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  /* concept switcher */
+  .switcher{display:flex;gap:6px;align-items:center;background:#0f172a;padding:7px 14px;font-size:12px;position:sticky;top:0;z-index:40}
+  .switcher .lbl{color:#94a3b8;margin-right:4px}
+  .switcher a{color:#cbd5e1;text-decoration:none;padding:4px 10px;border-radius:6px;border:1px solid transparent}
+  .switcher a:hover{background:#1e293b}
+  .switcher a.active{background:var(--indigo);color:#fff}
+  .switcher .home{margin-left:auto;color:#94a3b8}
+  /* app header */
+  .appbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:14px}
+  .appbar h1{font-size:15px;margin:0;letter-spacing:-.01em}
+  .seg{display:inline-flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:#fff;padding:6px 12px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:var(--indigo);color:#fff;font-weight:600}
+  .spacer{flex:1}
+  .ghostbtn{border:1px solid var(--border2);background:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:#334155;display:inline-flex;gap:7px;align-items:center}
+  .ghostbtn:hover{background:#f8fafc}
+  .pill{background:#fee2e2;color:#b91c1c;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px}
+  .bell{font-size:15px}
+  .page{padding:14px 18px}
+  /* alert banner */
+  .alert{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 14px;margin-bottom:12px}
+  .alert .h{font-size:12px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .alert .row{display:flex;align-items:center;gap:10px;font-size:13px;padding:3px 0;color:#3730a3}
+  .alert .row b{color:#4c1d95}
+  .minibtn{margin-left:auto;border:1px solid #c4b5fd;background:#fff;color:#6d28d9;border-radius:7px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .x{margin-left:8px;color:#a78bfa;cursor:pointer;font-weight:700}
+  /* filter bar */
+  .filters{display:flex;gap:8px;align-items:center;margin-bottom:12px;font-size:12.5px;color:var(--muted)}
+  .filters select,.filters input{border:1px solid var(--border2);border-radius:7px;padding:5px 8px;font-size:12.5px;background:#fff;color:#334155}
+  /* board */
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+  .col{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px}
+  .col h3{margin:2px 4px 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);display:flex;justify-content:space-between}
+  .col h3 .n{color:var(--faint);font-weight:700}
+  .ccard{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 9px;margin-bottom:8px;box-shadow:0 1px 1px rgba(15,23,42,.03)}
+  .ccard .car{font-weight:600;font-size:12.5px}
+  .ccard .ln{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center}
+  .ccard .acts{margin-top:7px;display:flex;gap:6px}
+  .ccard .agent{font-size:11px;color:var(--indigo);font-weight:600}
+  .wn{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:#0f172a;background:#f1f5f9;border-radius:4px;padding:0 5px}
+  .chip{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;line-height:1.6}
+  .chip.approved{background:#dcfce7;color:#15803d}
+  .chip.submitted{background:#fef3c7;color:#b45309}
+  .chip.requested{background:#dbeafe;color:#1d4ed8}
+  .chip.denied{background:#fee2e2;color:#b91c1c}
+  .chip.eligible{background:#ede9fe;color:#6d28d9}
+  .tinybtn{border:1px solid var(--border2);background:#fff;border-radius:6px;padding:3px 8px;font-size:11.5px;cursor:pointer;color:#334155}
+  .tinybtn.p{background:var(--indigo);border-color:var(--indigo);color:#fff;font-weight:600}
+  .flag{color:#b45309;font-size:11px;font-weight:700}
+  .new{color:#6d28d9;font-size:10.5px;font-weight:800;letter-spacing:.03em}
+  /* drawer */
+  .scrim{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;z-index:50}
+  .scrim.show{display:block}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:480px;max-width:92vw;background:#fff;box-shadow:-8px 0 30px rgba(15,23,42,.18);transform:translateX(100%);transition:transform .18s ease;z-index:60;display:flex;flex-direction:column}
+  .drawer.show{transform:translateX(0)}
+  .drawer header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+  .drawer header h2{font-size:14px;margin:0}
+  .drawer .body{padding:14px 16px;overflow:auto}
+  .req{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;background:#fff}
+  .req .top{font-size:12.5px;color:#334155;margin-bottom:8px}
+  .req .top b{color:#0f172a}
+  .req .reason{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px}
+  .step{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-top:1px dashed var(--border)}
+  .step .lbl{color:var(--muted)}
+  .step .me{font-weight:700;color:var(--indigo)}
+  .step .done{color:#15803d;font-weight:600}
+  .step .wait{color:var(--faint)}
+  .step .right{margin-left:auto;display:flex;gap:6px}
+  .approve{background:#16a34a;border:0;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .deny{background:#fff;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .closex{margin-left:auto;border:0;background:#f1f5f9;border-radius:6px;width:28px;height:28px;cursor:pointer;color:#475569;font-size:15px}
+  .hint{font-size:11.5px;color:var(--faint);margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="switcher">
+    <span class="lbl">Mockup:</span>
+    <a class="active" href="a-pipeline-board.html">A · Pipeline Board</a>
+    <a href="b-coverage-matrix.html">B · Coverage Matrix</a>
+    <a href="c-roster-inbox.html">C · Roster + Inbox</a>
+    <a class="home" href="index.html">↩ all mockups</a>
+  </div>
+
+  <div class="appbar">
+    <h1>Contracting</h1>
+    <div class="seg" id="roleSeg">
+      <button class="on" data-role="me">My Contracting</button>
+      <button data-role="team">Downline Team</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghostbtn" onclick="openDrawer()">Approvals Inbox <span class="pill">3</span></button>
+    <span class="bell">🔔</span>
+  </div>
+
+  <div class="page">
+    <div class="alert" id="alertBanner">
+      <div class="h">⚡ 2 new eligibility alerts <span class="x" onclick="this.closest('.alert').style.display='none'">dismiss ✕</span></div>
+      <div class="row"><span>●</span> <b>Mutual of Omaha</b> — your upline (Jane Davis) was approved Jun 7. You can now contract. <button class="minibtn">Request Contract →</button></div>
+      <div class="row"><span>●</span> <b>American Equity</b> — your upline (Jane Davis) was approved Jun 8. You can now contract. <button class="minibtn">Request Contract →</button></div>
+    </div>
+
+    <div class="filters">
+      <span>Carrier</span><select><option>All</option></select>
+      <span>Status</span><select><option>All</option></select>
+      <span>Date</span><input type="text" placeholder="Any time" style="width:110px" />
+      <span style="margin-left:auto;font-size:12px">Showing <b>my</b> contracting · 22 carriers</span>
+    </div>
+
+    <!-- MY view -->
+    <div class="board" id="boardMe">
+      <div class="col">
+        <h3>Eligible / Not started <span class="n">7</span></h3>
+        <div class="ccard"><div class="car">North American</div><div class="ln">Upline: <span class="chip approved">✓ Jane</span></div><div class="acts"><button class="tinybtn p">Request →</button></div></div>
+        <div class="ccard"><div class="car">American Equity <span class="new">⚡ NEW</span></div><div class="ln">Upline approved Jun 8</div><div class="acts"><button class="tinybtn p">Request →</button></div></div>
+        <div class="ccard"><div class="car">Mutual of Omaha <span class="new">⚡ NEW</span></div><div class="ln">Upline approved Jun 7</div><div class="acts"><button class="tinybtn p">Request →</button></div></div>
+        <div class="ccard"><div class="car">Integrity Life</div><div class="ln">Upline: <span class="chip approved">✓ Jane</span></div><div class="acts"><button class="tinybtn p">Request →</button></div></div>
+      </div>
+      <div class="col">
+        <h3>Requested / Submitted <span class="n">4</span></h3>
+        <div class="ccard"><div class="car">Transamerica</div><div class="ln"><span class="chip submitted">Submitted</span> Jun 2</div><div class="acts"><button class="tinybtn">Notes</button><button class="tinybtn">Mark approved</button></div></div>
+        <div class="ccard"><div class="car">Sagicor</div><div class="ln"><span class="chip submitted">Submitted</span> May 28</div><div class="acts"><button class="tinybtn">Notes</button></div></div>
+        <div class="ccard"><div class="car">Foresters Financial</div><div class="ln"><span class="flag">⚑ different-upline request</span></div><div class="ln">⚑ Pending 2 approvals</div><div class="acts"><button class="tinybtn" onclick="openDrawer()">View chain</button></div></div>
+      </div>
+      <div class="col">
+        <h3>Approved <span class="n">9</span></h3>
+        <div class="ccard"><div class="car">Americo</div><div class="ln"><span class="chip approved">Approved</span> <span class="wn">AM-4892-NN</span></div><div class="ln" style="color:#94a3b8">Approved May 15</div></div>
+        <div class="ccard"><div class="car">North American Co</div><div class="ln"><span class="chip approved">Approved</span> <span class="wn">NA-7741-NN</span></div><div class="ln" style="color:#94a3b8">Approved Apr 2</div></div>
+        <div class="ccard"><div class="car">Sagicor Life</div><div class="ln"><span class="chip approved">Approved</span> <span class="wn">SG-0021-NN</span></div><div class="ln" style="color:#94a3b8">Approved Mar 18</div></div>
+      </div>
+      <div class="col">
+        <h3>Denied / Terminated <span class="n">2</span></h3>
+        <div class="ccard"><div class="car">Global Atlantic</div><div class="ln"><span class="chip denied">Denied</span> Jun 1</div><div class="acts"><button class="tinybtn">Notes</button><button class="tinybtn" onclick="openDrawer()">Try diff. upline</button></div></div>
+        <div class="ccard"><div class="car">Foresters</div><div class="ln"><span class="chip denied">Withdrawn</span></div><div class="acts"><button class="tinybtn">Notes</button></div></div>
+      </div>
+    </div>
+
+    <!-- TEAM view -->
+    <div class="board" id="boardTeam" style="display:none">
+      <div class="col">
+        <h3>Eligible / Not started <span class="n">12</span></h3>
+        <div class="ccard"><div class="agent">Tom Rivera</div><div class="car">North American</div><div class="ln">Eligible — no request</div><div class="acts"><button class="tinybtn">Nudge agent</button></div></div>
+        <div class="ccard"><div class="agent">Sara Chen</div><div class="car">Integrity Life</div><div class="ln">Eligible — no request</div><div class="acts"><button class="tinybtn">Nudge agent</button></div></div>
+      </div>
+      <div class="col">
+        <h3>Requested / Submitted <span class="n">8</span></h3>
+        <div class="ccard"><div class="agent">Sara Chen</div><div class="car">Transamerica</div><div class="ln"><span class="chip submitted">Submitted</span> Jun 5</div><div class="acts"><button class="tinybtn p">Approve</button><button class="tinybtn">Deny</button></div></div>
+        <div class="ccard"><div class="agent">Tom Rivera</div><div class="car">Sagicor</div><div class="ln"><span class="chip submitted">Submitted</span> Jun 1</div><div class="acts"><button class="tinybtn p">Approve</button><button class="tinybtn">Deny</button></div></div>
+      </div>
+      <div class="col">
+        <h3>Approved <span class="n">31</span></h3>
+        <div class="ccard"><div class="agent">Tom Rivera</div><div class="car">Americo</div><div class="ln"><span class="chip approved">Approved</span> <span class="wn">AM-1122</span> ✎</div></div>
+        <div class="ccard"><div class="agent">Maria Santos</div><div class="car">Mutual of Omaha</div><div class="ln"><span class="chip approved">Approved</span> <span class="wn">MO-2291</span> ✎</div></div>
+      </div>
+      <div class="col">
+        <h3>Denied <span class="n">4</span></h3>
+        <div class="ccard"><div class="agent">Maria Santos</div><div class="car">Americo</div><div class="ln"><span class="chip denied">Denied</span> May 12</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approvals drawer -->
+  <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+  <aside class="drawer" id="drawer">
+    <header><h2>Different-upline sponsorship requests</h2><button class="closex" onclick="closeDrawer()">✕</button></header>
+    <div class="body">
+      <div class="req">
+        <div class="top"><b>Tom Rivera</b> wants to contract with <b>Integrity Life</b> under you (alternate sponsor)</div>
+        <div class="reason">“My normal upline is blocked — no business written in 6 months.”</div>
+        <div class="step"><span class="lbl">Step 1 — you (alternate sponsor):</span> <span class="right"><button class="approve">Approve</button><button class="deny">Deny</button></span></div>
+        <div class="step"><span class="lbl">Step 2 — your upline (Jane Davis):</span> <span class="wait">⏳ waiting on step 1</span></div>
+      </div>
+      <div class="req">
+        <div class="top"><b>Sara Chen</b> → <b>Transamerica</b>, alternate sponsor <b>you</b></div>
+        <div class="reason">“Carrier denied my upline.”</div>
+        <div class="step"><span class="lbl">Step 1 — you (alternate sponsor):</span> <span class="done">✓ Approved Jun 8</span></div>
+        <div class="step"><span class="lbl">Step 2 — Jane Davis (final):</span> <span class="me">you are Jane here →</span> <span class="right"><button class="approve">Approve</button><button class="deny">Deny</button></span></div>
+      </div>
+      <div class="hint">When both approve, the agent gets a <b>pending</b> contract row under the alternate path and is notified they can proceed. Who earns the override is set by your org's rule.</div>
+    </div>
+  </aside>
+
+<script>
+  const seg=document.getElementById('roleSeg');
+  seg.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    [...seg.children].forEach(c=>c.classList.remove('on')); b.classList.add('on');
+    const team=b.dataset.role==='team';
+    document.getElementById('boardMe').style.display=team?'none':'grid';
+    document.getElementById('boardTeam').style.display=team?'grid':'none';
+  });
+  function openDrawer(){document.getElementById('drawer').classList.add('show');document.getElementById('scrim').classList.add('show');}
+  function closeDrawer(){document.getElementById('drawer').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
+</script>
+</body>
+</html>
