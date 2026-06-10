@@ -306,81 +306,6 @@ export type Database = {
           },
         ];
       };
-      agency_slack_credentials: {
-        Row: {
-          agency_id: string | null;
-          app_name: string | null;
-          client_id: string;
-          client_secret_encrypted: string;
-          created_at: string | null;
-          created_by: string | null;
-          id: string;
-          imo_id: string;
-          signing_secret_encrypted: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          agency_id?: string | null;
-          app_name?: string | null;
-          client_id: string;
-          client_secret_encrypted: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          imo_id: string;
-          signing_secret_encrypted?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          agency_id?: string | null;
-          app_name?: string | null;
-          client_id?: string;
-          client_secret_encrypted?: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          imo_id?: string;
-          signing_secret_encrypted?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "agency_slack_credentials_agency_id_fkey";
-            columns: ["agency_id"];
-            isOneToOne: false;
-            referencedRelation: "agencies";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "agency_slack_credentials_created_by_fkey";
-            columns: ["created_by"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "agency_slack_credentials_created_by_fkey";
-            columns: ["created_by"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "agency_slack_credentials_created_by_fkey";
-            columns: ["created_by"];
-            isOneToOne: false;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "agency_slack_credentials_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       agent_contracts: {
         Row: {
           agent_id: string;
@@ -3220,7 +3145,6 @@ export type Database = {
           email_opt_in: boolean | null;
           id: string;
           preferred_channel: string | null;
-          slack_enabled: boolean | null;
           sms_opt_in: boolean | null;
           unsubscribe_reason: string | null;
           unsubscribed_at: string | null;
@@ -3235,7 +3159,6 @@ export type Database = {
           email_opt_in?: boolean | null;
           id?: string;
           preferred_channel?: string | null;
-          slack_enabled?: boolean | null;
           sms_opt_in?: boolean | null;
           unsubscribe_reason?: string | null;
           unsubscribed_at?: string | null;
@@ -3250,7 +3173,6 @@ export type Database = {
           email_opt_in?: boolean | null;
           id?: string;
           preferred_channel?: string | null;
-          slack_enabled?: boolean | null;
           sms_opt_in?: boolean | null;
           unsubscribe_reason?: string | null;
           unsubscribed_at?: string | null;
@@ -3748,108 +3670,6 @@ export type Database = {
             columns: ["imo_id"];
             isOneToOne: false;
             referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      daily_sales_logs: {
-        Row: {
-          channel_id: string;
-          created_at: string | null;
-          first_sale_group_id: string | null;
-          first_seller_id: string | null;
-          hierarchy_depth: number | null;
-          id: string;
-          imo_id: string;
-          last_ap_milestone: number | null;
-          last_policy_milestone: number | null;
-          last_post_attempted_at: string | null;
-          last_post_error: string | null;
-          last_sms_milestone_date: string | null;
-          leaderboard_message_ts: string | null;
-          log_date: string;
-          pending_policy_data: Json | null;
-          slack_integration_id: string | null;
-          title: string | null;
-          title_set_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          channel_id: string;
-          created_at?: string | null;
-          first_sale_group_id?: string | null;
-          first_seller_id?: string | null;
-          hierarchy_depth?: number | null;
-          id?: string;
-          imo_id: string;
-          last_ap_milestone?: number | null;
-          last_policy_milestone?: number | null;
-          last_post_attempted_at?: string | null;
-          last_post_error?: string | null;
-          last_sms_milestone_date?: string | null;
-          leaderboard_message_ts?: string | null;
-          log_date?: string;
-          pending_policy_data?: Json | null;
-          slack_integration_id?: string | null;
-          title?: string | null;
-          title_set_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          channel_id?: string;
-          created_at?: string | null;
-          first_sale_group_id?: string | null;
-          first_seller_id?: string | null;
-          hierarchy_depth?: number | null;
-          id?: string;
-          imo_id?: string;
-          last_ap_milestone?: number | null;
-          last_policy_milestone?: number | null;
-          last_post_attempted_at?: string | null;
-          last_post_error?: string | null;
-          last_sms_milestone_date?: string | null;
-          leaderboard_message_ts?: string | null;
-          log_date?: string;
-          pending_policy_data?: Json | null;
-          slack_integration_id?: string | null;
-          title?: string | null;
-          title_set_at?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "daily_sales_logs_first_seller_id_fkey";
-            columns: ["first_seller_id"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "daily_sales_logs_first_seller_id_fkey";
-            columns: ["first_seller_id"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "daily_sales_logs_first_seller_id_fkey";
-            columns: ["first_seller_id"];
-            isOneToOne: false;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "daily_sales_logs_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "daily_sales_logs_slack_integration_id_fkey";
-            columns: ["slack_integration_id"];
-            isOneToOne: false;
-            referencedRelation: "slack_integrations";
             referencedColumns: ["id"];
           },
         ];
@@ -10360,349 +10180,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      slack_channel_configs: {
-        Row: {
-          agency_id: string | null;
-          channel_id: string;
-          channel_name: string;
-          channel_type: string | null;
-          created_at: string | null;
-          created_by: string | null;
-          filter_config: Json | null;
-          id: string;
-          imo_id: string;
-          include_agent_photo: boolean | null;
-          include_client_info: boolean | null;
-          include_leaderboard: boolean | null;
-          is_active: boolean;
-          message_template: Json | null;
-          notification_type: Database["public"]["Enums"]["slack_notification_type"];
-          slack_integration_id: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          agency_id?: string | null;
-          channel_id: string;
-          channel_name: string;
-          channel_type?: string | null;
-          created_at?: string | null;
-          created_by?: string | null;
-          filter_config?: Json | null;
-          id?: string;
-          imo_id: string;
-          include_agent_photo?: boolean | null;
-          include_client_info?: boolean | null;
-          include_leaderboard?: boolean | null;
-          is_active?: boolean;
-          message_template?: Json | null;
-          notification_type: Database["public"]["Enums"]["slack_notification_type"];
-          slack_integration_id: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          agency_id?: string | null;
-          channel_id?: string;
-          channel_name?: string;
-          channel_type?: string | null;
-          created_at?: string | null;
-          created_by?: string | null;
-          filter_config?: Json | null;
-          id?: string;
-          imo_id?: string;
-          include_agent_photo?: boolean | null;
-          include_client_info?: boolean | null;
-          include_leaderboard?: boolean | null;
-          is_active?: boolean;
-          message_template?: Json | null;
-          notification_type?: Database["public"]["Enums"]["slack_notification_type"];
-          slack_integration_id?: string;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "slack_channel_configs_agency_id_fkey";
-            columns: ["agency_id"];
-            isOneToOne: false;
-            referencedRelation: "agencies";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "slack_channel_configs_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "slack_channel_configs_slack_integration_id_fkey";
-            columns: ["slack_integration_id"];
-            isOneToOne: false;
-            referencedRelation: "slack_integrations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      slack_integrations: {
-        Row: {
-          access_token_encrypted: string;
-          agency_id: string | null;
-          authed_user_email: string | null;
-          authed_user_id: string | null;
-          bot_name: string | null;
-          bot_token_encrypted: string;
-          bot_user_id: string;
-          connection_status: Database["public"]["Enums"]["slack_connection_status"];
-          created_at: string | null;
-          created_by: string | null;
-          display_name: string | null;
-          expires_at: string | null;
-          id: string;
-          imo_id: string;
-          include_client_info: boolean | null;
-          include_leaderboard_with_policy: boolean | null;
-          is_active: boolean;
-          last_connected_at: string | null;
-          last_error: string | null;
-          last_refresh_at: string | null;
-          leaderboard_channel_id: string | null;
-          leaderboard_channel_name: string | null;
-          policy_channel_id: string | null;
-          policy_channel_name: string | null;
-          recruit_channel_id: string | null;
-          recruit_channel_name: string | null;
-          refresh_token_encrypted: string | null;
-          scope: string;
-          team_id: string;
-          team_name: string;
-          token_type: string | null;
-          updated_at: string | null;
-          workspace_logo_url: string | null;
-        };
-        Insert: {
-          access_token_encrypted: string;
-          agency_id?: string | null;
-          authed_user_email?: string | null;
-          authed_user_id?: string | null;
-          bot_name?: string | null;
-          bot_token_encrypted: string;
-          bot_user_id: string;
-          connection_status?: Database["public"]["Enums"]["slack_connection_status"];
-          created_at?: string | null;
-          created_by?: string | null;
-          display_name?: string | null;
-          expires_at?: string | null;
-          id?: string;
-          imo_id: string;
-          include_client_info?: boolean | null;
-          include_leaderboard_with_policy?: boolean | null;
-          is_active?: boolean;
-          last_connected_at?: string | null;
-          last_error?: string | null;
-          last_refresh_at?: string | null;
-          leaderboard_channel_id?: string | null;
-          leaderboard_channel_name?: string | null;
-          policy_channel_id?: string | null;
-          policy_channel_name?: string | null;
-          recruit_channel_id?: string | null;
-          recruit_channel_name?: string | null;
-          refresh_token_encrypted?: string | null;
-          scope: string;
-          team_id: string;
-          team_name: string;
-          token_type?: string | null;
-          updated_at?: string | null;
-          workspace_logo_url?: string | null;
-        };
-        Update: {
-          access_token_encrypted?: string;
-          agency_id?: string | null;
-          authed_user_email?: string | null;
-          authed_user_id?: string | null;
-          bot_name?: string | null;
-          bot_token_encrypted?: string;
-          bot_user_id?: string;
-          connection_status?: Database["public"]["Enums"]["slack_connection_status"];
-          created_at?: string | null;
-          created_by?: string | null;
-          display_name?: string | null;
-          expires_at?: string | null;
-          id?: string;
-          imo_id?: string;
-          include_client_info?: boolean | null;
-          include_leaderboard_with_policy?: boolean | null;
-          is_active?: boolean;
-          last_connected_at?: string | null;
-          last_error?: string | null;
-          last_refresh_at?: string | null;
-          leaderboard_channel_id?: string | null;
-          leaderboard_channel_name?: string | null;
-          policy_channel_id?: string | null;
-          policy_channel_name?: string | null;
-          recruit_channel_id?: string | null;
-          recruit_channel_name?: string | null;
-          refresh_token_encrypted?: string | null;
-          scope?: string;
-          team_id?: string;
-          team_name?: string;
-          token_type?: string | null;
-          updated_at?: string | null;
-          workspace_logo_url?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "slack_integrations_agency_id_fkey";
-            columns: ["agency_id"];
-            isOneToOne: false;
-            referencedRelation: "agencies";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "slack_integrations_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      slack_messages: {
-        Row: {
-          channel_config_id: string | null;
-          channel_id: string;
-          created_at: string | null;
-          delivered_at: string | null;
-          error_message: string | null;
-          id: string;
-          imo_id: string;
-          message_blocks: Json | null;
-          message_text: string | null;
-          message_ts: string | null;
-          notification_type: Database["public"]["Enums"]["slack_notification_type"];
-          related_entity_id: string | null;
-          related_entity_type: string | null;
-          retry_count: number | null;
-          sent_at: string | null;
-          slack_integration_id: string;
-          status: Database["public"]["Enums"]["slack_message_status"];
-          thread_ts: string | null;
-        };
-        Insert: {
-          channel_config_id?: string | null;
-          channel_id: string;
-          created_at?: string | null;
-          delivered_at?: string | null;
-          error_message?: string | null;
-          id?: string;
-          imo_id: string;
-          message_blocks?: Json | null;
-          message_text?: string | null;
-          message_ts?: string | null;
-          notification_type: Database["public"]["Enums"]["slack_notification_type"];
-          related_entity_id?: string | null;
-          related_entity_type?: string | null;
-          retry_count?: number | null;
-          sent_at?: string | null;
-          slack_integration_id: string;
-          status?: Database["public"]["Enums"]["slack_message_status"];
-          thread_ts?: string | null;
-        };
-        Update: {
-          channel_config_id?: string | null;
-          channel_id?: string;
-          created_at?: string | null;
-          delivered_at?: string | null;
-          error_message?: string | null;
-          id?: string;
-          imo_id?: string;
-          message_blocks?: Json | null;
-          message_text?: string | null;
-          message_ts?: string | null;
-          notification_type?: Database["public"]["Enums"]["slack_notification_type"];
-          related_entity_id?: string | null;
-          related_entity_type?: string | null;
-          retry_count?: number | null;
-          sent_at?: string | null;
-          slack_integration_id?: string;
-          status?: Database["public"]["Enums"]["slack_message_status"];
-          thread_ts?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "slack_messages_channel_config_id_fkey";
-            columns: ["channel_config_id"];
-            isOneToOne: false;
-            referencedRelation: "slack_channel_configs";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "slack_messages_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "slack_messages_slack_integration_id_fkey";
-            columns: ["slack_integration_id"];
-            isOneToOne: false;
-            referencedRelation: "slack_integrations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      slack_webhooks: {
-        Row: {
-          channel_name: string;
-          created_at: string | null;
-          created_by: string | null;
-          id: string;
-          imo_id: string;
-          include_client_info: boolean | null;
-          include_leaderboard: boolean | null;
-          is_active: boolean | null;
-          notifications_enabled: boolean | null;
-          updated_at: string | null;
-          webhook_url: string;
-          workspace_name: string | null;
-        };
-        Insert: {
-          channel_name: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          imo_id: string;
-          include_client_info?: boolean | null;
-          include_leaderboard?: boolean | null;
-          is_active?: boolean | null;
-          notifications_enabled?: boolean | null;
-          updated_at?: string | null;
-          webhook_url: string;
-          workspace_name?: string | null;
-        };
-        Update: {
-          channel_name?: string;
-          created_at?: string | null;
-          created_by?: string | null;
-          id?: string;
-          imo_id?: string;
-          include_client_info?: boolean | null;
-          include_leaderboard?: boolean | null;
-          is_active?: boolean | null;
-          notifications_enabled?: boolean | null;
-          updated_at?: string | null;
-          webhook_url?: string;
-          workspace_name?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "slack_webhooks_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       state_classifications: {
         Row: {
           agency_id: string;
@@ -14372,7 +13849,6 @@ export type Database = {
           referral_source: string | null;
           resident_state: string | null;
           roles: string[] | null;
-          slack_member_overrides: Json | null;
           state: string | null;
           street_address: string | null;
           subscription_tier: string;
@@ -14430,7 +13906,6 @@ export type Database = {
           referral_source?: string | null;
           resident_state?: string | null;
           roles?: string[] | null;
-          slack_member_overrides?: Json | null;
           state?: string | null;
           street_address?: string | null;
           subscription_tier?: string;
@@ -14488,7 +13963,6 @@ export type Database = {
           referral_source?: string | null;
           resident_state?: string | null;
           roles?: string[] | null;
-          slack_member_overrides?: Json | null;
           state?: string | null;
           street_address?: string | null;
           subscription_tier?: string;
@@ -14612,63 +14086,6 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [];
-      };
-      user_slack_preferences: {
-        Row: {
-          auto_post_enabled: boolean | null;
-          created_at: string | null;
-          default_view_channel_id: string | null;
-          default_view_channel_name: string | null;
-          default_view_integration_id: string | null;
-          id: string;
-          imo_id: string;
-          policy_post_channels: Json | null;
-          slack_member_id: string | null;
-          updated_at: string | null;
-          user_id: string;
-        };
-        Insert: {
-          auto_post_enabled?: boolean | null;
-          created_at?: string | null;
-          default_view_channel_id?: string | null;
-          default_view_channel_name?: string | null;
-          default_view_integration_id?: string | null;
-          id?: string;
-          imo_id: string;
-          policy_post_channels?: Json | null;
-          slack_member_id?: string | null;
-          updated_at?: string | null;
-          user_id: string;
-        };
-        Update: {
-          auto_post_enabled?: boolean | null;
-          created_at?: string | null;
-          default_view_channel_id?: string | null;
-          default_view_channel_name?: string | null;
-          default_view_integration_id?: string | null;
-          id?: string;
-          imo_id?: string;
-          policy_post_channels?: Json | null;
-          slack_member_id?: string | null;
-          updated_at?: string | null;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_slack_preferences_default_view_integration_id_fkey";
-            columns: ["default_view_integration_id"];
-            isOneToOne: false;
-            referencedRelation: "slack_integrations";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_slack_preferences_imo_id_fkey";
-            columns: ["imo_id"];
-            isOneToOne: false;
-            referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
       };
       user_subscription_addons: {
         Row: {
@@ -16954,14 +16371,6 @@ export type Database = {
         Args: { p_checklist_item_id: string; p_user_id: string };
         Returns: Json;
       };
-      check_and_update_milestones: {
-        Args: { p_log_id: string; p_policy_count: number; p_total_ap: number };
-        Returns: {
-          new_ap_milestone: number;
-          new_policy_milestone: number;
-          should_send_sms: boolean;
-        }[];
-      };
       check_auth_identity: {
         Args: { check_email: string };
         Returns: {
@@ -16983,19 +16392,6 @@ export type Database = {
       check_email_quota: {
         Args: { p_limit?: number; p_provider: string; p_user_id: string };
         Returns: boolean;
-      };
-      check_first_seller_naming_unified: {
-        Args: { p_user_id: string };
-        Returns: {
-          agency_name: string;
-          channel_names: string[];
-          first_sale_group_id: string;
-          has_pending_notification: boolean;
-          log_date: string;
-          needs_naming: boolean;
-          representative_log_id: string;
-          total_channels: number;
-        }[];
       };
       check_is_imo_admin: { Args: never; Returns: boolean };
       check_pending_invitation_exists: {
@@ -17536,18 +16932,6 @@ export type Database = {
         Args: { p_agency_id: string };
         Returns: Json;
       };
-      get_agency_slack_credentials: {
-        Args: { p_agency_id?: string; p_imo_id: string };
-        Returns: {
-          app_name: string;
-          client_id: string;
-          client_secret_encrypted: string;
-          credential_id: string;
-          is_fallback: boolean;
-          signing_secret_encrypted: string;
-          source_agency_id: string;
-        }[];
-      };
       get_agency_users_for_sms: {
         Args: {
           p_agency_id: string;
@@ -17856,17 +17240,6 @@ export type Database = {
       };
       get_current_user_hierarchy_path: { Args: never; Returns: string };
       get_current_user_profile_id: { Args: never; Returns: string };
-      get_daily_production_by_agent: {
-        Args: { p_agency_id?: string; p_imo_id: string };
-        Returns: {
-          agent_email: string;
-          agent_id: string;
-          agent_name: string;
-          policy_count: number;
-          slack_member_id: string;
-          total_annual_premium: number;
-        }[];
-      };
       get_downline_clients_with_stats: {
         Args: { p_user_id?: string };
         Returns: {
@@ -18179,19 +17552,6 @@ export type Database = {
           imo_name: string;
         }[];
       };
-      get_ip_leaderboard_with_periods: {
-        Args: { p_agency_id?: string; p_imo_id: string };
-        Returns: {
-          agent_email: string;
-          agent_id: string;
-          agent_name: string;
-          mtd_ip: number;
-          mtd_policies: number;
-          slack_member_id: string;
-          wtd_ip: number;
-          wtd_policies: number;
-        }[];
-      };
       get_knockout_conditions: {
         Args: never;
         Returns: Database["public"]["CompositeTypes"]["knockout_condition_def"][];
@@ -18484,24 +17844,6 @@ export type Database = {
           updated_at: string;
         }[];
       };
-      get_my_daily_sales_logs: {
-        Args: never;
-        Returns: {
-          can_rename: boolean;
-          channel_id: string;
-          created_at: string;
-          first_seller_id: string;
-          id: string;
-          imo_id: string;
-          is_first_seller: boolean;
-          leaderboard_message_ts: string;
-          log_date: string;
-          slack_integration_id: string;
-          title: string;
-          title_set_at: string;
-          updated_at: string;
-        }[];
-      };
       get_my_downline_contracts: {
         Args: never;
         Returns: {
@@ -18700,21 +18042,6 @@ export type Database = {
         }[];
       };
       get_pending_agency_request_count: { Args: never; Returns: number };
-      get_pending_first_sale_logs: {
-        Args: { p_first_sale_group_id: string };
-        Returns: {
-          channel_id: string;
-          first_seller_id: string;
-          hierarchy_depth: number;
-          imo_id: string;
-          leaderboard_message_ts: string;
-          log_date: string;
-          log_id: string;
-          pending_policy_data: Json;
-          slack_integration_id: string;
-          title: string;
-        }[];
-      };
       get_pending_invitations_count: { Args: never; Returns: number };
       get_pending_join_request_count: { Args: never; Returns: number };
       get_pipeline_template_for_user: {
@@ -18938,37 +18265,6 @@ export type Database = {
         }[];
       };
       get_skill_radar_data: { Args: { p_user_id?: string }; Returns: Json[] };
-      get_slack_integrations_for_agency_hierarchy: {
-        Args: { p_agency_id: string };
-        Returns: {
-          agency_id: string;
-          agency_name: string;
-          display_name: string;
-          hierarchy_depth: number;
-          include_client_info: boolean;
-          include_leaderboard: boolean;
-          integration_id: string;
-          policy_channel_id: string;
-          policy_channel_name: string;
-          team_id: string;
-          team_name: string;
-        }[];
-      };
-      get_slack_leaderboard_with_periods: {
-        Args: { p_agency_id?: string; p_imo_id: string };
-        Returns: {
-          agent_email: string;
-          agent_id: string;
-          agent_name: string;
-          mtd_ap: number;
-          mtd_policies: number;
-          slack_member_id: string;
-          today_ap: number;
-          today_policies: number;
-          wtd_ap: number;
-          wtd_policies: number;
-        }[];
-      };
       get_stale_phase_recruits: {
         Args: never;
         Returns: {
@@ -19612,11 +18908,6 @@ export type Database = {
       invoke_account_lifecycle_daily: { Args: never; Returns: undefined };
       invoke_ai_smart_view_sync: { Args: never; Returns: undefined };
       invoke_automation_reminders: { Args: never; Returns: undefined };
-      invoke_slack_auto_complete_first_sale: {
-        Args: never;
-        Returns: undefined;
-      };
-      invoke_slack_ip_leaderboard: { Args: never; Returns: undefined };
       is_access_revoked: { Args: { p_user_id: string }; Returns: boolean };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
@@ -20151,21 +19442,6 @@ export type Database = {
         Args: { p_imo_id: string; p_tree_id: string };
         Returns: undefined;
       };
-      set_leaderboard_title: {
-        Args: { p_log_id: string; p_title: string };
-        Returns: boolean;
-      };
-      set_leaderboard_title_batch: {
-        Args: {
-          p_first_sale_group_id: string;
-          p_title: string;
-          p_user_id?: string;
-        };
-        Returns: {
-          log_ids: string[];
-          updated_count: number;
-        }[];
-      };
       submit_recruit_registration: {
         Args: { p_auth_user_id?: string; p_data: Json; p_token: string };
         Returns: Json;
@@ -20330,10 +19606,6 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
-      };
-      update_daily_leaderboard_title: {
-        Args: { p_log_id: string; p_title: string; p_user_id: string };
-        Returns: boolean;
       };
       update_lead_discovery_call: {
         Args: {
@@ -20636,27 +19908,6 @@ export type Database = {
         | "cancelled"
         | "failed"
         | "expired";
-      slack_connection_status:
-        | "connected"
-        | "disconnected"
-        | "error"
-        | "pending";
-      slack_message_status:
-        | "pending"
-        | "sent"
-        | "delivered"
-        | "failed"
-        | "retrying";
-      slack_notification_type:
-        | "policy_created"
-        | "policy_cancelled"
-        | "policy_renewed"
-        | "daily_leaderboard"
-        | "weekly_summary"
-        | "commission_milestone"
-        | "agent_achievement"
-        | "new_recruit"
-        | "npn_received";
       table_rating:
         | "none"
         | "A"
@@ -20981,30 +20232,6 @@ export const Constants = {
         "cancelled",
         "failed",
         "expired",
-      ],
-      slack_connection_status: [
-        "connected",
-        "disconnected",
-        "error",
-        "pending",
-      ],
-      slack_message_status: [
-        "pending",
-        "sent",
-        "delivered",
-        "failed",
-        "retrying",
-      ],
-      slack_notification_type: [
-        "policy_created",
-        "policy_cancelled",
-        "policy_renewed",
-        "daily_leaderboard",
-        "weekly_summary",
-        "commission_milestone",
-        "agent_achievement",
-        "new_recruit",
-        "npn_received",
       ],
       table_rating: [
         "none",

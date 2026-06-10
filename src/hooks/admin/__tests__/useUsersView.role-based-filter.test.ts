@@ -72,10 +72,6 @@ describe("useUsersView role-based filtering logic", () => {
     agency_id: null,
     imo_id: "00000000-0000-0000-0000-000000000001",
     uw_wizard_enabled: false,
-    // slack_member_overrides column was dropped from the DB; the generated type
-    // still lists it until database.types.ts is regenerated from prod, so this
-    // mock value stays to satisfy the (stale) type. Remove on next types regen.
-    slack_member_overrides: null,
 
     // Apply overrides
     ...overrides,
