@@ -167,10 +167,14 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       if (!isAgencyAllowed(item.allowedAgencyId)) return null;
       if (!isEmailAllowed(item.allowedEmails)) return null;
 
-      // Email-substring gate (e.g. Epic-Life-only command center). Super-admins bypass.
+      // Email-substring gate (e.g. Epic-Life-only command center). Super-admins
+      // and members of an IMO that grants all features (e.g. Epic Life) bypass —
+      // the email substring is only a stand-in for IMO membership, and not every
+      // Epic Life agent has "epiclife" in their email.
       if (
         item.requireEmailIncludes &&
         !isSuperAdmin &&
+        !imoGrantsAllFeatures &&
         !currentUserEmail?.includes(item.requireEmailIncludes.toLowerCase())
       ) {
         return null;
@@ -218,6 +222,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       currentUserEmail,
       hasManageableSubscription,
       hasFeature,
+      imoGrantsAllFeatures,
       isAgencyAllowed,
       isEmailAllowed,
       isLoading,

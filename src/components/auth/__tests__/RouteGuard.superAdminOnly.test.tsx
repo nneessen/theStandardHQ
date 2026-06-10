@@ -9,6 +9,7 @@ import {
   useAnyFeatureAccess,
   useFeatureAccess,
   useSubscription,
+  useImoAllFeaturesAccess,
 } from "@/hooks/subscription";
 
 vi.mock("@/hooks/admin", () => ({
@@ -27,6 +28,7 @@ vi.mock("@/hooks/subscription", () => ({
   useFeatureAccess: vi.fn(),
   useAnyFeatureAccess: vi.fn(),
   useSubscription: vi.fn(),
+  useImoAllFeaturesAccess: vi.fn(),
 }));
 
 describe("RouteGuard superAdminOnly", () => {
@@ -68,6 +70,12 @@ describe("RouteGuard superAdminOnly", () => {
       hasManageableSubscription: true,
       isLoading: false,
     } as unknown as ReturnType<typeof useSubscription>);
+
+    vi.mocked(useImoAllFeaturesAccess).mockReturnValue({
+      grantsAllFeatures: false,
+      isLoading: false,
+      error: null,
+    });
   });
 
   it("blocks non-super-admin users for superAdminOnly routes", () => {

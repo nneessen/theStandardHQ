@@ -9,6 +9,7 @@ import {
   useFeatureAccess,
   useAnyFeatureAccess,
   useSubscription,
+  useImoAllFeaturesAccess,
   type FeatureKey,
 } from "@/hooks/subscription";
 import { PendingApproval } from "@/features/auth";
@@ -135,6 +136,14 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   const { hasManageableSubscription, isLoading: subscriptionLoading } =
     useSubscription();
 
+  // IMO-wide entitlement (e.g. Epic Life's free_all_features). Members of such an
+  // IMO bypass the email-substring gate below — that gate was only ever a proxy
+  // for IMO membership.
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: imoEntitlementLoading,
+  } = useImoAllFeaturesAccess();
+
   // Determine which feature check to use
   const hasFeatureRequirement = subscriptionFeature || subscriptionFeatures;
   const checkingFeature =
@@ -146,7 +155,8 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
     authLoading ||
     permLoading ||
     checkingFeature ||
-    (requiresPaidSubscription && subscriptionLoading)
+    (requiresPaidSubscription && subscriptionLoading) ||
+    (!!requireEmailIncludes && imoEntitlementLoading)
   ) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -184,9 +194,13 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   }
 
   // Check email-substring requirement (e.g. Epic-Life-only command center).
-  // Super admins already returned above, so this only gates non-super-admins.
+  // Super admins already returned above. Members of an IMO that grants all
+  // features (e.g. Epic Life) ALSO bypass: the "epiclife" email substring was
+  // only ever a stand-in for Epic Life membership, and not every Epic Life agent
+  // has "epiclife" in their email — honor the real IMO entitlement instead.
   if (
     requireEmailIncludes &&
+    !imoGrantsAllFeatures &&
     !currentEmail?.toLowerCase().includes(requireEmailIncludes.toLowerCase())
   ) {
     return <>{fallback || <PermissionDenied />}</>;

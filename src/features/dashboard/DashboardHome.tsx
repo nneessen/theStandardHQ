@@ -14,6 +14,7 @@ import { useMetricsWithDateRange } from "@/hooks";
 import { useUnreadCount } from "@/components/notifications/useNotifications";
 import { useUnreadMessageCount } from "../../hooks/messaging/useMessages";
 import { useFeatureAccess } from "../../hooks/subscription/useFeatureAccess";
+import { useImoAllFeaturesAccess } from "../../hooks/subscription/useImoAllFeaturesAccess";
 import { useCreateExpense } from "../../hooks/expenses/useCreateExpense";
 import { useCreatePolicy } from "../../hooks/policies";
 import { useChargebackSummary } from "../../hooks/commissions/useChargebackSummary";
@@ -207,6 +208,7 @@ export const DashboardHome: React.FC = () => {
   const createOrFindClient = useCreateOrFindClient();
   const { data: chargebackSummary } = useChargebackSummary();
 
+  const { grantsAllFeatures: imoGrantsAllFeatures } = useImoAllFeaturesAccess();
   const { hasAccess: hasTeamAccess } = useFeatureAccess("hierarchy");
   const { hasAccess: hasRecruitingAccess } = useFeatureAccess("recruiting");
   const { hasAccess: hasBasicRecruiting } =
@@ -461,10 +463,14 @@ export const DashboardHome: React.FC = () => {
     .filter((a) => a.condition)
     .map((a) => ({ type: a.type, title: a.title, message: a.message }));
 
-  // Discord quick-action is limited to super-admins (Nick) + Epic Life users
-  // (email contains "epiclife"). Mirrors the command-center email gate.
+  // Discord quick-action is for super-admins (Nick) + Epic Life users. Keyed off
+  // the IMO entitlement (free_all_features) so EVERY Epic Life agent sees it, not
+  // just those whose email happens to contain "epiclife". Email substring kept as
+  // a harmless fallback.
   const showDiscord =
-    !!user?.is_super_admin || !!user?.email?.toLowerCase().includes("epiclife");
+    !!user?.is_super_admin ||
+    imoGrantsAllFeatures ||
+    !!user?.email?.toLowerCase().includes("epiclife");
 
   const tickerItems: Array<[string, string]> = [
     ["PREMIUM", premiumValueStr],
