@@ -271,41 +271,77 @@ serve(async (req) => {
     for (const s of segments)
       if (typeof s.id === "number") segById.set(s.id, s);
 
-    // ── 6. Claude: SPEAKER ROLES (from content) + objections / summary / demographics.
-    // The transcript is labeled by SPEAKER NUMBER, not role — so the model decides
-    // who is the agent / client / automated from what is actually said, instead of
-    // inheriting transcribe's positional "first speaker = agent" guess (wrong on
-    // inbound calls that open with an IVR/hold message). Talk-time + word-track
-    // matching below then key off the model's classification.
+    // ── 6. Speaker→role helpers. pickAgentClient keeps only agent/client roles and
+    // normalizes the key to the bare speaker number — the model sometimes echoes
+    // "Speaker 0" instead of "0", which must still resolve via roleOf(0).
+    const normalizeSpeakerKey = (k: string): string => {
+      const m = String(k).match(/(\d+)\s*$/);
+      return m ? m[1] : String(k).trim();
+    };
+    const pickAgentClient = (
+      src: Record<string, unknown> | null | undefined,
+    ): Record<string, "agent" | "client"> => {
+      const out: Record<string, "agent" | "client"> = {};
+      for (const [k, v] of Object.entries(src ?? {}))
+        if (v === "agent" || v === "client") out[normalizeSpeakerKey(k)] = v;
+      return out;
+    };
+    const storedRoleMap = pickAgentClient(
+      rec.speaker_role_map as Record<string, unknown> | null,
+    );
+
+    // ── 7. Diarized transcript for Claude.
+    // • Auto-detect run: label by SPEAKER NUMBER so the model classifies who is
+    //   agent / client / automated from content (transcribe's "first speaker =
+    //   agent" guess is wrong on inbound calls opening with an IVR/hold message).
+    // • Manual re-analysis (skip_role_detection): the human already fixed the
+    //   roles, so label lines AGENT / CLIENT from the stored map — otherwise Claude
+    //   would re-guess and could attribute objections to the wrong party, leaving
+    //   the summary/objections inconsistent with the corrected talk-time/word-tracks.
+    const promptUsesRoles =
+      skipRoleDetection && Object.keys(storedRoleMap).length > 0;
+    const speakerLabel = (spk: number | null | undefined): string => {
+      if (typeof spk !== "number") return "Speaker ?";
+      const r = promptUsesRoles ? storedRoleMap[String(spk)] : undefined;
+      return r === "agent"
+        ? "AGENT"
+        : r === "client"
+          ? "CLIENT"
+          : `Speaker ${spk}`;
+    };
     const diarized = segments
-      .map((s) => {
-        const spk =
-          typeof s.speaker === "number" ? `Speaker ${s.speaker}` : "Speaker ?";
-        const t = typeof s.text === "string" ? s.text : "";
-        return `[#${s.id ?? "?"}] ${spk}: ${t}`;
-      })
+      .map(
+        (s) =>
+          `[#${s.id ?? "?"}] ${speakerLabel(s.speaker)}: ${typeof s.text === "string" ? s.text : ""}`,
+      )
       .join("\n");
+
+    const roleGuidance = promptUsesRoles
+      ? `The transcript lines are already labeled AGENT (the salesperson) or CLIENT (the caller/prospect); any "Speaker N" line is automated/other. TRUST these labels — do not re-assign them.`
+      : `The transcript lines are labeled by SPEAKER NUMBER ("Speaker 0", "Speaker 1", …); diarization does NOT tell you who is who — you must decide. These are INBOUND calls. The AGENT is the salesperson who answers and runs the call: greets/answers ("thank you for calling", "how can I help you"), introduces themselves by name, asks qualifying questions, and pitches. The CLIENT is the caller/prospect who has a need and raises objections. A speaker that ONLY delivers an automated system / IVR / hold message ("please hold while we connect you…", menu prompts) is "other" — it is NOT the agent. Classify EACH speaker number from what they actually say.`;
 
     const system = `You are an insurance sales call-coaching analyst. You read a diarized phone-sales call transcript and return ONLY a raw JSON object. No markdown, no code fences, no prose.
 
-The transcript lines are labeled by SPEAKER NUMBER ("Speaker 0", "Speaker 1", …); diarization does NOT tell you who is who — you must decide. These are INBOUND calls. The AGENT is the salesperson who answers and runs the call: greets/answers ("thank you for calling", "how can I help you"), introduces themselves by name, asks qualifying questions, and pitches. The CLIENT is the caller/prospect who has a need and raises objections. A speaker that ONLY delivers an automated system / IVR / hold message ("please hold while we connect you…", menu prompts) is "other" — it is NOT the agent. Classify EACH speaker number from what they actually say.
+${roleGuidance}
 
 You understand life-insurance phone sales: objections come from the CLIENT (price, "need to talk to my spouse", "let me think about it", "already covered", health concerns, distrust, timing). A SMOKE SCREEN is a stall or non-genuine objection used to end the call rather than a real concern. NEVER infer protected characteristics for discriminatory purposes; demographics are for training analytics only and must come from what is actually said.`;
 
-    const userPrompt = `Analyze this call. Each line is prefixed with a segment id like [#3] and a speaker number.
+    const speakerRolesField = promptUsesRoles
+      ? ""
+      : `  "speaker_roles": { "<every speaker number that appears, e.g. \\"0\\", \\"1\\">": "agent" | "client" | "other" },\n`;
+    const userPrompt = `Analyze this call. Each line is prefixed with a segment id like [#3].
 
 TRANSCRIPT:
 ${diarized}
 
 Return JSON with this EXACT schema (use the segment id the moment occurs in; omit fields you cannot determine):
 {
-  "speaker_roles": { "<every speaker number that appears>": "agent" | "client" | "other" },
-  "summary": "2-3 sentence summary of the call and its outcome",
+${speakerRolesField}  "summary": "2-3 sentence summary of the call and its outcome",
   "objections": [{ "segment_id": number, "quote": "verbatim CLIENT words", "type": "price|spouse_consult|think_about_it|already_covered|health|trust|timing|other", "is_smoke_screen": boolean, "handled": boolean, "resolution": "how the agent responded, 1 sentence" }],
   "key_moments": [{ "segment_id": number, "label": "short label", "kind": "rapport|discovery|pitch|objection|close|compliance|other" }],
   "demographics": { "age": number|null, "age_band": "under_30|30_39|40_49|50_59|60_69|70_plus|unknown", "gender": "male|female|other|unknown", "state": "USPS 2-letter or null", "existing_coverage": "what coverage the client already has, or null" }
 }
-Classify a role for every speaker number present. Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
+${promptUsesRoles ? "" : "Classify a role for every speaker number present. "}Limit objections to the genuine ones (max 12) and key_moments to max 8.`;
 
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
@@ -330,33 +366,22 @@ Classify a role for every speaker number present. Limit objections to the genuin
       .join("");
     const parsed = parseStructuredJson<ClaudeResult>(rawText);
 
-    // ── 7. Effective speaker→role map. Use Claude's content-based classification,
-    // UNLESS this is a manual re-analysis preserving a human correction
-    // (skip_role_detection). "other"/automated speakers are omitted → unknown →
-    // excluded from talk-time and word-track matching.
-    const pickAgentClient = (
-      src: Record<string, unknown>,
-    ): Record<string, "agent" | "client"> => {
-      const out: Record<string, "agent" | "client"> = {};
-      for (const [k, v] of Object.entries(src))
-        if (v === "agent" || v === "client") out[String(k)] = v;
-      return out;
-    };
-    const storedRoleMap = pickAgentClient(
-      (rec.speaker_role_map ?? {}) as Record<string, unknown>,
-    );
+    // ── 8. Effective speaker→role map. On a manual re-analysis keep the human map;
+    // otherwise take Claude's content-based classification (falling back to the
+    // stored map only if the model returned nothing usable). Absent speakers
+    // (automated "other") → roleOf "unknown" → excluded from talk-time and, when a
+    // map exists, from agent word-track matching.
     let effectiveRoleMap: Record<string, "agent" | "client">;
     if (skipRoleDetection) {
       effectiveRoleMap = storedRoleMap;
     } else {
-      const detected =
-        parsed.speaker_roles && typeof parsed.speaker_roles === "object"
-          ? pickAgentClient(parsed.speaker_roles as Record<string, unknown>)
-          : {};
-      // Fall back to whatever was stored only if the model returned nothing usable.
+      const detected = pickAgentClient(
+        parsed.speaker_roles as Record<string, unknown> | null,
+      );
       effectiveRoleMap =
         Object.keys(detected).length > 0 ? detected : storedRoleMap;
     }
+    const hasRoleMap = Object.keys(effectiveRoleMap).length > 0;
     const roleOf = (spk: number | null | undefined): string =>
       spk == null ? "unknown" : (effectiveRoleMap[String(spk)] ?? "unknown");
 
@@ -388,14 +413,18 @@ Classify a role for every speaker number present. Limit objections to the genuin
 
     const ledToSale = rec.outcome == null ? null : rec.outcome === "sold";
 
+    // Agent word-tracks are scripts the AGENT says. With a role map, match ONLY
+    // agent segments — so an automated/IVR "other" voice (absent from the map →
+    // "unknown") can't false-positive an agent script (e.g. an IVR "thank you for
+    // calling"). With NO usable map, fall back to scanning all speech rather than
+    // missing every detection. Computed once, not per word track.
+    const agentSegs = segments.filter((s) => {
+      const r = roleOf(s.speaker);
+      return r === "agent" || (!hasRoleMap && r === "unknown");
+    });
+
     const detections: Record<string, unknown>[] = [];
     for (const wt of (tracks ?? []) as WordTrack[]) {
-      // Word tracks are AGENT scripts → only match within agent-role segments
-      // (or unknown-role, when diarization produced no map).
-      const agentSegs = segments.filter((s) => {
-        const r = roleOf(s.speaker);
-        return r === "agent" || r === "unknown";
-      });
       let matcher: ((segText: string) => boolean) | null = null;
       if (wt.match_type === "regex" && wt.match_pattern) {
         try {

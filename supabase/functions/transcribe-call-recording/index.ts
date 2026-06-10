@@ -169,10 +169,18 @@ serve(async (req) => {
   // (owner / upline / IMO admin) applies; an IMO-wide *reader* affects 0 rows →
   // 403, before any admin write happens. (Mirrors analyze-call-transcript.) The
   // uploader owns the row, so the normal upload→transcribe path passes.
+  //
+  // The status predicate also makes the claim ATOMIC: two concurrent invokes (e.g.
+  // the upload auto-fire racing a user-clicked retry on a still-'pending' row) both
+  // read the row before either flips it, but only the first UPDATE matches a
+  // claimable status — the loser affects 0 rows and bails here, so Deepgram is
+  // never invoked twice for one recording. (completed/processing already returned
+  // at step 6; only pending/failed/skipped are claimable.)
   const { data: claimed, error: claimErr } = await db
     .from("kpi_call_recordings")
     .update({ transcription_status: "processing", transcription_error: null })
     .eq("id", recording.id)
+    .in("transcription_status", ["pending", "failed", "skipped"])
     .select("id")
     .maybeSingle();
   if (claimErr) {

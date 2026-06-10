@@ -1,10 +1,12 @@
 // src/features/call-reviews/components/TranscriptionProgress.tsx
 // Real-feedback status banner for a recording's transcribe → analyze pipeline.
 // Deepgram is a single synchronous call with no true %, so the active state uses
-// an INDETERMINATE bar + a live elapsed timer + stage pips (not a fake %). It
-// also surfaces the two stuck/terminal states with an actionable button:
-//   • pending  → "Start transcription" (dispatch never fired, e.g. a gate reject)
-//   • failed   → "Retry" (+ the stored error)
+// an INDETERMINATE bar + a live elapsed timer + stage pips (not a fake %). It also
+// surfaces the stuck/terminal states with an actionable button:
+//   • pending (fresh)     → "Starting transcription…" (no button — it's about to run)
+//   • pending (stale)     → "Start transcription" (dispatch never fired, e.g. a gate reject)
+//   • transcription failed → "Retry"
+//   • analysis failed      → "Re-analyze" (transcript is fine, the AI pass errored)
 
 import { useEffect, useState } from "react";
 import {
@@ -22,6 +24,12 @@ const INDETERMINATE_KEYFRAMES = `
   0%   { transform: translateX(-110%); }
   100% { transform: translateX(320%); }
 }`;
+
+// A freshly-uploaded row sits in 'pending' for a moment before the async
+// transcribe edge function flips it to 'processing'. Only treat 'pending' as
+// genuinely stuck (dispatch failed — e.g. a gate rejection) after this long, so a
+// normal upload doesn't flash a misleading "Start transcription" button.
+const PENDING_STALE_MS = 45_000;
 
 function elapsedLabel(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -41,31 +49,46 @@ interface Props {
   >;
   onRetry: () => void;
   retrying: boolean;
+  onReanalyze: () => void;
+  reanalyzing: boolean;
 }
 
-export function TranscriptionProgress({ recording, onRetry, retrying }: Props) {
+export function TranscriptionProgress({
+  recording,
+  onRetry,
+  retrying,
+  onReanalyze,
+  reanalyzing,
+}: Props) {
   const t = recording.transcription_status;
   const a = recording.analysis_status;
+  const startedAt = recording.updated_at ?? recording.created_at ?? null;
 
   const transcribing = t === "processing";
-  const pendingStuck = t === "pending"; // dispatch never started it
+  const pending = t === "pending";
   const failed = t === "failed";
   const analyzing =
     t === "completed" && (a === "pending" || a === "processing");
-  const active = transcribing || analyzing;
+  const analysisFailed = t === "completed" && a === "failed";
 
-  // Live elapsed timer (hooks must run before any early return).
-  const startedAt = recording.updated_at ?? recording.created_at ?? null;
+  // Live ticker — runs while anything is in flight (incl. fresh 'pending', so the
+  // view can flip to "stuck" once it crosses PENDING_STALE_MS).
+  const ticking = transcribing || analyzing || pending;
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    if (!active) return;
+    if (!ticking) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [active]);
+  }, [ticking]);
 
-  if (!transcribing && !pendingStuck && !failed && !analyzing) return null;
+  if (!transcribing && !pending && !failed && !analyzing && !analysisFailed)
+    return null;
 
-  // ── Failed ──────────────────────────────────────────────────────────────
+  const ageMs = startedAt != null ? now - new Date(startedAt).getTime() : 0;
+  const pendingStuck = pending && ageMs >= PENDING_STALE_MS;
+  const startingUp = pending && !pendingStuck;
+
+  // ── Transcription failed ──────────────────────────────────────────────────
   if (failed) {
     return (
       <div className="rounded-lg border border-rose-200 bg-rose-50/60 px-3 py-2.5 flex items-center justify-between gap-2">
@@ -98,7 +121,7 @@ export function TranscriptionProgress({ recording, onRetry, retrying }: Props) {
     );
   }
 
-  // ── Pending (never started — e.g. the transcribe dispatch was rejected) ───
+  // ── Pending but stuck (dispatch never fired — e.g. a gate rejection) ───────
   if (pendingStuck) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2.5 flex items-center justify-between gap-2">
@@ -124,10 +147,41 @@ export function TranscriptionProgress({ recording, onRetry, retrying }: Props) {
     );
   }
 
-  // ── Active: indeterminate bar + stage + live elapsed ──────────────────────
-  const stage = transcribing ? "Transcribing audio" : "Analyzing transcript";
+  // ── Analysis failed (transcript is ready; the AI pass errored) ─────────────
+  if (analysisFailed) {
+    return (
+      <div className="rounded-lg border border-rose-200 bg-rose-50/60 px-3 py-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+          <p className="text-[11px] text-rose-700">
+            Analysis failed — the transcript is ready, but objections /
+            word-tracks didn’t run.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-[11px] shrink-0"
+          onClick={onReanalyze}
+          disabled={reanalyzing}
+        >
+          <RefreshCw
+            className={`h-3 w-3 mr-1 ${reanalyzing ? "animate-spin" : ""}`}
+          />
+          Re-analyze
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Active (transcribing / analyzing / starting): bar + stage + elapsed ────
+  const stage = transcribing
+    ? "Transcribing audio"
+    : analyzing
+      ? "Analyzing transcript"
+      : "Starting transcription";
   const elapsed =
-    startedAt != null
+    startedAt != null && !startingUp
       ? elapsedLabel(now - new Date(startedAt).getTime())
       : null;
 
@@ -152,7 +206,11 @@ export function TranscriptionProgress({ recording, onRetry, retrying }: Props) {
         />
       </div>
       <div className="flex items-center gap-3 text-[10px] text-v2-ink-subtle">
-        <StagePip label="Transcribe" active={transcribing} done={analyzing} />
+        <StagePip
+          label="Transcribe"
+          active={transcribing || startingUp}
+          done={analyzing}
+        />
         <StagePip label="Analyze" active={analyzing} done={false} />
         <span className="ml-auto">Updates automatically when ready</span>
       </div>

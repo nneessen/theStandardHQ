@@ -71,7 +71,9 @@ async function fetchLibraryPage(
     .eq("imo_id", imoId)
     .order("call_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .range(from, from + LIBRARY_PAGE_SIZE - 1);
+    // Fetch one extra row to detect a next page without a trailing empty fetch
+    // when the result count is an exact multiple of LIBRARY_PAGE_SIZE.
+    .range(from, from + LIBRARY_PAGE_SIZE);
 
   if (!filters.showArchived) q = q.is("archived_at", null);
   if (filters.outcome !== "all") q = q.eq("outcome", filters.outcome);
@@ -82,15 +84,17 @@ async function fetchLibraryPage(
   const term = sanitizeSearch(filters.search);
   if (term) {
     q = q.or(
-      `caller_name.ilike.%${term}%,original_filename.ilike.%${term}%,transcript_text.ilike.%${term}%`,
+      `caller_name.ilike.%${term}%,original_filename.ilike.%${term}%,notes.ilike.%${term}%,transcript_text.ilike.%${term}%`,
     );
   }
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  const rows = (data ?? []) as CallLibraryRow[];
-  const nextFrom =
-    rows.length === LIBRARY_PAGE_SIZE ? from + LIBRARY_PAGE_SIZE : undefined;
+  const fetched = (data ?? []) as CallLibraryRow[];
+  // The extra row (if returned) proves a next page exists; don't surface it.
+  const hasMore = fetched.length > LIBRARY_PAGE_SIZE;
+  const rows = hasMore ? fetched.slice(0, LIBRARY_PAGE_SIZE) : fetched;
+  const nextFrom = hasMore ? from + LIBRARY_PAGE_SIZE : undefined;
   return { rows, nextFrom };
 }
 
@@ -158,6 +162,13 @@ export function useArchiveRecording() {
   const { userId } = useKpiIdentity();
   return useMutation({
     mutationFn: async ({ id, archive }: { id: string; archive: boolean }) => {
+      // archived_by is the audit trail — never record a null actor (userId can be
+      // momentarily null during auth hydration).
+      if (archive && !userId) {
+        throw new Error(
+          "Your session isn't ready yet — try again in a moment.",
+        );
+      }
       const { error } = await supabase
         .from("kpi_call_recordings")
         .update(

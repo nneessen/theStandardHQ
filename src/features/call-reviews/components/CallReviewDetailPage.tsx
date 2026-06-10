@@ -221,6 +221,8 @@ export function CallReviewDetailPage({
         recording={recording}
         onRetry={() => retryMutation.mutate(recordingId)}
         retrying={retryMutation.isPending}
+        onReanalyze={() => redetectSpeakers.mutate(recordingId)}
+        reanalyzing={redetectSpeakers.isPending}
       />
 
       {/* Body: tabs (left) + markers (right) */}

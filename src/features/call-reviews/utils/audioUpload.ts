@@ -57,17 +57,14 @@ export function validateAudioFile(file: File): string | null {
   }
   const ext = fileExtension(file.name);
   const extOk = ext != null && ALLOWED_EXT.has(ext);
-  // Browsers sometimes report an empty MIME for uncommon containers; accept that
-  // as long as the extension is on the allowlist.
-  const mimeOk = !file.type || ALLOWED_MIME.has(file.type);
+  // The EXTENSION is authoritative; the MIME type is only a secondary accept
+  // signal (browsers report empty or non-standard MIME for some audio files, e.g.
+  // a .mp3 served as audio/mpeg3). Reject ONLY when neither the extension nor the
+  // MIME is recognized — never bounce a valid-extension file on an odd MIME. The
+  // storage bucket re-validates the MIME server-side as the hard gate.
+  const mimeOk = !!file.type && ALLOWED_MIME.has(file.type);
   if (!extOk && !mimeOk) {
     return "Unsupported file. Upload an audio recording (mp3, m4a, wav, webm, aac, ogg, or flac).";
-  }
-  if (!extOk) {
-    return "Unsupported file extension. Allowed: mp3, m4a, wav, webm, aac, ogg, flac, mp4.";
-  }
-  if (!mimeOk) {
-    return "That file's type isn't a supported audio format.";
   }
   return null;
 }

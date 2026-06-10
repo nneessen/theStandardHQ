@@ -7,7 +7,7 @@
 // defaults to unknown and is excluded from talk-time + word-track analysis.
 // Persisting re-runs analysis so objections/word-tracks/talk-time follow the fix.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Save, ArrowLeftRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,6 +72,23 @@ export function SpeakerRoleEditor({
       d[String(sp.speaker)] = roleOfSpeaker(sp.speaker, roleMap);
     return d;
   });
+
+  // Re-sync the draft when the STORED map changes — e.g. after "Auto-detect (AI)"
+  // rewrites speaker_role_map and the recording query refetches — so the dropdowns
+  // reflect the new roles. A local dropdown change doesn't touch the stored map, so
+  // the storedKey is unchanged and an in-progress manual edit is never clobbered.
+  const storedKey = speakers
+    .map((sp) => `${sp.speaker}:${roleOfSpeaker(sp.speaker, roleMap)}`)
+    .join("|");
+  useEffect(() => {
+    const d: Record<string, SpeakerRole> = {};
+    for (const sp of speakers)
+      d[String(sp.speaker)] = roleOfSpeaker(sp.speaker, roleMap);
+    setDraft(d);
+    // storedKey captures the stored roleMap × speakers; re-deriving from it is the
+    // intended sync. (speakers/roleMap are covered by storedKey.)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedKey]);
 
   const setRole = (speaker: number, role: SpeakerRole) =>
     setDraft((d) => ({ ...d, [String(speaker)]: role }));

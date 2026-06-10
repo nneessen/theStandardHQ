@@ -288,7 +288,10 @@ export function CallReviewsPage() {
                       onClick={() =>
                         archiveMutation.mutate({ id: r.id, archive: !archived })
                       }
-                      disabled={archiveMutation.isPending}
+                      disabled={
+                        archiveMutation.isPending &&
+                        archiveMutation.variables?.id === r.id
+                      }
                       className="p-1 rounded text-v2-ink-subtle hover:text-v2-ink hover:bg-v2-ring/40"
                     >
                       {archived ? (
