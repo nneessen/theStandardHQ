@@ -5,18 +5,37 @@
 // Newly-eligible carriers live in the always-on Action Center, not here.
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, UserPlus, X, Loader2, IdCard } from "lucide-react";
+import {
+  Search,
+  UserPlus,
+  X,
+  Loader2,
+  IdCard,
+  Check,
+  Pencil,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Board, EmptyState, StatusDot, T } from "@/components/board";
 import { Pager } from "./Pager";
-import { StatusTag, statusColor } from "./StatusTag";
+import { StatusTag, statusColor, STATUS_OPTIONS } from "./StatusTag";
 import { RequestDifferentUplineDialog } from "./RequestDifferentUplineDialog";
 import {
   useMyContracts,
   useMySponsorships,
   useCancelSponsorship,
+  useMyUserId,
+  useSetContractStatus,
+  useHubCarriers,
 } from "../../hooks/useContractingHub";
+import type { ContractStatus } from "../../services/contractingHubService";
 
 const ROWS_PAGE = 25;
 
@@ -91,12 +110,37 @@ export function MyContractingPanel() {
   const contracts = useMyContracts();
   const sponsorships = useMySponsorships();
   const cancelMut = useCancelSponsorship();
+  const me = useMyUserId();
+  const carriers = useHubCarriers();
+  const setStatus = useSetContractStatus();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogCarrier, setDialogCarrier] = useState<string | null>(null);
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
   const rows = useMemo(() => contracts.data ?? [], [contracts.data]);
+
+  // carriers in my org I don't yet have a contract row for — the "Add carrier" menu
+  const addable = useMemo(() => {
+    const have = new Set(rows.map((r) => r.carrierId));
+    return (carriers.data ?? [])
+      .filter((c) => !have.has(c.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [carriers.data, rows]);
+
+  const saveWriting = async (carrierId: string) => {
+    const v = draft.trim();
+    setEditKey(null);
+    if (!v || !me.data) return;
+    await setStatus.mutateAsync({
+      agentId: me.data,
+      carrierId,
+      status: "approved",
+      writingNumber: v,
+    });
+  };
   const counts = useMemo(() => {
     const c = { approved: 0, inProgress: 0, denied: 0 };
     for (const r of rows) {
@@ -175,6 +219,30 @@ export function MyContractingPanel() {
               className="h-8 pl-7 text-xs w-48"
             />
           </div>
+          {addable.length > 0 && (
+            <Select
+              value=""
+              onValueChange={(carrierId) =>
+                me.data &&
+                setStatus.mutate({
+                  agentId: me.data,
+                  carrierId,
+                  status: "submitted",
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs w-[150px]">
+                <SelectValue placeholder="+ Add carrier" />
+              </SelectTrigger>
+              <SelectContent>
+                {addable.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -208,7 +276,7 @@ export function MyContractingPanel() {
             }
             hint={
               rows.length === 0
-                ? "When your upline is approved for a carrier, it shows in the Action Center’s “Newly eligible” box and you can start a request."
+                ? "Use “Add carrier” above to start tracking a carrier contract, or pick one from the Action Center’s “Newly eligible” box."
                 : "Adjust the search to find a carrier."
             }
             pad={40}
@@ -218,7 +286,7 @@ export function MyContractingPanel() {
             <div style={colHead}>
               <span style={{ flex: 1, minWidth: 0 }}>Carrier</span>
               <span style={{ width: 128 }}>Status</span>
-              <span style={{ width: 120, textAlign: "right" }}>Writing #</span>
+              <span style={{ width: 150 }}>Writing #</span>
               <span style={{ width: 70, textAlign: "right" }}>Submitted</span>
               <span style={{ width: 70, textAlign: "right" }}>Approved</span>
               <span style={{ width: 96 }} />
@@ -226,6 +294,7 @@ export function MyContractingPanel() {
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
               {pageRows.map((r) => {
                 const blocked = r.status === "denied";
+                const editing = editKey === r.carrierId;
                 return (
                   <li
                     key={r.carrierId}
@@ -259,18 +328,117 @@ export function MyContractingPanel() {
                       </span>
                     </span>
                     <span style={{ width: 128 }}>
-                      <StatusTag status={r.status} />
+                      <Select
+                        value={r.status}
+                        onValueChange={(v) =>
+                          me.data &&
+                          setStatus.mutate({
+                            agentId: me.data,
+                            carrierId: r.carrierId,
+                            status: v as ContractStatus,
+                          })
+                        }
+                      >
+                        <SelectTrigger className="h-7 text-xs w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_OPTIONS.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </span>
                     <span
                       style={{
-                        width: 120,
-                        textAlign: "right",
-                        font: `700 12.5px ${T.mono}`,
-                        fontVariantNumeric: "tabular-nums",
-                        color: r.writingNumber ? T.cream : T.mut2,
+                        width: 150,
+                        display: "flex",
+                        justifyContent: "flex-start",
                       }}
                     >
-                      {r.writingNumber ?? "—"}
+                      {r.status === "approved" ? (
+                        editing ? (
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <Input
+                              value={draft}
+                              onChange={(e) => setDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveWriting(r.carrierId);
+                                if (e.key === "Escape") setEditKey(null);
+                              }}
+                              autoFocus
+                              placeholder="Writing #"
+                              className="h-7 text-xs w-28"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => saveWriting(r.carrierId)}
+                              aria-label="Save"
+                            >
+                              <Check
+                                className="h-3.5 w-3.5"
+                                style={{ color: T.green }}
+                              />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setEditKey(null)}
+                              aria-label="Cancel"
+                            >
+                              <X
+                                className="h-3.5 w-3.5"
+                                style={{ color: T.red }}
+                              />
+                            </Button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditKey(r.carrierId);
+                              setDraft(r.writingNumber ?? "");
+                            }}
+                            className="inline-flex items-center gap-1.5 hover:opacity-80"
+                            style={{
+                              font: `700 12.5px ${T.mono}`,
+                              color: r.writingNumber ? T.cream : T.mut2,
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: 0,
+                            }}
+                          >
+                            {r.writingNumber ?? "Add #"}
+                            <Pencil
+                              className="h-3 w-3"
+                              style={{ color: T.mut2 }}
+                            />
+                          </button>
+                        )
+                      ) : (
+                        <span
+                          style={{
+                            font: `700 12.5px ${T.mono}`,
+                            color: T.mut2,
+                          }}
+                        >
+                          —
+                        </span>
+                      )}
                     </span>
                     <span style={dateCol}>{r.submittedDate ?? "—"}</span>
                     <span style={dateCol}>{r.approvedDate ?? "—"}</span>
