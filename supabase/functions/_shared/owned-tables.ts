@@ -104,15 +104,6 @@ export const EXPORTED_TABLES: OwnedTable[] = [
     sheet: "Lead Purchases",
     wipe: "explicit",
   },
-  // Production logs
-  {
-    table: "daily_sales_logs",
-    ownerColumn: "first_seller_id",
-    export: true,
-    sheet: "Daily Sales",
-    wipe: "explicit",
-    note: "first_seller_id is SET NULL on profile delete; wipe explicitly for a clean record",
-  },
   // Contracts & credentials
   {
     table: "carrier_contracts",
