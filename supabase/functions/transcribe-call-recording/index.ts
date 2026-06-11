@@ -260,6 +260,18 @@ serve(async (req) => {
       );
     }
 
+    // Reconcile the authoritative file size from storage — file_size_bytes at
+    // upload is the browser-reported file.size, which the per-IMO storage quota
+    // relies on. Best-effort HEAD; never blocks transcription.
+    let authoritativeSize: number | null = null;
+    try {
+      const head = await fetch(signed.signedUrl, { method: "HEAD" });
+      const len = Number(head.headers.get("content-length"));
+      if (Number.isFinite(len) && len > 0) authoritativeSize = len;
+    } catch {
+      // keep the client-reported size
+    }
+
     // ── Deepgram prerecorded: nova-2 + diarization + utterances ───────────────
     const params = new URLSearchParams({
       model: "nova-2",
@@ -354,6 +366,9 @@ serve(async (req) => {
     const { error: saveErr } = await adminClient
       .from("kpi_call_recordings")
       .update({
+        ...(authoritativeSize != null
+          ? { file_size_bytes: authoritativeSize }
+          : {}),
         transcript_text: transcriptText,
         transcript_segments: segments,
         duration_seconds: durationSeconds,

@@ -44,6 +44,8 @@ interface CallAudioPlayerProps {
   error: boolean;
   markers: CallMarkerRow[];
   onTimeUpdate?: (currentTime: number) => void;
+  /** Audio was purged by the retention policy; show a transcript-only notice. */
+  audioExpired?: boolean;
 }
 
 const PLAYBACK_RATES = [0.75, 1, 1.25, 1.5, 2];
@@ -52,7 +54,7 @@ export const CallAudioPlayer = forwardRef<
   CallPlayerHandle,
   CallAudioPlayerProps
 >(function CallAudioPlayer(
-  { signedUrl, isLoading, error, markers, onTimeUpdate },
+  { signedUrl, isLoading, error, markers, onTimeUpdate, audioExpired },
   ref,
 ) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -141,6 +143,17 @@ export const CallAudioPlayer = forwardRef<
     setPlaybackRate(r);
   };
 
+  if (audioExpired) {
+    return (
+      <div className="rounded-xl border border-v2-ring bg-v2-canvas p-6 text-center">
+        <p className="text-xs font-medium text-v2-ink">Audio expired</p>
+        <p className="mt-1 text-[11px] text-v2-ink-muted">
+          This recording&apos;s audio was removed after the 180-day retention
+          window. The transcript and analysis below are kept permanently.
+        </p>
+      </div>
+    );
+  }
   if (isLoading) {
     return (
       <div className="rounded-xl border border-v2-ring bg-gradient-to-b from-card to-muted p-6 flex items-center justify-center">

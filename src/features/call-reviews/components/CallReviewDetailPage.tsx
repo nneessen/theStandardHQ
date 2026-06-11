@@ -50,11 +50,16 @@ export function CallReviewDetailPage({
   recordingId,
 }: CallReviewDetailPageProps) {
   const { data: recording, isLoading, error } = useCallRecording(recordingId);
+  // Skip the signed-URL fetch once the audio has been purged by the retention
+  // policy — the object is gone, so a fetch would just 404.
+  const audioExpired = !!recording?.audio_deleted_at;
   const {
     data: signedUrl,
     isLoading: urlLoading,
     error: urlError,
-  } = useCallRecordingSignedUrl(recording?.storage_path);
+  } = useCallRecordingSignedUrl(
+    audioExpired ? undefined : recording?.storage_path,
+  );
   const { data: markerData, isLoading: markersLoading } =
     useCallMarkers(recordingId);
   const { data: detections, isLoading: detectionsLoading } =
@@ -213,6 +218,7 @@ export function CallReviewDetailPage({
         signedUrl={signedUrl ?? null}
         isLoading={urlLoading}
         error={!!urlError}
+        audioExpired={audioExpired}
         markers={markers}
         onTimeUpdate={setCurrentTime}
       />

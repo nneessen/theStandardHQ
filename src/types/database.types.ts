@@ -5722,6 +5722,7 @@ export type Database = {
           analyzed_at: string | null;
           archived_at: string | null;
           archived_by: string | null;
+          audio_deleted_at: string | null;
           call_at: string | null;
           call_direction: string;
           call_type_id: string | null;
@@ -5776,6 +5777,7 @@ export type Database = {
           analyzed_at?: string | null;
           archived_at?: string | null;
           archived_by?: string | null;
+          audio_deleted_at?: string | null;
           call_at?: string | null;
           call_direction?: string;
           call_type_id?: string | null;
@@ -5830,6 +5832,7 @@ export type Database = {
           analyzed_at?: string | null;
           archived_at?: string | null;
           archived_by?: string | null;
+          audio_deleted_at?: string | null;
           call_at?: string | null;
           call_direction?: string;
           call_type_id?: string | null;
@@ -17504,6 +17507,7 @@ export type Database = {
         }[];
       };
       get_imo_admin: { Args: { p_imo_id: string }; Returns: string };
+      get_imo_call_recording_usage_bytes: { Args: never; Returns: number };
       get_imo_contract_stats: {
         Args: { p_imo_id: string };
         Returns: {

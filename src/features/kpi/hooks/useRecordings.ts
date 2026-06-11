@@ -7,11 +7,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/services/base/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImo } from "@/contexts/ImoContext";
 import { kpiKeys, useKpiIdentity } from "./kpiKeys";
 import {
   CALL_RECORDINGS_BUCKET,
   recordingStorageService,
 } from "../services/recordingStorageService";
+import {
+  readCallRecordingQuotaGb,
+  quotaBytesFromGb,
+  bytesToGb,
+} from "../utils/recordingQuota";
 import type { CallRecordingInsert, CallRecordingRow } from "../types/kpi.types";
 
 // ─── Read: the current agent's uploaded recordings ──────────────────────────
@@ -60,6 +66,7 @@ export type RecordingUploadMeta = Omit<
 export function useUploadRecording() {
   const queryClient = useQueryClient();
   const { userId, imoId } = useKpiIdentity();
+  const { imo } = useImo();
 
   return useMutation({
     mutationFn: async ({
@@ -71,6 +78,24 @@ export function useUploadRecording() {
     }) => {
       if (!userId || !imoId) {
         throw new Error("Your account is not linked to an IMO yet.");
+      }
+
+      // 0. Per-IMO storage quota (opt-in). Block before touching storage so a
+      //    rejected upload leaves nothing to roll back. Usage comes from a
+      //    SECURITY-DEFINER RPC so the whole-IMO total is visible to any agent.
+      const quotaGb = readCallRecordingQuotaGb(imo);
+      if (quotaGb != null) {
+        const { data: usedBytes, error: usageErr } = await supabase.rpc(
+          "get_imo_call_recording_usage_bytes",
+        );
+        if (usageErr) throw new Error(usageErr.message);
+        const used = usedBytes ?? 0;
+        if (used + file.size > quotaBytesFromGb(quotaGb)) {
+          throw new Error(
+            `Your team's call-recording storage is full (${bytesToGb(used)} / ${quotaGb} GB). ` +
+              `Remove old recordings or wait for the 180-day retention to free space.`,
+          );
+        }
       }
 
       // 1. Upload the file into the agent's folder.

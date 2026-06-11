@@ -272,13 +272,22 @@ export function CallReviewsPage() {
                         </span>
                       )}
                     </div>
-                    <div>
+                    <div className="flex items-center gap-1">
                       <Badge
                         variant="outline"
                         className={`text-[9px] px-1 py-0 ${STATUS_CLASSES[status] ?? ""}`}
                       >
                         {recordingStatusLabel(status)}
                       </Badge>
+                      {r.audio_deleted_at && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1 py-0 text-v2-ink-subtle"
+                          title="Audio expired after 180 days; transcript retained"
+                        >
+                          Transcript only
+                        </Badge>
+                      )}
                     </div>
                   </Link>
                   <div className="flex items-center justify-end gap-0.5">
