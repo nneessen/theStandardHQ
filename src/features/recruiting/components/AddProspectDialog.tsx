@@ -64,6 +64,15 @@ function fromDateInput(value: string): string | null {
   // Anchor at local noon to avoid a timezone day-shift when stored as UTC.
   return new Date(`${value}T12:00:00`).toISOString();
 }
+// On edit, if the user didn't change the day, keep the exact stored timestamp
+// so a silent save doesn't re-anchor the time-of-day (noon drift).
+function resolveDate(
+  value: string,
+  originalIso: string | null | undefined,
+): string | null {
+  if (originalIso && value === toDateInput(originalIso)) return originalIso;
+  return fromDateInput(value);
+}
 
 const labelCls = "text-sm font-medium text-foreground";
 const inputCls = "h-10 text-sm";
@@ -128,8 +137,14 @@ export function AddProspectDialog({
       source: form.source.trim() || null,
       status: isConverted ? ("converted" as ProspectStatus) : form.status,
       notes: form.notes.trim() || null,
-      next_follow_up_at: fromDateInput(form.next_follow_up_at),
-      last_contacted_at: fromDateInput(form.last_contacted_at),
+      next_follow_up_at: resolveDate(
+        form.next_follow_up_at,
+        prospect?.next_follow_up_at,
+      ),
+      last_contacted_at: resolveDate(
+        form.last_contacted_at,
+        prospect?.last_contacted_at,
+      ),
     };
 
     try {

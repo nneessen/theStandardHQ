@@ -635,6 +635,7 @@ function FreeUplineRecruitingView() {
   const { data: pipelinePhases = [] } = usePhases(activeTemplate?.id);
 
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
+  const [addProspectDialogOpen, setAddProspectDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const { recruitId: deepLinkRecruitId } = useSearch({ from: "/recruiting" });
@@ -720,6 +721,19 @@ function FreeUplineRecruitingView() {
                   Upgrade for full pipeline
                 </PillButton>
               </Link>
+              <Link to="/recruiting/prospects">
+                <PillButton tone="ghost" size="sm">
+                  Prospects
+                </PillButton>
+              </Link>
+              <PillButton
+                tone="yellow"
+                size="sm"
+                onClick={() => setAddProspectDialogOpen(true)}
+                leadingIcon={<Users className="h-3.5 w-3.5" />}
+              >
+                Add prospect
+              </PillButton>
               <PillButton
                 tone="black"
                 size="sm"
@@ -816,6 +830,11 @@ function FreeUplineRecruitingView() {
                 params: { recruitId: newRecruitId },
               });
             }}
+          />
+
+          <AddProspectDialog
+            open={addProspectDialogOpen}
+            onOpenChange={setAddProspectDialogOpen}
           />
         </div>
       </div>
