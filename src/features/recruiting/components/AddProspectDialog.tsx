@@ -29,7 +29,7 @@ import {
   useUpdateProspect,
 } from "../hooks/useProspectMutations";
 import {
-  PROSPECT_STATUSES,
+  SELECTABLE_PROSPECT_STATUSES,
   PROSPECT_STATUS_LABELS,
   type Prospect,
   type ProspectStatus,
@@ -74,6 +74,9 @@ export function AddProspectDialog({
   prospect,
 }: AddProspectDialogProps) {
   const isEdit = !!prospect;
+  // "converted" is terminal/system-set — once converted, the status is locked
+  // (editing other fields must not revert it or orphan converted_recruit_id).
+  const isConverted = prospect?.status === "converted";
   const createProspect = useCreateProspect();
   const updateProspect = useUpdateProspect();
   const [form, setForm] = useState(EMPTY);
@@ -123,7 +126,7 @@ export function AddProspectDialog({
       phone: form.phone.trim() || null,
       state: form.state || null,
       source: form.source.trim() || null,
-      status: form.status,
+      status: isConverted ? ("converted" as ProspectStatus) : form.status,
       notes: form.notes.trim() || null,
       next_follow_up_at: fromDateInput(form.next_follow_up_at),
       last_contacted_at: fromDateInput(form.last_contacted_at),
@@ -258,21 +261,31 @@ export function AddProspectDialog({
               <Label htmlFor="p_status" className={labelCls}>
                 Status
               </Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => set("status", v as ProspectStatus)}
-              >
-                <SelectTrigger id="p_status" className={inputCls}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROSPECT_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {PROSPECT_STATUS_LABELS[s]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isConverted ? (
+                <Input
+                  id="p_status"
+                  value={PROSPECT_STATUS_LABELS.converted}
+                  readOnly
+                  disabled
+                  className={inputCls}
+                />
+              ) : (
+                <Select
+                  value={form.status}
+                  onValueChange={(v) => set("status", v as ProspectStatus)}
+                >
+                  <SelectTrigger id="p_status" className={inputCls}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SELECTABLE_PROSPECT_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {PROSPECT_STATUS_LABELS[s]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="p_followup" className={labelCls}>

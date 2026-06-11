@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Phone, Pencil, Trash2, UserPlus } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import {
-  PROSPECT_STATUSES,
+  SELECTABLE_PROSPECT_STATUSES,
   PROSPECT_STATUS_COLORS,
   PROSPECT_STATUS_LABELS,
   type Prospect,
@@ -65,7 +65,8 @@ export function ProspectListTable({
         <TableBody>
           {prospects.map((p) => {
             const status = (p.status as ProspectStatus) ?? "new";
-            const colors = PROSPECT_STATUS_COLORS[status];
+            const colors =
+              PROSPECT_STATUS_COLORS[status] ?? PROSPECT_STATUS_COLORS.new;
             const overdue = isOverdue(p);
             const converted = status === "converted";
             return (
@@ -109,25 +110,35 @@ export function ProspectListTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Select
-                    value={status}
-                    onValueChange={(v) =>
-                      onStatusChange(p, v as ProspectStatus)
-                    }
-                  >
-                    <SelectTrigger
-                      className={`h-7 text-[11px] w-[130px] border ${colors.bg} ${colors.text} ${colors.border}`}
+                  {converted ? (
+                    // Terminal, system-set status — show a read-only badge, not
+                    // an editable Select (only the Convert flow sets it).
+                    <span
+                      className={`inline-flex items-center h-7 px-2 rounded-md text-[11px] border ${colors.bg} ${colors.text} ${colors.border}`}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROSPECT_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {PROSPECT_STATUS_LABELS[s]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      {PROSPECT_STATUS_LABELS.converted}
+                    </span>
+                  ) : (
+                    <Select
+                      value={status}
+                      onValueChange={(v) =>
+                        onStatusChange(p, v as ProspectStatus)
+                      }
+                    >
+                      <SelectTrigger
+                        className={`h-7 text-[11px] w-[130px] border ${colors.bg} ${colors.text} ${colors.border}`}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SELECTABLE_PROSPECT_STATUSES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {PROSPECT_STATUS_LABELS[s]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </TableCell>
                 <TableCell className="text-[11px] text-muted-foreground">
                   {p.last_contacted_at ? formatDate(p.last_contacted_at) : "—"}

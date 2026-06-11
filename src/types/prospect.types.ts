@@ -28,6 +28,12 @@ export const PROSPECT_STATUSES: ProspectStatus[] = [
   "converted",
 ];
 
+// Statuses a user may pick manually. "converted" is terminal and system-set —
+// it is only ever assigned by the Convert→recruit flow (which also stamps
+// converted_recruit_id), never chosen by hand.
+export const SELECTABLE_PROSPECT_STATUSES: ProspectStatus[] =
+  PROSPECT_STATUSES.filter((s) => s !== "converted");
+
 // Input for creating a prospect. owner_id/imo_id/agency_id are derived from the
 // caller's tenant context in the service, so callers only supply contact fields.
 export interface CreateProspectInput {
