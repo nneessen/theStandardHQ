@@ -25,6 +25,7 @@ import {
 } from "./components/RecruitListTable";
 import type { EnrichedLead } from "@/types/leads.types";
 import { AddRecruitDialog } from "./components/AddRecruitDialog";
+import { AddProspectDialog } from "./components/AddProspectDialog";
 import { PostAddRecruitWizard } from "./components/PostAddRecruitWizard";
 import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
@@ -104,6 +105,7 @@ function RecruitingDashboardContent() {
   const { data: pipelinePhases = [] } = usePhases(activeTemplate?.id);
 
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
+  const [addProspectDialogOpen, setAddProspectDialogOpen] = useState(false);
   const [sendInviteDialogOpen, setSendInviteDialogOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -324,6 +326,14 @@ function RecruitingDashboardContent() {
                   Pipelines
                 </PillButton>
               </Link>
+              <PillButton
+                tone="yellow"
+                size="sm"
+                onClick={() => setAddProspectDialogOpen(true)}
+                leadingIcon={<Users className="h-3.5 w-3.5" />}
+              >
+                Add prospect
+              </PillButton>
               <PillButton
                 tone="black"
                 size="sm"
@@ -569,6 +579,11 @@ function RecruitingDashboardContent() {
                 skippedPipeline: meta.skippedPipeline,
               });
             }}
+          />
+
+          <AddProspectDialog
+            open={addProspectDialogOpen}
+            onOpenChange={setAddProspectDialogOpen}
           />
 
           <PostAddRecruitWizard

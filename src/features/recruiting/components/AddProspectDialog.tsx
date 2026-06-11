@@ -1,6 +1,7 @@
 // src/features/recruiting/components/AddProspectDialog.tsx
-// Add / edit a Prospect — a lightweight follow-up contact. No auth account,
-// no email is sent (unlike Add Recruit). Mirrors the BasicAddRecruitDialog form.
+// Add / edit a Prospect — a lightweight follow-up contact (a potential recruit
+// who hasn't committed yet). No auth account is created and NO email is sent,
+// unlike Add Recruit. Sized for comfortable reading.
 
 import { useState, useEffect } from "react";
 import {
@@ -63,6 +64,9 @@ function fromDateInput(value: string): string | null {
   // Anchor at local noon to avoid a timezone day-shift when stored as UTC.
   return new Date(`${value}T12:00:00`).toISOString();
 }
+
+const labelCls = "text-sm font-medium text-foreground";
+const inputCls = "h-10 text-sm";
 
 export function AddProspectDialog({
   open,
@@ -141,53 +145,53 @@ export function AddProspectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle className="text-sm">
+          <DialogTitle className="text-lg font-semibold">
             {isEdit ? "Edit prospect" : "Add prospect"}
           </DialogTitle>
-          <DialogDescription className="text-[11px] text-muted-foreground">
-            A prospect is someone you&apos;re keeping in touch with. No account
-            is created and no email is sent.
+          <DialogDescription className="text-sm text-muted-foreground">
+            A prospect is a potential recruit who hasn&apos;t committed yet.
+            Adding one creates <strong>no account</strong> and sends{" "}
+            <strong>no email</strong> — it&apos;s just here so you can keep in
+            touch and follow up.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3 mt-1">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="p_first" className="text-[11px]">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-1">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_first" className={labelCls}>
                 First name *
               </Label>
               <Input
                 id="p_first"
                 value={form.first_name}
                 onChange={(e) => set("first_name", e.target.value)}
-                className="h-8 text-[11px]"
+                className={inputCls}
                 placeholder="John"
               />
               {errors.first_name && (
-                <p className="text-[10px] text-destructive">
-                  {errors.first_name}
-                </p>
+                <p className="text-xs text-destructive">{errors.first_name}</p>
               )}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="p_last" className="text-[11px]">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_last" className={labelCls}>
                 Last name
               </Label>
               <Input
                 id="p_last"
                 value={form.last_name}
                 onChange={(e) => set("last_name", e.target.value)}
-                className="h-8 text-[11px]"
+                className={inputCls}
                 placeholder="Doe"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="p_email" className="text-[11px]">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_email" className={labelCls}>
                 Email
               </Label>
               <Input
@@ -195,15 +199,15 @@ export function AddProspectDialog({
                 type="email"
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
-                className="h-8 text-[11px]"
+                className={inputCls}
                 placeholder="john@example.com"
               />
               {errors.email && (
-                <p className="text-[10px] text-destructive">{errors.email}</p>
+                <p className="text-xs text-destructive">{errors.email}</p>
               )}
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="p_phone" className="text-[11px]">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_phone" className={labelCls}>
                 Phone
               </Label>
               <Input
@@ -211,19 +215,19 @@ export function AddProspectDialog({
                 type="tel"
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
-                className="h-8 text-[11px]"
+                className={inputCls}
                 placeholder="(555) 555-5555"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="p_state" className="text-[11px]">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_state" className={labelCls}>
                 State
               </Label>
               <Select value={form.state} onValueChange={(v) => set("state", v)}>
-                <SelectTrigger id="p_state" className="h-8 text-[11px]">
+                <SelectTrigger id="p_state" className={inputCls}>
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
@@ -235,30 +239,30 @@ export function AddProspectDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="p_source" className="text-[11px]">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_source" className={labelCls}>
                 Source
               </Label>
               <Input
                 id="p_source"
                 value={form.source}
                 onChange={(e) => set("source", e.target.value)}
-                className="h-8 text-[11px]"
-                placeholder="Referral, event…"
+                className={inputCls}
+                placeholder="Referral, event, social…"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="p_status" className="text-[11px]">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_status" className={labelCls}>
                 Status
               </Label>
               <Select
                 value={form.status}
                 onValueChange={(v) => set("status", v as ProspectStatus)}
               >
-                <SelectTrigger id="p_status" className="h-8 text-[11px]">
+                <SelectTrigger id="p_status" className={inputCls}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -270,8 +274,8 @@ export function AddProspectDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="p_followup" className="text-[11px]">
+            <div className="space-y-1.5">
+              <Label htmlFor="p_followup" className={labelCls}>
                 Next follow-up
               </Label>
               <Input
@@ -279,41 +283,34 @@ export function AddProspectDialog({
                 type="date"
                 value={form.next_follow_up_at}
                 onChange={(e) => set("next_follow_up_at", e.target.value)}
-                className="h-8 text-[11px]"
+                className={inputCls}
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="p_notes" className="text-[11px]">
+          <div className="space-y-1.5">
+            <Label htmlFor="p_notes" className={labelCls}>
               Notes
             </Label>
             <Textarea
               id="p_notes"
               value={form.notes}
               onChange={(e) => set("notes", e.target.value)}
-              className="text-[11px] min-h-16"
+              className="text-sm min-h-24"
               placeholder="What did you talk about? What's the follow-up?"
             />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="gap-2 sm:gap-2 pt-1">
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 text-[11px]"
+              variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={saving}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              size="sm"
-              className="h-7 text-[11px]"
-              disabled={saving}
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : isEdit ? "Save changes" : "Add prospect"}
             </Button>
           </DialogFooter>

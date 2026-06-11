@@ -89,6 +89,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SectionShell } from "@/components/v2";
+import { AddProspectDialog } from "./AddProspectDialog";
 import { Board, Cap, T } from "@/components/board";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -165,6 +166,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   const { user } = useAuth();
   const { effectiveImoId } = useImo();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addProspectOpen, setAddProspectOpen] = useState(false);
   const [graduatingRecruit, setGraduatingRecruit] =
     useState<UserProfile | null>(null);
   const [editingRecruit, setEditingRecruit] = useState<UserProfile | null>(
@@ -316,13 +318,22 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
               <Link to="/recruiting/prospects">
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="h-6 text-[11px] px-2"
+                  variant="ghost"
+                  className="h-7 text-[11px] px-2"
+                  title="View your prospects"
                 >
-                  <Users className="h-3 w-3 mr-1" />
-                  Prospects
+                  View prospects
                 </Button>
               </Link>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] px-2 border-amber-400 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                onClick={() => setAddProspectOpen(true)}
+              >
+                <Users className="h-3 w-3 mr-1" />
+                Add prospect
+              </Button>
               <BasicAddRecruitDialog
                 open={addDialogOpen}
                 onOpenChange={setAddDialogOpen}
@@ -779,6 +790,12 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
               }}
             />
           )}
+
+          {/* Add Prospect Dialog (lightweight contact — no account, no email) */}
+          <AddProspectDialog
+            open={addProspectOpen}
+            onOpenChange={setAddProspectOpen}
+          />
         </div>
       </div>
     </SectionShell>

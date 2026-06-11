@@ -112,9 +112,17 @@ def main() -> int:
         results.append(("/recruiting/prospects renders", ok0, ""))
         page.screenshot(path=str(OUT / "prospects-0-render.png"), full_page=True)
 
-        # ===== TEST 1: add prospect persists, NO auth account created =====
+        # ===== TEST 1: add a prospect FROM THE MAIN /recruiting PAGE header =====
+        # (this is the path the owner actually uses — a prominent "Add prospect"
+        # button right next to "Add recruit", no tab-hunting required)
+        page.goto(f"{BASE}/recruiting", wait_until="domcontentloaded", timeout=30_000)
+        page.wait_for_timeout(2500)
+        add_btn = page.get_by_role("button", name="Add prospect")
+        ok_btn = add_btn.count() > 0
+        results.append(("/recruiting has a prominent 'Add prospect' button", ok_btn, ""))
+
         before = my_prospects(token, uid)
-        page.get_by_role("button", name="Add prospect").first.click()
+        add_btn.first.click()
         page.wait_for_timeout(700)
         dialog = page.get_by_role("dialog")
         dialog.locator("#p_first").fill(fname)
@@ -135,7 +143,9 @@ def main() -> int:
                         no_account, f"user_profiles with {pemail}: {0 if no_account else '>=1'}"))
         page.screenshot(path=str(OUT / "prospects-1-added.png"), full_page=True)
 
-        # ===== TEST 2: inline status change persists =====
+        # ===== TEST 2: inline status change persists (on the Prospects tab) =====
+        page.goto(f"{BASE}/recruiting/prospects", wait_until="domcontentloaded", timeout=30_000)
+        page.wait_for_timeout(2500)
         ok2 = False
         note2 = "row not found"
         if added:
