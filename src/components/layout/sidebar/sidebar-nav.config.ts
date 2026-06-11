@@ -88,6 +88,7 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         icon: FileText,
         label: "Policies",
         href: "/policies",
+        primary: true,
         permission: "nav.policies",
       },
       {

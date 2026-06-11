@@ -29,6 +29,7 @@ export function SidebarNavItem({
 }: SidebarNavItemProps) {
   const Icon = item.icon;
   const isLocked = item.state === "locked";
+  const isPrimary = item.primary === true;
 
   if (isLocked) {
     const lockedEl = (
@@ -88,13 +89,23 @@ export function SidebarNavItem({
             isCollapsed ? "w-9 justify-center mx-auto" : "w-full gap-2.5 px-3",
             isActive
               ? "bg-board-blue/10 text-board-ink font-semibold ring-1 ring-inset ring-board-blue/35"
-              : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
+              : isPrimary
+                ? // Primary anchor (e.g. Policies): amber-lit resting bed that reads as elevated.
+                  "bg-board-amber/[0.07] text-board-cream font-semibold ring-1 ring-inset ring-board-amber/25 hover:bg-board-amber/[0.12] hover:ring-board-amber/40"
+                : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
           )}
           data-active={isActive}
         >
           <Icon
             size={16}
-            className={cn("flex-shrink-0", isActive ? "text-board-blue" : "")}
+            className={cn(
+              "flex-shrink-0",
+              isActive
+                ? "text-board-blue"
+                : isPrimary
+                  ? "text-board-amber"
+                  : "",
+            )}
           />
           {!isCollapsed && (
             <span className="truncate uppercase tracking-[0.03em]">

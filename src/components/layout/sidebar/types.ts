@@ -9,6 +9,8 @@ export interface SidebarNavigationItem {
   icon: ElementType;
   label: string;
   href: string;
+  /** Visually elevate this item as a primary/anchor destination in the rail. */
+  primary?: boolean;
   permission?: PermissionCode;
   public?: boolean;
   subscriptionFeature?: FeatureKey;

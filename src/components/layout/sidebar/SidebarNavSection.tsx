@@ -33,12 +33,14 @@ export function SidebarNavSection({
       {!isCollapsed && (
         <div
           className={cn(
-            "mb-1 px-3 flex items-center gap-2.5 cursor-pointer group",
-            groupIdx > 0 ? "mt-3" : "mt-1",
+            "mb-1.5 px-3 flex items-center gap-2 cursor-pointer group",
+            groupIdx > 0 ? "mt-4" : "mt-1.5",
           )}
           onClick={() => onToggleSection(group.id)}
         >
-          <span className="font-mono text-[11px] font-bold uppercase text-v2-ink-muted tracking-[0.16em] select-none whitespace-nowrap">
+          {/* amber split-flap indicator — departure-board section marker */}
+          <span className="h-2.5 w-[3px] rounded-full bg-board-amber/80 flex-shrink-0 transition-colors duration-200 group-hover:bg-board-amber" />
+          <span className="font-mono text-[12px] font-bold uppercase text-board-cream/90 tracking-[0.18em] select-none whitespace-nowrap transition-colors duration-200 group-hover:text-board-cream">
             {group.label}
           </span>
           {/* hairline track running off to the right — departure-board look */}
