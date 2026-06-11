@@ -69,6 +69,7 @@ export const TABLES = {
   PHASE_CHECKLIST_ITEMS: "phase_checklist_items",
   RECRUIT_PHASE_PROGRESS: "recruit_phase_progress",
   RECRUIT_CHECKLIST_PROGRESS: "recruit_checklist_progress",
+  PROSPECTS: "prospects",
 
   // Workflows
   WORKFLOWS: "workflows",

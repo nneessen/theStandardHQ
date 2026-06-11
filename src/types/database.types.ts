@@ -8693,6 +8693,126 @@ export type Database = {
           },
         ];
       };
+      prospects: {
+        Row: {
+          agency_id: string | null;
+          converted_at: string | null;
+          converted_recruit_id: string | null;
+          created_at: string;
+          email: string | null;
+          first_name: string;
+          id: string;
+          imo_id: string;
+          last_contacted_at: string | null;
+          last_name: string | null;
+          next_follow_up_at: string | null;
+          notes: string | null;
+          owner_id: string;
+          phone: string | null;
+          source: string | null;
+          state: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          agency_id?: string | null;
+          converted_at?: string | null;
+          converted_recruit_id?: string | null;
+          created_at?: string;
+          email?: string | null;
+          first_name: string;
+          id?: string;
+          imo_id: string;
+          last_contacted_at?: string | null;
+          last_name?: string | null;
+          next_follow_up_at?: string | null;
+          notes?: string | null;
+          owner_id: string;
+          phone?: string | null;
+          source?: string | null;
+          state?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string | null;
+          converted_at?: string | null;
+          converted_recruit_id?: string | null;
+          created_at?: string;
+          email?: string | null;
+          first_name?: string;
+          id?: string;
+          imo_id?: string;
+          last_contacted_at?: string | null;
+          last_name?: string | null;
+          next_follow_up_at?: string | null;
+          notes?: string | null;
+          owner_id?: string;
+          phone?: string | null;
+          source?: string | null;
+          state?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "prospects_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_converted_recruit_id_fkey";
+            columns: ["converted_recruit_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_converted_recruit_id_fkey";
+            columns: ["converted_recruit_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_converted_recruit_id_fkey";
+            columns: ["converted_recruit_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "prospects_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       rate_limits: {
         Row: {
           bucket_key: string;

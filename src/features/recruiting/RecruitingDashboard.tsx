@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   UserPlus,
+  Users,
   Mail,
   Download,
   Settings2,
@@ -334,11 +335,20 @@ function RecruitingDashboardContent() {
             </div>
           </header>
 
-          {/* Tab nav — Pipeline vs Your Page (branded link + custom domains) */}
+          {/* Tab nav — Pipeline vs Prospects vs Your Page (branded link + custom domains) */}
           <div className="flex items-center gap-1.5">
             <PillButton tone="black" size="sm">
               Pipeline
             </PillButton>
+            <Link to="/recruiting/prospects">
+              <PillButton
+                tone="ghost"
+                size="sm"
+                leadingIcon={<Users className="h-3.5 w-3.5" />}
+              >
+                Prospects
+              </PillButton>
+            </Link>
             <Link to="/recruiting/your-page">
               <PillButton
                 tone="ghost"
@@ -434,7 +444,7 @@ function RecruitingDashboardContent() {
                 onChange={(e) => setHideProspects(e.target.checked)}
                 className="h-3.5 w-3.5 rounded border-v2-ring"
               />
-              Hide prospects (unenrolled recruits)
+              Hide unenrolled recruits
             </label>
           </div>
 
@@ -443,10 +453,10 @@ function RecruitingDashboardContent() {
           {hideProspects && (
             <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-warning/30 bg-warning/5 text-[11px] text-v2-ink">
               <span>
-                <strong>Hide prospects is on</strong> — recruits not yet
-                enrolled in a pipeline are hidden. If a recruit you just added
-                doesn&apos;t show up here, enroll them in a pipeline from their
-                profile, or click to show all.
+                <strong>Hide unenrolled recruits is on</strong> — recruits not
+                yet enrolled in a pipeline are hidden. If a recruit you just
+                added doesn&apos;t show up here, enroll them in a pipeline from
+                their profile, or click to show all.
               </span>
               <button
                 type="button"

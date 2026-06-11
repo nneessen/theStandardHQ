@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   UserPlus,
+  Users,
   Mail,
   Phone,
   User,
@@ -312,6 +313,16 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
             </div>
 
             <div className="flex items-center gap-2">
+              <Link to="/recruiting/prospects">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-[11px] px-2"
+                >
+                  <Users className="h-3 w-3 mr-1" />
+                  Prospects
+                </Button>
+              </Link>
               <BasicAddRecruitDialog
                 open={addDialogOpen}
                 onOpenChange={setAddDialogOpen}

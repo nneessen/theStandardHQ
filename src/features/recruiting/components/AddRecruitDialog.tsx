@@ -119,12 +119,26 @@ interface AddRecruitDialogProps {
     recruitId: string,
     meta: { fullName: string; isLicensed: boolean; skippedPipeline: boolean },
   ) => void;
+  /**
+   * Optional seed values for the basic-info fields. Used by the "Convert
+   * prospect → recruit" flow to pre-fill the form. Only applied at mount, so
+   * callers should remount the dialog (e.g. via a `key`) per seed.
+   */
+  initialValues?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+    state?: string;
+    resident_state?: string;
+  };
 }
 
 export function AddRecruitDialog({
   open,
   onOpenChange,
   onSuccess,
+  initialValues,
 }: AddRecruitDialogProps) {
   const { user } = useAuth();
   const { effectiveImoId, actingImoId, imo: contextImo } = useImo();
@@ -141,18 +155,18 @@ export function AddRecruitDialog({
 
   const form = useForm({
     defaultValues: {
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
+      first_name: initialValues?.first_name ?? "",
+      last_name: initialValues?.last_name ?? "",
+      email: initialValues?.email ?? "",
+      phone: initialValues?.phone ?? "",
       date_of_birth: "",
       street_address: "",
       city: "",
-      state: "",
+      state: initialValues?.state ?? "",
       zip: "",
       is_licensed_agent: false,
       skip_pipeline: false,
-      resident_state: "",
+      resident_state: initialValues?.resident_state ?? "",
       license_number: "",
       npn: "",
       license_expiration: "",
