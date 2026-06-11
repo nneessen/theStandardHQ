@@ -621,12 +621,17 @@ const underwritingAdminRoute = createRoute({
   ),
 });
 
-// Underwriting Guides route - browse carrier UW guide PDFs (training browser);
-// available to any signed-in user.
+// Underwriting Guides route - Training-section carrier guide library backed by
+// the `underwriting_guides` table. Open to every approved agent (IMO-scoped via
+// RLS; admins upload, everyone views); recruits are excluded at the route.
 const underwritingGuidesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "underwriting/guides",
-  component: () => <UnderwritingGuidesPage />,
+  component: () => (
+    <RouteGuard noRecruits>
+      <UnderwritingGuidesPage />
+    </RouteGuard>
+  ),
 });
 
 // Quick Quote route - free for all authenticated users

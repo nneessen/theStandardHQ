@@ -28,7 +28,12 @@ interface GuideWithCarrier extends UnderwritingGuide {
  */
 export function useUnderwritingGuides() {
   const { user } = useAuth();
-  const imoId = user?.imo_id;
+  const { effectiveImoId } = useImo();
+  // Read the SAME tenant the upload + carrier picker use (effectiveImoId), so a
+  // super-admin acting in a non-home IMO sees and manages the IMO they're acting
+  // in — not their home IMO. Mirrors useUploadGuide's writeImoId fallback, so the
+  // list, the carrier picker, and the write target never disagree.
+  const imoId = effectiveImoId ?? user?.imo_id;
 
   return useQuery({
     queryKey: guideQueryKeys.list(imoId || ""),
@@ -263,4 +268,32 @@ export function useGuideSignedUrl(storagePath: string | undefined) {
     enabled: !!storagePath,
     staleTime: 1000 * 60 * 30, // 30 minutes (URL valid for 1 hour)
   });
+}
+
+/**
+ * Open a guide PDF in a new tab via a freshly minted signed URL.
+ *
+ * The blank tab is opened synchronously inside the click gesture so the browser
+ * doesn't block it as a pop-up; it is then redirected once the signed URL
+ * resolves. Signed URLs are generated on demand (per click) rather than
+ * pre-fetched for every guide, keeping the library list render fast.
+ */
+export async function openGuidePdf(storagePath: string): Promise<void> {
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    throw new Error(
+      "Pop-up blocked. Allow pop-ups for this site, then click View again.",
+    );
+  }
+  try {
+    const url = await guideStorageService.getSignedUrl(storagePath);
+    if (!url) {
+      popup.close();
+      throw new Error("Could not create a secure link for this PDF.");
+    }
+    popup.location.href = url;
+  } catch (err) {
+    popup.close();
+    throw err;
+  }
 }

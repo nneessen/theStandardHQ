@@ -4,7 +4,7 @@ This feature is organized by capability so it is easier to place new code in the
 
 - `components/Wizard`: end-user wizard flow and step UI.
 - `components/SessionHistory`: `WizardSessionHistory` (used by the wizard).
-- `components/UnderwritingGuidesPage.tsx`: training PDF browser at `/underwriting/guides` (agent-facing, read-only).
+- `components/UnderwritingGuidesPage.tsx` (+ `components/guides-library/`): Training-section carrier guide library at `/underwriting/guides`, backed by the `underwriting_guides` table. Guides grouped per carrier in a responsive grid (single-guide carriers fill the row), paginated by carrier; PDFs open in a new tab via on-demand signed URLs. Everyone in the IMO views; admins (`is_imo_admin`) upload/delete.
 - `admin/`: admin workflow at `/underwriting/admin` (carrier rail + guide upload/parse/extract/review on one page). Composes existing hooks via `useUnderwritingAdmin.ts`.
 - `hooks/wizard`: wizard-only orchestration hooks.
 - `hooks/sessions`: session history, save, and reload hooks.

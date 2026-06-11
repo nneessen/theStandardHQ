@@ -147,6 +147,15 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // recruits are excluded at the route. Data is IMO-scoped via RLS.
         public: true,
       },
+      {
+        icon: FileCheck,
+        label: "Underwriting Guides",
+        href: "/underwriting/guides",
+        // Shared per-carrier library of underwriting guide PDFs. Open to every
+        // approved agent (view); admins upload. IMO-scoped via RLS; recruits
+        // excluded at the route.
+        public: true,
+      },
     ],
   },
   {
