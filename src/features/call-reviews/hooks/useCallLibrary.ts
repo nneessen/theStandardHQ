@@ -211,6 +211,40 @@ export function useDeleteRecording() {
   });
 }
 
+/**
+ * Reassign which agent a recording belongs to. A roster agent sets `agent_id`
+ * (and clears any prior off-system name); an off-system agent keeps the existing
+ * `agent_id` but records the typed name in `metadata.external_agent_name` (the
+ * label preferred for display). Governed by the recording UPDATE RLS
+ * (owner / upline / IMO admin / super-admin) — mirrors the upload-time picker.
+ */
+export function useUpdateCallAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      agentId,
+      metadata,
+    }: {
+      id: string;
+      agentId: string;
+      metadata: CallRecordingRow["metadata"];
+    }) => {
+      const { error } = await supabase
+        .from("kpi_call_recordings")
+        .update({ agent_id: agentId, metadata })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      toast.success("Call reassigned");
+      queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Couldn't reassign call"),
+  });
+}
+
 async function fetchRecording(id: string): Promise<CallLibraryRow | null> {
   const { data, error } = await supabase
     .from("kpi_call_recordings")

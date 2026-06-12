@@ -16,10 +16,19 @@ import {
   Archive,
   ArchiveRestore,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +56,7 @@ import {
   useImoAgents,
   useArchiveRecording,
   useDeleteRecording,
+  useUpdateCallAgent,
   DEFAULT_LIBRARY_FILTERS,
   type AgentName,
   type CallLibraryFilters,
@@ -97,6 +107,7 @@ export function CallReviewsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [showUpload, setShowUpload] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CallLibraryRow | null>(null);
+  const [editTarget, setEditTarget] = useState<CallLibraryRow | null>(null);
 
   // Debounce the search box → one server query per pause, not per keystroke.
   useEffect(() => {
@@ -313,6 +324,16 @@ export function CallReviewsPage() {
                     </div>
                   </Link>
                   <div className="flex items-center justify-end gap-0.5">
+                    {isSuperAdmin && (
+                      <button
+                        type="button"
+                        title="Reassign agent"
+                        onClick={() => setEditTarget(r)}
+                        className="p-1 rounded text-v2-ink-subtle hover:text-v2-ink hover:bg-v2-ring/40"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       title={archived ? "Restore" : "Archive"}
@@ -401,7 +422,148 @@ export function CallReviewsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {editTarget && (
+        <EditAgentDialog
+          row={editTarget}
+          agents={agents}
+          agentNames={agentNames}
+          currentUserId={userId}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
     </div>
+  );
+}
+
+interface EditAgentDialogProps {
+  row: CallLibraryRow;
+  agents: AgentName[];
+  agentNames: Record<string, string>;
+  currentUserId: string | null;
+  onClose: () => void;
+}
+
+// Reassign an existing recording to a different agent. Mirrors the upload
+// picker: a roster agent sets agent_id (clearing any off-system name), while
+// "Other agent" keeps agent_id and records the typed name in metadata. Only
+// rendered for a super-admin (RLS still enforces the write).
+function EditAgentDialog({
+  row,
+  agents,
+  agentNames,
+  currentUserId,
+  onClose,
+}: EditAgentDialogProps) {
+  const updateMutation = useUpdateCallAgent();
+  const existingExternal = externalAgentName(row);
+  const [assignTo, setAssignTo] = useState<string>(
+    existingExternal ? OTHER_AGENT : row.agent_id,
+  );
+  const [externalName, setExternalName] = useState(existingExternal ?? "");
+
+  const isOther = assignTo === OTHER_AGENT;
+  const trimmedExternal = externalName.trim();
+  const canSave =
+    (!isOther || trimmedExternal.length > 0) && !updateMutation.isPending;
+
+  const save = () => {
+    // Merge into existing metadata so consent acks etc. are preserved. A roster
+    // agent removes any prior off-system name; "Other" sets it (agent_id stays).
+    const base =
+      row.metadata &&
+      typeof row.metadata === "object" &&
+      !Array.isArray(row.metadata)
+        ? { ...(row.metadata as Record<string, unknown>) }
+        : {};
+    if (isOther) {
+      base.external_agent_name = trimmedExternal;
+    } else {
+      delete base.external_agent_name;
+    }
+    const agentId = isOther ? row.agent_id : assignTo;
+    updateMutation.mutate(
+      {
+        id: row.id,
+        agentId,
+        metadata: base as CallLibraryRow["metadata"],
+      },
+      { onSuccess: onClose },
+    );
+  };
+
+  const currentLabel =
+    existingExternal ?? agentNames[row.agent_id] ?? "Unassigned";
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-sm">Reassign call</DialogTitle>
+          <DialogDescription className="text-[11px]">
+            Currently attributed to{" "}
+            <span className="font-medium text-v2-ink">{currentLabel}</span>.
+            Choose who this call belongs to.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <label className="block text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
+            Whose call is this?
+          </label>
+          <select
+            value={assignTo}
+            onChange={(e) => setAssignTo(e.target.value)}
+            className="h-8 w-full text-xs rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          >
+            {currentUserId && (
+              <option value={currentUserId}>
+                Me ({agentNames[currentUserId] ?? "my own calls"})
+              </option>
+            )}
+            {agents
+              .filter((a) => a.id !== currentUserId)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            <option value={OTHER_AGENT}>Other agent (not listed)…</option>
+          </select>
+          {isOther && (
+            <Input
+              value={externalName}
+              onChange={(e) => setExternalName(e.target.value)}
+              placeholder="Type the agent's name"
+              className="h-8 text-xs"
+              autoFocus
+            />
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-[11px]"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            className="h-7 text-[11px]"
+            disabled={!canSave}
+            onClick={save}
+          >
+            {updateMutation.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : (
+              <Check className="h-3 w-3 mr-1" />
+            )}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
