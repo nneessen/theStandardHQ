@@ -215,7 +215,7 @@ export function GrowthChartPanel() {
         }}
       >
         <div>
-          <Cap>Predictive Analytics</Cap>
+          <Cap>Forecast</Cap>
           <div
             style={{
               font: `600 18px ${T.data}`,

@@ -1,6 +1,6 @@
 // src/features/analytics/board/AnalyticsHero.tsx
 //
-// Hero Verdict Band — full-width "Departure Status" panel for the Analytics
+// Hero Verdict Band — full-width "Monthly Performance" panel for the Analytics
 // redesign. Wired entirely to real data; no hardcoded sample numbers.
 //
 // Layout (see docs/design/board-page-template.md + the handoff Hero Verdict
@@ -60,7 +60,7 @@ function HeroSkeleton() {
 
 export function AnalyticsHero() {
   // The verdict band always reflects the CURRENT MONTH's pace — per the
-  // "DEPARTURE STATUS · <month>" / "OF MONTHLY GOAL" framing. It is deliberately
+  // "MONTHLY PERFORMANCE · <month>" / "OF MONTHLY GOAL" framing. It is deliberately
   // independent of the page's period selector (which drives the other panels),
   // so the written/projected/goal numbers always share a single monthly basis.
   const now = new Date();
@@ -167,7 +167,7 @@ export function AnalyticsHero() {
         {/* ── 2. Verdict block ── */}
         <div style={{ flex: "1 1 280px", minWidth: 220 }}>
           <Cap style={{ marginBottom: 10 }}>
-            DEPARTURE STATUS · {monthLabel}
+            MONTHLY PERFORMANCE · {monthLabel}
           </Cap>
 
           {/* Huge lit projected AP */}

@@ -101,7 +101,7 @@ export function ActionFeedPanel() {
         }}
       >
         <div>
-          <Cap>Smart Moves · Flags</Cap>
+          <Cap>Recommended Actions</Cap>
           <div
             style={{
               font: `600 18px ${T.data}`,
@@ -109,7 +109,7 @@ export function ActionFeedPanel() {
               marginTop: 4,
             }}
           >
-            Action Feed
+            What To Do Next
           </div>
         </div>
         {!isEmpty && (
@@ -129,8 +129,8 @@ export function ActionFeedPanel() {
       {isEmpty ? (
         <EmptyState
           icon={<Zap size={22} />}
-          title="No moves yet"
-          hint="Smart moves appear once you have policy + target data."
+          title="Nothing to act on yet"
+          hint="Recommended actions appear once you have policy + target data."
           pad={40}
           style={{ flex: 1 }}
         />
