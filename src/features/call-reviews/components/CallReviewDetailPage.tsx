@@ -5,20 +5,27 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Loader2, Users, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCallDuration, CALL_OUTCOME_OPTIONS } from "@/features/kpi";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  formatCallDuration,
+  CALL_OUTCOME_OPTIONS,
+  useKpiIdentity,
+} from "@/features/kpi";
 import {
   useCallRecording,
   useCallRecordingSignedUrl,
+  useImoAgents,
   useAnalyzeCall,
   useRedetectSpeakers,
   useRetryTranscription,
   useUpdateRoleMap,
 } from "../hooks/useCallLibrary";
+import { EditAgentDialog, externalAgentName } from "./EditAgentDialog";
 import { useCallMarkers } from "../hooks/useCallMarkers";
 import {
   useCallScripts,
@@ -49,7 +56,12 @@ interface CallReviewDetailPageProps {
 export function CallReviewDetailPage({
   recordingId,
 }: CallReviewDetailPageProps) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.is_super_admin === true;
+  const { imoId, userId } = useKpiIdentity();
   const { data: recording, isLoading, error } = useCallRecording(recordingId);
+  const { data: agentsData } = useImoAgents(imoId ?? undefined);
+  const [showReassign, setShowReassign] = useState(false);
   // Skip the signed-URL fetch once the audio has been purged by the retention
   // policy — the object is gone, so a fetch would just 404.
   const audioExpired = !!recording?.audio_deleted_at;
@@ -166,13 +178,41 @@ export function CallReviewDetailPage({
                 {OUTCOME_LABEL.get(recording.outcome) ?? recording.outcome}
               </Badge>
             )}
+            <span>
+              Agent:{" "}
+              <span className="text-v2-ink font-medium">
+                {externalAgentName(recording) ??
+                  agentsData?.names[recording.agent_id] ??
+                  "—"}
+              </span>
+            </span>
             {recording.call_at && (
-              <span>{new Date(recording.call_at).toLocaleDateString()}</span>
+              <span>· {new Date(recording.call_at).toLocaleDateString()}</span>
             )}
             {recording.caller_state && <span>· {recording.caller_state}</span>}
           </div>
         </div>
+        {isSuperAdmin && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] shrink-0"
+            onClick={() => setShowReassign(true)}
+          >
+            <Pencil className="h-3 w-3 mr-1" /> Reassign agent
+          </Button>
+        )}
       </div>
+
+      {showReassign && (
+        <EditAgentDialog
+          row={recording}
+          agents={agentsData?.list ?? []}
+          agentNames={agentsData?.names ?? {}}
+          currentUserId={userId}
+          onClose={() => setShowReassign(false)}
+        />
+      )}
 
       {/* Stat tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">

@@ -182,26 +182,69 @@ def main() -> int:
         page.wait_for_timeout(1500)
         print("✓ edit #2 (real agent) saved")
 
+        # Verify edit #2 NOW, before edit #3 overwrites agent_id.
+        after_real = sql(
+            "SELECT agent_id, coalesce(metadata->>'external_agent_name','(cleared)') ext "
+            f"FROM kpi_call_recordings WHERE original_filename = '{SEED_FILE}';"
+        )
+        if real_value[:8] in after_real:
+            print("✓ agent_id updated to the chosen roster agent")
+        else:
+            print("✗ agent_id not updated after edit #2")
+            print(after_real)
+            ok = False
+        if "(cleared)" in after_real:
+            print("✓ external_agent_name cleared when a roster agent was picked")
+        else:
+            print("✗ external_agent_name lingered after reassigning to a roster agent")
+            ok = False
+
+        # ── Edit #3: reassign from the CALL DETAIL page (header button). ───────
+        seed_id = sql(
+            f"SELECT id FROM kpi_call_recordings WHERE original_filename = '{SEED_FILE}';"
+        )
+        # Pull the bare uuid out of the psql table output.
+        seed_uuid = None
+        for tok in seed_id.split():
+            if tok.count("-") == 4 and len(tok) == 36:
+                seed_uuid = tok
+                break
+        if not seed_uuid:
+            print("✗ couldn't resolve seed recording id for detail-page test")
+            browser.close()
+            return 4
+        page.goto(
+            f"{BASE}/call-reviews/{seed_uuid}",
+            wait_until="domcontentloaded",
+            timeout=30_000,
+        )
+        page.wait_for_timeout(2000)
+        page.get_by_role("button", name="Reassign agent", exact=False).first.click()
+        page.wait_for_selector("text=Reassign call", timeout=8_000)
+        detail_sel = page.get_by_role("dialog").locator("select").first
+        # Pick the "Me" option (the uploader / super-admin) to close the loop.
+        detail_sel.select_option(index=0)
+        page.get_by_role("button", name="Save", exact=False).first.click()
+        page.wait_for_timeout(1500)
+        print("✓ edit #3 (detail page → Me) saved")
+
         page.screenshot(path=str(OUT / "call-review-reassign.png"), full_page=True)
         browser.close()
 
-    # ── Verify the final state in the DB. ──────────────────────────────────────
+    # ── Verify the final state in the DB (edit #3 = detail page → Me). ─────────
     final = sql(
-        "SELECT agent_id, coalesce(metadata->>'external_agent_name','(cleared)') AS ext "
-        f"FROM kpi_call_recordings WHERE original_filename = '{SEED_FILE}';"
+        "SELECT agent_id FROM kpi_call_recordings WHERE original_filename = "
+        f"'{SEED_FILE}';"
     )
-    print("\n--- final row ---")
+    print("\n--- final row (after detail-page reassign) ---")
     print(final)
+    # Edit #3 picked "Me" on the detail page → agent_id is back to the uploader
+    # (super-admin), i.e. NOT Aisha. Proves the detail-page dialog persists too.
     if real_value[:8] in final:
-        print("✓ agent_id updated to the chosen roster agent")
-    else:
-        print("✗ agent_id not updated after edit #2")
+        print("✗ detail-page reassign did not persist (still the roster agent)")
         ok = False
-    if "(cleared)" in final:
-        print("✓ external_agent_name cleared when a roster agent was picked")
     else:
-        print("✗ external_agent_name lingered after reassigning to a roster agent")
-        ok = False
+        print("✓ detail-page reassign persisted (agent_id changed off the roster agent)")
 
     # ── Cleanup: delete the test row + storage object. ─────────────────────────
     sql(

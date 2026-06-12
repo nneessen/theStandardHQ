@@ -148,6 +148,12 @@ export function useImoAgents(imoIdArg?: string) {
         names[p.id] = name;
         list.push({ id: p.id, name });
       }
+      // Sort the roster by display name (A→Z) so every picker built from it —
+      // the filter dropdown, the upload assign, the reassign dialog — is
+      // alphabetical regardless of the DB's first_name ordering.
+      list.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+      );
       return { names, list };
     },
     enabled: !!imoId,
