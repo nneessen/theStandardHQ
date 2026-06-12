@@ -161,6 +161,55 @@ export function useImoAgents(imoIdArg?: string) {
   });
 }
 
+/**
+ * The current user's "uploadable on behalf of" roster: themselves + their entire
+ * downline subtree (via the `get_downline_ids` recursive CTE). This is EXACTLY
+ * the set the recording INSERT RLS accepts for a non-admin
+ * (`agent_id = auth.uid() OR is_upline_of(agent_id)`), so a manager can attribute
+ * an upload to any of their downline agents without an RLS rejection — and can't
+ * pick anyone outside it. Super-admins/IMO-admins use the full `useImoAgents`
+ * roster instead (they can insert for anyone in the IMO).
+ */
+export function useDownlineAgents() {
+  const { userId } = useKpiIdentity();
+  return useQuery({
+    queryKey: callReviewKeys.downlineAgents(userId ?? "none"),
+    queryFn: async () => {
+      const { data: ids, error: idsErr } = await supabase.rpc(
+        "get_downline_ids",
+        { target_user_id: userId as string },
+      );
+      if (idsErr) throw new Error(idsErr.message);
+      const downlineIds = (ids ?? []).map(
+        (r: { downline_id: string }) => r.downline_id,
+      );
+      if (downlineIds.length === 0)
+        return { names: {}, list: [] as AgentName[] };
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, first_name, last_name")
+        .in("id", downlineIds);
+      if (error) throw new Error(error.message);
+      const names: Record<string, string> = {};
+      const list: AgentName[] = [];
+      for (const p of data ?? []) {
+        const name =
+          `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() ||
+          "Unknown agent";
+        names[p.id] = name;
+        list.push({ id: p.id, name });
+      }
+      list.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+      );
+      return { names, list };
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60_000,
+  });
+}
+
 /** Archive (soft, reversible) or restore a recording. Governed by the recording
  *  UPDATE RLS (owner / upline / IMO admin / super-admin). */
 export function useArchiveRecording() {

@@ -46,6 +46,7 @@ import {
 import {
   useCallLibrary,
   useImoAgents,
+  useDownlineAgents,
   useArchiveRecording,
   useDeleteRecording,
   DEFAULT_LIBRARY_FILTERS,
@@ -108,12 +109,24 @@ export function CallReviewsPage() {
     isFetching,
   } = useCallLibrary(filters);
   const { data: agentsData } = useImoAgents(imoId ?? undefined);
+  const { data: downlineData } = useDownlineAgents();
   const { callTypes } = useActiveCallTypes(imoId ?? undefined);
   const archiveMutation = useArchiveRecording();
   const deleteMutation = useDeleteRecording();
 
   const agentNames = agentsData?.names ?? {};
   const agents = agentsData?.list ?? [];
+
+  // The upload "assign to" picker is scoped to what the recording INSERT RLS
+  // accepts: a super-admin can attribute to anyone in the IMO (full roster +
+  // free-text off-system name); a regular agent/manager can only attribute to
+  // themselves or a downline. Agents with no downline see no picker (upload as
+  // self). The default is always "Me".
+  const downlineAgents = downlineData?.list ?? [];
+  // downline list includes self, so >1 means they actually have a downline.
+  const hasDownline = downlineAgents.filter((a) => a.id !== userId).length > 0;
+  const uploadAgents = isSuperAdmin ? agents : downlineAgents;
+  const canAssignUpload = isSuperAdmin || hasDownline;
   const rows = data?.pages.flatMap((p) => p.rows) ?? [];
 
   const setFilter = <K extends keyof CallLibraryFilters>(
@@ -146,8 +159,9 @@ export function CallReviewsPage() {
       {showUpload && (
         <UploadPanel
           callTypes={callTypes}
-          agents={agents}
-          isSuperAdmin={isSuperAdmin}
+          agents={uploadAgents}
+          canAssign={canAssignUpload}
+          allowExternal={isSuperAdmin}
           currentUserId={userId}
           onDone={() => setShowUpload(false)}
         />
@@ -419,10 +433,15 @@ export function CallReviewsPage() {
 
 interface UploadPanelProps {
   callTypes: { id: string; name: string }[];
-  /** IMO roster — powers the super-admin "assign to agent" picker. */
+  /** The roster the uploader may attribute a call to (self + downline, or the
+   *  full IMO for a super-admin). Already scoped to what the INSERT RLS allows. */
   agents: AgentName[];
-  /** Only a super-admin sees the agent picker; everyone else uploads as self. */
-  isSuperAdmin: boolean;
+  /** Show the "assign to agent" picker. True for a super-admin, or any agent
+   *  who has a downline; false for a solo agent (they upload as self). */
+  canAssign: boolean;
+  /** Allow the free-text "Other agent (not listed)" off-system option. Only a
+   *  super-admin gets it; a manager assigns to real downline agents. */
+  allowExternal: boolean;
   /** The uploader's own id, used to label the default "assign to me" option. */
   currentUserId: string | null;
   onDone: () => void;
@@ -431,7 +450,8 @@ interface UploadPanelProps {
 function UploadPanel({
   callTypes,
   agents,
-  isSuperAdmin,
+  canAssign,
+  allowExternal,
   currentUserId,
   onDone,
 }: UploadPanelProps) {
@@ -448,12 +468,12 @@ function UploadPanel({
   const [callAt, setCallAt] = useState("");
   const [premium, setPremium] = useState("");
   const [consent, setConsent] = useState(false);
-  // Assignment (super-admin only). "" = assign to me, an agent id, or OTHER_AGENT.
+  // Assignment. "" = assign to me, an agent id, or OTHER_AGENT.
   const [assignTo, setAssignTo] = useState<string>("");
   const [externalName, setExternalName] = useState("");
   const [uploadedCount, setUploadedCount] = useState(0);
 
-  const isOther = isSuperAdmin && assignTo === OTHER_AGENT;
+  const isOther = allowExternal && assignTo === OTHER_AGENT;
   const trimmedExternal = externalName.trim();
 
   const onPickFile = (f: File | null) => {
@@ -481,7 +501,7 @@ function UploadPanel({
     // mutation defaults agent_id to the uploader; the typed name (if any) rides
     // along in metadata and is preferred for display.
     const agentId =
-      isSuperAdmin && assignTo && assignTo !== OTHER_AGENT ? assignTo : null;
+      canAssign && assignTo && assignTo !== OTHER_AGENT ? assignTo : null;
     uploadMutation.mutate(
       {
         file,
@@ -541,7 +561,7 @@ function UploadPanel({
         </div>
       </div>
 
-      {isSuperAdmin && (
+      {canAssign && (
         <div className="space-y-1.5 rounded-lg border border-v2-ring/70 bg-v2-card/60 p-2">
           <label className="block text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
             Whose call is this?
@@ -559,7 +579,9 @@ function UploadPanel({
                   {a.name}
                 </option>
               ))}
-            <option value={OTHER_AGENT}>Other agent (not listed)…</option>
+            {allowExternal && (
+              <option value={OTHER_AGENT}>Other agent (not listed)…</option>
+            )}
           </select>
           {isOther && (
             <Input
@@ -570,8 +592,9 @@ function UploadPanel({
             />
           )}
           <p className="text-[10px] text-v2-ink-subtle">
-            Only you (super-admin) can assign uploads to another agent. Everyone
-            else uploads their own calls.
+            {allowExternal
+              ? "Assign this call to yourself or any agent in your IMO."
+              : "Upload your own calls, or attribute a call to one of your downline agents."}
           </p>
         </div>
       )}
