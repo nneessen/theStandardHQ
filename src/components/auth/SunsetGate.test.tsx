@@ -11,7 +11,7 @@ vi.mock("@/hooks/imo", () => ({
   useRevocationStatus: () => revocationState,
 }));
 vi.mock("@/features/sunset", () => ({
-  SunsetPage: () => <div>SUNSET_PAGE</div>,
+  AccountClosedNotice: () => <div>ACCOUNT_CLOSED</div>,
 }));
 
 import { SunsetGate } from "./SunsetGate";
@@ -35,19 +35,19 @@ describe("SunsetGate", () => {
     renderGate();
     expect(screen.getByText("Loading…")).toBeInTheDocument();
     expect(screen.queryByText("APP_SHELL")).not.toBeInTheDocument();
-    expect(screen.queryByText("SUNSET_PAGE")).not.toBeInTheDocument();
+    expect(screen.queryByText("ACCOUNT_CLOSED")).not.toBeInTheDocument();
   });
 
-  it("routes a revoked user to the sunset page instead of the app shell", () => {
+  it("routes a revoked user to the account-closed notice instead of the app shell", () => {
     revocationState = { loading: false, isRevoked: true };
     renderGate();
-    expect(screen.getByText("SUNSET_PAGE")).toBeInTheDocument();
+    expect(screen.getByText("ACCOUNT_CLOSED")).toBeInTheDocument();
     expect(screen.queryByText("APP_SHELL")).not.toBeInTheDocument();
   });
 
   it("renders the app shell for a non-revoked user", () => {
     renderGate();
     expect(screen.getByText("APP_SHELL")).toBeInTheDocument();
-    expect(screen.queryByText("SUNSET_PAGE")).not.toBeInTheDocument();
+    expect(screen.queryByText("ACCOUNT_CLOSED")).not.toBeInTheDocument();
   });
 });

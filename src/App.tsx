@@ -185,9 +185,11 @@ function AuthenticatedApp() {
         <Toaster />
         <CookieConsentBanner />
         <ImoProvider>
-          <ApprovalGuard>
-            <Outlet />
-          </ApprovalGuard>
+          <SunsetGate>
+            <ApprovalGuard>
+              <Outlet />
+            </ApprovalGuard>
+          </SunsetGate>
         </ImoProvider>
       </>
     );
@@ -203,9 +205,11 @@ function AuthenticatedApp() {
         <Toaster />
         <CookieConsentBanner />
         <ImoProvider>
-          <ApprovalGuard>
-            <Outlet />
-          </ApprovalGuard>
+          <SunsetGate>
+            <ApprovalGuard>
+              <Outlet />
+            </ApprovalGuard>
+          </SunsetGate>
         </ImoProvider>
       </>
     );

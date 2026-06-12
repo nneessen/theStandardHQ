@@ -100,6 +100,11 @@ function toClientOrigin(signed: string | null): string | null {
 /**
  * Requests the user's export bundle. `skipIfReady` lets the edge function return
  * a cron-pre-built bundle's signed URLs instantly instead of rebuilding it.
+ *
+ * CURRENTLY UNUSED: its only consumer was the grace-period sunset page, removed
+ * when revoked users became hard-blocked at login. Kept because it wraps the
+ * still-deployed `generate-user-export-bundle` edge fn; delete if the
+ * self-service export is permanently retired.
  */
 export function useExportBundle() {
   return useMutation<ExportBundleResult, Error>({
@@ -131,9 +136,15 @@ export function useExportBundle() {
 // ── Self: permanent account deletion ─────────────────────────────────────────
 /**
  * Confirms and permanently wipes the caller's account. IRREVERSIBLE. On success
- * it purges every client cache/storage trace, but it does NOT sign out — the
- * terminal confirmation screen owns the explicit sign-out, otherwise the auth
- * redirect would unmount the screen before the user sees it.
+ * it purges every client cache/storage trace, but it does NOT sign out — a
+ * caller is expected to own the explicit sign-out so the auth redirect doesn't
+ * unmount the confirmation UI first.
+ *
+ * CURRENTLY UNUSED: its only consumer was the grace-period sunset page, removed
+ * when revoked users became hard-blocked at login (revocation is now enforced
+ * by RLS + the day-7 auto-purge cron). Kept because it wraps the still-deployed
+ * `confirm-and-wipe-account` edge fn; delete if self-service wipe is retired.
+ * NOTE: any future re-wire must provide its own post-wipe signOut.
  */
 export function useDeleteMyAccount() {
   const queryClient = useQueryClient();

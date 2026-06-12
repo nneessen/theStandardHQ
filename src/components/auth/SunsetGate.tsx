@@ -1,16 +1,18 @@
 // src/components/auth/SunsetGate.tsx
-// Routes a revoked IMO's non-super-admin users to the neutral sunset page,
-// replacing the entire app shell. Must render INSIDE <ImoProvider> (it reads
-// useImo()). Wrapped around the authenticated layout in both App.tsx branches.
+// Routes a revoked IMO's non-super-admin users to the permanent account-closed
+// notice, replacing the entire app shell. Must render INSIDE <ImoProvider> (it
+// reads useImo()). Wrapped around the authenticated layout in both App.tsx
+// branches. This is the backstop for a LINGERING session — a fresh sign-in is
+// blocked earlier, at AuthContext.signIn (the user never gets this far).
 //
 // Ordering is deliberate and safety-critical:
-//   1. loading  -> spinner          (don't decide until auth + imo resolve)
-//   2. super-admin -> children      (FIRST — the owner lives on the FFG IMO and
-//                                    must NEVER be locked out, even when it's
-//                                    the revoked IMO)
-//   3. revoked  -> <SunsetPage/>    (non-super-admin in an IMO with
-//                                    access_revoked_at set)
-//   4. else     -> children         (normal app)
+//   1. loading  -> spinner               (don't decide until auth + imo resolve)
+//   2. super-admin -> children           (FIRST — the owner lives on the FFG IMO
+//                                         and must NEVER be locked out, even when
+//                                         it's the revoked IMO)
+//   3. revoked  -> <AccountClosedNotice/> (non-super-admin in an IMO with
+//                                         access_revoked_at set)
+//   4. else     -> children              (normal app)
 //
 // `loading` gates on BOTH auth and imo: is_super_admin comes from AuthContext,
 // so if imo loading resolved before auth populated the flag, a super-admin could
@@ -19,7 +21,7 @@
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRevocationStatus } from "@/hooks/imo";
-import { SunsetPage } from "@/features/sunset";
+import { AccountClosedNotice } from "@/features/sunset";
 
 export function SunsetGate({ children }: { children: React.ReactNode }) {
   const { loading: authLoading } = useAuth();
@@ -36,7 +38,7 @@ export function SunsetGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isRevoked) return <SunsetPage />;
+  if (isRevoked) return <AccountClosedNotice />;
 
   return <>{children}</>;
 }

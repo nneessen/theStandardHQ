@@ -1,7 +1,9 @@
 // src/features/admin/components/PlatformRevocationControl.tsx
 // Super-admin "RED BUTTON": revoke (or restore) platform access for the FFG /
 // Self Made IMO. Switch A only — reversible. The irreversible per-user wipe is
-// driven from each user's sunset page / the day-7 auto-purge, never from here.
+// driven by the day-7 auto-purge cron, never from here. (Revoked users are now
+// hard-blocked at login and shown an account-closed notice; the former
+// self-service export/self-delete sunset page was removed.)
 //
 // Revoke is double-confirmed: the operator must type `REVOKE <imo name>` exactly.
 // Restore is single-confirm. Stripe is handled MANUALLY by the owner in the

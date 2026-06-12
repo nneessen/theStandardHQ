@@ -23,6 +23,18 @@ export interface SignUpResult {
   email: string;
 }
 
+/**
+ * Thrown by signIn when the authenticated user belongs to a revoked IMO (the
+ * platform-sunset hard block). The session is already torn down by the time
+ * this throws. Login surfaces it as a permanent "account closed" notice.
+ */
+export class AccountClosedError extends Error {
+  constructor() {
+    super("ACCOUNT_CLOSED");
+    this.name = "AccountClosedError";
+  }
+}
+
 interface AuthContextType {
   user: Partial<UserProfile> | null;
   supabaseUser: SupabaseUser | null;
@@ -265,6 +277,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) throw error;
 
+      // Hard block for users in a revoked IMO (e.g. the sunset FFG tenant).
+      // is_access_revoked() is SECURITY DEFINER and excludes super-admins by
+      // design, so the owner — who lives on the FFG IMO — is never locked out.
+      // Runs on the just-established JWT (auth.uid() = this user). On any RPC
+      // error we FAIL OPEN: a transient failure must never lock out a
+      // legitimate user, and RLS + SunsetGate still backstop a revoked one.
+      if (data.user) {
+        let revoked = false;
+        try {
+          const { data: revokedData, error: revErr } = await supabase.rpc(
+            "is_access_revoked",
+            { p_user_id: data.user.id },
+          );
+          revoked = !revErr && revokedData === true;
+        } catch (revCheckErr) {
+          // RPC/network failure — fail open (see note above). Only the RPC call
+          // is inside this try, so the AccountClosedError below is never caught
+          // here and the block can't be defeated by a signOut() rejection.
+          logger.warn(
+            "Revocation check failed during sign in; allowing login",
+            revCheckErr instanceof Error ? revCheckErr : String(revCheckErr),
+            "Auth",
+          );
+        }
+        if (revoked) {
+          // Best-effort teardown — a signOut() failure must NOT prevent the
+          // block (the thrown error is what stops the login; RLS still denies
+          // data even if a stale token lingers).
+          try {
+            await supabase.auth.signOut();
+          } catch {
+            // ignore — throw the block regardless
+          }
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          throw new AccountClosedError();
+        }
+      }
+
       setSession(data.session);
       setSupabaseUser(data.user);
 
@@ -296,6 +348,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       logger.auth("Sign in successful", { email: data.user?.email });
     } catch (err: unknown) {
+      // A revoked-IMO block is expected behaviour, not an error: don't log it
+      // as one or surface it via the generic error state — Login renders the
+      // permanent notice from the thrown AccountClosedError instead.
+      if (err instanceof AccountClosedError) {
+        logger.auth("Sign in blocked: account closed (revoked IMO)");
+        throw err;
+      }
       logger.error(
         "Sign in error",
         err instanceof Error ? err : String(err),

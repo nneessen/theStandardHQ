@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth, AccountClosedError } from "../../contexts/AuthContext";
+import { AccountClosedNotice } from "@/features/sunset";
 import { isLocalSupabase } from "../../services/base";
 import { SESSION_STORAGE_KEYS } from "../../constants/auth.constants";
 import { AuthErrorDisplay } from "./components/AuthErrorDisplay";
@@ -33,6 +34,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [accountClosed, setAccountClosed] = useState(false);
 
   const intent = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -62,6 +64,12 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         setTimeout(() => setMode("signin"), 3000);
       }
     } catch (err) {
+      // Revoked-IMO hard block: the session was already torn down in signIn.
+      // Checked FIRST so the generic "account disabled" branch can't shadow it.
+      if (err instanceof AccountClosedError) {
+        setAccountClosed(true);
+        return;
+      }
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       const errorLower = errorMessage.toLowerCase();
@@ -132,6 +140,10 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       : isRecruitIntent
         ? "Sign in to continue your onboarding."
         : "Sign in to your agency dashboard.";
+
+  if (accountClosed) {
+    return <AccountClosedNotice />;
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0b0b0c] text-[#f1e9d6] lg:flex-row">
