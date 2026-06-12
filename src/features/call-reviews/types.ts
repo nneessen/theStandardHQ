@@ -216,3 +216,98 @@ export function deriveHoldSeconds(markers: CallMarkerRow[]): number | null {
     ),
   );
 }
+
+// ─── kpi_call_scripts — AI-generated master sales script ────────────────────
+// The shapes below are the consumer half of the contract produced by the
+// `generate-call-script` edge fn (normalizeScript). Keep them in lockstep with
+// that function's output — a field rename in one place silently drops content.
+
+export const SCRIPT_STEP_KINDS = ["say", "ask", "do", "transition"] as const;
+export type ScriptStepKind = (typeof SCRIPT_STEP_KINDS)[number];
+
+export interface ScriptObjection {
+  objection: string;
+  type: string | null;
+  rebuttal: string;
+  tonality: string | null;
+}
+
+export interface ScriptStep {
+  kind: ScriptStepKind;
+  say: string;
+  delivery_note: string | null;
+  tonality: string | null;
+  pause_cue: string | null;
+  do: string;
+  word_track_ids: string[];
+  why_it_works: string | null;
+  objections: ScriptObjection[];
+}
+
+export interface ScriptPhase {
+  title: string;
+  goal: string;
+  est_minutes: number | null;
+  call_pct: number | null;
+  tonality: string | null;
+  steps: ScriptStep[];
+}
+
+export interface GeneratedScript {
+  call_type?: string;
+  summary?: string;
+  estimated_call_minutes?: number | null;
+  key_principles?: string[];
+  placeholders_used?: string[];
+  phases: ScriptPhase[];
+}
+
+export type ScriptStatus = "pending" | "processing" | "completed" | "failed";
+
+type CallScriptDbRow = Database["public"]["Tables"]["kpi_call_scripts"]["Row"];
+
+/** A kpi_call_scripts row with script_body narrowed + the joined call type. */
+export interface GeneratedScriptRow extends Omit<
+  CallScriptDbRow,
+  "script_body" | "status"
+> {
+  status: ScriptStatus;
+  script_body: GeneratedScript | null;
+  call_type?: { id: string; name: string } | null;
+}
+
+// Stop polling a script row that has sat in a non-terminal state without a
+// status change for this long — a crashed/evicted background synthesis must not
+// drive an unbounded 5s refetch loop (mirrors isSettling in callReviewKeys.ts;
+// the 10-min stale-reclaim only helps a NEW generation attempt, not the poller).
+const SCRIPT_SETTLE_MAX_AGE_MS = 15 * 60 * 1000;
+
+/** A script row is "settling" while a generation is in flight (poll target),
+ *  but only until it has been idle in that state past SCRIPT_SETTLE_MAX_AGE_MS. */
+export function isScriptSettling(
+  row:
+    | {
+        status?: string | null;
+        updated_at?: string | null;
+        created_at?: string | null;
+      }
+    | null
+    | undefined,
+): boolean {
+  if (!row) return false;
+  if (row.status !== "pending" && row.status !== "processing") return false;
+  const ts = row.updated_at ?? row.created_at;
+  if (ts) {
+    const age = Date.now() - new Date(ts).getTime();
+    if (Number.isFinite(age) && age > SCRIPT_SETTLE_MAX_AGE_MS) return false;
+  }
+  return true;
+}
+
+/** Defensive parse of the JSONB script_body into a renderable GeneratedScript. */
+export function parseGeneratedScript(value: unknown): GeneratedScript | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.phases)) return null;
+  return value as GeneratedScript;
+}

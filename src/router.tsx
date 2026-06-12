@@ -106,6 +106,16 @@ const CallReviewDetailPage = lazy(() =>
     default: m.CallReviewDetailPage,
   })),
 );
+const ScriptsLibraryPage = lazy(() =>
+  import("./features/call-reviews").then((m) => ({
+    default: m.ScriptsLibraryPage,
+  })),
+);
+const ScriptDetailPage = lazy(() =>
+  import("./features/call-reviews").then((m) => ({
+    default: m.ScriptDetailPage,
+  })),
+);
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
   () => import("./features/underwriting/components/Wizard"),
@@ -720,6 +730,29 @@ const callReviewsRoute = createRoute({
     </RouteGuard>
   ),
 });
+// Sales Scripts library — AI-generated master scripts per call type. Static path
+// ("scripts") outranks the dynamic "$recordingId" sibling, so no route ambiguity.
+const callReviewScriptsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "call-reviews/scripts",
+  component: () => (
+    <RouteGuard noRecruits>
+      <ScriptsLibraryPage />
+    </RouteGuard>
+  ),
+});
+const callReviewScriptDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "call-reviews/scripts/$callTypeId",
+  component: function CallReviewScriptDetailRouteComponent() {
+    const { callTypeId } = callReviewScriptDetailRoute.useParams();
+    return (
+      <RouteGuard noRecruits>
+        <ScriptDetailPage callTypeId={callTypeId} />
+      </RouteGuard>
+    );
+  },
+});
 const callReviewDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "call-reviews/$recordingId",
@@ -1262,6 +1295,8 @@ const routeTree = rootRoute.addChildren([
   closeKpiRoute,
   kpiRoute,
   callReviewsRoute,
+  callReviewScriptsRoute,
+  callReviewScriptDetailRoute,
   callReviewDetailRoute,
   closeAiBuilderRoute,
   roadmapListRoute,

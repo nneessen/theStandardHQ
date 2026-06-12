@@ -20,6 +20,12 @@ export const callReviewKeys = {
     [...callReviewKeys.all, "detections", recordingId] as const,
   scripts: (imoId: string) =>
     [...callReviewKeys.all, "scripts", imoId] as const,
+  // AI-generated master scripts (kpi_call_scripts) — distinct from `scripts`
+  // (the word-track library above).
+  generatedScripts: (imoId: string) =>
+    [...callReviewKeys.all, "generated-scripts", imoId] as const,
+  generatedScript: (callTypeId: string) =>
+    [...callReviewKeys.all, "generated-script", callTypeId] as const,
 };
 
 // Stop polling a row that has sat in a non-terminal state without any status

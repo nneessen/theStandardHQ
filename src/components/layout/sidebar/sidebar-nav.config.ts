@@ -27,6 +27,7 @@ import {
   Sparkles,
   IdCard,
   FileCheck,
+  ScrollText,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -146,6 +147,15 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // All-agents shared training library of live call recordings (diarized
         // transcript + AI analysis + markers). Open to every approved agent;
         // recruits are excluded at the route. Data is IMO-scoped via RLS.
+        public: true,
+      },
+      {
+        icon: ScrollText,
+        label: "Sales Scripts",
+        href: "/call-reviews/scripts",
+        // AI-generated master sales scripts, one per call type, synthesized from
+        // the IMO's winning (sold) calls. All approved agents view; IMO admins /
+        // super-admins generate. IMO-scoped via RLS; recruits excluded at route.
         public: true,
       },
       {

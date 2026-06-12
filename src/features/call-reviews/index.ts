@@ -3,3 +3,4 @@
 
 export { CallReviewsPage } from "./components/CallReviewsPage";
 export { CallReviewDetailPage } from "./components/CallReviewDetailPage";
+export { ScriptsLibraryPage, ScriptDetailPage } from "./components/scripts";

@@ -5894,6 +5894,81 @@ export type Database = {
           },
         ];
       };
+      kpi_call_scripts: {
+        Row: {
+          call_type_id: string;
+          created_at: string;
+          created_by: string | null;
+          generated_at: string | null;
+          generated_by: string | null;
+          generation_error: string | null;
+          id: string;
+          imo_id: string;
+          last_run_id: string | null;
+          model: string | null;
+          script_body: Json | null;
+          source_call_count: number | null;
+          source_recording_ids: string[] | null;
+          status: string;
+          tokens_used: number | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          call_type_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          generated_at?: string | null;
+          generated_by?: string | null;
+          generation_error?: string | null;
+          id?: string;
+          imo_id: string;
+          last_run_id?: string | null;
+          model?: string | null;
+          script_body?: Json | null;
+          source_call_count?: number | null;
+          source_recording_ids?: string[] | null;
+          status?: string;
+          tokens_used?: number | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          call_type_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          generated_at?: string | null;
+          generated_by?: string | null;
+          generation_error?: string | null;
+          id?: string;
+          imo_id?: string;
+          last_run_id?: string | null;
+          model?: string | null;
+          script_body?: Json | null;
+          source_call_count?: number | null;
+          source_recording_ids?: string[] | null;
+          status?: string;
+          tokens_used?: number | null;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_call_scripts_call_type_id_fkey";
+            columns: ["call_type_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kpi_call_scripts_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kpi_call_types: {
         Row: {
           created_at: string;
