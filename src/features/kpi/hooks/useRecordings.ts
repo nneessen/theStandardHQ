@@ -72,9 +72,16 @@ export function useUploadRecording() {
     mutationFn: async ({
       file,
       meta,
+      agentId,
     }: {
       file: File;
       meta: RecordingUploadMeta;
+      // Optional owning agent. Defaults to the uploader (self) — only a
+      // super-admin / IMO-admin may set this to another agent (enforced by the
+      // recording INSERT RLS: agent_id = self OR is_upline_of OR is_imo_admin).
+      // For an off-system agent, leave this unset and pass the typed name in
+      // meta.metadata.external_agent_name instead.
+      agentId?: string | null;
     }) => {
       if (!userId || !imoId) {
         throw new Error("Your account is not linked to an IMO yet.");
@@ -98,7 +105,11 @@ export function useUploadRecording() {
         }
       }
 
-      // 1. Upload the file into the agent's folder.
+      // 1. Upload the file into the UPLOADER's folder (storage RLS always allows
+      //    foldername[1] = auth.uid()). The storage path is decoupled from the
+      //    owning agent_id — playback is granted IMO-wide by the read policies —
+      //    so a super-admin uploading on another agent's behalf still writes to
+      //    their own folder while the row is attributed to that agent.
       const { storagePath } = await recordingStorageService.upload(
         file,
         userId,
@@ -109,7 +120,7 @@ export function useUploadRecording() {
       const payload: CallRecordingInsert = {
         ...meta,
         imo_id: imoId,
-        agent_id: userId,
+        agent_id: agentId || userId,
         uploader_id: userId,
         storage_bucket: CALL_RECORDINGS_BUCKET,
         storage_path: storagePath,

@@ -31,6 +31,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   useUploadRecording,
   deriveRecordingStatus,
@@ -47,6 +48,7 @@ import {
   useArchiveRecording,
   useDeleteRecording,
   DEFAULT_LIBRARY_FILTERS,
+  type AgentName,
   type CallLibraryFilters,
   type CallLibraryRow,
 } from "../hooks/useCallLibrary";
@@ -70,8 +72,25 @@ const STATUS_CLASSES: Record<string, string> = {
 const ROW_GRID =
   "grid grid-cols-[1fr_110px_84px_64px_84px_84px_72px] gap-2 items-center";
 
+// Sentinel select value for "this call belongs to someone not in the roster".
+const OTHER_AGENT = "__other__";
+
+// A super-admin can attribute an upload to an off-system agent by typing a name;
+// it's persisted in metadata.external_agent_name (agent_id stays the uploader).
+// Prefer that label over the agent_id → name lookup wherever an owner is shown.
+function externalAgentName(r: CallLibraryRow): string | null {
+  const m = r.metadata;
+  if (m && typeof m === "object" && !Array.isArray(m)) {
+    const v = (m as Record<string, unknown>).external_agent_name;
+    if (typeof v === "string" && v.trim()) return v.trim();
+  }
+  return null;
+}
+
 export function CallReviewsPage() {
-  const { imoId } = useKpiIdentity();
+  const { imoId, userId } = useKpiIdentity();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.is_super_admin === true;
   const [filters, setFilters] = useState<CallLibraryFilters>(
     DEFAULT_LIBRARY_FILTERS,
   );
@@ -135,6 +154,9 @@ export function CallReviewsPage() {
       {showUpload && (
         <UploadPanel
           callTypes={callTypes}
+          agents={agents}
+          isSuperAdmin={isSuperAdmin}
+          currentUserId={userId}
           onDone={() => setShowUpload(false)}
         />
       )}
@@ -248,7 +270,7 @@ export function CallReviewsPage() {
                       <span className="truncate">{title}</span>
                     </div>
                     <div className="truncate text-v2-ink-muted text-[11px]">
-                      {agentNames[r.agent_id] ?? "—"}
+                      {externalAgentName(r) ?? agentNames[r.agent_id] ?? "—"}
                     </div>
                     <div className="text-v2-ink-muted text-[11px] tabular-nums">
                       {r.call_at
@@ -385,19 +407,42 @@ export function CallReviewsPage() {
 
 interface UploadPanelProps {
   callTypes: { id: string; name: string }[];
+  /** IMO roster — powers the super-admin "assign to agent" picker. */
+  agents: AgentName[];
+  /** Only a super-admin sees the agent picker; everyone else uploads as self. */
+  isSuperAdmin: boolean;
+  /** The uploader's own id, used to label the default "assign to me" option. */
+  currentUserId: string | null;
   onDone: () => void;
 }
 
-function UploadPanel({ callTypes, onDone }: UploadPanelProps) {
+function UploadPanel({
+  callTypes,
+  agents,
+  isSuperAdmin,
+  currentUserId,
+  onDone,
+}: UploadPanelProps) {
   const queryClient = useQueryClient();
   const uploadMutation = useUploadRecording();
   const [file, setFile] = useState<File | null>(null);
+  // Bumped after each successful upload to remount (clear) the native file input
+  // while every other field — crucially the agent assignment — is preserved for
+  // the next file in a bulk batch.
+  const [fileInputKey, setFileInputKey] = useState(0);
   const [fileError, setFileError] = useState<string | null>(null);
   const [callTypeId, setCallTypeId] = useState<string>("");
   const [outcome, setOutcome] = useState<CallOutcome | "">("");
   const [callAt, setCallAt] = useState("");
   const [premium, setPremium] = useState("");
   const [consent, setConsent] = useState(false);
+  // Assignment (super-admin only). "" = assign to me, an agent id, or OTHER_AGENT.
+  const [assignTo, setAssignTo] = useState<string>("");
+  const [externalName, setExternalName] = useState("");
+  const [uploadedCount, setUploadedCount] = useState(0);
+
+  const isOther = isSuperAdmin && assignTo === OTHER_AGENT;
+  const trimmedExternal = externalName.trim();
 
   const onPickFile = (f: File | null) => {
     if (!f) {
@@ -411,13 +456,24 @@ function UploadPanel({ callTypes, onDone }: UploadPanelProps) {
   };
 
   const canSubmit =
-    !!file && !fileError && consent && !uploadMutation.isPending;
+    !!file &&
+    !fileError &&
+    consent &&
+    // If attributing to an off-system agent, a name is required.
+    (!isOther || trimmedExternal.length > 0) &&
+    !uploadMutation.isPending;
 
   const submit = () => {
     if (!file) return;
+    // A real selected agent → set agent_id. "Me" or "Other" → leave unset so the
+    // mutation defaults agent_id to the uploader; the typed name (if any) rides
+    // along in metadata and is preferred for display.
+    const agentId =
+      isSuperAdmin && assignTo && assignTo !== OTHER_AGENT ? assignTo : null;
     uploadMutation.mutate(
       {
         file,
+        agentId,
         meta: {
           call_type_id: callTypeId || null,
           outcome: outcome || null,
@@ -426,13 +482,25 @@ function UploadPanel({ callTypes, onDone }: UploadPanelProps) {
           metadata: {
             consent_ack: true,
             consent_ack_at: new Date().toISOString(),
+            ...(isOther ? { external_agent_name: trimmedExternal } : {}),
           },
         },
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
-          onDone();
+          // Keep the panel open for bulk uploads, but reset EVERY per-call field
+          // so the next (distinct) recording can't silently inherit this call's
+          // date/outcome/type/premium. Only the agent assignment is intentionally
+          // preserved — that's the whole point of a bulk batch for one agent.
+          setFile(null);
+          setFileError(null);
+          setPremium("");
+          setCallAt("");
+          setOutcome("");
+          setCallTypeId("");
+          setFileInputKey((k) => k + 1);
+          setUploadedCount((n) => n + 1);
         },
       },
     );
@@ -444,17 +512,60 @@ function UploadPanel({ callTypes, onDone }: UploadPanelProps) {
         <h3 className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink">
           Upload a call recording
         </h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={onDone}
-        >
-          <X className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {uploadedCount > 0 && (
+            <span className="text-[10px] text-emerald-600">
+              {uploadedCount} uploaded
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onDone}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
+      {isSuperAdmin && (
+        <div className="space-y-1.5 rounded-lg border border-v2-ring/70 bg-v2-card/60 p-2">
+          <label className="block text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
+            Whose call is this?
+          </label>
+          <select
+            value={assignTo}
+            onChange={(e) => setAssignTo(e.target.value)}
+            className="h-7 w-full text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          >
+            <option value="">Me (assign to my own calls)</option>
+            {agents
+              .filter((a) => a.id !== currentUserId)
+              .map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            <option value={OTHER_AGENT}>Other agent (not listed)…</option>
+          </select>
+          {isOther && (
+            <Input
+              value={externalName}
+              onChange={(e) => setExternalName(e.target.value)}
+              placeholder="Type the agent's name"
+              className="h-7 text-xs"
+            />
+          )}
+          <p className="text-[10px] text-v2-ink-subtle">
+            Only you (super-admin) can assign uploads to another agent. Everyone
+            else uploads their own calls.
+          </p>
+        </div>
+      )}
+
       <input
+        key={fileInputKey}
         type="file"
         accept={AUDIO_ACCEPT}
         onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
