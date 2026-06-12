@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import {
-  UserPlus,
   Users,
   Mail,
   Download,
@@ -26,6 +25,8 @@ import {
 import type { EnrichedLead } from "@/types/leads.types";
 import { AddRecruitDialog } from "./components/AddRecruitDialog";
 import { AddProspectDialog } from "./components/AddProspectDialog";
+import { AddAgentDialog } from "./components/AddAgentDialog";
+import { RecruitingAddButtons } from "./components/RecruitingAddButtons";
 import { PostAddRecruitWizard } from "./components/PostAddRecruitWizard";
 import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
@@ -106,6 +107,7 @@ function RecruitingDashboardContent() {
 
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
   const [addProspectDialogOpen, setAddProspectDialogOpen] = useState(false);
+  const [addAgentDialogOpen, setAddAgentDialogOpen] = useState(false);
   const [sendInviteDialogOpen, setSendInviteDialogOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -317,31 +319,22 @@ function RecruitingDashboardContent() {
               >
                 Send invite
               </PillButton>
-              <Link to="/recruiting/admin/pipelines">
-                <PillButton
-                  tone="ghost"
-                  size="sm"
-                  leadingIcon={<Settings2 className="h-3.5 w-3.5" />}
-                >
-                  Pipelines
-                </PillButton>
-              </Link>
-              <PillButton
-                tone="yellow"
-                size="sm"
-                onClick={() => setAddProspectDialogOpen(true)}
-                leadingIcon={<Users className="h-3.5 w-3.5" />}
-              >
-                Add prospect
-              </PillButton>
-              <PillButton
-                tone="black"
-                size="sm"
-                onClick={() => setAddRecruitDialogOpen(true)}
-                leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
-              >
-                Add recruit
-              </PillButton>
+              {user?.is_super_admin && (
+                <Link to="/recruiting/admin/pipelines">
+                  <PillButton
+                    tone="ghost"
+                    size="sm"
+                    leadingIcon={<Settings2 className="h-3.5 w-3.5" />}
+                  >
+                    Pipelines
+                  </PillButton>
+                </Link>
+              )}
+              <RecruitingAddButtons
+                onAddProspect={() => setAddProspectDialogOpen(true)}
+                onAddRecruit={() => setAddRecruitDialogOpen(true)}
+                onAddAgent={() => setAddAgentDialogOpen(true)}
+              />
             </div>
           </header>
 
@@ -586,6 +579,11 @@ function RecruitingDashboardContent() {
             onOpenChange={setAddProspectDialogOpen}
           />
 
+          <AddAgentDialog
+            open={addAgentDialogOpen}
+            onOpenChange={setAddAgentDialogOpen}
+          />
+
           <PostAddRecruitWizard
             open={!!wizardState}
             onOpenChange={(o) => {
@@ -636,6 +634,7 @@ function FreeUplineRecruitingView() {
 
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
   const [addProspectDialogOpen, setAddProspectDialogOpen] = useState(false);
+  const [addAgentDialogOpen, setAddAgentDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const { recruitId: deepLinkRecruitId } = useSearch({ from: "/recruiting" });
@@ -726,22 +725,11 @@ function FreeUplineRecruitingView() {
                   Prospects
                 </PillButton>
               </Link>
-              <PillButton
-                tone="yellow"
-                size="sm"
-                onClick={() => setAddProspectDialogOpen(true)}
-                leadingIcon={<Users className="h-3.5 w-3.5" />}
-              >
-                Add prospect
-              </PillButton>
-              <PillButton
-                tone="black"
-                size="sm"
-                onClick={() => setAddRecruitDialogOpen(true)}
-                leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
-              >
-                Add recruit
-              </PillButton>
+              <RecruitingAddButtons
+                onAddProspect={() => setAddProspectDialogOpen(true)}
+                onAddRecruit={() => setAddRecruitDialogOpen(true)}
+                onAddAgent={() => setAddAgentDialogOpen(true)}
+              />
             </div>
           </header>
 
@@ -835,6 +823,11 @@ function FreeUplineRecruitingView() {
           <AddProspectDialog
             open={addProspectDialogOpen}
             onOpenChange={setAddProspectDialogOpen}
+          />
+
+          <AddAgentDialog
+            open={addAgentDialogOpen}
+            onOpenChange={setAddAgentDialogOpen}
           />
         </div>
       </div>

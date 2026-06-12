@@ -613,8 +613,36 @@ serve(async (req) => {
     const normalizedEmail = email.toLowerCase().trim();
     const requestedRoles = normalizeRoles(roles);
 
+    // "Add Agent": placing someone who is ALREADY a licensed agent directly onto
+    // a team, skipping all onboarding pipelines. The request SHAPE — exactly
+    // roles=['agent'], skipPipeline=true, isAdmin not requested — is recognized
+    // regardless of caller so every caller class produces the same active-agent
+    // envelope below (super admin / manager / ordinary agent). Add Agent never
+    // targets an existing profile, so existingProfileId is rejected outright
+    // (closes a promote-an-existing-recruit vector).
+    const isAddAgentShape =
+      isAdmin !== true &&
+      skipPipeline === true &&
+      requestedRoles.length === 1 &&
+      requestedRoles[0] === "agent";
+
+    if (isAddAgentShape && existingProfileId) {
+      return jsonResponse(400, {
+        error: "Add Agent cannot target an existing profile.",
+      });
+    }
+
+    // The narrow relaxation: ONLY this lets a non-manager mint a non-recruit
+    // role (it bypasses the recruit-only 403 below). Comp is stripped and
+    // is_admin forced false in the envelope, so it cannot self-escalate.
+    const isAddAgentPath =
+      !callerResult.caller.canManageUsers &&
+      callerResult.caller.canCreateRecruits &&
+      isAddAgentShape;
+
     if (
       !callerResult.caller.canManageUsers &&
+      !isAddAgentPath &&
       (isAdmin === true ||
         skipPipeline === true ||
         requestedRoles.some((role) => role !== "recruit"))
@@ -625,14 +653,26 @@ serve(async (req) => {
       });
     }
 
+    if (isAddAgentShape) {
+      console.log("[create-auth-user] add-agent shape", {
+        caller: callerResult.caller.userId,
+        viaRelaxedPath: isAddAgentPath,
+        email: maskEmail(normalizedEmail),
+      });
+    }
+
+    // Managers may pass an arbitrary role/skip shape; the Add Agent path is
+    // allowed its single fixed shape. Everyone else is coerced to a recruit.
+    const allowRequestedShape =
+      callerResult.caller.canManageUsers || isAddAgentPath;
     const effectiveRoles =
-      callerResult.caller.canManageUsers && requestedRoles.length > 0
+      allowRequestedShape && requestedRoles.length > 0
         ? requestedRoles
         : ["recruit"];
+    // is_admin can ONLY be granted by a manager — never via the Add Agent path.
     const effectiveIsAdmin =
       callerResult.caller.canManageUsers && isAdmin === true;
-    const effectiveSkipPipeline =
-      callerResult.caller.canManageUsers && skipPipeline === true;
+    const effectiveSkipPipeline = allowRequestedShape && skipPipeline === true;
 
     let sanitizedProfileData: ProfileData | undefined = profileData
       ? { ...profileData }
@@ -645,9 +685,10 @@ serve(async (req) => {
         });
       }
 
-      // Agent-driven recruit creation should only create a prospect.
-      // Ignore any client-supplied pipeline assignment here so stale bundles
-      // cannot implicitly enroll recruits during the create step.
+      // Agent-driven creation is either a pipeline recruit (prospect) or an
+      // Add-Agent (active agent, handled by the isAddAgentShape branch below).
+      // Either way, ignore any client-supplied pipeline assignment here so stale
+      // bundles cannot implicitly enroll during the create step.
       if (!callerResult.caller.canManageUsers) {
         sanitizedProfileData.pipeline_template_id = undefined;
       }
@@ -701,6 +742,27 @@ serve(async (req) => {
           ...sanitizedProfileData,
           recruiter_id:
             sanitizedProfileData.recruiter_id ?? callerResult.caller.userId,
+        };
+      } else if (isAddAgentShape) {
+        // Already-licensed agent joining a team directly (ordinary agent OR a
+        // non-super-admin manager via the same button): immediately active, no
+        // pipeline enrollment, upline forced to the caller, and compensation
+        // deliberately NOT settable by the adder (contract_level stripped;
+        // owner/admin sets it later). Forcing approved here is what keeps a
+        // manager-created agent from landing in a locked-out pending state.
+        sanitizedProfileData = {
+          ...sanitizedProfileData,
+          recruiter_id: callerResult.caller.userId,
+          imo_id: callerResult.caller.imoId,
+          agency_id: callerResult.caller.agencyId,
+          upline_id: callerResult.caller.userId,
+          approval_status: "approved",
+          agent_status: "licensed",
+          contract_level: null,
+          onboarding_status: "completed",
+          current_onboarding_phase: "completed",
+          onboarding_started_at: null,
+          pipeline_template_id: undefined,
         };
       } else {
         sanitizedProfileData = {

@@ -35,6 +35,7 @@ import {
 import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
 import type { PipelineTemplate } from "@/types/recruiting.types";
 
 interface PostAddRecruitWizardProps {
@@ -304,6 +305,9 @@ function Step1Pipeline({
   isLicensed: boolean;
   forceSkipped: boolean;
 }) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.is_super_admin === true;
+
   if (forceSkipped) {
     return (
       <div className="flex flex-col items-start gap-3">
@@ -360,14 +364,23 @@ function Step1Pipeline({
             No pipeline templates yet
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Create one in{" "}
-            <Link
-              to="/recruiting/admin/pipelines"
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              Pipeline Admin
-            </Link>{" "}
-            so future recruits can be enrolled automatically.
+            {isSuperAdmin ? (
+              <>
+                Create one in{" "}
+                <Link
+                  to="/recruiting/admin/pipelines"
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  Pipeline Admin
+                </Link>{" "}
+                so future recruits can be enrolled automatically.
+              </>
+            ) : (
+              <>
+                Ask your administrator to set one up so future recruits can be
+                enrolled automatically.
+              </>
+            )}
           </p>
         </div>
       ) : (

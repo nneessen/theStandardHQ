@@ -59,6 +59,7 @@ import {
   User,
   Sparkles,
   ArrowRight,
+  UserCheck,
   GraduationCap,
   Info,
   ChevronDown,
@@ -90,6 +91,7 @@ import { useImo } from "@/contexts/ImoContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SectionShell } from "@/components/v2";
 import { AddProspectDialog } from "./AddProspectDialog";
+import { AddAgentDialog } from "./AddAgentDialog";
 import { Board, Cap, T } from "@/components/board";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -167,6 +169,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   const { effectiveImoId } = useImo();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addProspectOpen, setAddProspectOpen] = useState(false);
+  const [addAgentOpen, setAddAgentOpen] = useState(false);
   const [graduatingRecruit, setGraduatingRecruit] =
     useState<UserProfile | null>(null);
   const [editingRecruit, setEditingRecruit] = useState<UserProfile | null>(
@@ -338,6 +341,25 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 open={addDialogOpen}
                 onOpenChange={setAddDialogOpen}
               />
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px] px-2"
+                      onClick={() => setAddAgentOpen(true)}
+                    >
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      Add agent
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-[220px]">
+                    Already a licensed agent — adds them to your team
+                    (you&apos;re their upline) and skips the pipelines.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </header>
 
@@ -796,6 +818,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
             open={addProspectOpen}
             onOpenChange={setAddProspectOpen}
           />
+
+          <AddAgentDialog open={addAgentOpen} onOpenChange={setAddAgentOpen} />
         </div>
       </div>
     </SectionShell>

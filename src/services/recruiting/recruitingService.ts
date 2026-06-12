@@ -66,6 +66,13 @@ export const recruitingService = {
       roles = recruit.roles || ["view_only"];
     }
 
+    // "Add Agent": an already-licensed agent placed directly on a team, skipping
+    // all pipelines. They join already active (approved + completed onboarding)
+    // rather than as a pending prospect. The create-auth-user edge function
+    // independently enforces this envelope for the ordinary-agent path; setting
+    // it here keeps the super-admin/manager paths consistent too.
+    const isAddAgent = skipPipeline && (roles?.includes("agent") ?? false);
+
     const fullName =
       `${recruit.first_name || ""} ${recruit.last_name || ""}`.trim();
 
@@ -74,13 +81,21 @@ export const recruitingService = {
       roles,
       agent_status: recruit.agent_status || "unlicensed",
       licensing_info: recruit.licensing_info || {},
-      onboarding_status: skipPipeline ? null : "prospect",
-      current_onboarding_phase: skipPipeline ? null : "prospect",
+      onboarding_status: isAddAgent
+        ? "completed"
+        : skipPipeline
+          ? null
+          : "prospect",
+      current_onboarding_phase: isAddAgent
+        ? "completed"
+        : skipPipeline
+          ? null
+          : "prospect",
       onboarding_started_at: null,
       hierarchy_path: "",
       hierarchy_depth: 0,
       contract_level: recruit.contract_level ?? null,
-      approval_status: "pending",
+      approval_status: isAddAgent ? "approved" : "pending",
       is_admin: recruit.is_admin || false,
     };
 

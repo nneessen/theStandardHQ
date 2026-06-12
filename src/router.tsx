@@ -539,13 +539,14 @@ const leadDetailRoute = createRoute({
 });
 
 // Recruiting admin route - pipeline management
-// Accessible by: super admins (bypass), staff roles (trainers, contracting managers)
-// RLS policies control which pipelines each user can actually view/edit
+// Super-admin only: per owner directive, only the super admin may create/manage
+// recruiting pipelines. Backed by RLS (pipeline_templates writes are super-admin
+// only) so this is defense-in-depth, not the sole gate.
 const recruitingAdminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "recruiting/admin/pipelines",
   component: () => (
-    <RouteGuard noRecruits subscriptionFeature="recruiting">
+    <RouteGuard noRecruits superAdminOnly>
       <PipelineAdminPage />
     </RouteGuard>
   ),
