@@ -84,6 +84,15 @@ export interface ChargebackSummary {
   atRiskAmount: number;
 }
 
+/**
+ * Chargebacks that occurred in the CURRENT calendar month only (by
+ * chargeback_date) — distinct from the all-time {@link ChargebackSummary}.
+ */
+export interface CurrentMonthChargebacks {
+  count: number;
+  amount: number;
+}
+
 export interface AtRiskCommission {
   commissionId: string;
   policyId: string;
@@ -563,6 +572,41 @@ class CommissionStatusService {
     } catch (error) {
       logger.error(
         "CommissionStatusService.getChargebackSummary",
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get chargebacks that occurred in the CURRENT calendar month.
+   *
+   * Unlike {@link getChargebackSummary} (which is an all-time portfolio
+   * aggregate), this returns only chargebacks whose `chargeback_date` falls in
+   * the current month — the correct figure for a "this month" dashboard alert.
+   *
+   * @returns Count + summed amount of this month's chargebacks
+   */
+  async getCurrentMonthChargebacks(): Promise<CurrentMonthChargebacks> {
+    try {
+      const { data, error } = await supabase.rpc(
+        "get_user_current_month_chargebacks",
+      );
+
+      if (error) {
+        throw new DatabaseError("getCurrentMonthChargebacks", error);
+      }
+
+      // RPC returns a single-row set: [{ chargeback_count, chargeback_amount }]
+      const row = Array.isArray(data) ? data[0] : data;
+
+      return {
+        count: Number(row?.chargeback_count ?? 0),
+        amount: Number(row?.chargeback_amount ?? 0),
+      };
+    } catch (error) {
+      logger.error(
+        "CommissionStatusService.getCurrentMonthChargebacks",
         error instanceof Error ? error : new Error(String(error)),
       );
       throw error;

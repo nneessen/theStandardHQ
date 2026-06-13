@@ -17,7 +17,8 @@ import { useFeatureAccess } from "../../hooks/subscription/useFeatureAccess";
 import { useImoAllFeaturesAccess } from "../../hooks/subscription/useImoAllFeaturesAccess";
 import { useCreateExpense } from "../../hooks/expenses/useCreateExpense";
 import { useCreatePolicy } from "../../hooks/policies";
-import { useChargebackSummary } from "../../hooks/commissions/useChargebackSummary";
+import { useCurrentMonthChargebacks } from "../../hooks/commissions/useCurrentMonthChargebacks";
+import { usePersistencyCohorts } from "../../hooks/policies/usePersistencyCohorts";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
 import { useCalculatedTargets } from "../../hooks/targets";
@@ -44,6 +45,7 @@ import {
   QuickActions,
   BoardStatRow,
   BoardFlags,
+  BoardPersistency,
   type BoardFlag,
 } from "./components/board";
 import { useMyRank } from "./hooks/useMyRank";
@@ -206,7 +208,8 @@ export const DashboardHome: React.FC = () => {
   const createExpense = useCreateExpense();
   const createPolicy = useCreatePolicy();
   const createOrFindClient = useCreateOrFindClient();
-  const { data: chargebackSummary } = useChargebackSummary();
+  const { data: currentMonthChargebacks } = useCurrentMonthChargebacks();
+  const { data: persistencyCohorts } = usePersistencyCohorts();
 
   const { grantsAllFeatures: imoGrantsAllFeatures } = useImoAllFeaturesAccess();
   const { hasAccess: hasTeamAccess } = useFeatureAccess("hierarchy");
@@ -351,13 +354,13 @@ export const DashboardHome: React.FC = () => {
   };
 
   const augmentedAlerts =
-    chargebackSummary && chargebackSummary.totalChargebacks > 0
+    currentMonthChargebacks && currentMonthChargebacks.count > 0
       ? [
           ...alertsConfig,
           {
             type: "danger" as const,
-            title: `${chargebackSummary.totalChargebacks} chargeback${chargebackSummary.totalChargebacks === 1 ? "" : "s"}`,
-            message: `${formatCurrency(chargebackSummary.totalChargebackAmount)} clawed back this period`,
+            title: `${currentMonthChargebacks.count} chargeback${currentMonthChargebacks.count === 1 ? "" : "s"} this month`,
+            message: `${formatCurrency(currentMonthChargebacks.amount)} clawed back in ${new Date().toLocaleString("en-US", { month: "long" })}`,
             condition: true,
           },
         ]
@@ -545,6 +548,10 @@ export const DashboardHome: React.FC = () => {
           <BoardStatRow cells={statCells} />
 
           <BoardFlags alerts={flags} />
+
+          {persistencyCohorts && persistencyCohorts.length > 0 && (
+            <BoardPersistency cohorts={persistencyCohorts} />
+          )}
 
           <SoftCard padding="lg" className="mb-4">
             <DetailsTable sections={kpiConfig} />

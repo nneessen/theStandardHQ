@@ -17507,6 +17507,22 @@ export type Database = {
           total_commission: number;
         }[];
       };
+      get_contracting_activity: {
+        Args: { p_limit?: number };
+        Returns: {
+          activity_at: string;
+          agent_id: string;
+          agent_name: string;
+          approved_date: string;
+          carrier_id: string;
+          carrier_name: string;
+          status: string;
+          submitted_date: string;
+          updated_at: string;
+          upline_id: string;
+          writing_number: string;
+        }[];
+      };
       get_current_user_hierarchy_path: { Args: never; Returns: string };
       get_current_user_profile_id: { Args: never; Returns: string };
       get_downline_clients_with_stats: {
@@ -17563,6 +17579,22 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: {
           downline_id: string;
+        }[];
+      };
+      get_downline_sponsorships: {
+        Args: never;
+        Returns: {
+          alternate_sponsor_id: string;
+          approved_at: string;
+          carrier_id: string;
+          carrier_name: string;
+          created_at: string;
+          id: string;
+          overall_status: string;
+          reason: string;
+          requester_name: string;
+          requesting_agent_id: string;
+          sponsor_name: string;
         }[];
       };
       get_downline_targets: {
@@ -18910,6 +18942,13 @@ export type Database = {
           weighted_avg_rate: number;
         }[];
       };
+      get_user_current_month_chargebacks: {
+        Args: never;
+        Returns: {
+          chargeback_amount: number;
+          chargeback_count: number;
+        }[];
+      };
       get_user_daily_production: {
         Args: { p_end_date?: string; p_start_date?: string };
         Returns: {
@@ -18957,6 +18996,15 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: {
           code: string;
+        }[];
+      };
+      get_user_persistency_cohorts: {
+        Args: never;
+        Returns: {
+          active_count: number;
+          bucket_months: number;
+          cohort_size: number;
+          persistency_rate: number;
         }[];
       };
       get_user_product_performance: {
@@ -19178,6 +19226,10 @@ export type Database = {
       invoke_account_lifecycle_daily: { Args: never; Returns: undefined };
       invoke_ai_smart_view_sync: { Args: never; Returns: undefined };
       invoke_automation_reminders: { Args: never; Returns: undefined };
+      invoke_call_recording_retention_daily: {
+        Args: never;
+        Returns: undefined;
+      };
       is_access_revoked: { Args: { p_user_id: string }; Returns: boolean };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
@@ -19231,6 +19283,15 @@ export type Database = {
       kpi_admin_can_access_agent: {
         Args: { p_agent: string };
         Returns: boolean;
+      };
+      kpi_claim_call_script: {
+        Args: {
+          p_call_type_id: string;
+          p_imo_id: string;
+          p_run_id: string;
+          p_user: string;
+        };
+        Returns: string;
       };
       kpi_same_imo_agent: { Args: { p_agent: string }; Returns: boolean };
       list_agency_underwriting_sessions_v1: {

@@ -6,3 +6,4 @@ export { BoardStatRow } from "./BoardStatRow";
 export type { BoardStat } from "./BoardStatRow";
 export { BoardFlags } from "./BoardFlags";
 export type { BoardFlag, FlagSeverity } from "./BoardFlags";
+export { BoardPersistency } from "./BoardPersistency";

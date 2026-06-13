@@ -1,8 +1,8 @@
-// src/features/policies/components/__tests__/PolicyFormPolicySection.test.tsx
+// src/features/policies/components/__tests__/PolicyFormFinancialSection.test.tsx
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { PolicyFormPolicySection } from "../PolicyFormPolicySection";
+import { PolicyFormFinancialSection } from "../PolicyFormFinancialSection";
 import type { NewPolicyForm } from "@/types/policy.types";
 
 // Commission UI lives behind the Pro "Financial Summary" gate — grant access.
@@ -39,7 +39,7 @@ function renderSection(
   const form = { ...baseForm, ...(overrides.form ?? {}) };
   const onInputChange = vi.fn();
   render(
-    <PolicyFormPolicySection
+    <PolicyFormFinancialSection
       formData={form}
       displayErrors={{}}
       policyId={overrides.policyId}
@@ -49,13 +49,12 @@ function renderSection(
         overrides.contractLevel === undefined ? 110 : overrides.contractLevel
       }
       onInputChange={onInputChange}
-      onSelectChange={vi.fn()}
     />,
   );
   return { onInputChange };
 }
 
-describe("PolicyFormPolicySection — manual commission entry", () => {
+describe("PolicyFormFinancialSection — manual commission entry", () => {
   it("renders an editable 'Product Comp %' field bound to the form", () => {
     const { onInputChange } = renderSection();
     const input = screen.getByLabelText("Product Comp %") as HTMLInputElement;

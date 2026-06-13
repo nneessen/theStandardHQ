@@ -24,8 +24,10 @@ interface PolicyDialogProps {
  *
  * Sizing is locked to the viewport on every device: the outer card sits
  * 12px / 24px in from the edge and the form body is the only scrollable
- * region (header + footer stay fixed). Prevents the dialog from ever
- * exceeding the viewport on landscape phones or short desktop windows.
+ * region (header + footer stay fixed). It opens wide (max-w-6xl) so the form
+ * lays out in up to three columns and fits without scrolling on a normal
+ * desktop window; the `w-[calc(100vw-Xrem)]` cap keeps it inside the viewport
+ * on narrow screens, and the body can still scroll as a fallback on short ones.
  */
 export function PolicyDialog({
   open,
@@ -63,7 +65,7 @@ export function PolicyDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift ring-0 outline-none w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-3rem)] max-w-3xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift ring-0 outline-none w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-3rem)] max-w-6xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
         // Block ESC key and click-outside during submission
         onPointerDownOutside={(e) => {

@@ -21,6 +21,8 @@ import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-avail
 import { TimePeriodSelector } from "./components/TimePeriodSelector";
 import { PillButton, SectionShell, SoftCard } from "@/components/v2";
 import { Board, Cap, T } from "@/components/board";
+import { BoardPersistency } from "@/features/dashboard";
+import { usePersistencyCohorts } from "@/hooks/policies";
 import { downloadCSV, printAnalyticsToPDF } from "../../utils/exportHelpers";
 import {
   AnalyticsDateProvider,
@@ -204,6 +206,10 @@ function AnalyticsDashboardContent() {
     isLoading: sectionsLoading,
   } = useAccessibleAnalyticsSections();
 
+  // Persistency is an all-book retention metric (not period-scoped), so it sits
+  // outside the date-filtered panels as an always-visible headline row.
+  const { data: persistencyCohorts } = usePersistencyCohorts();
+
   const handleExportCSV = () => {
     if (analyticsData.raw.policies.length > 0) {
       downloadCSV(
@@ -333,6 +339,11 @@ function AnalyticsDashboardContent() {
                 </Suspense>
               </AnalyticsSectionGate>
             </div>
+
+            {/* Persistency — all-book retention at 3/6/9/12-month anniversaries */}
+            {persistencyCohorts && persistencyCohorts.length > 0 && (
+              <BoardPersistency cohorts={persistencyCohorts} />
+            )}
 
             {/* Trend | Growth */}
             <div className={ROW_2}>

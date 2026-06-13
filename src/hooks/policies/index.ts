@@ -11,17 +11,21 @@ export {
   useDeletePolicy,
   useCheckSharedClient,
   usePolicySummary,
-} from '../../features/policies/hooks';
+} from "../../features/policies/hooks";
 
 export type {
   UsePoliciesOptions,
   UsePoliciesPaginatedOptions,
   SortConfig as PolicySortConfig,
   UpdatePolicyParams,
-} from '../../features/policies/hooks';
+} from "../../features/policies/hooks";
 
 // Re-export query keys for invalidation
-export { policyKeys, policyQueries } from '../../features/policies/queries';
+export { policyKeys, policyQueries } from "../../features/policies/queries";
+
+// Anniversary-cohort persistency (3/6/9/12-month)
+export { usePersistencyCohorts } from "./usePersistencyCohorts";
+export type { PersistencyCohort } from "./usePersistencyCohorts";
 
 // DEPRECATED: These hooks have been merged into useUpdatePolicy
 // useCancelPolicy → useUpdatePolicy({ id, status: 'cancelled', reason })

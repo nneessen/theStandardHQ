@@ -23,8 +23,10 @@ import {
   usePolicyCommission,
   useUserContractLevel,
 } from "./hooks/usePolicyCommission";
+import { Textarea } from "@/components/ui/textarea";
 import { PolicyFormClientSection } from "./components/PolicyFormClientSection";
 import { PolicyFormPolicySection } from "./components/PolicyFormPolicySection";
+import { PolicyFormFinancialSection } from "./components/PolicyFormFinancialSection";
 import { SubmitDateConfirmDialog } from "./components/SubmitDateConfirmDialog";
 
 interface PolicyFormProps {
@@ -293,44 +295,75 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       onSubmit={handleSubmit}
       className="flex-1 flex flex-col overflow-hidden min-h-0"
     >
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5 p-4 md:p-5 overflow-y-auto min-h-0 overscroll-y-contain">
-        {/* Left Column - Client Information */}
-        <section className="flex flex-col gap-3">
-          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-            Client
-          </div>
-          <PolicyFormClientSection
-            formData={formData}
-            displayErrors={displayErrors}
-            carriers={carriers}
-            products={carrierProducts}
-            productsLoading={productsLoading}
-            productCommissionRates={productCommissionRates}
-            termModifiers={termModifiers}
-            showContactDetails={showContactDetails}
-            onShowContactDetailsChange={setShowContactDetails}
-            onInputChange={handleInputChange}
-            onSelectChange={handleSelectChange}
-            onPhoneChange={handlePhoneChange}
-            onDOBChange={handleDOBChange}
-          />
-        </section>
+      <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain p-5">
+        {/* Three balanced columns: Client · Policy · Financial. Each flows
+            independently so there's no dead space, and the whole form fits a
+            normal desktop window without scrolling. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-6">
+          <section className="flex flex-col gap-3.5">
+            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
+              Client
+            </div>
+            <PolicyFormClientSection
+              formData={formData}
+              displayErrors={displayErrors}
+              carriers={carriers}
+              products={carrierProducts}
+              productsLoading={productsLoading}
+              productCommissionRates={productCommissionRates}
+              termModifiers={termModifiers}
+              showContactDetails={showContactDetails}
+              onShowContactDetailsChange={setShowContactDetails}
+              onInputChange={handleInputChange}
+              onSelectChange={handleSelectChange}
+              onPhoneChange={handlePhoneChange}
+              onDOBChange={handleDOBChange}
+            />
+          </section>
 
-        {/* Right Column - Policy Details */}
-        <section className="flex flex-col gap-3">
-          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-            Policy
+          <section className="flex flex-col gap-3.5">
+            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
+              Policy
+            </div>
+            <PolicyFormPolicySection
+              formData={formData}
+              displayErrors={displayErrors}
+              policyId={policyId}
+              onInputChange={handleInputChange}
+              onSelectChange={handleSelectChange}
+            />
+          </section>
+
+          <section className="flex flex-col gap-3.5">
+            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
+              Compensation
+            </div>
+            <PolicyFormFinancialSection
+              formData={formData}
+              displayErrors={displayErrors}
+              policyId={policyId}
+              annualPremium={annualPremium}
+              expectedCommission={expectedCommission}
+              contractLevel={contractLevelConfigured ? userContractLevel : null}
+              contractLevelLoading={contractLevelLoading}
+              onInputChange={handleInputChange}
+            />
+          </section>
+        </div>
+
+        {/* Notes — a generous full-width block at the foot of the form. */}
+        <section className="mt-5 border-t border-border/40 pt-4">
+          <div className="mb-2 text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
+            Notes
           </div>
-          <PolicyFormPolicySection
-            formData={formData}
-            displayErrors={displayErrors}
-            policyId={policyId}
-            annualPremium={annualPremium}
-            expectedCommission={expectedCommission}
-            contractLevel={contractLevelConfigured ? userContractLevel : null}
-            contractLevelLoading={contractLevelLoading}
-            onInputChange={handleInputChange}
-            onSelectChange={handleSelectChange}
+          <Textarea
+            id="notes"
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
+            rows={3}
+            placeholder="Add any context about this policy — underwriting notes, client preferences, follow-ups…"
+            className="text-sm resize-vertical min-h-[92px] bg-background border-border/60 focus:border-accent"
           />
         </section>
       </div>
