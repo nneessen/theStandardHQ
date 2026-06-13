@@ -24,6 +24,7 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
 import { toast } from "sonner";
+import { VALID_CONTRACT_LEVELS } from "@/lib/constants";
 import type { UserProfile } from "@/types/hierarchy.types";
 
 interface EditAgentModalProps {
@@ -228,33 +229,15 @@ export function EditAgentModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="100" className="text-xs">
-                      100%
-                    </SelectItem>
-                    <SelectItem value="105" className="text-xs">
-                      105%
-                    </SelectItem>
-                    <SelectItem value="110" className="text-xs">
-                      110%
-                    </SelectItem>
-                    <SelectItem value="115" className="text-xs">
-                      115%
-                    </SelectItem>
-                    <SelectItem value="120" className="text-xs">
-                      120%
-                    </SelectItem>
-                    <SelectItem value="125" className="text-xs">
-                      125%
-                    </SelectItem>
-                    <SelectItem value="130" className="text-xs">
-                      130%
-                    </SelectItem>
-                    <SelectItem value="135" className="text-xs">
-                      135%
-                    </SelectItem>
-                    <SelectItem value="140" className="text-xs">
-                      140%
-                    </SelectItem>
+                    {VALID_CONTRACT_LEVELS.map((level) => (
+                      <SelectItem
+                        key={level}
+                        value={String(level)}
+                        className="text-xs"
+                      >
+                        {level}%
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
