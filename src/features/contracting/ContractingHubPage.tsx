@@ -10,6 +10,7 @@ import { SectionShell } from "@/components/v2";
 import { Cap, T } from "@/components/board";
 import { useIsMobile } from "@/hooks/ui";
 import { ActionCenter } from "./components/hub/ActionCenter";
+import { DownlineActivityPanel } from "./components/hub/DownlineActivityPanel";
 import { MyContractingPanel } from "./components/hub/MyContractingPanel";
 import { DownlinePanel } from "./components/hub/DownlinePanel";
 
@@ -118,6 +119,9 @@ export function ContractingHubPage({ initialTab }: { initialTab?: string }) {
 
           {/* always-on action center */}
           <ActionCenter />
+
+          {/* always-on downline awareness (managers / super-admins) */}
+          <DownlineActivityPanel />
 
           {/* segmented body */}
           <div style={isMobile ? undefined : { flex: 1, minHeight: 0 }}>

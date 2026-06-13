@@ -40,6 +40,68 @@ export interface CarrierContactInfo {
 }
 
 // =============================================================================
+// CONTRACTING INSTRUCTIONS ("what to expect")
+// =============================================================================
+
+/**
+ * How an agent contracts with a carrier. Stored on carriers.contracting_metadata JSONB.
+ * Distinct from the recruiting-checklist CarrierContractingMetadata in recruiting.types.ts
+ * (which configures a checklist item, not the carrier itself).
+ */
+export type CarrierContractingMethod =
+  | "surelc"
+  | "email"
+  | "portal"
+  | "paper"
+  | "other";
+
+export interface CarrierContractingInstructions {
+  method?: CarrierContractingMethod;
+  instructions?: string;
+  portal_url?: string;
+  contact_email?: string;
+  processing_time_days?: number;
+}
+
+export const CARRIER_CONTRACTING_METHOD_LABEL: Record<
+  CarrierContractingMethod,
+  string
+> = {
+  surelc: "SureLC",
+  email: "Email request",
+  portal: "Carrier portal",
+  paper: "Paper application",
+  other: "Other",
+};
+
+/** Safely parse carriers.contracting_metadata JSON into typed instructions (null if empty). */
+export function parseCarrierContractingInstructions(
+  raw: unknown,
+): CarrierContractingInstructions | null {
+  if (!raw || typeof raw !== "object") return null;
+  const m = raw as Record<string, unknown>;
+  const out: CarrierContractingInstructions = {};
+  if (
+    m.method === "surelc" ||
+    m.method === "email" ||
+    m.method === "portal" ||
+    m.method === "paper" ||
+    m.method === "other"
+  ) {
+    out.method = m.method;
+  }
+  if (typeof m.instructions === "string" && m.instructions.trim())
+    out.instructions = m.instructions;
+  if (typeof m.portal_url === "string" && m.portal_url.trim())
+    out.portal_url = m.portal_url;
+  if (typeof m.contact_email === "string" && m.contact_email.trim())
+    out.contact_email = m.contact_email;
+  if (typeof m.processing_time_days === "number" && m.processing_time_days > 0)
+    out.processing_time_days = m.processing_time_days;
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+// =============================================================================
 // FORM & INPUT TYPES
 // =============================================================================
 
@@ -50,6 +112,8 @@ export interface NewCarrierForm {
   contact_info?: CarrierContactInfo;
   imo_id?: string;
   advance_cap?: number | null;
+  /** Per-carrier "what to expect" contracting instructions (carriers.contracting_metadata). */
+  contracting_metadata?: CarrierContractingInstructions | null;
 }
 
 export interface UpdateCarrierForm extends Partial<NewCarrierForm> {

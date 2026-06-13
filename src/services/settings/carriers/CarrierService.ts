@@ -130,7 +130,7 @@ export class CarrierService extends BaseService<
       commission_structure: null, // Always null on creation
       imo_id: data.imo_id || undefined,
       advance_cap: data.advance_cap ?? null,
-      contracting_metadata: null, // Always null on creation
+      contracting_metadata: (data.contracting_metadata || null) as Json,
     };
 
     return super.create(repositoryData);
@@ -172,6 +172,11 @@ export class CarrierService extends BaseService<
     // Include advance_cap if present in data (even if null/undefined to allow clearing)
     if ("advance_cap" in data) {
       repositoryData.advance_cap = data.advance_cap ?? null;
+    }
+    // Include contracting instructions if present (allows clearing back to null)
+    if ("contracting_metadata" in data) {
+      repositoryData.contracting_metadata = (data.contracting_metadata ||
+        null) as Json;
     }
 
     console.log(

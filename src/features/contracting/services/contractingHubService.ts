@@ -6,6 +6,10 @@
 // so results come back loose — we cast each to an explicit Raw* row shape here.
 
 import { supabase } from "@/services/base/supabase";
+import {
+  parseCarrierContractingInstructions,
+  type CarrierContractingInstructions,
+} from "@/types/carrier.types";
 
 export type ContractStatus =
   | "pending"
@@ -90,6 +94,40 @@ export interface MySponsorshipRow {
   approvedAt: string | null;
 }
 
+export interface HubCarrier {
+  id: string;
+  name: string;
+  contracting: CarrierContractingInstructions | null;
+}
+
+export interface ContractingActivityRow {
+  agentId: string;
+  agentName: string;
+  uplineId: string | null;
+  carrierId: string;
+  carrierName: string;
+  status: string;
+  writingNumber: string | null;
+  submittedDate: string | null;
+  approvedDate: string | null;
+  updatedAt: string | null;
+  activityAt: string | null;
+}
+
+export interface DownlineSponsorshipRow {
+  id: string;
+  requestingAgentId: string;
+  requesterName: string;
+  carrierId: string;
+  carrierName: string;
+  alternateSponsorId: string;
+  sponsorName: string;
+  overallStatus: string;
+  reason: string | null;
+  createdAt: string;
+  approvedAt: string | null;
+}
+
 // ── Raw row shapes returned by the (untyped) client ──────────────────────────
 interface RawMyContract {
   carrier_id: string;
@@ -149,6 +187,33 @@ interface RawMySponsorship {
   overall_status: string;
   sponsor_approval_status: string;
   sponsor_upline_approval_status: string;
+  reason: string | null;
+  created_at: string;
+  approved_at: string | null;
+}
+
+interface RawActivity {
+  agent_id: string;
+  agent_name: string;
+  upline_id: string | null;
+  carrier_id: string;
+  carrier_name: string;
+  status: string;
+  writing_number: string | null;
+  submitted_date: string | null;
+  approved_date: string | null;
+  updated_at: string | null;
+  activity_at: string | null;
+}
+interface RawDownlineSponsorship {
+  id: string;
+  requesting_agent_id: string;
+  requester_name: string;
+  carrier_id: string;
+  carrier_name: string;
+  alternate_sponsor_id: string;
+  sponsor_name: string;
+  overall_status: string;
   reason: string | null;
   created_at: string;
   approved_at: string | null;
@@ -231,7 +296,7 @@ export const contractingHubService = {
     }));
   },
 
-  async getCarriers(): Promise<Array<{ id: string; name: string }>> {
+  async getCarriers(): Promise<HubCarrier[]> {
     const uid = await currentUid();
     const { data: profile, error: pErr } = await supabase
       .from("user_profiles")
@@ -243,12 +308,60 @@ export const contractingHubService = {
     if (!imoId) return [];
     const { data, error } = await supabase
       .from("carriers")
-      .select("id, name")
+      .select("id, name, contracting_metadata")
       .eq("imo_id", imoId)
       .eq("is_active", true)
       .order("name");
     if (error) throw error;
-    return (data ?? []) as Array<{ id: string; name: string }>;
+    return (
+      (data ?? []) as Array<{
+        id: string;
+        name: string;
+        contracting_metadata: unknown;
+      }>
+    ).map((c) => ({
+      id: c.id,
+      name: c.name,
+      contracting: parseCarrierContractingInstructions(c.contracting_metadata),
+    }));
+  },
+
+  async getContractingActivity(limit = 50): Promise<ContractingActivityRow[]> {
+    const { data, error } = await supabase.rpc("get_contracting_activity", {
+      p_limit: limit,
+    });
+    if (error) throw error;
+    return ((data ?? []) as RawActivity[]).map((r) => ({
+      agentId: r.agent_id,
+      agentName: r.agent_name,
+      uplineId: r.upline_id,
+      carrierId: r.carrier_id,
+      carrierName: r.carrier_name,
+      status: r.status,
+      writingNumber: r.writing_number,
+      submittedDate: r.submitted_date,
+      approvedDate: r.approved_date,
+      updatedAt: r.updated_at,
+      activityAt: r.activity_at,
+    }));
+  },
+
+  async getDownlineSponsorships(): Promise<DownlineSponsorshipRow[]> {
+    const { data, error } = await supabase.rpc("get_downline_sponsorships");
+    if (error) throw error;
+    return ((data ?? []) as RawDownlineSponsorship[]).map((r) => ({
+      id: r.id,
+      requestingAgentId: r.requesting_agent_id,
+      requesterName: r.requester_name,
+      carrierId: r.carrier_id,
+      carrierName: r.carrier_name,
+      alternateSponsorId: r.alternate_sponsor_id,
+      sponsorName: r.sponsor_name,
+      overallStatus: r.overall_status,
+      reason: r.reason,
+      createdAt: r.created_at,
+      approvedAt: r.approved_at,
+    }));
   },
 
   async getEligibleSponsors(carrierId: string): Promise<SponsorOption[]> {

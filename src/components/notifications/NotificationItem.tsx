@@ -51,6 +51,10 @@ const getNotificationIcon = (type: NotificationType) => {
       return { icon: UserPlus, color: "text-blue-500" };
     case "sponsorship_decision":
       return { icon: ThumbsUp, color: "text-amber-500" };
+    case "sponsorship_bypass":
+      return { icon: UserPlus, color: "text-amber-500" };
+    case "downline_contract_status":
+      return { icon: ClipboardCheck, color: "text-blue-500" };
     default:
       return { icon: MessageSquare, color: "text-muted-foreground" };
   }

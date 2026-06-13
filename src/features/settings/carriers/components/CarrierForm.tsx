@@ -23,10 +23,34 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Carrier } from "../hooks/useCarriers";
 import { useImo } from "@/contexts/ImoContext";
+import {
+  CARRIER_CONTRACTING_METHOD_LABEL,
+  parseCarrierContractingInstructions,
+  type CarrierContractingInstructions,
+  type CarrierContractingMethod,
+  type NewCarrierForm,
+} from "@/types/carrier.types";
+
+const CONTRACTING_METHODS: CarrierContractingMethod[] = [
+  "surelc",
+  "email",
+  "portal",
+  "paper",
+  "other",
+];
+const METHOD_NONE = "__none__";
 
 const carrierFormSchema = z.object({
   name: z
@@ -41,6 +65,21 @@ const carrierFormSchema = z.object({
     .positive("Must be a positive number")
     .optional()
     .nullable(),
+  contracting_metadata: z
+    .object({
+      method: z.string().optional(),
+      instructions: z.string().max(4000).optional(),
+      portal_url: z.string().max(500).optional(),
+      contact_email: z.string().max(200).optional(),
+      processing_time_days: z
+        .number()
+        .int()
+        .positive()
+        .max(365)
+        .optional()
+        .nullable(),
+    })
+    .optional(),
 });
 
 type CarrierFormValues = z.infer<typeof carrierFormSchema>;
@@ -49,7 +88,7 @@ interface CarrierFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   carrier?: Carrier | null;
-  onSubmit: (data: CarrierFormValues) => void;
+  onSubmit: (data: NewCarrierForm) => void;
   isSubmitting?: boolean;
   defaultImoId?: string;
 }
@@ -75,18 +114,34 @@ export function CarrierForm({
       is_active: true,
       imo_id: undefined,
       advance_cap: undefined,
+      contracting_metadata: {
+        method: undefined,
+        instructions: "",
+        portal_url: "",
+        contact_email: "",
+        processing_time_days: undefined,
+      },
     },
   });
 
   // Reset form when carrier changes or sheet opens/closes
   useEffect(() => {
     if (carrier) {
+      const ci =
+        parseCarrierContractingInstructions(carrier.contracting_metadata) ?? {};
       form.reset({
         name: carrier.name || "",
         code: carrier.code || undefined,
         is_active: carrier.is_active ?? true,
         imo_id: carrier.imo_id || undefined,
         advance_cap: carrier.advance_cap ?? undefined,
+        contracting_metadata: {
+          method: ci.method,
+          instructions: ci.instructions ?? "",
+          portal_url: ci.portal_url ?? "",
+          contact_email: ci.contact_email ?? "",
+          processing_time_days: ci.processing_time_days ?? undefined,
+        },
       });
     } else {
       form.reset({
@@ -96,6 +151,13 @@ export function CarrierForm({
         // Default to the selected Settings IMO first, then user's IMO.
         imo_id: defaultImoId || imo?.id || undefined,
         advance_cap: undefined,
+        contracting_metadata: {
+          method: undefined,
+          instructions: "",
+          portal_url: "",
+          contact_email: "",
+          processing_time_days: undefined,
+        },
       });
     }
   }, [carrier, open, form, defaultImoId, imo?.id]);
@@ -109,7 +171,38 @@ export function CarrierForm({
       return;
     }
 
-    onSubmit(data);
+    // Normalize contracting instructions: drop empties, validate method, null if all empty.
+    const cm = data.contracting_metadata;
+    const normalized: CarrierContractingInstructions = {};
+    if (cm) {
+      if (
+        cm.method &&
+        CONTRACTING_METHODS.includes(cm.method as CarrierContractingMethod)
+      ) {
+        normalized.method = cm.method as CarrierContractingMethod;
+      }
+      if (cm.instructions?.trim())
+        normalized.instructions = cm.instructions.trim();
+      if (cm.portal_url?.trim()) normalized.portal_url = cm.portal_url.trim();
+      if (cm.contact_email?.trim())
+        normalized.contact_email = cm.contact_email.trim();
+      if (
+        typeof cm.processing_time_days === "number" &&
+        cm.processing_time_days > 0
+      ) {
+        normalized.processing_time_days = cm.processing_time_days;
+      }
+    }
+
+    onSubmit({
+      name: data.name,
+      code: data.code || undefined,
+      is_active: data.is_active,
+      imo_id: data.imo_id || undefined,
+      advance_cap: data.advance_cap ?? null,
+      contracting_metadata:
+        Object.keys(normalized).length > 0 ? normalized : null,
+    });
   };
 
   return (
@@ -238,6 +331,147 @@ export function CarrierForm({
                 </FormItem>
               )}
             />
+
+            {/* Per-carrier contracting instructions ("what to expect") */}
+            <div className="space-y-2.5 rounded-lg border border-border p-2.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Contracting instructions
+              </div>
+              <p className="-mt-1 text-[10px] text-muted-foreground">
+                Shown to agents on the Contracting page so they know how to
+                contract this carrier (e.g. via SureLC vs. emailed
+                instructions).
+              </p>
+
+              <FormField
+                control={form.control}
+                name="contracting_metadata.method"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      How to contract
+                    </FormLabel>
+                    <Select
+                      value={field.value || METHOD_NONE}
+                      onValueChange={(v) =>
+                        field.onChange(v === METHOD_NONE ? undefined : v)
+                      }
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-7 text-[11px] bg-card border-border">
+                          <SelectValue placeholder="Not specified" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={METHOD_NONE} className="text-[11px]">
+                          Not specified
+                        </SelectItem>
+                        {CONTRACTING_METHODS.map((m) => (
+                          <SelectItem key={m} value={m} className="text-[11px]">
+                            {CARRIER_CONTRACTING_METHOD_LABEL[m]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contracting_metadata.instructions"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Instructions
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="e.g., Submit through SureLC; the carrier emails your writing number in 3–5 business days."
+                        {...field}
+                        value={field.value || ""}
+                        className="min-h-[56px] resize-none text-[11px] bg-card border-border"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-[10px] text-muted-foreground">
+                      What the agent should expect or do. Agents are also
+                      reminded to ask their upline if unsure before submitting.
+                    </FormDescription>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contracting_metadata.portal_url"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Portal URL (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://…"
+                        {...field}
+                        value={field.value || ""}
+                        className="h-7 text-[11px] bg-card border-border"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contracting_metadata.contact_email"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Contracting Contact Email (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="contracting@carrier.com"
+                        {...field}
+                        value={field.value || ""}
+                        className="h-7 text-[11px] bg-card border-border"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contracting_metadata.processing_time_days"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                      Typical Processing Time (Days, Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="e.g., 5"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          field.onChange(v === "" ? null : parseInt(v, 10));
+                        }}
+                        className="h-7 w-24 text-[11px] bg-card border-border"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <SheetFooter className="gap-1 pt-3 border-t border-border/60">
               <Button

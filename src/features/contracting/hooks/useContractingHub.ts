@@ -19,6 +19,9 @@ export const hubKeys = {
     [...hubKeys.all, "eligible-sponsors", carrierId] as const,
   inbox: () => [...hubKeys.all, "sponsorship-inbox"] as const,
   mySponsorships: () => [...hubKeys.all, "my-sponsorships"] as const,
+  activity: () => [...hubKeys.all, "activity"] as const,
+  downlineSponsorships: () =>
+    [...hubKeys.all, "downline-sponsorships"] as const,
 };
 
 export function useMyUserId() {
@@ -90,6 +93,24 @@ export function useMySponsorships() {
   });
 }
 
+export function useContractingActivity(enabled = true) {
+  return useQuery({
+    queryKey: hubKeys.activity(),
+    queryFn: () => contractingHubService.getContractingActivity(50),
+    staleTime: 20_000,
+    enabled,
+  });
+}
+
+export function useDownlineSponsorships(enabled = true) {
+  return useQuery({
+    queryKey: hubKeys.downlineSponsorships(),
+    queryFn: () => contractingHubService.getDownlineSponsorships(),
+    staleTime: 20_000,
+    enabled,
+  });
+}
+
 function errMessage(e: unknown): string {
   if (e && typeof e === "object" && "message" in e) {
     return String((e as { message: unknown }).message);
@@ -110,6 +131,7 @@ export function useSetContractStatus() {
       qc.invalidateQueries({ queryKey: hubKeys.myContracts() });
       qc.invalidateQueries({ queryKey: hubKeys.downlineContracts() });
       qc.invalidateQueries({ queryKey: hubKeys.newlyEligible() });
+      qc.invalidateQueries({ queryKey: hubKeys.activity() });
     },
     onError: (e) => toast.error(errMessage(e)),
   });
@@ -125,6 +147,7 @@ export function useCreateSponsorship() {
     }) => contractingHubService.createSponsorship(args),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: hubKeys.mySponsorships() });
+      qc.invalidateQueries({ queryKey: hubKeys.downlineSponsorships() });
       toast.success("Sponsorship request sent");
     },
     onError: (e) => toast.error(errMessage(e)),
@@ -141,6 +164,8 @@ export function useApproveSponsorship() {
       qc.invalidateQueries({ queryKey: hubKeys.mySponsorships() });
       qc.invalidateQueries({ queryKey: hubKeys.downlineContracts() });
       qc.invalidateQueries({ queryKey: hubKeys.myContracts() });
+      qc.invalidateQueries({ queryKey: hubKeys.downlineSponsorships() });
+      qc.invalidateQueries({ queryKey: hubKeys.activity() });
       toast.success(vars.approve ? "Approved" : "Denied");
     },
     onError: (e) => toast.error(errMessage(e)),

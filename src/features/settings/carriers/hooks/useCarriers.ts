@@ -1,7 +1,10 @@
 // src/features/settings/carriers/hooks/useCarriers.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { carrierService, type Carrier } from "@/services/settings/carriers";
-import { type NewCarrierForm } from "@/types/carrier.types";
+import {
+  type NewCarrierForm,
+  type CarrierContractingInstructions,
+} from "@/types/carrier.types";
 import { useImo } from "@/contexts/ImoContext";
 import { toast } from "sonner";
 
@@ -15,6 +18,7 @@ export interface CreateCarrierData {
   is_active?: boolean;
   imo_id?: string;
   advance_cap?: number | null;
+  contracting_metadata?: CarrierContractingInstructions | null;
 }
 
 export interface UpdateCarrierData {
@@ -23,6 +27,7 @@ export interface UpdateCarrierData {
   is_active?: boolean;
   imo_id?: string;
   advance_cap?: number | null;
+  contracting_metadata?: CarrierContractingInstructions | null;
 }
 
 export function useCarriers(imoId?: string, options?: { enabled?: boolean }) {
@@ -56,6 +61,7 @@ export function useCarriers(imoId?: string, options?: { enabled?: boolean }) {
         is_active: data.is_active ?? true,
         imo_id: data.imo_id,
         advance_cap: data.advance_cap,
+        contracting_metadata: data.contracting_metadata,
       };
       const result = await carrierService.createFromForm(formData);
       if (!result.success) throw new Error(result.error?.message);
@@ -86,6 +92,9 @@ export function useCarriers(imoId?: string, options?: { enabled?: boolean }) {
         is_active: data.is_active,
         imo_id: data.imo_id,
         advance_cap: data.advance_cap,
+        ...("contracting_metadata" in data
+          ? { contracting_metadata: data.contracting_metadata }
+          : {}),
       };
       const result = await carrierService.updateFromForm(id, formData);
       if (!result.success) throw new Error(result.error?.message);

@@ -18,7 +18,9 @@ export type NotificationType =
   | "pipeline_automation"
   | "carrier_eligible"
   | "sponsorship_request"
-  | "sponsorship_decision";
+  | "sponsorship_decision"
+  | "sponsorship_bypass"
+  | "downline_contract_status";
 
 export interface Notification {
   id: string;
@@ -81,13 +83,22 @@ export interface NotificationMetadata {
   email_id?: string;
   email_subject?: string;
 
-  // For contracting hub (carrier_eligible / sponsorship_request / sponsorship_decision)
+  // For contracting hub (carrier_eligible / sponsorship_request / sponsorship_decision /
+  // sponsorship_bypass / downline_contract_status)
   carrier_id?: string;
   carrier_name?: string;
   upline_id?: string;
   upline_name?: string;
   sponsorship_id?: string;
   decision?: "approved" | "denied";
+  // downline_contract_status: which downline agent + the new contract status
+  agent_id?: string;
+  agent_name?: string;
+  status?: string;
+  writing_number?: string | null;
+  // sponsorship_bypass: who requested, and the alternate sponsor they chose
+  requesting_agent_id?: string;
+  alternate_sponsor_id?: string;
 
   // Navigation
   link?: string; // Where to navigate when clicked

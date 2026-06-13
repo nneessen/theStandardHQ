@@ -28,6 +28,7 @@ import { useIsMobile } from "@/hooks/ui";
 import { Pager } from "./Pager";
 import { StatusTag, statusColor, STATUS_OPTIONS } from "./StatusTag";
 import { RequestDifferentUplineDialog } from "./RequestDifferentUplineDialog";
+import { CarrierContractingInfo } from "./CarrierContractingInfo";
 import {
   useMyContracts,
   useMySponsorships,
@@ -37,6 +38,7 @@ import {
   useHubCarriers,
 } from "../../hooks/useContractingHub";
 import type { ContractStatus } from "../../services/contractingHubService";
+import type { CarrierContractingInstructions } from "@/types/carrier.types";
 
 const ROWS_PAGE = 25;
 
@@ -123,6 +125,13 @@ export function MyContractingPanel() {
   const [draft, setDraft] = useState("");
 
   const rows = useMemo(() => contracts.data ?? [], [contracts.data]);
+
+  // per-carrier "what to expect" instructions, keyed by carrier id
+  const carrierMetaById = useMemo(() => {
+    const m = new Map<string, CarrierContractingInstructions | null>();
+    for (const c of carriers.data ?? []) m.set(c.id, c.contracting);
+    return m;
+  }, [carriers.data]);
 
   // carriers in my org I don't yet have a contract row for — the "Add carrier" menu
   const addable = useMemo(() => {
@@ -342,6 +351,12 @@ export function MyContractingPanel() {
                           >
                             {r.carrierName}
                           </span>
+                          <CarrierContractingInfo
+                            carrierName={r.carrierName}
+                            instructions={
+                              carrierMetaById.get(r.carrierId) ?? null
+                            }
+                          />
                         </span>
                         <span style={{ width: 128 }}>
                           <Select
