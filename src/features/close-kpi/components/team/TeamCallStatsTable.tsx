@@ -152,7 +152,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
 
   return (
     <div className="overflow-x-auto rounded-md border border-border bg-background">
-      <table className="w-full text-[11px]">
+      <table className="w-full text-[13px]">
         <thead className="bg-muted/40 border-b border-border sticky top-0">
           <tr>
             <SortableHeader
@@ -207,19 +207,19 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
             />
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-v2-ring">
           {sorted.map((r) => {
             const hasError = !!r.error;
             return (
               <tr
                 key={r.userId}
                 className={cn(
-                  "border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors",
+                  "hover:bg-muted/30 transition-colors",
                   hasError && "opacity-60",
                 )}
               >
                 {/* Agent */}
-                <td className="px-2 py-1.5">
+                <td className="px-2 py-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {r.profilePhotoUrl ? (
                       <img
@@ -272,31 +272,31 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                 </td>
 
                 {/* Dials */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {hasError ? "—" : r.dials.toLocaleString()}
                 </td>
 
                 {/* Connects */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {hasError ? "—" : r.connects.toLocaleString()}
                 </td>
 
                 {/* Connect rate */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.connectRate != null
                     ? `${(r.connectRate * 100).toFixed(1)}%`
                     : "—"}
                 </td>
 
                 {/* Talk time */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {formatTalkTime(r.talkTimeSeconds)}
                 </td>
 
                 {/* Voicemails */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right font-mono tabular-nums",
+                    "px-2 py-2 text-right font-mono tabular-nums",
                     r.voicemails > 0 ? "text-warning" : "text-muted-foreground",
                   )}
                 >
@@ -304,7 +304,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                 </td>
 
                 {/* Last Call */}
-                <td className="px-2 py-1.5 text-right text-[11px] text-muted-foreground">
+                <td className="px-2 py-2 text-right text-[13px] text-muted-foreground">
                   {relativeTime(r.lastDialAt)}
                 </td>
               </tr>

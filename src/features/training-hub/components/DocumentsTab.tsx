@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import {
   Select,
   SelectContent,
@@ -131,8 +132,8 @@ function DocumentRow({
   canDelete: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
-      <TableCell className="py-1.5">
+    <TableRow className="text-[13px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
+      <TableCell className="py-2">
         <div className="flex items-center gap-2">
           {getFileIcon(document.fileType)}
           <div className="min-w-0">
@@ -140,27 +141,27 @@ function DocumentRow({
               {document.name}
             </span>
             {document.description && (
-              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground block truncate">
+              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground block truncate">
                 {document.description}
               </span>
             )}
           </div>
         </div>
       </TableCell>
-      <TableCell className="py-1.5">
+      <TableCell className="py-2">
         <Badge
           variant="outline"
-          className="text-[9px] px-1.5 py-0 border-border dark:border-border text-muted-foreground dark:text-muted-foreground gap-1"
+          className={`text-[11px] px-1.5 py-0.5 gap-1 ${TINT.slate}`}
         >
           {CATEGORY_ICONS[document.category]}
           {TRAINING_CATEGORY_CONFIG[document.category]?.label ||
             document.category}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
+      <TableCell className="py-2 text-muted-foreground dark:text-muted-foreground">
         {formatFileSize(document.fileSize)}
       </TableCell>
-      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
+      <TableCell className="py-2 text-muted-foreground dark:text-muted-foreground">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -176,10 +177,10 @@ function DocumentRow({
           </Tooltip>
         </TooltipProvider>
       </TableCell>
-      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
+      <TableCell className="py-2 text-muted-foreground dark:text-muted-foreground">
         {format(new Date(document.createdAt), "MMM d, yyyy")}
       </TableCell>
-      <TableCell className="py-1.5 w-8">
+      <TableCell className="py-2 w-8">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -410,19 +411,19 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
-                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
+                <TableHead className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Document
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
+                <TableHead className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Category
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
+                <TableHead className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Size
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
+                <TableHead className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Uploaded By
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
+                <TableHead className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Date
                 </TableHead>
                 <TableHead className="w-8 py-1.5" />

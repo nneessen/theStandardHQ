@@ -39,6 +39,7 @@ import {
   useRecruitsChecklistSummary,
 } from "@/features/recruiting";
 import { TERMINAL_STATUS_COLORS } from "@/types/recruiting.types";
+import { TINT } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 
 type RecruitWithRelations = UserProfile & {
@@ -289,7 +290,7 @@ export function RecruitListTable({
       </div>
 
       {/* Mobile card list */}
-      <ul className="md:hidden flex flex-col">
+      <ul className="md:hidden flex flex-col divide-y divide-v2-ring">
         {paginatedRows.length === 0 && (
           <li className="border-t border-border py-10 text-center">
             <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
@@ -504,7 +505,7 @@ export function RecruitListTable({
                     >
                       <TableCell className="py-2 align-middle">
                         <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-[10px] bg-warning/10 text-warning ring-1 ring-warning/30">
+                          <AvatarFallback className="text-[11px] bg-warning/10 text-warning ring-1 ring-warning/30">
                             {leadInitials(lead)}
                           </AvatarFallback>
                         </Avatar>
@@ -566,7 +567,7 @@ export function RecruitListTable({
                       <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-muted-foreground">
                         {days}
                       </TableCell>
-                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">
+                      <TableCell className="py-2 text-[13px] font-mono text-muted-foreground">
                         {formatDistanceToNow(new Date(lead.submitted_at), {
                           addSuffix: false,
                         })
@@ -624,7 +625,7 @@ export function RecruitListTable({
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
+                        <AvatarFallback className="text-[11px] bg-muted text-v2-ink-subtle">
                           {recruitInitials(recruit)}
                         </AvatarFallback>
                       </Avatar>
@@ -644,12 +645,12 @@ export function RecruitListTable({
                       {isTerminal ? (
                         <span
                           className={cn(
-                            "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] uppercase tracking-[0.16em] font-bold ring-1",
+                            "inline-flex items-center px-1.5 py-0.5 text-[11px]",
                             recruit.onboarding_status === "completed"
-                              ? "bg-success/10 dark:bg-success/20 text-success ring-success/30 dark:ring-success"
+                              ? TINT.emerald
                               : recruit.onboarding_status === "dropped"
-                                ? "bg-destructive/10 dark:bg-destructive/20 text-destructive ring-destructive/30 dark:ring-destructive"
-                                : "bg-muted dark:bg-muted text-v2-ink-subtle ring-border ",
+                                ? TINT.rose
+                                : TINT.slate,
                           )}
                         >
                           {recruit.onboarding_status?.replace(/_/g, " ")}
@@ -689,7 +690,7 @@ export function RecruitListTable({
                     <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-v2-ink-subtle">
                       {daysInPipeline}
                     </TableCell>
-                    <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">
+                    <TableCell className="py-2 text-[13px] font-mono text-muted-foreground">
                       {formatDistanceToNow(updatedDate, { addSuffix: false })
                         .replace("about ", "")
                         .replace(" days", "d")

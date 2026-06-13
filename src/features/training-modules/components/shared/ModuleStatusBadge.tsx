@@ -1,14 +1,11 @@
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 
 export function ModuleStatusBadge({ isPublished }: { isPublished: boolean }) {
   return (
     <Badge
-      variant={isPublished ? "default" : "secondary"}
-      className={`text-[10px] px-1.5 py-0 h-4 ${
-        isPublished
-          ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
-          : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
-      }`}
+      variant="outline"
+      className={`text-[11px] px-1.5 py-0.5 ${isPublished ? TINT.emerald : TINT.slate}`}
     >
       {isPublished ? "Published" : "Draft"}
     </Badge>

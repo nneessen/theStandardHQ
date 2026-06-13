@@ -5,6 +5,7 @@
 import React, { useState } from "react";
 import { Play, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import { useRecordingsList } from "../hooks";
@@ -23,14 +24,15 @@ const OUTCOME_LABELS: Record<string, string> = Object.fromEntries(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
 );
 
+// Status → tint mapping (theme-aware; TINT has both light + dark: variants).
 const STATUS_CLASSES: Record<RecordingDisplayStatus, string> = {
-  uploaded: "bg-muted text-muted-foreground",
-  transcribing: "bg-info/20 text-info",
-  transcribed: "bg-info/20 text-info",
-  analyzing: "bg-info/20 text-info",
-  analyzed: "bg-success/20 text-success",
-  skipped: "bg-muted text-muted-foreground",
-  failed: "bg-destructive/20 text-destructive",
+  uploaded: TINT.slate,
+  transcribing: TINT.blue,
+  transcribed: TINT.blue,
+  analyzing: TINT.amber,
+  analyzed: TINT.emerald,
+  skipped: TINT.slate,
+  failed: TINT.rose,
 };
 
 export const RecordingsList: React.FC = () => {
@@ -76,53 +78,68 @@ export const RecordingsList: React.FC = () => {
 
   return (
     <div className="overflow-x-auto rounded-md border border-border">
-      <table className="w-full text-[11px]">
+      <table className="w-full text-[13px]">
         <thead>
           <tr className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-            <th className="px-2 py-1.5 font-medium">Call</th>
-            <th className="px-2 py-1.5 font-medium">Caller</th>
-            <th className="px-2 py-1.5 font-medium">State</th>
-            <th className="px-2 py-1.5 font-medium">Outcome</th>
-            <th className="px-2 py-1.5 font-medium">Duration</th>
-            <th className="px-2 py-1.5 font-medium">Status</th>
-            <th className="px-2 py-1.5 font-medium">Play</th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Call
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Caller
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              State
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Outcome
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Duration
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Status
+            </th>
+            <th className="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              Play
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-v2-ring">
           {recordings.map((r) => {
             const status = deriveRecordingStatus(r);
             const duration = formatCallDuration(r.duration_seconds);
             return (
               <React.Fragment key={r.id}>
-                <tr className="border-b border-border/60 last:border-0">
-                  <td className="px-2 py-1.5 text-foreground">
+                <tr>
+                  <td className="px-2 py-2 text-foreground">
                     {r.call_at
                       ? formatDateTime(r.call_at)
                       : formatDateTime(r.created_at)}
                   </td>
-                  <td className="px-2 py-1.5 text-foreground">
+                  <td className="px-2 py-2 text-foreground">
                     {r.caller_name ?? "—"}
                   </td>
-                  <td className="px-2 py-1.5 text-foreground">
+                  <td className="px-2 py-2 text-foreground">
                     {r.caller_state ?? "—"}
                   </td>
-                  <td className="px-2 py-1.5 text-foreground">
+                  <td className="px-2 py-2 text-foreground">
                     {r.outcome ? (OUTCOME_LABELS[r.outcome] ?? r.outcome) : "—"}
                   </td>
-                  <td className="px-2 py-1.5 text-foreground">
+                  <td className="px-2 py-2 text-foreground">
                     {duration ?? "—"}
                   </td>
-                  <td className="px-2 py-1.5">
+                  <td className="px-2 py-2">
                     <Badge
+                      variant="outline"
                       className={cn(
-                        "h-4 px-1.5 text-[9px] font-medium",
+                        "text-[11px] px-1.5 py-0.5",
                         STATUS_CLASSES[status],
                       )}
                     >
                       {recordingStatusLabel(status)}
                     </Badge>
                   </td>
-                  <td className="px-2 py-1.5">
+                  <td className="px-2 py-2">
                     <button
                       type="button"
                       className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
@@ -139,8 +156,8 @@ export const RecordingsList: React.FC = () => {
                   </td>
                 </tr>
                 {activeId === r.id && activeUrl ? (
-                  <tr className="border-b border-border/60 last:border-0">
-                    <td colSpan={7} className="px-2 py-1.5">
+                  <tr>
+                    <td colSpan={7} className="px-2 py-2">
                       <audio
                         src={activeUrl}
                         controls

@@ -1,13 +1,25 @@
 // src/features/recruiting/components/PhaseChecklist.tsx
 // Checklist component with modern zinc palette styling
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   RecruitChecklistProgress,
   PhaseChecklistItem,
-  CHECKLIST_STATUS_COLORS,
   UserDocument,
 } from "@/types/recruiting.types";
+import { TINT } from "@/components/ui/StatusBadge";
+
+// Map checklist status values → TINT tone
+const CHECKLIST_TINT: Record<string, string> = {
+  not_started: TINT.slate,
+  pending: TINT.amber,
+  in_progress: TINT.blue,
+  completed: TINT.emerald,
+  verified: TINT.emerald,
+  approved: TINT.emerald,
+  rejected: TINT.rose,
+  needs_resubmission: TINT.amber,
+};
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -832,12 +844,11 @@ export function PhaseChecklist({
                     Hidden
                   </Badge>
                 )}
-                <Badge
-                  variant="secondary"
-                  className={`text-xs px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_STATUS_COLORS[status]}`}
+                <span
+                  className={`text-[11px] px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_TINT[status] ?? TINT.slate}`}
                 >
                   {status.replace(/_/g, " ")}
-                </Badge>
+                </span>
               </div>
 
               <div className="flex-shrink-0">

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/empty";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TINT } from "@/components/ui/StatusBadge";
 import { SectionShell } from "@/components/v2";
 import { Board, Cap, FlapTile, Num, T } from "@/components/board";
 import { useMyOverrides, useMyOverrideSummary } from "@/hooks";
@@ -33,17 +34,28 @@ interface OverrideDashboardProps {
 /**
  * Status badge for override commissions
  */
+const OVERRIDE_STATUS_TINT: Record<string, string> = {
+  pending: TINT.amber,
+  earned: TINT.emerald,
+  paid: TINT.emerald,
+  chargedback: TINT.rose,
+};
+
+const OVERRIDE_STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  earned: "Earned",
+  paid: "Paid",
+  chargedback: "Chargedback",
+};
+
 function OverrideStatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { label: string }> = {
-    pending: { label: "Pending" },
-    earned: { label: "Earned" },
-    paid: { label: "Paid" },
-    chargedback: { label: "Chargedback" },
-  };
-
-  const config = variants[status] || variants.pending;
-
-  return <Badge variant="outline">{config.label}</Badge>;
+  const tone = OVERRIDE_STATUS_TINT[status] ?? TINT.slate;
+  const label = OVERRIDE_STATUS_LABEL[status] ?? status;
+  return (
+    <Badge variant="outline" className={`text-[11px] px-1.5 py-0.5 ${tone}`}>
+      {label}
+    </Badge>
+  );
 }
 
 /**
@@ -193,18 +205,21 @@ export function OverrideDashboard({ className }: OverrideDashboardProps) {
                             <span className="font-medium text-sm">
                               {override.base_agent_email || "Unknown"}
                             </span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-[13px] text-muted-foreground">
                               Hierarchy Level {override.hierarchy_depth}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs font-mono">
+                          <span className="text-[13px] font-mono">
                             {override.policy_number || "N/A"}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge
+                            variant="outline"
+                            className={`text-[11px] px-1.5 py-0.5 ${TINT.slate}`}
+                          >
                             Level {override.hierarchy_depth}
                           </Badge>
                         </TableCell>

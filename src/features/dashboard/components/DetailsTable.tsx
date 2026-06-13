@@ -60,17 +60,17 @@ const StatusGlyph: React.FC<{ score: number | null }> = ({ score }) => {
 const DetailsColumn: React.FC<{ section: KPISection }> = ({ section }) => (
   <TooltipProvider delayDuration={200}>
     <div className="min-w-0">
-      <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted pb-2 mb-3 border-b border-v2-ring">
+      <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted pb-2 mb-3 border-b border-v2-ring">
         {section.category}
       </div>
-      <dl className="space-y-2">
+      <dl className="divide-y divide-v2-ring">
         {section.kpis.map((kpi, i) => {
           const score = intensityScore(kpi.intensity);
           return (
             <Tooltip key={i}>
               <TooltipTrigger asChild>
-                <div className="flex items-baseline justify-between gap-3 cursor-default group min-w-0 py-0.5">
-                  <dt className="text-[12px] text-v2-ink-muted group-hover:text-v2-ink transition-colors min-w-0 truncate">
+                <div className="flex items-baseline justify-between gap-3 cursor-default group min-w-0 py-2">
+                  <dt className="text-[13px] text-v2-ink-muted group-hover:text-v2-ink transition-colors min-w-0 truncate">
                     {kpi.label}
                   </dt>
                   <dd className="flex items-center gap-1 flex-shrink-0">

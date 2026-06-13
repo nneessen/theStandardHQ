@@ -93,13 +93,13 @@ import { SectionShell } from "@/components/v2";
 import { AddProspectDialog } from "./AddProspectDialog";
 import { AddAgentDialog } from "./AddAgentDialog";
 import { Board, Cap, T } from "@/components/board";
+import { TINT } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
 import { US_STATES } from "@/constants/states";
 import { VALID_CONTRACT_LEVELS } from "@/lib/constants";
 import type { RecruitFilters } from "@/types/recruiting.types";
-import { TERMINAL_STATUS_COLORS } from "@/types/recruiting.types";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { buildRecruitCreateAssignmentFields } from "../utils/recruit-create-assignment";
 import {
@@ -584,7 +584,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="divide-y divide-v2-ring">
                   {recruits.map((recruit) => (
                     <TableRow
                       key={recruit.id}
@@ -602,12 +602,12 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             <AvatarImage
                               src={recruit.profile_photo_url || undefined}
                             />
-                            <AvatarFallback className="text-[10px] bg-muted text-v2-ink-subtle">
+                            <AvatarFallback className="text-[11px] bg-muted text-v2-ink-subtle">
                               {(recruit.first_name?.[0] || "").toUpperCase()}
                               {(recruit.last_name?.[0] || "").toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-[11px] font-medium text-foreground">
+                          <span className="text-sm font-medium text-foreground">
                             {recruit.first_name} {recruit.last_name}
                           </span>
                         </div>
@@ -615,13 +615,13 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <TableCell className="py-2">
                         <div className="flex flex-col gap-0.5">
                           {recruit.email && (
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Mail className="h-3 w-3" />
                               {recruit.email}
                             </div>
                           )}
                           {recruit.phone && (
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Phone className="h-3 w-3" />
                               {recruit.phone}
                             </div>
@@ -631,14 +631,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <TableCell className="py-2">
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline ? (
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-sm text-muted-foreground">
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recruit as any).upline.first_name}{" "}
                             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                             {(recruit as any).upline.last_name}
                           </span>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground italic">
+                          <span className="text-sm text-muted-foreground italic">
                             {recruit.upline_id ? "Loading..." : "Not assigned"}
                           </span>
                         )}
@@ -655,17 +655,20 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                           );
                           if (isTerminal) {
                             return (
-                              <Badge
-                                variant="secondary"
+                              <span
                                 className={cn(
-                                  "text-[10px] h-4",
-                                  TERMINAL_STATUS_COLORS[
-                                    recruit.onboarding_status!
-                                  ],
+                                  "text-[11px] px-1.5 py-0.5",
+                                  recruit.onboarding_status === "completed" ||
+                                    recruit.onboarding_status === "active"
+                                    ? TINT.emerald
+                                    : recruit.onboarding_status === "dropped" ||
+                                        recruit.onboarding_status === "blocked"
+                                      ? TINT.rose
+                                      : TINT.slate,
                                 )}
                               >
                                 {recruit.onboarding_status!.replace(/_/g, " ")}
-                              </Badge>
+                              </span>
                             );
                           }
                           if (recruit.pipeline_template_id) {
@@ -683,7 +686,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         })()}
                       </TableCell>
                       <TableCell className="py-2">
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {recruit.created_at
                             ? formatDistanceToNow(
                                 new Date(recruit.created_at),

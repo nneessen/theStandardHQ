@@ -1,9 +1,10 @@
 // src/features/hierarchy/components/HierarchyManagement.tsx
 
-import React, { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { Shield, AlertCircle, Edit } from "lucide-react";
 import { SectionShell } from "@/components/v2";
 import { Cap, T } from "@/components/board";
+import { TINT } from "@/components/ui/StatusBadge";
 import { UserSearchCombobox } from "@/components/shared/user-search-combobox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -218,7 +219,7 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
           <div className="p-3">
             <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/30">
               <Shield className="h-4 w-4 text-destructive mt-0.5" />
-              <p className="text-[11px] text-destructive">
+              <p className="text-[13px] text-destructive">
                 You do not have permission to manage hierarchy. This feature is
                 restricted to administrators only.
               </p>
@@ -251,14 +252,14 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-warning" />
             <div>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 {downlines?.length || 0} agents across {levels.length} levels
               </p>
             </div>
           </div>
           <Badge
             variant="outline"
-            className="text-[9px] h-5 border-warning/40 dark:border-warning text-warning"
+            className={`text-[11px] px-1.5 py-0.5 ${TINT.amber}`}
           >
             Admin Only
           </Badge>
@@ -266,17 +267,17 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
         <div className="p-3">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-4">
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[13px] text-muted-foreground">
                 Loading agents...
               </div>
             </div>
           ) : !downlines || downlines.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-4">
               <Shield className="h-6 w-6 text-muted-foreground mb-1" />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 No agents in hierarchy
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 Agents will appear here once they are added to the system
               </p>
             </div>
@@ -285,22 +286,22 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
               <Table>
                 <TableHeader>
                   <TableRow className="h-8 bg-background border-b border-border">
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground">
                       Agent
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground">
                       Level
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground">
                       Reports To
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground text-right">
                       Direct
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground text-right">
                       Total Down
                     </TableHead>
-                    <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
+                    <TableHead className="text-[11px] font-semibold text-muted-foreground text-right">
                       Actions
                     </TableHead>
                   </TableRow>
@@ -324,28 +325,28 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
                         key={agent.id}
                         className="h-9 border-b border-border/60 hover:bg-background"
                       >
-                        <TableCell className="text-[11px] font-medium text-foreground">
+                        <TableCell className="text-[13px] font-medium text-foreground">
                           {agent.email}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                          <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                             L{agent.hierarchy_depth}
                           </span>
                         </TableCell>
-                        <TableCell className="text-[11px] text-muted-foreground">
+                        <TableCell className="text-[13px] text-muted-foreground">
                           {uplineEmail || (
                             <Badge
                               variant="outline"
-                              className="text-[9px] px-1 py-0 h-4 border-border "
+                              className={`text-[11px] px-1.5 py-0.5 ${TINT.slate}`}
                             >
                               Root
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-[11px] text-right text-muted-foreground">
+                        <TableCell className="text-[13px] text-right text-muted-foreground">
                           {directDownlines}
                         </TableCell>
-                        <TableCell className="text-[11px] text-right text-muted-foreground">
+                        <TableCell className="text-[13px] text-right text-muted-foreground">
                           {totalDownlines}
                         </TableCell>
                         <TableCell className="text-right">

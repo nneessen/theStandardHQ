@@ -351,7 +351,7 @@ export function IssuedPremiumTable({
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+        <table className="w-full text-sm">
           <thead className="bg-background border-b border-border">
             <tr className="h-8">
               <th className="px-2 py-1.5 text-left text-[12px] font-semibold text-muted-foreground">

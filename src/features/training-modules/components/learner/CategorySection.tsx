@@ -63,7 +63,7 @@ export function CategorySection({
         {/* Rows flow directly under the header */}
         <CollapsibleContent>
           {/* Column labels */}
-          <div className="flex items-center gap-3 px-2.5 py-1 text-[10px] text-v2-ink-subtle uppercase tracking-wider border-t border-v2-ring dark:border-v2-ring">
+          <div className="flex items-center gap-3 px-2.5 py-1 text-[11px] text-v2-ink-subtle uppercase tracking-wider border-t border-v2-ring dark:border-v2-ring">
             <div className="w-1.5 flex-shrink-0" />
             <div className="flex-1">Title</div>
             <div className="w-20 flex-shrink-0 hidden sm:block">Level</div>
@@ -79,7 +79,7 @@ export function CategorySection({
           </div>
 
           {/* Assignment rows */}
-          <div className="divide-y divide-zinc-50 dark:divide-v2-ring/50">
+          <div className="divide-y divide-v2-ring">
             {assignments.map((assignment) => (
               <AssignmentRow key={assignment.id} assignment={assignment} />
             ))}

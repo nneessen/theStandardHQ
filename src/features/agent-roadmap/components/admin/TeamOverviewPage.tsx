@@ -210,10 +210,10 @@ export function TeamOverviewPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-b border-border dark:border-border">
-                        <TableHead className="w-[200px] sticky left-0 bg-card z-10 text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                        <TableHead className="w-[200px] sticky left-0 bg-card z-10 text-[11px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                           Agent
                         </TableHead>
-                        <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                        <TableHead className="w-[120px] text-[11px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                           Overall
                         </TableHead>
                         {publishedRoadmaps.map((rm) => (
@@ -229,13 +229,13 @@ export function TeamOverviewPage() {
                                   params: { roadmapId: rm.id },
                                 })
                               }
-                              className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
+                              className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
                             >
                               {rm.title}
                             </button>
                           </TableHead>
                         ))}
-                        <TableHead className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
+                        <TableHead className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                           Last active
                         </TableHead>
                       </TableRow>
@@ -272,7 +272,7 @@ export function TeamOverviewPage() {
                                   value={agent.overallPercent}
                                   className="h-1.5 w-14"
                                 />
-                                <span className="text-[11px] font-bold text-foreground dark:text-foreground tabular-nums w-8 text-right">
+                                <span className="text-[13px] font-bold text-foreground dark:text-foreground tabular-nums w-10 text-right">
                                   {agent.overallPercent}%
                                 </span>
                               </div>
@@ -289,14 +289,14 @@ export function TeamOverviewPage() {
                             <TableCell>
                               <div className="flex items-center gap-1.5">
                                 {agent.lastActivityAt ? (
-                                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                                  <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                                     {formatDistanceToNow(
                                       new Date(agent.lastActivityAt),
                                       { addSuffix: true },
                                     )}
                                   </span>
                                 ) : (
-                                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                                  <span className="text-[13px] text-muted-foreground dark:text-muted-foreground">
                                     Never
                                   </span>
                                 )}
@@ -355,7 +355,7 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
         <div className="inline-flex items-center gap-1.5 cursor-default">
           <StatusIcon className={`h-3.5 w-3.5 ${iconColor}`} />
           <span
-            className={`text-[11px] font-semibold tabular-nums ${
+            className={`text-[13px] font-semibold tabular-nums ${
               status === "completed"
                 ? "text-success"
                 : status === "in_progress"

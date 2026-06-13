@@ -1303,7 +1303,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                         <div className="font-medium text-[14px] text-foreground dark:text-foreground truncate">
                           {policy.client.name}
                         </div>
-                        <div className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-0.5">
+                        <div className="text-[11px] text-muted-foreground dark:text-muted-foreground mt-0.5">
                           {policy.policyNumber} &middot; {policy.client.age}y
                           &middot; {policy.client.state}
                         </div>

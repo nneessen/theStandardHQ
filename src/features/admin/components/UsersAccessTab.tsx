@@ -22,6 +22,7 @@ import { getFullName, getDisplayName } from "@/types/user.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -228,12 +229,9 @@ export function UsersAccessTab({
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="divide-y divide-border">
               {paginatedUsers?.map((user: UserProfile) => (
-                <TableRow
-                  key={user.id}
-                  className="hover:bg-background border-b border-border/60"
-                >
+                <TableRow key={user.id} className="hover:bg-background">
                   <TableCell className="py-1.5">
                     <div className="flex items-center gap-1.5">
                       <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0">
@@ -241,10 +239,10 @@ export function UsersAccessTab({
                           user.email?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-[11px] text-foreground truncate leading-tight">
+                        <div className="font-medium text-[13px] text-foreground truncate leading-tight">
                           {getDisplayName(user)}
                         </div>
-                        <div className="text-[10px] text-muted-foreground truncate leading-tight">
+                        <div className="text-[11px] text-muted-foreground truncate leading-tight">
                           {user.email}
                         </div>
                       </div>
@@ -255,7 +253,7 @@ export function UsersAccessTab({
                       {user.roles?.slice(0, 2).map((roleName) => (
                         <Badge
                           key={roleName}
-                          className={`${getRoleColor(roleName as RoleName)} text-[10px] px-1 py-0 h-4 border-0`}
+                          className={`${getRoleColor(roleName as RoleName)} text-[11px] px-1 py-0 h-4 border-0`}
                           variant="secondary"
                         >
                           {getRoleDisplayName(roleName as RoleName)}
@@ -264,7 +262,7 @@ export function UsersAccessTab({
                       {(user.roles?.length || 0) > 2 && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1 py-0 h-4 border-border "
+                          className="text-[11px] px-1 py-0 h-4 border-border "
                         >
                           +{(user.roles?.length || 0) - 2}
                         </Badge>
@@ -272,7 +270,7 @@ export function UsersAccessTab({
                     </div>
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-[13px] text-muted-foreground">
                       {user.upline
                         ? `${user.upline.first_name || ""} ${user.upline.last_name || ""}`.trim() ||
                           "-"
@@ -281,13 +279,13 @@ export function UsersAccessTab({
                   </TableCell>
                   {isSuperAdmin && (
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground font-mono">
+                      <span className="text-[11px] text-muted-foreground dark:text-muted-foreground font-mono">
                         {getImoName(user.imo_id)}
                       </span>
                     </TableCell>
                   )}
                   <TableCell className="py-1.5">
-                    <span className="text-[10px] text-muted-foreground dark:text-muted-foreground font-mono">
+                    <span className="text-[11px] text-muted-foreground dark:text-muted-foreground font-mono">
                       {getAgencyName(user.agency_id)}
                     </span>
                   </TableCell>
@@ -295,21 +293,21 @@ export function UsersAccessTab({
                     {user.approval_status === "approved" ? (
                       <Badge
                         variant="outline"
-                        className="text-success border-success/30 text-[10px] h-4 px-1"
+                        className={`text-[11px] px-1.5 py-0.5 ${TINT.emerald}`}
                       >
                         OK
                       </Badge>
                     ) : (
                       <Badge
                         variant="outline"
-                        className="text-warning border-warning/30 text-[10px] h-4 px-1"
+                        className={`text-[11px] px-1.5 py-0.5 ${TINT.amber}`}
                       >
                         Pend
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-[13px] text-muted-foreground">
                       {user.contract_level || "-"}%
                     </span>
                   </TableCell>

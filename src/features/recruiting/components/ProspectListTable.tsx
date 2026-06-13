@@ -19,13 +19,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Pencil, Trash2, UserPlus } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { TINT } from "@/components/ui/StatusBadge";
 import {
   SELECTABLE_PROSPECT_STATUSES,
-  PROSPECT_STATUS_COLORS,
   PROSPECT_STATUS_LABELS,
   type Prospect,
   type ProspectStatus,
 } from "@/types/prospect.types";
+
+// Status → TINT tone mapping
+const PROSPECT_TINT: Record<ProspectStatus, string> = {
+  new: TINT.blue,
+  contacted: TINT.blue,
+  following_up: TINT.amber,
+  not_interested: TINT.slate,
+  converted: TINT.emerald,
+};
 
 interface ProspectListTableProps {
   prospects: Prospect[];
@@ -62,29 +71,28 @@ export function ProspectListTable({
             <TableHead className="text-[11px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="divide-y divide-v2-ring">
           {prospects.map((p) => {
             const status = (p.status as ProspectStatus) ?? "new";
-            const colors =
-              PROSPECT_STATUS_COLORS[status] ?? PROSPECT_STATUS_COLORS.new;
+            const tint = PROSPECT_TINT[status] ?? TINT.slate;
             const overdue = isOverdue(p);
             const converted = status === "converted";
             return (
               <TableRow key={p.id}>
-                <TableCell className="text-[11px] font-medium">
+                <TableCell className="text-sm font-medium py-2">
                   {p.first_name} {p.last_name}
                   {p.state && (
-                    <span className="ml-1 text-[10px] text-muted-foreground">
+                    <span className="ml-1 text-[11px] text-muted-foreground">
                       · {p.state}
                     </span>
                   )}
                   {p.source && (
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[11px] text-muted-foreground">
                       {p.source}
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-[11px]">
+                <TableCell className="text-sm py-2">
                   <div className="flex flex-col gap-0.5">
                     {p.email && (
                       <a
@@ -109,12 +117,12 @@ export function ProspectListTable({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-2">
                   {converted ? (
                     // Terminal, system-set status — show a read-only badge, not
                     // an editable Select (only the Convert flow sets it).
                     <span
-                      className={`inline-flex items-center h-7 px-2 rounded-md text-[11px] border ${colors.bg} ${colors.text} ${colors.border}`}
+                      className={`inline-flex items-center h-7 px-1.5 py-0.5 rounded-md text-[11px] ${tint}`}
                     >
                       {PROSPECT_STATUS_LABELS.converted}
                     </span>
@@ -125,9 +133,7 @@ export function ProspectListTable({
                         onStatusChange(p, v as ProspectStatus)
                       }
                     >
-                      <SelectTrigger
-                        className={`h-7 text-[11px] w-[130px] border ${colors.bg} ${colors.text} ${colors.border}`}
-                      >
+                      <SelectTrigger className={`h-7 text-[11px] w-[140px]`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -140,10 +146,10 @@ export function ProspectListTable({
                     </Select>
                   )}
                 </TableCell>
-                <TableCell className="text-[11px] text-muted-foreground">
+                <TableCell className="text-sm text-muted-foreground py-2">
                   {p.last_contacted_at ? formatDate(p.last_contacted_at) : "—"}
                 </TableCell>
-                <TableCell className="text-[11px]">
+                <TableCell className="text-sm py-2">
                   {p.next_follow_up_at ? (
                     <span
                       className={
@@ -159,10 +165,10 @@ export function ProspectListTable({
                     <span className="text-muted-foreground">—</span>
                   )}
                 </TableCell>
-                <TableCell className="text-[11px] text-muted-foreground max-w-[220px]">
+                <TableCell className="text-sm text-muted-foreground max-w-[220px] py-2">
                   <span className="line-clamp-2">{p.notes || "—"}</span>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right py-2">
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       size="sm"

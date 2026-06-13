@@ -421,7 +421,7 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                         {agent.agent_email}
                       </TableCell>
                       <TableCell>
-                        <span className="text-xs">
+                        <span className="text-sm">
                           L{agent.hierarchy_depth}
                         </span>
                       </TableCell>

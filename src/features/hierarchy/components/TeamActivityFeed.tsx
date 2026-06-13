@@ -182,9 +182,9 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
             <p className="text-[12px] text-v2-ink-muted">No recent activity</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-v2-ring">
             {displayedActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-2 py-1">
+              <div key={activity.id} className="flex items-start gap-2 py-2">
                 <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] leading-tight">

@@ -12,6 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 import { SectionShell } from "@/components/v2";
 import { CloseLogo } from "@/features/chat-bot";
@@ -134,11 +135,17 @@ export const CloseKpiPage: React.FC = () => {
 
   // ─── Status badge ─────────────────────────────────────────────
   const statusBadge = isCloseConnected ? (
-    <Badge className="text-[9px] h-4 px-1.5 bg-success/20 text-success dark:bg-success dark:text-success">
+    <Badge
+      variant="outline"
+      className={`text-[11px] px-1.5 py-0.5 ${TINT.emerald}`}
+    >
       Connected
     </Badge>
   ) : (
-    <Badge className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning dark:text-warning">
+    <Badge
+      variant="outline"
+      className={`text-[11px] px-1.5 py-0.5 ${TINT.amber}`}
+    >
       Not Connected
     </Badge>
   );

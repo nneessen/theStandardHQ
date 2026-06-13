@@ -3,6 +3,7 @@
 import { useState, useMemo, Fragment } from "react";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import {
   Table,
   TableBody,
@@ -332,7 +333,7 @@ export function LeadPoliciesTable({
             />
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="divide-y divide-v2-ring">
           {paginated.length === 0 ? (
             <TableRow>
               <TableCell
@@ -347,7 +348,7 @@ export function LeadPoliciesTable({
               <Fragment key={row.policy.policyId}>
                 <TableRow>
                   {/* Policy submit date */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-v2-ink-muted whitespace-nowrap">
                     {row.policy.submitDate
                       ? formatDate(row.policy.submitDate, {
                           month: "numeric",
@@ -357,7 +358,7 @@ export function LeadPoliciesTable({
                       : "\u2014"}
                   </TableCell>
                   {/* Pack purchase date */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-v2-ink-muted whitespace-nowrap">
                     {row.packPurchaseDate
                       ? formatDate(row.packPurchaseDate, {
                           month: "numeric",
@@ -369,7 +370,7 @@ export function LeadPoliciesTable({
                   {/* Days to sale */}
                   <TableCell
                     className={cn(
-                      "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                      "text-[13px] px-1.5 py-1 text-right tabular-nums font-medium",
                       daysToSaleColor(row.daysToSale),
                     )}
                   >
@@ -377,24 +378,24 @@ export function LeadPoliciesTable({
                   </TableCell>
                   {/* Product */}
                   <TableCell
-                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[120px]"
+                    className="text-[13px] px-1.5 py-1 text-v2-ink-muted truncate max-w-[120px]"
                     title={row.policy.product}
                   >
                     {row.policy.product}
                   </TableCell>
                   {/* Premium */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                     {formatCompactCurrency(row.policy.annualPremium)}
                   </TableCell>
                   {/* Agent */}
                   <TableCell
-                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[110px]"
+                    className="text-[13px] px-1.5 py-1 text-v2-ink-muted truncate max-w-[110px]"
                     title={row.policy.agentName}
                   >
                     {row.policy.agentName}
                   </TableCell>
                   {/* Vendor (clickable to expand pack details) */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 truncate max-w-[100px]">
+                  <TableCell className="text-[13px] px-1.5 py-1 truncate max-w-[100px]">
                     <button
                       onClick={() =>
                         setExpandedPackId((prev) =>
@@ -408,18 +409,18 @@ export function LeadPoliciesTable({
                     </button>
                   </TableCell>
                   {/* State */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted text-center">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-v2-ink-muted text-center">
                     {row.policy.clientState || "\u2014"}
                   </TableCell>
                   {/* Pack */}
                   <TableCell
-                    className="text-[11px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[100px]"
+                    className="text-[13px] px-1.5 py-1 text-v2-ink-muted truncate max-w-[100px]"
                     title={row.policy.packName || undefined}
                   >
                     {row.policy.packName || "\u2014"}
                   </TableCell>
                   {/* F/A */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-center">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-center">
                     <span
                       className={cn(
                         "font-semibold",
@@ -432,13 +433,13 @@ export function LeadPoliciesTable({
                     </span>
                   </TableCell>
                   {/* Sequential policy number within pack */}
-                  <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium">
+                  <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums font-medium">
                     {row.packPolicies}
                   </TableCell>
                   {/* Pack ROI */}
                   <TableCell
                     className={cn(
-                      "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                      "text-[13px] px-1.5 py-1 text-right tabular-nums font-medium",
                       roiColor(row.packRoi),
                     )}
                   >
@@ -747,22 +748,18 @@ function MetricLine({
 
 function StatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
-    submitted: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
-    approved: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
-    active: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
-    pending: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
-    declined:
-      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
-    lapsed:
-      "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle",
+    submitted: TINT.blue,
+    approved: TINT.emerald,
+    active: TINT.emerald,
+    pending: TINT.amber,
+    declined: TINT.rose,
+    lapsed: TINT.slate,
   };
-  const colors =
-    colorMap[status.toLowerCase()] ||
-    "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle";
+  const colors = colorMap[status.toLowerCase()] || TINT.slate;
 
   return (
     <span
-      className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", colors)}
+      className={cn("px-1.5 py-0.5 rounded text-[11px] font-medium", colors)}
     >
       {status}
     </span>

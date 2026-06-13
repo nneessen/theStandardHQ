@@ -18,6 +18,7 @@ import {
   useResendInvitation,
   useCancelInvitation,
 } from "@/hooks";
+import { TINT } from "@/components/ui/StatusBadge";
 
 export function InvitationsList() {
   const { data: invitationsRaw, isLoading } = useSentInvitations("pending");
@@ -53,7 +54,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[11px] px-1 py-0 h-4 border-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle"
+            className={`text-[11px] px-1.5 py-0.5 ${TINT.amber}`}
           >
             <Clock className="h-2 w-2 mr-0.5" />
             Pending
@@ -123,7 +124,7 @@ export function InvitationsList() {
             </p>
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="divide-y divide-v2-ring">
             {invitations?.slice(0, 5).map((invitation) => {
               const isStale =
                 invitation.can_accept === false && !invitation.is_expired;
@@ -143,7 +144,7 @@ export function InvitationsList() {
               return (
                 <div
                   key={invitation.id}
-                  className={`flex items-center justify-between py-1.5 px-2 rounded transition-colors ${
+                  className={`flex items-center justify-between py-2 px-2 rounded transition-colors ${
                     isInvalid
                       ? "bg-warning/10 dark:bg-warning/10 border border-warning/30"
                       : "hover:bg-v2-canvas"
@@ -169,7 +170,7 @@ export function InvitationsList() {
                       {isStale && (
                         <Badge
                           variant="outline"
-                          className="text-[11px] px-1 py-0 h-4 text-warning border-warning/40 dark:border-warning"
+                          className={`text-[11px] px-1.5 py-0.5 ${TINT.amber}`}
                         >
                           <AlertTriangle className="h-2 w-2 mr-0.5" />
                           Stale

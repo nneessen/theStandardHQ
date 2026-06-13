@@ -1,7 +1,7 @@
 // src/features/admin/utils/permissionHelpers.ts
 
-import type {PermissionWithSource} from '@/types/permissions.types';
-import {User, Users, Globe, UserCircle} from 'lucide-react';
+import type { PermissionWithSource } from "@/types/permissions.types";
+import { User, Users, Globe, UserCircle } from "lucide-react";
 
 /**
  * Permission Helper Utilities
@@ -10,16 +10,20 @@ import {User, Users, Globe, UserCircle} from 'lucide-react';
 
 /**
  * Get color classes for permission scope (accessible with icons)
- * Uses Tailwind color classes with dark mode support
+ * Uses the shared TINT palette (soft fill + readable text, both themes).
  */
 export function getScopeColor(scope: string): string {
   const colors: Record<string, string> = {
-    own: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    downline: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    all: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-    self: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    own: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
+    downline:
+      "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/30",
+    all: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+    self: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
   };
-  return colors[scope] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+  return (
+    colors[scope] ||
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30"
+  );
 }
 
 /**
@@ -49,7 +53,7 @@ export function getScopeAriaLabel(scope: string, code: string): string {
  * Handles case where permission is both direct AND inherited
  */
 export interface DeduplicatedPermission extends PermissionWithSource {
-  sources: Array<'direct' | 'inherited'>;
+  sources: Array<"direct" | "inherited">;
   inheritedFromRoles: string[];
 }
 
@@ -58,7 +62,7 @@ export interface DeduplicatedPermission extends PermissionWithSource {
  * Organizes permissions for cleaner UI display
  */
 export function groupPermissionsByCategory(
-  permissions: DeduplicatedPermission[]
+  permissions: DeduplicatedPermission[],
 ): Record<string, DeduplicatedPermission[]> {
   return permissions.reduce(
     (acc, perm) => {
@@ -69,7 +73,7 @@ export function groupPermissionsByCategory(
       acc[category].push(perm);
       return acc;
     },
-    {} as Record<string, DeduplicatedPermission[]>
+    {} as Record<string, DeduplicatedPermission[]>,
   );
 }
 
@@ -79,7 +83,7 @@ export function groupPermissionsByCategory(
  * Tracks whether permission is direct, inherited, or both
  */
 export function deduplicatePermissions(
-  permissions: PermissionWithSource[]
+  permissions: PermissionWithSource[],
 ): DeduplicatedPermission[] {
   const permMap = new Map<string, DeduplicatedPermission>();
 
@@ -102,7 +106,9 @@ export function deduplicatePermissions(
       permMap.set(perm.id, {
         ...perm,
         sources: [perm.permissionType],
-        inheritedFromRoles: perm.inheritedFromRoleName ? [perm.inheritedFromRoleName] : [],
+        inheritedFromRoles: perm.inheritedFromRoleName
+          ? [perm.inheritedFromRoleName]
+          : [],
       });
     }
   }

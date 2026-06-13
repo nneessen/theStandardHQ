@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -109,35 +110,35 @@ function TemplateRow({
   canEdit: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
-      <TableCell className="py-1.5">
+    <TableRow className="text-[13px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50">
+      <TableCell className="py-2">
         <span className="font-medium text-foreground dark:text-foreground">
           {template.name}
         </span>
       </TableCell>
-      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
+      <TableCell className="py-2 text-muted-foreground dark:text-muted-foreground">
         <span className="line-clamp-1">{template.subject}</span>
       </TableCell>
-      <TableCell className="py-1.5">
+      <TableCell className="py-2">
         <Badge
           variant="outline"
-          className="text-[9px] px-1 py-0 border-border dark:border-border text-muted-foreground dark:text-muted-foreground"
+          className={`text-[11px] px-1.5 py-0.5 ${TINT.slate}`}
         >
           {CATEGORY_LABELS[template.category] || template.category}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5">
+      <TableCell className="py-2">
         <Badge
-          variant="secondary"
-          className={`text-[9px] px-1 py-0 ${template.is_active ? "bg-success/20 text-success dark:bg-success/30 dark:text-success" : "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground"}`}
+          variant="outline"
+          className={`text-[11px] px-1.5 py-0.5 ${template.is_active ? TINT.emerald : TINT.slate}`}
         >
           {template.is_active ? "Active" : "Inactive"}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
+      <TableCell className="py-2 text-muted-foreground dark:text-muted-foreground">
         {format(new Date(template.updated_at), "MMM d")}
       </TableCell>
-      <TableCell className="py-1.5 w-8">
+      <TableCell className="py-2 w-8">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -228,19 +229,19 @@ function TemplateTable({
     <Table>
       <TableHeader>
         <TableRow className="h-6 bg-background dark:bg-v2-card-tinted/50 hover:bg-background dark:hover:bg-v2-card-tinted/50">
-          <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+          <TableHead className="h-6 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Name
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+          <TableHead className="h-6 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Subject
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+          <TableHead className="h-6 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Category
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+          <TableHead className="h-6 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Status
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
+          <TableHead className="h-6 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
             Updated
           </TableHead>
           <TableHead className="h-6 w-8"></TableHead>

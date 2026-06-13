@@ -156,7 +156,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
 
   return (
     <div className="overflow-x-auto rounded-md border border-border bg-background">
-      <table className="w-full text-[11px]">
+      <table className="w-full text-[13px]">
         <thead className="bg-muted/40 border-b border-border sticky top-0">
           <tr>
             <SortableHeader
@@ -253,16 +253,16 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
             />
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-v2-ring">
           {sorted.map((r) => {
             const stale = isStale(r.lastScoredAt);
             return (
               <tr
                 key={r.userId}
-                className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
+                className="hover:bg-muted/30 transition-colors"
               >
                 {/* Agent */}
-                <td className="px-2 py-1.5">
+                <td className="px-2 py-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {r.profilePhotoUrl ? (
                       <img
@@ -299,32 +299,32 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 </td>
 
                 {/* Leads */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.totalLeads.toLocaleString()}
                 </td>
 
                 {/* Hot */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.hotCount.toLocaleString()}
                 </td>
 
                 {/* Warm */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-muted-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-muted-foreground">
                   {r.warmingCount.toLocaleString()}
                 </td>
 
                 {/* Avg score */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.avgScore != null ? r.avgScore.toFixed(1) : "—"}
                 </td>
 
                 {/* Dials */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.totalDials.toLocaleString()}
                 </td>
 
                 {/* Connect rate */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.connectRate != null
                     ? `${(r.connectRate * 100).toFixed(1)}%`
                     : "—"}
@@ -333,7 +333,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 {/* Stale */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right font-mono tabular-nums",
+                    "px-2 py-2 text-right font-mono tabular-nums",
                     r.staleLeadsCount > 0
                       ? "text-warning"
                       : "text-muted-foreground",
@@ -345,7 +345,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 {/* Untouched active */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right font-mono tabular-nums",
+                    "px-2 py-2 text-right font-mono tabular-nums",
                     r.untouchedActive > 0
                       ? "text-warning"
                       : "text-muted-foreground",
@@ -357,7 +357,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 {/* NA streak */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right font-mono tabular-nums",
+                    "px-2 py-2 text-right font-mono tabular-nums",
                     r.noAnswerStreak > 0
                       ? "text-warning"
                       : "text-muted-foreground",
@@ -367,19 +367,19 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 </td>
 
                 {/* Active opps */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {r.activeOppsCount.toLocaleString()}
                 </td>
 
                 {/* Open $ */}
-                <td className="px-2 py-1.5 text-right font-mono tabular-nums text-foreground">
+                <td className="px-2 py-2 text-right font-mono tabular-nums text-foreground">
                   {currency.format(r.openOppValueUsd)}
                 </td>
 
                 {/* Last Run */}
                 <td
                   className={cn(
-                    "px-2 py-1.5 text-right text-[11px]",
+                    "px-2 py-2 text-right text-[13px]",
                     stale ? "text-warning" : "text-muted-foreground",
                   )}
                 >

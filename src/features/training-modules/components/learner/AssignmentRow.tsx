@@ -48,7 +48,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
       className="block"
     >
       <div
-        className={`flex items-center gap-3 px-2.5 py-1.5 rounded hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer text-[11px] ${
+        className={`flex items-center gap-3 px-2.5 py-2 rounded hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer text-[13px] ${
           isOverdue ? "bg-destructive/10 dark:bg-destructive/10" : ""
         }`}
       >

@@ -30,6 +30,7 @@ import {
 } from "@/hooks/hierarchy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { SectionShell } from "@/components/v2";
 import { Board, Cap, FlapTile, Pill } from "@/components/board";
 import {
@@ -67,6 +68,17 @@ import {
   isInDateRange,
   type TimePeriod,
 } from "@/utils/dateRange";
+
+// Status → TINT tone map (outline pills by meaning)
+const STATUS_TINT: Record<string, string> = {
+  active: TINT.emerald,
+  approved: TINT.emerald,
+  paid: TINT.emerald,
+  pending: TINT.amber,
+  lapsed: TINT.amber,
+  denied: TINT.rose,
+  cancelled: TINT.rose,
+};
 
 /** Type for policy objects returned from hierarchyService.getAgentPolicies */
 interface AgentPolicy {
@@ -719,49 +731,40 @@ export function AgentDetailPage() {
                                 key={policy.id}
                                 className="hover:bg-background border-b border-border/60"
                               >
-                                <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
+                                <TableCell className="py-1.5 text-[13px] font-mono text-foreground">
                                   {policy.policyNumber}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {policy.clientName}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {policy.product}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {policy.carrier}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {formatDate(policy.submitDate)}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {formatDate(policy.effectiveDate)}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                                <TableCell className="py-1.5 text-[13px] font-semibold text-foreground text-right">
                                   {formatCurrency(policy.annualPremium)}
                                 </TableCell>
                                 <TableCell className="py-1.5">
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "text-[10px] h-4 px-1",
-                                      policy.lifecycleStatus === "active" &&
-                                        "text-success border-success/40",
-                                      policy.lifecycleStatus === "lapsed" &&
-                                        "text-warning border-warning dark:border-warning",
-                                      policy.lifecycleStatus === "cancelled" &&
-                                        "text-destructive border-destructive/40",
-                                      policy.status === "pending" &&
-                                        "text-warning border-warning dark:border-warning",
-                                      policy.status === "approved" &&
-                                        !policy.lifecycleStatus &&
-                                        "text-info border-info/40",
-                                      policy.status === "denied" &&
-                                        "text-destructive border-destructive/40",
-                                    )}
-                                  >
-                                    {policy.lifecycleStatus || policy.status}
-                                  </Badge>
+                                  {(() => {
+                                    const val =
+                                      policy.lifecycleStatus || policy.status;
+                                    return (
+                                      <Badge
+                                        variant="outline"
+                                        className={`text-[11px] px-1.5 py-0.5 ${STATUS_TINT[val] ?? TINT.slate}`}
+                                      >
+                                        {val}
+                                      </Badge>
+                                    );
+                                  })()}
                                 </TableCell>
                                 <TableCell className="py-1.5 w-8">
                                   <DropdownMenu>
@@ -1018,38 +1021,32 @@ export function AgentDetailPage() {
                               key={commission.id}
                               className="hover:bg-background border-b border-border/60"
                             >
-                              <TableCell className="py-1.5 text-[11px] text-foreground">
+                              <TableCell className="py-1.5 text-[13px] text-foreground">
                                 {formatDate(commission.date)}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] text-foreground capitalize">
+                              <TableCell className="py-1.5 text-[13px] text-foreground capitalize">
                                 {commission.type}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
+                              <TableCell className="py-1.5 text-[13px] font-mono text-foreground">
                                 {commission.policyNumber}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                              <TableCell className="py-1.5 text-[13px] font-semibold text-foreground text-right">
                                 {formatCurrency(commission.amount)}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] font-semibold text-success text-right">
+                              <TableCell className="py-1.5 text-[13px] font-semibold text-success text-right">
                                 {formatCurrency(commission.earnedAmount || 0)}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] text-warning text-right">
+                              <TableCell className="py-1.5 text-[13px] text-warning text-right">
                                 {formatCurrency(commission.unearnedAmount || 0)}
                               </TableCell>
-                              <TableCell className="py-1.5 text-[11px] text-muted-foreground text-center">
+                              <TableCell className="py-1.5 text-[13px] text-muted-foreground text-center">
                                 {commission.monthsPaid || 0}/
                                 {commission.advanceMonths || 9} mo
                               </TableCell>
                               <TableCell className="py-1.5">
                                 <Badge
                                   variant="outline"
-                                  className={cn(
-                                    "text-[10px] h-4 px-1",
-                                    commission.status === "paid" &&
-                                      "text-success border-success/40",
-                                    commission.status === "pending" &&
-                                      "text-warning border-warning dark:border-warning",
-                                  )}
+                                  className={`text-[11px] px-1.5 py-0.5 ${STATUS_TINT[commission.status] ?? TINT.slate}`}
                                 >
                                   {commission.status}
                                 </Badge>
@@ -1313,16 +1310,16 @@ export function AgentDetailPage() {
                                 key={member.id}
                                 className="hover:bg-background border-b border-border/60"
                               >
-                                <TableCell className="py-1.5 text-[11px] text-foreground">
+                                <TableCell className="py-1.5 text-[13px] text-foreground">
                                   {member.name}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground text-right">
+                                <TableCell className="py-1.5 text-[13px] text-foreground text-right">
                                   {member.contractLevel}%
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] text-foreground text-right">
+                                <TableCell className="py-1.5 text-[13px] text-foreground text-right">
                                   {member.policies}
                                 </TableCell>
-                                <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
+                                <TableCell className="py-1.5 text-[13px] font-semibold text-foreground text-right">
                                   {formatCurrency(member.premium)}
                                 </TableCell>
                               </TableRow>

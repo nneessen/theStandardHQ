@@ -44,10 +44,10 @@ function TableSkeleton({
           key={i}
           className="border-b border-[color:var(--border-soft)] last:border-0"
         >
-          <td className="px-2 py-1.5 w-10">
+          <td className="px-2 py-2 w-10">
             <Skeleton className="h-5 w-5 rounded-full" />
           </td>
-          <td className="px-2 py-1.5">
+          <td className="px-2 py-2">
             <div className="flex items-center gap-2">
               <Skeleton className="h-6 w-6 rounded-full" />
               <div className="space-y-1">
@@ -56,21 +56,21 @@ function TableSkeleton({
               </div>
             </div>
           </td>
-          <td className="px-2 py-1.5">
+          <td className="px-2 py-2">
             <Skeleton className="h-3 w-16" />
           </td>
-          <td className="px-2 py-1.5">
+          <td className="px-2 py-2">
             <Skeleton className="h-3 w-14" />
           </td>
           {!isSubmit && (
             <>
-              <td className="px-2 py-1.5">
+              <td className="px-2 py-2">
                 <Skeleton className="h-3 w-10" />
               </td>
-              <td className="px-2 py-1.5">
+              <td className="px-2 py-2">
                 <Skeleton className="h-3 w-8" />
               </td>
-              <td className="px-2 py-1.5">
+              <td className="px-2 py-2">
                 <Skeleton className="h-3 w-8" />
               </td>
             </>
@@ -148,10 +148,10 @@ function AgentRow({
         "hover:bg-v2-canvas",
       )}
     >
-      <td className="px-2 py-1.5 w-10">
+      <td className="px-2 py-2 w-10">
         <RankBadge rank={rank} />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6 border border-v2-ring">
             <AvatarImage
@@ -165,7 +165,7 @@ function AgentRow({
           <div className="min-w-0">
             <p
               className={cn(
-                "text-xs font-medium truncate",
+                "text-sm font-medium truncate",
                 isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
@@ -177,23 +177,23 @@ function AgentRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right">
+      <td className="px-2 py-2 text-right">
         <span
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-mono text-sm font-semibold",
             entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-v2-ink-muted">
+      <td className="px-2 py-2 text-right">
+        <span className="font-mono text-sm text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-muted">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
@@ -202,13 +202,13 @@ function AgentRow({
           </span>
         )}
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -236,10 +236,10 @@ function AgencyRow({
         "hover:bg-v2-canvas",
       )}
     >
-      <td className="px-2 py-1.5 w-10">
+      <td className="px-2 py-2 w-10">
         <RankBadge rank={rank} />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center h-6 w-6 rounded bg-v2-ring border border-v2-ring">
             <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
@@ -247,7 +247,7 @@ function AgencyRow({
           <div className="min-w-0">
             <p
               className={cn(
-                "text-xs font-medium truncate",
+                "text-sm font-medium truncate",
                 isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
@@ -260,23 +260,23 @@ function AgencyRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right">
+      <td className="px-2 py-2 text-right">
         <span
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-mono text-sm font-semibold",
             entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-v2-ink-muted">
+      <td className="px-2 py-2 text-right">
+        <span className="font-mono text-sm text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-muted">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
@@ -285,13 +285,13 @@ function AgencyRow({
           </span>
         )}
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -319,10 +319,10 @@ function SubmitRow({
         "hover:bg-v2-canvas",
       )}
     >
-      <td className="px-2 py-1.5 w-10">
+      <td className="px-2 py-2 w-10">
         <RankBadge rank={rank} />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6 border border-v2-ring">
             <AvatarImage
@@ -336,7 +336,7 @@ function SubmitRow({
           <div className="min-w-0">
             <p
               className={cn(
-                "text-xs font-medium truncate",
+                "text-sm font-medium truncate",
                 isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
@@ -348,18 +348,18 @@ function SubmitRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right">
+      <td className="px-2 py-2 text-right">
         <span
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-mono text-sm font-semibold",
             entry.apTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-muted">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
       </td>
@@ -387,10 +387,10 @@ function TeamRow({
         "hover:bg-v2-canvas",
       )}
     >
-      <td className="px-2 py-1.5 w-10">
+      <td className="px-2 py-2 w-10">
         <RankBadge rank={rank} />
       </td>
-      <td className="px-2 py-1.5">
+      <td className="px-2 py-2">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Avatar className="h-6 w-6 border border-v2-ring">
@@ -409,7 +409,7 @@ function TeamRow({
           <div className="min-w-0">
             <p
               className={cn(
-                "text-xs font-medium truncate",
+                "text-sm font-medium truncate",
                 isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
@@ -422,23 +422,23 @@ function TeamRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right">
+      <td className="px-2 py-2 text-right">
         <span
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-mono text-sm font-semibold",
             entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-v2-ink-muted">
+      <td className="px-2 py-2 text-right">
+        <span className="font-mono text-sm text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-muted">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
@@ -447,13 +447,13 @@ function TeamRow({
           </span>
         )}
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-v2-ink-subtle">
+      <td className="px-2 py-2 text-center">
+        <span className="text-sm tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -520,7 +520,7 @@ export function LeaderboardTable({
             </tr>
           )}
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-v2-ring">
           {isLoading ? (
             <TableSkeleton isSubmit={isSubmit} />
           ) : error ? (

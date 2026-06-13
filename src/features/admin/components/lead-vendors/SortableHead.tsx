@@ -27,7 +27,7 @@ export function SortableHead<T extends string>({
   return (
     <TableHead
       className={cn(
-        "text-[10px] font-semibold p-1.5 cursor-pointer select-none hover:bg-v2-ring dark:hover:bg-v2-card-dark/50 transition-colors",
+        "text-[11px] font-semibold p-1.5 cursor-pointer select-none hover:bg-v2-ring dark:hover:bg-v2-card-dark/50 transition-colors",
         className,
       )}
       onClick={() => handleSort(field)}

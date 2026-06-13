@@ -12,6 +12,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
@@ -308,24 +309,24 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                   {activity.type === "email" ? (
                     <>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
+                        <span className="text-[13px] font-medium text-v2-ink dark:text-v2-ink truncate">
                           {activity.subject}
                         </span>
                         {getEmailStatusIcon(activity.status)}
                       </div>
-                      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                      <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                         To: {activity.recipient}
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
+                        <span className="text-[13px] font-medium text-v2-ink dark:text-v2-ink truncate">
                           {activity.title}
                         </span>
                         {getNotificationTypeIcon(activity.notification_type)}
                       </div>
-                      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                      <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                         {activity.message || `Sent to ${activity.user_name}`}
                       </div>
                     </>
@@ -336,11 +337,7 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
                   <Badge
                     variant="outline"
-                    className={`text-[9px] h-4 px-1 border ${
-                      activity.type === "email"
-                        ? "text-info border-info/30"
-                        : "text-info border-info/30"
-                    }`}
+                    className={`text-[11px] px-1.5 py-0.5 ${TINT.blue}`}
                   >
                     {activity.type === "email" ? "Email" : "Notification"}
                   </Badge>

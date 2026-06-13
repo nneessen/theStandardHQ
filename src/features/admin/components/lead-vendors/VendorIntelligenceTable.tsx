@@ -223,7 +223,7 @@ export function VendorIntelligenceTable({
               <th className="w-[30px] p-1.5" />
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="divide-y divide-v2-ring">
             {paginated.length === 0 ? (
               <TableRow>
                 <TableCell
@@ -377,30 +377,30 @@ function VendorTableRow({
         <TableCell className="p-1.5 text-center">
           <PackHeatBadge heat={row.heat} />
         </TableCell>
-        <TableCell className="p-1.5 text-[11px] font-medium text-v2-ink max-w-[200px] truncate">
+        <TableCell className="p-1.5 text-[13px] font-medium text-v2-ink max-w-[200px] truncate">
           {row.vendorName}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
+        <TableCell className="p-1.5 text-right text-[13px] text-v2-ink-muted">
           {row.totalPacks}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
+        <TableCell className="p-1.5 text-right text-[13px] text-v2-ink-muted">
           {row.uniqueUsers}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] font-medium text-v2-ink-muted">
+        <TableCell className="p-1.5 text-right text-[13px] font-medium text-v2-ink-muted">
           {formatPercent(row.winRate)}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
+        <TableCell className="p-1.5 text-right text-[13px] text-v2-ink-muted">
           {formatPercent(row.conversionRate)}
         </TableCell>
         <TableCell
           className={cn(
-            "p-1.5 text-right text-[11px] font-medium",
+            "p-1.5 text-right text-[13px] font-medium",
             roiColor(row.avgRoi),
           )}
         >
           {formatPercent(row.avgRoi)}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
+        <TableCell className="p-1.5 text-right text-[13px] text-v2-ink-muted">
           {formatCompactCurrency(row.avgPremPerUser)}
         </TableCell>
         {/* Fresh/Aged split bar */}
@@ -416,12 +416,12 @@ function VendorTableRow({
                 style={{ width: `${100 - freshPct}%` }}
               />
             </div>
-            <span className="text-[10px] text-v2-ink-subtle flex-shrink-0 w-[24px] text-right">
+            <span className="text-[11px] text-v2-ink-subtle flex-shrink-0 w-[24px] text-right">
               {row.freshCount}/{row.agedCount}
             </span>
           </div>
         </TableCell>
-        <TableCell className="p-1.5 text-center text-[11px]">
+        <TableCell className="p-1.5 text-center text-[13px]">
           {row.heat ? getTrendArrow(row.heat.trend) : "\u2014"}
         </TableCell>
         <TableCell className="p-1.5 text-center">

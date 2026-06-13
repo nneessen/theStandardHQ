@@ -187,23 +187,37 @@ export function shouldSkipPipeline(
 
 // Terminal status colors - for completed/dropped/withdrawn states (not pipeline phases)
 export const TERMINAL_STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-100 text-green-800",
-  completed: "bg-emerald-100 text-emerald-800",
-  dropped: "bg-red-100 text-red-800",
-  withdrawn: "bg-gray-100 text-gray-800",
-  blocked: "bg-red-100 text-red-800",
-  invited: "bg-amber-100 text-amber-800",
+  active:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  completed:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  dropped:
+    "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+  withdrawn:
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
+  blocked:
+    "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+  invited:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
 };
 
 export const CHECKLIST_STATUS_COLORS: Record<string, string> = {
-  not_started: "bg-gray-100 text-gray-600",
-  pending: "bg-gray-100 text-gray-800",
-  in_progress: "bg-blue-100 text-blue-800",
-  completed: "bg-green-100 text-green-800",
-  verified: "bg-emerald-100 text-emerald-800",
-  approved: "bg-emerald-100 text-emerald-800",
-  rejected: "bg-red-100 text-red-800",
-  needs_resubmission: "bg-amber-100 text-amber-800",
+  not_started:
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
+  pending:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+  in_progress:
+    "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
+  completed:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  verified:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  approved:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  rejected:
+    "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+  needs_resubmission:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
 };
 
 // =============================================================================

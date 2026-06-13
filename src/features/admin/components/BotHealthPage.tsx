@@ -328,7 +328,7 @@ export function BotHealthPage() {
                       </TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
+                  <TableBody className="divide-y divide-v2-ring">
                     {queueRows.length === 0 && (
                       <TableRow>
                         <TableCell
@@ -349,32 +349,32 @@ export function BotHealthPage() {
                             "bg-warning/10 dark:bg-warning/10",
                         )}
                       >
-                        <TableCell className="py-1.5 text-xs font-mono">
+                        <TableCell className="py-2 text-sm font-mono">
                           {q.queue}
                         </TableCell>
                         <TableCell
                           className={cn(
-                            "py-1.5 text-xs text-right font-semibold",
+                            "py-2 text-sm text-right font-semibold",
                             heroNumberClass(q.level),
                           )}
                         >
                           {formatNumber(q.pending)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-xs text-right">
+                        <TableCell className="py-2 text-sm text-right">
                           {formatNumber(q.active)}
                         </TableCell>
                         <TableCell
                           className={cn(
-                            "py-1.5 text-xs text-right",
+                            "py-2 text-sm text-right",
                             q.failed24h > 0 && "text-destructive font-semibold",
                           )}
                         >
                           {formatNumber(q.failed24h)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-right text-v2-ink-muted font-mono">
+                        <TableCell className="py-2 text-[11px] text-right text-v2-ink-muted font-mono">
                           {q.threshold.warn} / {q.threshold.critical}
                         </TableCell>
-                        <TableCell className="py-1.5 text-right">
+                        <TableCell className="py-2 text-right">
                           <div className="flex justify-end">
                             <Pill tone={levelPill(q.level)} dot>
                               {q.level}

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import {
   Table,
   TableBody,
@@ -162,29 +162,29 @@ export function ExpenseTableCard({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide">
                     Date
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide">
                     Name
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide">
                     Category
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide">
                     Type
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-right">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide text-right">
                     Amount
                   </TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-right w-24">
+                  <TableHead className="text-[11px] font-semibold uppercase tracking-wide text-right w-24">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="divide-y divide-v2-ring">
                 {expenses.map((expense) => (
-                  <TableRow key={expense.id} className="hover:bg-muted/10">
+                  <TableRow key={expense.id} className="hover:bg-muted/10 py-2">
                     <TableCell className="text-sm">
                       {formatDateForDisplay(expense.date, {
                         month: "short",
@@ -207,17 +207,11 @@ export function ExpenseTableCard({
                       {expense.category}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-xs",
-                          expense.expense_type === "business"
-                            ? "text-status-active"
-                            : "text-status-earned",
-                        )}
+                      <span
+                        className={`text-[11px] px-1.5 py-0.5 rounded border ${expense.expense_type === "business" ? TINT.blue : TINT.slate}`}
                       >
                         {expense.expense_type}
-                      </Badge>
+                      </span>
                     </TableCell>
                     <TableCell className="text-sm font-mono font-semibold text-right">
                       {formatCurrency(expense.amount)}

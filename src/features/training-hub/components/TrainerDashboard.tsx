@@ -28,6 +28,7 @@ import { Cap, T } from "@/components/board";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -337,24 +338,23 @@ export function TrainerDashboard() {
     return items.filter((a) => a.condition);
   }, [recruitStats, contractStats, conversionRate]);
 
-  // Status badge helper
-  const getStatusBadgeClass = (status: string | null): string => {
-    if (!status)
-      return "bg-v2-card-tinted dark:bg-v2-card-tinted text-muted-foreground dark:text-muted-foreground";
+  // Status badge helper — maps domain status values to TINT tones
+  const getStatusTint = (status: string | null): string => {
+    if (!status) return TINT.slate;
     switch (status.toLowerCase()) {
       case "completed":
       case "approved":
-        return "bg-success/20 dark:bg-success/30 text-success";
+        return TINT.emerald;
       case "dropped":
       case "rejected":
       case "terminated":
-        return "bg-destructive/20 dark:bg-destructive/30 text-destructive";
+        return TINT.rose;
       case "submitted":
-        return "bg-info/15 text-info";
+        return TINT.blue;
       case "pending":
-        return "bg-warning/20 dark:bg-warning/30 text-warning";
+        return TINT.amber;
       default:
-        return "bg-v2-card-tinted dark:bg-v2-card-tinted text-muted-foreground dark:text-muted-foreground";
+        return TINT.slate;
     }
   };
 
@@ -927,7 +927,7 @@ export function TrainerDashboard() {
                       </Button>
                     </Link>
                   </div>
-                  <div className="divide-y divide-border dark:divide-border">
+                  <div className="divide-y divide-v2-ring">
                     {recruitsLoading ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="px-3 py-2">
@@ -961,25 +961,25 @@ export function TrainerDashboard() {
                                 {name.charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
+                                <p className="text-[13px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
                                   {name}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
+                                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
                                   {recruit.email}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge
-                                variant="secondary"
+                                variant="outline"
                                 className={cn(
-                                  "text-[9px] h-5 px-1.5",
-                                  getStatusBadgeClass(phase),
+                                  "text-[11px] h-5 px-1.5",
+                                  getStatusTint(phase),
                                 )}
                               >
                                 {phase.replace(/_/g, " ")}
                               </Badge>
-                              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                                 {recruit.updated_at
                                   ? formatDistanceToNow(
                                       new Date(recruit.updated_at),
@@ -1022,7 +1022,7 @@ export function TrainerDashboard() {
                       </Button>
                     </Link>
                   </div>
-                  <div className="divide-y divide-border dark:divide-border">
+                  <div className="divide-y divide-v2-ring">
                     {contractsListLoading ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="px-3 py-2">
@@ -1052,25 +1052,25 @@ export function TrainerDashboard() {
                                 {agentName.charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
+                                <p className="text-[13px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
                                   {agentName}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
+                                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
                                   {carrier?.name || "Unknown Carrier"}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge
-                                variant="secondary"
+                                variant="outline"
                                 className={cn(
-                                  "text-[9px] h-5 px-1.5",
-                                  getStatusBadgeClass(contract.status),
+                                  "text-[11px] h-5 px-1.5",
+                                  getStatusTint(contract.status),
                                 )}
                               >
                                 {contract.status}
                               </Badge>
-                              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
+                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                                 {contract.updated_at
                                   ? formatDistanceToNow(
                                       new Date(contract.updated_at),

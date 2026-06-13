@@ -1,28 +1,34 @@
 // src/features/underwriting/utils/formatters.ts
 
 import type { HealthTier } from "../../types/underwriting.types";
+import { TINT } from "@/components/ui/StatusBadge";
 
 /**
- * Returns Tailwind CSS classes for health tier badge coloring
+ * Returns Tailwind CSS classes for health tier badge coloring.
+ * Uses the shared TINT palette so badges read correctly in both the light
+ * theme and the .theme-v2 charcoal dark theme.
  */
 export function getHealthTierBadgeColor(tier: string | null): string {
-  if (!tier)
-    return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
+  if (!tier) return TINT.slate;
 
   switch (tier) {
     case "preferred_plus":
     case "preferred":
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      // Best / top-tier health — positive tone
+      return TINT.emerald;
     case "standard_plus":
     case "standard":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      // Mid-tier, informational — blue tone
+      return TINT.blue;
     case "substandard":
     case "table_rated":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      // Below standard / extra-rated — amber caution
+      return TINT.amber;
     case "decline":
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      // Declined — negative tone
+      return TINT.rose;
     default:
-      return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
+      return TINT.slate;
   }
 }
 

@@ -2002,7 +2002,7 @@ export function TargetsPage() {
                 <div className="flex justify-between text-[13px]">
                   <span style={{ color: T.mut }}>Data Confidence</span>
                   <span
-                    className="font-semibold text-[11px]"
+                    className="font-semibold text-[13px]"
                     style={{
                       color:
                         confidenceTone === "green"
@@ -2018,7 +2018,7 @@ export function TargetsPage() {
                 <div className="flex justify-between text-[13px]">
                   <span style={{ color: T.mut }}>Method</span>
                   <span
-                    className="text-[11px] font-medium"
+                    className="text-[13px] font-medium"
                     style={{ color: T.ink }}
                   >
                     {calculatedTargets.calculationMethod}
@@ -2178,11 +2178,11 @@ export function TargetsPage() {
                     flexShrink: 0,
                   }}
                 />
-                <div className="space-y-0.5">
+                <div className="divide-y divide-v2-ring">
                   {validation.warnings.map((warning, i) => (
                     <p
                       key={i}
-                      className="text-[13px] font-medium"
+                      className="text-[13px] font-medium py-2"
                       style={{ color: T.amber }}
                     >
                       {warning}
@@ -2191,7 +2191,7 @@ export function TargetsPage() {
                   {validation.recommendations.map((rec, i) => (
                     <p
                       key={i}
-                      className="text-[11px]"
+                      className="text-[13px] py-2"
                       style={{ color: T.amber }}
                     >
                       {rec}

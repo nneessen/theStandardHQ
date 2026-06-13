@@ -606,7 +606,7 @@ export function PackPurchaseTable({
             />
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="divide-y divide-border">
           {paginated.length === 0 ? (
             <TableRow>
               <TableCell
@@ -619,7 +619,7 @@ export function PackPurchaseTable({
           ) : (
             paginated.map((pack) => (
               <TableRow key={pack.packId}>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-muted-foreground whitespace-nowrap">
+                <TableCell className="text-[13px] px-1.5 py-1 text-muted-foreground whitespace-nowrap">
                   {formatDate(pack.purchaseDate, {
                     month: "numeric",
                     day: "numeric",
@@ -627,24 +627,24 @@ export function PackPurchaseTable({
                   })}
                 </TableCell>
                 <TableCell
-                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[140px]"
+                  className="text-[13px] px-1.5 py-1 text-muted-foreground truncate max-w-[140px]"
                   title={pack.purchaseName || undefined}
                 >
                   {pack.purchaseName || "\u2014"}
                 </TableCell>
                 <TableCell
-                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
+                  className="text-[13px] px-1.5 py-1 text-muted-foreground truncate max-w-[110px]"
                   title={pack.vendorName}
                 >
                   {pack.vendorName}
                 </TableCell>
                 <TableCell
-                  className="text-[11px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
+                  className="text-[13px] px-1.5 py-1 text-muted-foreground truncate max-w-[110px]"
                   title={pack.agentName}
                 >
                   {pack.agentName}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-center">
+                <TableCell className="text-[13px] px-1.5 py-1 text-center">
                   <span
                     className={cn(
                       "font-semibold",
@@ -656,30 +656,30 @@ export function PackPurchaseTable({
                     {pack.leadFreshness === "fresh" ? "F" : "A"}
                   </span>
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {pack.leadCount}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {formatCompactCurrency(pack.totalCost)}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {formatCurrency(pack.costPerLead)}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {pack.policiesSold}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {formatPercent(pack.conversionRate)}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {formatCompactCurrency(pack.commissionEarned)}
                 </TableCell>
-                <TableCell className="text-[11px] px-1.5 py-0.5 text-right tabular-nums">
+                <TableCell className="text-[13px] px-1.5 py-1 text-right tabular-nums">
                   {formatCompactCurrency(pack.totalPremium)}
                 </TableCell>
                 <TableCell
                   className={cn(
-                    "text-[11px] px-1.5 py-0.5 text-right tabular-nums font-medium",
+                    "text-[13px] px-1.5 py-1 text-right tabular-nums font-medium",
                     roiColor(pack.roiPercentage),
                   )}
                 >
