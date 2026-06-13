@@ -12,7 +12,7 @@ import {
   Loader2,
   Copy,
   Check,
-  Printer,
+  Download,
   AlertTriangle,
   ScrollText,
 } from "lucide-react";
@@ -38,6 +38,7 @@ export function ScriptDetailPage({ callTypeId }: ScriptDetailPageProps) {
   const { data: wordTracks = [] } = useCallScripts();
   const generate = useGenerateCallScript();
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const wordTrackMap = useMemo(
     () => new Map(wordTracks.map((w) => [w.id, w.label])),
@@ -58,6 +59,48 @@ export function ScriptDetailPage({ callTypeId }: ScriptDetailPageProps) {
       setTimeout(() => setCopied(false), 1500);
     } catch {
       /* clipboard unavailable — no-op */
+    }
+  };
+
+  // Render a real, selectable-text PDF straight from the structured script —
+  // never the live DOM, so the app sidebar/chrome can't bleed in. The generator
+  // (@react-pdf/renderer) is heavy, so both it and the document component are
+  // pulled in on demand via dynamic import to stay out of the route bundle.
+  const handleDownloadPdf = async () => {
+    if (!body) return;
+    setDownloading(true);
+    try {
+      const [{ pdf }, { ScriptPdfDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./ScriptPdfDocument"),
+      ]);
+      const blob = await pdf(
+        <ScriptPdfDocument
+          callTypeName={callTypeName}
+          script={body}
+          wordTrackMap={wordTrackMap}
+          generatedAt={row?.generated_at ?? null}
+          sourceCallCount={row?.source_call_count ?? null}
+        />,
+      ).toBlob();
+
+      const slug =
+        callTypeName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "sales-script";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${slug}-script.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* PDF render failed — leave the page untouched, button re-enables */
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -102,10 +145,15 @@ export function ScriptDetailPage({ callTypeId }: ScriptDetailPageProps) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => window.print()}
+                disabled={downloading}
+                onClick={handleDownloadPdf}
               >
-                <Printer className="h-4 w-4 mr-1.5" />
-                Print
+                {downloading ? (
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-1.5" />
+                )}
+                Download PDF
               </Button>
             </>
           )}

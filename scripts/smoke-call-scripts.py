@@ -83,6 +83,26 @@ def main() -> int:
         print(f"   rendered markers: {markers}")
         print(f"   visible text (first 500 chars):\n{detail[:500]!r}")
 
+        # 3. Download PDF — must produce a real .pdf file (no print dialog, no
+        #    sidebar). Confirms @react-pdf/renderer renders the structured script.
+        print("→ Download PDF")
+        pdf_ok = False
+        pdf_bytes = 0
+        try:
+            btn = page.get_by_role("button", name="Download PDF", exact=False).first
+            with page.expect_download(timeout=30_000) as dl_info:
+                btn.click()
+            dl = dl_info.value
+            pdf_path = OUT / "script.pdf"
+            dl.save_as(str(pdf_path))
+            pdf_bytes = pdf_path.stat().st_size
+            head = pdf_path.read_bytes()[:5]
+            pdf_ok = head.startswith(b"%PDF") and pdf_bytes > 1000
+            print(f"   saved {dl.suggested_filename} → {pdf_bytes} bytes | "
+                  f"valid PDF header: {head == b'%PDF-'} | ok: {pdf_ok}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"   ✗ download failed: {exc}")
+
         browser.close()
 
     print("=" * 60)
@@ -98,7 +118,7 @@ def main() -> int:
     print("=" * 60)
 
     ok = (not page_errs) and has_cashout and len(markers) >= 2 \
-        and not has_generate
+        and not has_generate and pdf_ok
     print("RESULT:", "✅ PASS" if ok else "⚠️  CHECK ABOVE")
     return 0 if ok else 1
 
