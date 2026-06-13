@@ -30,12 +30,18 @@ export interface AgentName {
 // only when a call is actually played) — never signed for a whole list.
 export const LIBRARY_PAGE_SIZE = 25;
 
+/** How the library is ordered. Every variant ends with a unique `id` tiebreaker
+ *  so offset pagination stays stable even when the primary key ties en masse
+ *  (e.g. most rows share like_count = 0). */
+export type CallLibrarySort = "recent" | "recent_upload" | "most_liked";
+
 export interface CallLibraryFilters {
   search: string;
   outcome: string; // "all" | outcome value
   agentId: string; // "all" | agent uuid
   callTypeId: string; // "all" | call type uuid
   showArchived: boolean;
+  sort: CallLibrarySort;
 }
 
 export const DEFAULT_LIBRARY_FILTERS: CallLibraryFilters = {
@@ -44,6 +50,7 @@ export const DEFAULT_LIBRARY_FILTERS: CallLibraryFilters = {
   agentId: "all",
   callTypeId: "all",
   showArchived: false,
+  sort: "recent",
 };
 
 export type CallLibraryRow = CallRecordingRow & {
@@ -68,9 +75,24 @@ async function fetchLibraryPage(
   let q = supabase
     .from("kpi_call_recordings")
     .select("*, call_type:call_type_id(id,name)")
-    .eq("imo_id", imoId)
-    .order("call_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false })
+    .eq("imo_id", imoId);
+
+  // Primary sort, then ALWAYS a unique `id` terminal key so .range() offset
+  // pagination can't duplicate/skip rows when the primary column ties (most
+  // notably like_count = 0 across the whole library).
+  if (filters.sort === "most_liked") {
+    q = q
+      .order("like_count", { ascending: false })
+      .order("call_at", { ascending: false, nullsFirst: false });
+  } else if (filters.sort === "recent_upload") {
+    q = q.order("created_at", { ascending: false });
+  } else {
+    q = q
+      .order("call_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false });
+  }
+  q = q
+    .order("id", { ascending: false })
     // Fetch one extra row to detect a next page without a trailing empty fetch
     // when the result count is an exact multiple of LIBRARY_PAGE_SIZE.
     .range(from, from + LIBRARY_PAGE_SIZE);

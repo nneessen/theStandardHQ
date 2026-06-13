@@ -5,7 +5,7 @@
 // review screen. Reuses the kpi upload mutation + storage + status libs.
 
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Headphones,
   Upload,
@@ -55,6 +55,8 @@ import {
   type CallLibraryRow,
 } from "../hooks/useCallLibrary";
 import { callReviewKeys } from "../hooks/callReviewKeys";
+import { useMyLikedRecordingIds, useToggleLike } from "../hooks/useCallLikes";
+import { LikeButton } from "./LikeButton";
 import { validateAudioFile, AUDIO_ACCEPT } from "../utils/audioUpload";
 import {
   EditAgentDialog,
@@ -77,7 +79,23 @@ const STATUS_CLASSES: Record<string, string> = {
 };
 
 const ROW_GRID =
-  "grid grid-cols-[1fr_110px_84px_64px_84px_84px_72px] gap-2 items-center";
+  "grid grid-cols-[1fr_110px_84px_64px_84px_84px_56px_72px] gap-2 items-center";
+
+// A recording counts as "newly uploaded" (gets a New badge) for this long after
+// it was added — so the team can spot fresh calls at a glance.
+const NEW_UPLOAD_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+function isRecentlyUploaded(createdAt: string | null | undefined): boolean {
+  if (!createdAt) return false;
+  const age = Date.now() - new Date(createdAt).getTime();
+  return Number.isFinite(age) && age >= 0 && age < NEW_UPLOAD_WINDOW_MS;
+}
+
+const SORT_OPTIONS: { value: CallLibraryFilters["sort"]; label: string }[] = [
+  { value: "recent", label: "Recent calls" },
+  { value: "recent_upload", label: "Recently uploaded" },
+  { value: "most_liked", label: "Most liked" },
+];
 
 export function CallReviewsPage() {
   const { imoId, userId } = useKpiIdentity();
@@ -128,6 +146,11 @@ export function CallReviewsPage() {
   const uploadAgents = isSuperAdmin ? agents : downlineAgents;
   const canAssignUpload = isSuperAdmin || hasDownline;
   const rows = data?.pages.flatMap((p) => p.rows) ?? [];
+
+  // Likes: which calls the current user has hearted (to fill their own hearts)
+  // and the toggle mutation. Fetched once for the whole list.
+  const { data: likedIds } = useMyLikedRecordingIds();
+  const toggleLike = useToggleLike();
 
   const setFilter = <K extends keyof CallLibraryFilters>(
     key: K,
@@ -217,6 +240,20 @@ export function CallReviewsPage() {
             </option>
           ))}
         </select>
+        <select
+          value={filters.sort}
+          onChange={(e) =>
+            setFilter("sort", e.target.value as CallLibraryFilters["sort"])
+          }
+          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          title="Sort the library"
+        >
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
         <Button
           size="sm"
           variant={filters.showArchived ? "default" : "outline"}
@@ -239,6 +276,7 @@ export function CallReviewsPage() {
           <div>Length</div>
           <div>Outcome</div>
           <div>Status</div>
+          <div className="text-center">Likes</div>
           <div className="text-right">Actions</div>
         </div>
         {isLoading ? (
@@ -254,6 +292,8 @@ export function CallReviewsPage() {
             {rows.map((r) => {
               const status = deriveRecordingStatus(r);
               const archived = !!r.archived_at;
+              const isNew = !archived && isRecentlyUploaded(r.created_at);
+              const liked = likedIds?.has(r.id) ?? false;
               const title =
                 r.call_type?.name ||
                 r.caller_name ||
@@ -274,6 +314,15 @@ export function CallReviewsPage() {
                         <Archive className="h-3 w-3 text-v2-ink-subtle shrink-0" />
                       )}
                       <span className="truncate">{title}</span>
+                      {isNew && (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 text-[9px] px-1 py-0 text-emerald-600 border-emerald-300"
+                          title="Uploaded in the last 48 hours"
+                        >
+                          New
+                        </Badge>
+                      )}
                     </div>
                     <div className="truncate text-v2-ink-muted text-[11px]">
                       {externalAgentName(r) ?? agentNames[r.agent_id] ?? "—"}
@@ -318,6 +367,16 @@ export function CallReviewsPage() {
                       )}
                     </div>
                   </Link>
+                  <div className="flex items-center justify-center">
+                    <LikeButton
+                      liked={liked}
+                      count={r.like_count ?? 0}
+                      disabled={toggleLike.isPending}
+                      onToggle={() =>
+                        toggleLike.mutate({ recordingId: r.id, liked })
+                      }
+                    />
+                  </div>
                   <div className="flex items-center justify-end gap-0.5">
                     {isSuperAdmin && (
                       <button
@@ -456,12 +515,9 @@ function UploadPanel({
   onDone,
 }: UploadPanelProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const uploadMutation = useUploadRecording();
   const [file, setFile] = useState<File | null>(null);
-  // Bumped after each successful upload to remount (clear) the native file input
-  // while every other field — crucially the agent assignment — is preserved for
-  // the next file in a bulk batch.
-  const [fileInputKey, setFileInputKey] = useState(0);
   const [fileError, setFileError] = useState<string | null>(null);
   const [callTypeId, setCallTypeId] = useState<string>("");
   const [outcome, setOutcome] = useState<CallOutcome | "">("");
@@ -471,7 +527,6 @@ function UploadPanel({
   // Assignment. "" = assign to me, an agent id, or OTHER_AGENT.
   const [assignTo, setAssignTo] = useState<string>("");
   const [externalName, setExternalName] = useState("");
-  const [uploadedCount, setUploadedCount] = useState(0);
 
   const isOther = allowExternal && assignTo === OTHER_AGENT;
   const trimmedExternal = externalName.trim();
@@ -519,20 +574,16 @@ function UploadPanel({
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (recording) => {
           queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
-          // Keep the panel open for bulk uploads, but reset EVERY per-call field
-          // so the next (distinct) recording can't silently inherit this call's
-          // date/outcome/type/premium. Only the agent assignment is intentionally
-          // preserved — that's the whole point of a bulk batch for one agent.
-          setFile(null);
-          setFileError(null);
-          setPremium("");
-          setCallAt("");
-          setOutcome("");
-          setCallTypeId("");
-          setFileInputKey((k) => k + 1);
-          setUploadedCount((n) => n + 1);
+          // Close the upload panel and jump straight to the call just uploaded,
+          // so the user lands on it and can review it (the detail page has a
+          // "Back to library" link). For a bulk batch, re-open Upload from there.
+          onDone();
+          navigate({
+            to: "/call-reviews/$recordingId",
+            params: { recordingId: recording.id },
+          });
         },
       },
     );
@@ -545,11 +596,6 @@ function UploadPanel({
           Upload a call recording
         </h3>
         <div className="flex items-center gap-2">
-          {uploadedCount > 0 && (
-            <span className="text-[10px] text-emerald-600">
-              {uploadedCount} uploaded
-            </span>
-          )}
           <Button
             variant="ghost"
             size="icon"
@@ -600,7 +646,6 @@ function UploadPanel({
       )}
 
       <input
-        key={fileInputKey}
         type="file"
         accept={AUDIO_ACCEPT}
         onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}

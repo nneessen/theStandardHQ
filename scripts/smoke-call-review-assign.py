@@ -147,11 +147,22 @@ def main() -> int:
         page.wait_for_timeout(400)
         page.locator("input[type=checkbox]").first.check()
         page.get_by_role("button", name="Upload", exact=False).last.click()
-        page.wait_for_selector("text=1 uploaded", timeout=20_000)
-        print("✓ upload #1 (real agent) completed")
+        # A successful upload now closes the panel and navigates to the new call's
+        # detail page (so the user lands on the call they just added).
+        import re as _re
+        page.wait_for_url(_re.compile(r"/call-reviews/[0-9a-f-]{36}"), timeout=20_000)
+        print("✓ upload #1 (real agent) completed → navigated to detail")
 
         # ── Upload #2: assign to an off-system agent (free text). ──────────────
-        sel.select_option("__other__")
+        # The panel closed on navigation, so return to the library and re-open it.
+        page.goto(f"{BASE}/call-reviews", wait_until="domcontentloaded", timeout=30_000)
+        page.wait_for_timeout(1500)
+        page.get_by_role("button", name="Upload call", exact=False).first.click()
+        page.wait_for_timeout(800)
+        picker2 = page.locator("select").filter(
+            has=page.locator("option", has_text="Me (assign to my own calls)")
+        ).first
+        picker2.select_option("__other__")
         page.wait_for_timeout(300)
         page.get_by_placeholder("Type the agent's name").fill(OTHER_NAME)
         page.set_input_files(
@@ -159,10 +170,10 @@ def main() -> int:
             files=[{"name": OTHER_FILE, "mimeType": "audio/mpeg", "buffer": FAKE_MP3}],
         )
         page.wait_for_timeout(400)
-        # consent persists checked across uploads
+        page.locator("input[type=checkbox]").first.check()
         page.get_by_role("button", name="Upload", exact=False).last.click()
-        page.wait_for_selector("text=2 uploaded", timeout=20_000)
-        print("✓ upload #2 (other agent) completed")
+        page.wait_for_url(_re.compile(r"/call-reviews/[0-9a-f-]{36}"), timeout=20_000)
+        print("✓ upload #2 (other agent) completed → navigated to detail")
 
         page.screenshot(path=str(OUT / "call-review-assign.png"), full_page=True)
         browser.close()

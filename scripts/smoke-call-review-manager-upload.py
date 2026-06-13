@@ -162,8 +162,10 @@ def main() -> int:
         page.wait_for_timeout(400)
         page.locator("input[type=checkbox]").first.check()
         page.get_by_role("button", name="Upload", exact=False).last.click()
-        page.wait_for_selector("text=1 uploaded", timeout=20_000)
-        print("✓ upload on behalf of downline completed (no RLS rejection)")
+        # A successful upload now navigates to the new call's detail page.
+        import re as _re
+        page.wait_for_url(_re.compile(r"/call-reviews/[0-9a-f-]{36}"), timeout=20_000)
+        print("✓ upload on behalf of downline completed (no RLS rejection) → navigated to detail")
 
         page.screenshot(path=str(OUT / "mgr-upload.png"), full_page=True)
 

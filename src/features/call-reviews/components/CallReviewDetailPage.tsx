@@ -26,6 +26,8 @@ import {
   useUpdateRoleMap,
 } from "../hooks/useCallLibrary";
 import { EditAgentDialog, externalAgentName } from "./EditAgentDialog";
+import { LikeButton } from "./LikeButton";
+import { useMyLikedRecordingIds, useToggleLike } from "../hooks/useCallLikes";
 import { useCallMarkers } from "../hooks/useCallMarkers";
 import {
   useCallScripts,
@@ -61,6 +63,9 @@ export function CallReviewDetailPage({
   const { imoId, userId } = useKpiIdentity();
   const { data: recording, isLoading, error } = useCallRecording(recordingId);
   const { data: agentsData } = useImoAgents(imoId ?? undefined);
+  const { data: likedIds } = useMyLikedRecordingIds();
+  const toggleLike = useToggleLike();
+  const liked = likedIds?.has(recordingId) ?? false;
   const [showReassign, setShowReassign] = useState(false);
   // Skip the signed-URL fetch once the audio has been purged by the retention
   // policy — the object is gone, so a fetch would just 404.
@@ -192,16 +197,25 @@ export function CallReviewDetailPage({
             {recording.caller_state && <span>· {recording.caller_state}</span>}
           </div>
         </div>
-        {isSuperAdmin && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-[11px] shrink-0"
-            onClick={() => setShowReassign(true)}
-          >
-            <Pencil className="h-3 w-3 mr-1" /> Reassign agent
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <LikeButton
+            liked={liked}
+            count={recording.like_count ?? 0}
+            size="md"
+            disabled={toggleLike.isPending}
+            onToggle={() => toggleLike.mutate({ recordingId, liked })}
+          />
+          {isSuperAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px]"
+              onClick={() => setShowReassign(true)}
+            >
+              <Pencil className="h-3 w-3 mr-1" /> Reassign agent
+            </Button>
+          )}
+        </div>
       </div>
 
       {showReassign && (

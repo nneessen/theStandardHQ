@@ -12,6 +12,9 @@ export const callReviewKeys = {
   downlineAgents: (userId: string) =>
     [...callReviewKeys.all, "downline-agents", userId] as const,
   recording: (id: string) => [...callReviewKeys.all, "recording", id] as const,
+  // Set of recording ids the current user has liked (their own hearts).
+  myLikes: (imoId: string, userId: string) =>
+    [...callReviewKeys.all, "my-likes", imoId, userId] as const,
   signedUrl: (path: string) =>
     [...callReviewKeys.all, "signed-url", path] as const,
   markers: (recordingId: string) =>

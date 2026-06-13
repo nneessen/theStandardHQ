@@ -111,11 +111,13 @@ def main() -> int:
         page.wait_for_timeout(400)
         page.locator("input[type=checkbox]").first.check()
         page.get_by_role("button", name="Upload", exact=False).last.click()
-        page.wait_for_selector("text=1 uploaded", timeout=20_000)
-        print("✓ seed recording uploaded")
-        # Close the upload panel so the library row's pencil is unobstructed.
-        page.get_by_role("button", name="Upload call", exact=False).first.click()
-        page.wait_for_timeout(800)
+        # A successful upload now navigates to the new call's detail page. Return
+        # to the library to operate on the row's pencil.
+        import re as _re
+        page.wait_for_url(_re.compile(r"/call-reviews/[0-9a-f-]{36}"), timeout=20_000)
+        print("✓ seed recording uploaded → navigated to detail")
+        page.goto(f"{BASE}/call-reviews", wait_until="domcontentloaded", timeout=30_000)
+        page.wait_for_timeout(1500)
 
         # CRITICAL: the seed has no call_at, so it sorts to the BOTTOM of the
         # library — clicking the first row's pencil would hit an unrelated
