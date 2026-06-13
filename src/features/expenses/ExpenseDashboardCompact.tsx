@@ -399,7 +399,7 @@ export function ExpenseDashboardCompact() {
 
   return (
     <>
-      <div className="flex flex-col p-3 space-y-2.5">
+      <div className="flex flex-col space-y-3">
         {/* Compact Header */}
         <div className="flex flex-wrap items-center justify-between gap-y-2 bg-card rounded-lg px-3 py-2 border border-border">
           <div className="flex items-center gap-3">
