@@ -427,7 +427,7 @@ export function LeadIntelligenceDashboard() {
   if (isLoading && !vendors) {
     return (
       <SectionShell className="dashboard-canvas">
-        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+        <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
           <div className="flex items-center justify-center h-48">
             <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
           </div>
@@ -438,7 +438,7 @@ export function LeadIntelligenceDashboard() {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
         <div className="flex flex-col gap-3">
           {/* Departure-board header */}
           <header style={{ display: "flex", flexDirection: "column", gap: 4 }}>

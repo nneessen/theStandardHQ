@@ -23,7 +23,7 @@ export const KpiPage: React.FC = () => {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
         <div className="flex flex-col space-y-2">
           {/* Hero header */}
           <div className="relative overflow-hidden rounded-lg bg-v2-card-dark flex-shrink-0">

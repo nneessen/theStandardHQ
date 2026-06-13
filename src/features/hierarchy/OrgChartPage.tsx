@@ -25,7 +25,7 @@ import type { OrgChartNode, OrgChartScope } from "@/types/hierarchy.types";
 function OrgChartShell({ children }: { children: React.ReactNode }) {
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
         <div className="flex flex-col gap-4">{children}</div>
       </div>
     </SectionShell>

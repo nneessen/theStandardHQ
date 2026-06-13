@@ -484,7 +484,7 @@ export const DashboardHome: React.FC = () => {
   return (
     <>
       <SectionShell className="dashboard-canvas">
-        <div className="mx-auto max-w-[1400px] overflow-x-clip px-4 py-4 sm:px-8 sm:py-6 lg:px-12">
+        <div className="mx-auto w-full max-w-[2400px] overflow-x-clip px-4 py-4 sm:py-6">
           <BoardPageHeader
             title={title.toUpperCase()}
             meta={

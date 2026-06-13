@@ -265,7 +265,7 @@ export function TargetsPage() {
   if (isLoading || averagesLoading) {
     return (
       <SectionShell className="dashboard-canvas">
-        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+        <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-8">
           <div
             style={{
               font: `500 13px ${T.data}`,
@@ -285,7 +285,7 @@ export function TargetsPage() {
   if (error) {
     return (
       <SectionShell className="dashboard-canvas">
-        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+        <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-8">
           <div
             style={{
               font: `500 13px ${T.data}`,
@@ -317,7 +317,7 @@ export function TargetsPage() {
   if (isFirstTime || !calculatedTargets) {
     return (
       <SectionShell className="dashboard-canvas">
-        <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+        <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-8">
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Board-style header */}
             <header style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -386,7 +386,7 @@ export function TargetsPage() {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-8">
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* ── Page Header ─────────────────────────────────────────────────── */}
           <header

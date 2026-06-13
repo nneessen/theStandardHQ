@@ -113,7 +113,7 @@ export const PolicyDashboard: React.FC = () => {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto flex w-full max-w-[1820px] flex-col gap-5 px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto flex w-full max-w-[2400px] flex-col gap-5 px-4 py-5 lg:py-6">
         <PolicyList
           onEditPolicy={handleEditPolicy}
           onNewPolicy={() => setIsPolicyFormOpen(true)}

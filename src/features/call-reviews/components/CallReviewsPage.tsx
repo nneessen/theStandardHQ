@@ -181,7 +181,7 @@ export function CallReviewsPage() {
   ) => setFilters((f) => ({ ...f, [key]: value }));
 
   return (
-    <div className="w-full px-4 py-4 space-y-4">
+    <div className="mx-auto w-full max-w-[2400px] px-4 py-4 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-v2-ink flex items-center gap-2">

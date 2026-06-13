@@ -62,7 +62,7 @@ export function ScriptsLibraryPage() {
   const loading = typesLoading || scriptsLoading;
 
   return (
-    <div className="max-w-6xl mx-auto px-3 py-4 space-y-4">
+    <div className="mx-auto w-full max-w-[2400px] px-4 py-4 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">

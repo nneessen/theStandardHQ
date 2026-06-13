@@ -27,8 +27,28 @@ PASSWORD = os.environ.get("E2E_PASSWORD")
 OUT = pathlib.Path("/tmp/board-shots")
 
 DEFAULT_ROUTES = ["/targets", "/expenses", "/hierarchy", "/leaderboard"]
-# Only desktop by default; pass routes to keep it fast. Add mobile if needed.
-VIEWPORTS = [("desktop", 1680, 1050)]
+# Viewport(s). Override with BOARD_VIEWPORT="1440x900" (or comma-separate a few:
+# "1440x900,2560x1440") so we can screenshot at the width the owner actually uses.
+# Default stays the historical 1680x1050 desktop.
+def _parse_viewports() -> list[tuple[str, int, int]]:
+    raw = os.environ.get("BOARD_VIEWPORT", "").strip()
+    if not raw:
+        return [("desktop", 1680, 1050)]
+    out: list[tuple[str, int, int]] = []
+    for spec in raw.split(","):
+        spec = spec.strip().lower()
+        if "x" not in spec:
+            continue
+        w_s, h_s = spec.split("x", 1)
+        w, h = int(w_s), int(h_s)
+        out.append((f"{w}w", w, h))
+    return out or [("desktop", 1680, 1050)]
+
+
+VIEWPORTS = _parse_viewports()
+# How long to let a route settle after navigation (local DB + data fetch can be
+# slower than prod). Override with BOARD_WAIT_MS.
+WAIT_MS = int(os.environ.get("BOARD_WAIT_MS", "3500"))
 
 
 def main() -> int:
@@ -59,6 +79,16 @@ def main() -> int:
             browser.close()
             return 3
 
+        # Dismiss the cookie/consent banner once so it doesn't cover the footer
+        # of every screenshot. Best-effort — ignore if it isn't present.
+        try:
+            page.get_by_role(
+                "button", name="Got it", exact=False
+            ).first.click(timeout=2500)
+            page.wait_for_timeout(300)
+        except Exception:  # noqa: BLE001
+            pass
+
         for route in routes:
             for vname, vw, vh in VIEWPORTS:
                 page.set_viewport_size({"width": vw, "height": vh})
@@ -73,7 +103,18 @@ def main() -> int:
                 except Exception as e:  # noqa: BLE001
                     print(f"   {route} [{vname}] → LOAD ERROR: {e}")
                     continue
-                page.wait_for_timeout(3500)
+                page.wait_for_timeout(WAIT_MS)
+                # Give data-driven pages a chance to finish their first fetch:
+                # poll until the animated loading spinner (Loader2 → .animate-spin)
+                # disappears, up to ~8s past the base wait. Harmless if none.
+                for _ in range(16):
+                    try:
+                        spinners = page.locator(".animate-spin").count()
+                    except Exception:  # noqa: BLE001
+                        break
+                    if spinners == 0:
+                        break
+                    page.wait_for_timeout(500)
                 slug = route.strip("/").replace("/", "_") or "root"
                 shot = OUT / f"{slug}-{vname}.png"
                 page.screenshot(path=str(shot), full_page=True)

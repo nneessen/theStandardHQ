@@ -275,7 +275,7 @@ function RecruitingDashboardContent() {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
         <div className="flex flex-col gap-4">
           {/* Departure-board header — eyebrow + title + action buttons */}
           <header
@@ -684,7 +684,7 @@ function FreeUplineRecruitingView() {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
         <div className="flex flex-col gap-4">
           <header
             style={{
@@ -916,7 +916,7 @@ export function RecruitingDashboard() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
+    <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-6">
       <UpgradePrompt feature="recruiting_basic" variant="card" />
     </div>
   );

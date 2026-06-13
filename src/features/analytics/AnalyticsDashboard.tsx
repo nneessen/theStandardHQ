@@ -243,7 +243,7 @@ function AnalyticsDashboardContent() {
 
   return (
     <SectionShell className="dashboard-canvas">
-      <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
+      <div className="mx-auto w-full max-w-[2400px] px-4 py-5 lg:py-8">
         {/* Header — eyebrow + ANALYTICS + subtitle | period control + export */}
         <header
           style={{
