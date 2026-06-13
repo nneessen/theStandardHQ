@@ -3,7 +3,7 @@
 // Script) tabs on the left, a sticky Markers panel on the right. Any IMO agent
 // can open any call (IMO-wide RLS); the page is the training surface.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Users, Pencil } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import {
 import { EditAgentDialog, externalAgentName } from "./EditAgentDialog";
 import { LikeButton } from "./LikeButton";
 import { useMyLikedRecordingIds, useToggleLike } from "../hooks/useCallLikes";
+import { useMarkListened } from "../hooks/useCallListens";
 import { useCallMarkers } from "../hooks/useCallMarkers";
 import {
   useCallScripts,
@@ -91,6 +92,22 @@ export function CallReviewDetailPage({
   const playerRef = useRef<CallPlayerHandle>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [showSpeakerEditor, setShowSpeakerEditor] = useState(false);
+
+  // Mark this call as "listened" the first time the user presses play — once per
+  // page load (the ref guards against re-firing on every play/pause toggle). The
+  // mutation is idempotent, so a repeat across sessions is a harmless no-op.
+  const markListened = useMarkListened();
+  const listenedFiredRef = useRef(false);
+  // Re-arm when the recording changes so in-place navigation (if ever added)
+  // still marks the next call; today the page also remounts per recording.
+  useEffect(() => {
+    listenedFiredRef.current = false;
+  }, [recordingId]);
+  const handleFirstPlay = () => {
+    if (listenedFiredRef.current) return;
+    listenedFiredRef.current = true;
+    markListened.mutate(recordingId);
+  };
 
   const markers = markerData?.markers ?? [];
   const segments = useMemo(
@@ -275,6 +292,7 @@ export function CallReviewDetailPage({
         audioExpired={audioExpired}
         markers={markers}
         onTimeUpdate={setCurrentTime}
+        onPlay={handleFirstPlay}
       />
 
       <TranscriptionProgress

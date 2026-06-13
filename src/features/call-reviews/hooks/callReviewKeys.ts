@@ -15,6 +15,9 @@ export const callReviewKeys = {
   // Set of recording ids the current user has liked (their own hearts).
   myLikes: (imoId: string, userId: string) =>
     [...callReviewKeys.all, "my-likes", imoId, userId] as const,
+  // Set of recording ids the current user has listened to (read/unread marker).
+  myListens: (imoId: string, userId: string) =>
+    [...callReviewKeys.all, "my-listens", imoId, userId] as const,
   signedUrl: (path: string) =>
     [...callReviewKeys.all, "signed-url", path] as const,
   markers: (recordingId: string) =>

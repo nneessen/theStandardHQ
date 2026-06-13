@@ -17,6 +17,8 @@ import {
   ArchiveRestore,
   Trash2,
   Pencil,
+  CheckCircle2,
+  Circle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +58,7 @@ import {
 } from "../hooks/useCallLibrary";
 import { callReviewKeys } from "../hooks/callReviewKeys";
 import { useMyLikedRecordingIds, useToggleLike } from "../hooks/useCallLikes";
+import { useMyListenedRecordingIds } from "../hooks/useCallListens";
 import { LikeButton } from "./LikeButton";
 import { validateAudioFile, AUDIO_ACCEPT } from "../utils/audioUpload";
 import {
@@ -168,6 +171,9 @@ export function CallReviewsPage() {
   // and the toggle mutation. Fetched once for the whole list.
   const { data: likedIds } = useMyLikedRecordingIds();
   const toggleLike = useToggleLike();
+
+  // Which calls the current user has already listened to (read/unread marker).
+  const { data: listenedIds } = useMyListenedRecordingIds();
 
   const setFilter = <K extends keyof CallLibraryFilters>(
     key: K,
@@ -311,6 +317,7 @@ export function CallReviewsPage() {
               const archived = !!r.archived_at;
               const isNew = !archived && isRecentlyUploaded(r.created_at);
               const liked = likedIds?.has(r.id) ?? false;
+              const listened = listenedIds?.has(r.id) ?? false;
               const title =
                 r.call_type?.name ||
                 r.caller_name ||
@@ -326,7 +333,23 @@ export function CallReviewsPage() {
                     params={{ recordingId: r.id }}
                     className="contents"
                   >
-                    <div className="truncate text-v2-ink font-medium flex items-center gap-1.5">
+                    <div
+                      className={`truncate font-medium flex items-center gap-1.5 ${listened ? "text-v2-ink-muted" : "text-v2-ink"}`}
+                    >
+                      <span
+                        className="shrink-0 flex items-center"
+                        title={
+                          listened
+                            ? "You've listened to this call"
+                            : "Not yet listened"
+                        }
+                      >
+                        {listened ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-v2-ink-subtle/40" />
+                        )}
+                      </span>
                       {archived && (
                         <Archive className="h-3.5 w-3.5 text-v2-ink-subtle shrink-0" />
                       )}

@@ -44,6 +44,9 @@ interface CallAudioPlayerProps {
   error: boolean;
   markers: CallMarkerRow[];
   onTimeUpdate?: (currentTime: number) => void;
+  /** Fired when playback starts (every play). The parent decides what to do with
+   *  it (e.g. record a once-per-session "listened" marker). */
+  onPlay?: () => void;
   /** Audio was purged by the retention policy; show a transcript-only notice. */
   audioExpired?: boolean;
 }
@@ -54,7 +57,7 @@ export const CallAudioPlayer = forwardRef<
   CallPlayerHandle,
   CallAudioPlayerProps
 >(function CallAudioPlayer(
-  { signedUrl, isLoading, error, markers, onTimeUpdate, audioExpired },
+  { signedUrl, isLoading, error, markers, onTimeUpdate, onPlay, audioExpired },
   ref,
 ) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -188,7 +191,10 @@ export const CallAudioPlayer = forwardRef<
           setCurrentTime(t);
           onTimeUpdate?.(t);
         }}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          setIsPlaying(true);
+          onPlay?.();
+        }}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
       />

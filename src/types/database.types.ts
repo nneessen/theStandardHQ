@@ -5693,6 +5693,35 @@ export type Database = {
           },
         ];
       };
+      kpi_call_listens: {
+        Row: {
+          created_at: string;
+          id: string;
+          recording_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          recording_id: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          recording_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kpi_call_listens_recording_id_fkey";
+            columns: ["recording_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_recordings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kpi_call_markers: {
         Row: {
           created_at: string;
