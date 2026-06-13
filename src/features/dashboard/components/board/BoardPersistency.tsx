@@ -1,75 +1,66 @@
-import { Board, Cap, Num, RadialProgress, T } from "@/components/board";
-import type { RadialTone } from "@/components/board";
+import { Board, Bar, Cap, Num, T } from "@/components/board";
+import type { BarTone } from "@/components/board";
 import type { PersistencyCohort } from "@/hooks/policies";
 
 /**
- * Persistency — the share of issued policies still in force at each anniversary.
- *
- * One ring per milestone (3 / 6 / 9 / 12 months). Each milestone is an
- * age-bounded "anniversary cohort": of policies that have reached ~N months of
- * tenure, what fraction is still active. The cohort sample size (`n`) is shown
- * under every ring so thin cohorts are honest rather than hidden.
+ * Persistency — what share of the policies that have reached each age are still
+ * active. One compact column per milestone (3 / 6 / 9 / 12 months): a big
+ * percentage, a thin progress bar, and the raw "X of Y" count so a small sample
+ * is obvious. No rings — kept tight so it doesn't eat vertical space.
  */
 
-// Persistency is healthy in the high range; tint the ring by where it lands.
-function toneFor(rate: number | null): RadialTone {
+// Persistency is healthy in the high range; tint by where it lands.
+function toneFor(rate: number | null): BarTone {
   if (rate == null) return "blue";
   if (rate >= 85) return "green";
   if (rate >= 70) return "amber";
   return "red";
 }
 
-function PersistencyRing({ cohort }: { cohort: PersistencyCohort }) {
+const TONE_HEX: Record<BarTone, string> = {
+  blue: T.blue,
+  amber: T.amber,
+  green: T.green,
+  red: T.red,
+};
+
+function PersistencyCell({ cohort }: { cohort: PersistencyCohort }) {
   const { bucketMonths, cohortSize, activeCount, persistencyRate } = cohort;
   const hasData = persistencyRate != null && cohortSize > 0;
+  const tone = toneFor(persistencyRate);
 
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         gap: 8,
-        padding: "4px 0",
+        padding: "14px 16px",
+        borderRadius: 10,
+        background: T.tile,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
     >
-      {hasData ? (
-        <RadialProgress
-          pct={persistencyRate / 100}
-          size={118}
-          thickness={11}
-          tone={toneFor(persistencyRate)}
-          caption={`${bucketMonths}-MO`}
-        />
-      ) : (
-        // No cohort yet (no policies have reached this tenure) — recessed
-        // placeholder so the row stays aligned without faking a 0% reading.
-        <div
+      <Cap style={{ fontSize: 11 }}>{bucketMonths}-Month</Cap>
+
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+        <span
           style={{
-            width: 118,
-            height: 118,
-            borderRadius: "50%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            border: `2px dashed ${T.line2}`,
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+            font: `800 30px ${T.disp}`,
+            lineHeight: 1,
+            color: hasData ? TONE_HEX[tone] : T.mut2,
           }}
         >
-          <span style={{ font: `800 22px ${T.disp}`, color: T.mut2 }}>—</span>
-          <span style={{ font: `700 10px ${T.mono}`, color: T.mut2 }}>
-            {bucketMonths}-MO
-          </span>
-        </div>
-      )}
-      <div style={{ textAlign: "center" }}>
-        <div style={{ font: `700 11px ${T.mono}`, color: T.mut }}>
-          {hasData ? `${activeCount}/${cohortSize} active` : "no data yet"}
-        </div>
-        <div style={{ font: `700 10px ${T.mono}`, color: T.mut2 }}>
-          n={cohortSize}
-        </div>
+          {hasData ? `${Math.round(persistencyRate)}%` : "—"}
+        </span>
+      </div>
+
+      <Bar pct={hasData ? persistencyRate / 100 : 0} tone={tone} height={7} />
+
+      <div style={{ font: `600 12px ${T.data}`, color: T.mut }}>
+        {hasData
+          ? `${activeCount} of ${cohortSize} still active`
+          : "No policies this old yet"}
       </div>
     </div>
   );
@@ -80,11 +71,12 @@ export function BoardPersistency({
 }: {
   cohorts: PersistencyCohort[];
 }) {
-  // Blended headline: active / issued across every cohort that has data.
+  // Blended headline: active / total across every milestone that has policies.
   const totalActive = cohorts.reduce((s, c) => s + c.activeCount, 0);
-  const totalCohort = cohorts.reduce((s, c) => s + c.cohortSize, 0);
+  const totalCount = cohorts.reduce((s, c) => s + c.cohortSize, 0);
   const blended =
-    totalCohort > 0 ? Math.round((totalActive / totalCohort) * 100) : null;
+    totalCount > 0 ? Math.round((totalActive / totalCount) * 100) : null;
+  const blendedTone = blended == null ? "blue" : toneFor(blended);
 
   return (
     <Board pad={0} rivets={false} style={{ marginBottom: 16 }}>
@@ -97,11 +89,11 @@ export function BoardPersistency({
           borderBottom: `1px solid ${T.line}`,
         }}
       >
-        <Cap>Persistency · Policy Retention</Cap>
+        <Cap>Persistency · Policies Still Active</Cap>
         <Num
           text={blended == null ? "—" : `${blended}%`}
           size="xs"
-          color={blended == null ? T.mut : toneColor(blended)}
+          color={blended == null ? T.mut : TONE_HEX[blendedTone]}
         />
       </div>
 
@@ -109,13 +101,13 @@ export function BoardPersistency({
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 140px), 1fr))",
-          gap: 8,
+            "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
+          gap: 10,
           padding: "16px 20px",
         }}
       >
         {cohorts.map((c) => (
-          <PersistencyRing key={c.bucketMonths} cohort={c} />
+          <PersistencyCell key={c.bucketMonths} cohort={c} />
         ))}
       </div>
 
@@ -127,19 +119,10 @@ export function BoardPersistency({
           color: T.mut2,
         }}
       >
-        Anniversary-cohort method: each milestone counts policies that have
-        reached ~that age, then the share still active. Excludes pending
-        applications. Small <span style={{ fontFamily: T.mono }}>n</span> means
-        a thin cohort — read those rates with care.
+        Of the policies that have reached each age, the share still in force.
+        Pending applications aren't counted. A low count means few policies have
+        reached that age yet — read those numbers with care.
       </div>
     </Board>
   );
-}
-
-// Inline helper kept local to the component (mirrors toneFor but returns the
-// hex used by the SplitFlap header number).
-function toneColor(rate: number): string {
-  if (rate >= 85) return T.green;
-  if (rate >= 70) return T.amber;
-  return T.red;
 }
