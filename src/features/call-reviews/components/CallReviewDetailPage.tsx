@@ -175,7 +175,7 @@ export function CallReviewDetailPage({
       : null;
 
   return (
-    <div className="mx-auto w-full max-w-[2400px] px-4 py-4 space-y-4">
+    <div className="mx-auto w-full max-w-6xl px-4 py-4 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

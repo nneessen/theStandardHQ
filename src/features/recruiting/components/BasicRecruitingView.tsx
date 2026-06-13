@@ -657,7 +657,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                             return (
                               <span
                                 className={cn(
-                                  "text-[11px] px-1.5 py-0.5",
+                                  "inline-flex items-center rounded-full text-[11px] px-1.5 py-0.5",
                                   recruit.onboarding_status === "completed" ||
                                     recruit.onboarding_status === "active"
                                     ? TINT.emerald

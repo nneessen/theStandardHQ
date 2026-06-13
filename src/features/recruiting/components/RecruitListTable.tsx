@@ -645,7 +645,7 @@ export function RecruitListTable({
                       {isTerminal ? (
                         <span
                           className={cn(
-                            "inline-flex items-center px-1.5 py-0.5 text-[11px]",
+                            "inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px]",
                             recruit.onboarding_status === "completed"
                               ? TINT.emerald
                               : recruit.onboarding_status === "dropped"

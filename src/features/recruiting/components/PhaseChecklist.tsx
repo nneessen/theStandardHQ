@@ -845,7 +845,7 @@ export function PhaseChecklist({
                   </Badge>
                 )}
                 <span
-                  className={`text-[11px] px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_TINT[status] ?? TINT.slate}`}
+                  className={`inline-flex items-center rounded-full text-[11px] px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_TINT[status] ?? TINT.slate}`}
                 >
                   {status.replace(/_/g, " ")}
                 </span>

@@ -105,7 +105,7 @@ export function ScriptDetailPage({ callTypeId }: ScriptDetailPageProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[2400px] px-4 py-6 space-y-5 print:max-w-none">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 space-y-5 print:max-w-none">
       {/* Header */}
       <div className="flex items-end justify-between gap-3 print:hidden border-b border-v2-ring pb-4">
         <div className="min-w-0">
