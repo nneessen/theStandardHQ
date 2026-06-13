@@ -365,6 +365,7 @@ class PolicyService {
 
     const repoFilters: {
       status?: string;
+      lifecycleStatus?: string;
       carrierId?: string;
       product?: string;
       dateFrom?: string;
@@ -374,6 +375,8 @@ class PolicyService {
     } = {};
 
     if (filters.status) repoFilters.status = filters.status;
+    if (filters.lifecycleStatus)
+      repoFilters.lifecycleStatus = filters.lifecycleStatus;
     if (filters.carrierId) repoFilters.carrierId = filters.carrierId;
     if (filters.product) repoFilters.product = filters.product;
     if (dateFrom) repoFilters.dateFrom = dateFrom;
@@ -423,6 +426,7 @@ class PolicyService {
     const repoFilters = filters
       ? {
           status: filters.status,
+          lifecycleStatus: filters.lifecycleStatus ?? undefined,
           carrierId: filters.carrierId,
           product: filters.product,
           dateFrom: filters.dateFrom,
@@ -457,6 +461,7 @@ class PolicyService {
     const repoFilters = filters
       ? {
           status: filters.status,
+          lifecycleStatus: filters.lifecycleStatus ?? undefined,
           carrierId: filters.carrierId,
           product: filters.product,
           dateFrom: filters.dateFrom,
@@ -494,6 +499,7 @@ class PolicyService {
     const repoFilters = filters
       ? {
           status: filters.status,
+          lifecycleStatus: filters.lifecycleStatus ?? undefined,
           carrierId: filters.carrierId,
           product: filters.product,
           dateFrom: filters.dateFrom,
@@ -507,20 +513,6 @@ class PolicyService {
       repoFilters,
       userId || undefined,
     );
-  }
-
-  /**
-   * Business logic: Get monthly metrics for a given month/year
-   */
-  async getMonthlyMetrics(year: number, month: number) {
-    return this.repository.getMonthlyMetrics(year, month);
-  }
-
-  /**
-   * Business logic: Get total annual premium by carrier
-   */
-  async getTotalAnnualPremiumByCarrier(carrierId: string): Promise<number> {
-    return this.repository.getTotalAnnualPremiumByCarrier(carrierId);
   }
 
   /**

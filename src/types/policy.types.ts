@@ -107,8 +107,8 @@ export interface Policy {
   // Metadata
   createdAt: string;
   updatedAt: string;
-  created_at?: Date; // Optional for BaseEntity compatibility
-  updated_at?: Date; // Optional for BaseEntity compatibility
+  created_at?: Date | string; // Optional for BaseEntity compatibility (DB returns ISO string)
+  updated_at?: Date | string; // Optional for BaseEntity compatibility (DB returns ISO string)
   createdBy?: string;
   notes?: string;
 

@@ -5,37 +5,82 @@ import {
   Policy,
   CreatePolicyData,
   UpdatePolicyData,
+  PolicyRow,
 } from "../../types/policy.types";
 import { formatDateForDB, parseLocalDate } from "../../lib/date";
+import {
+  POLICY_WITH_CLIENT,
+  POLICY_WITH_CLIENT_AND_COMMISSIONS,
+  POLICY_WITH_CLIENT_MINIMAL,
+  POLICY_WITH_RELATION_NAMES,
+} from "./policy-selects";
+import {
+  mapPolicyFromDb,
+  toNumber,
+  type PolicyDbRecord,
+} from "./policy-mapper";
 
 // ---------------------------------------------------------------------------
 // Type definitions for lightweight metric queries
 // ---------------------------------------------------------------------------
 
-export interface PolicyMetricRow {
-  user_id: string;
-  status: string | null;
-  lifecycle_status: string | null;
-  annual_premium: number | string | null;
-  created_at: string | null;
-  submit_date: string | null;
-  effective_date: string | null;
-}
+/**
+ * Lightweight projection used by hierarchy/team metric calculations.
+ * Derived from the generated row so columns stay in sync; `user_id` is
+ * non-null because these are always queried by `user_id IN (...)`.
+ */
+export type PolicyMetricRow = Pick<
+  PolicyRow,
+  | "status"
+  | "lifecycle_status"
+  | "annual_premium"
+  | "created_at"
+  | "submit_date"
+  | "effective_date"
+> & { user_id: string };
 
-export interface PolicyWithRelations {
-  id: string;
-  policy_number: string | null;
+/** Policy projection with client/carrier names, for hierarchy summaries. */
+export type PolicyWithRelations = Pick<
+  PolicyRow,
+  | "id"
+  | "policy_number"
+  | "status"
+  | "lifecycle_status"
+  | "annual_premium"
+  | "product"
+  | "carrier_id"
+  | "submit_date"
+  | "effective_date"
+  | "created_at"
+> & {
   user_id: string;
-  status: string | null;
-  lifecycle_status: string | null; // TODO: should this not be using a type/interface? lifecycle statuses will never change.
-  annual_premium: number | string | null;
-  product: string | null;
-  carrier_id: string | null;
-  submit_date: string | null;
-  effective_date: string | null;
-  created_at: string | null;
   client: { name: string } | null;
   carrier: { name: string } | null;
+};
+
+/** Equality/date/search filters accepted by the list, count, and metric reads. */
+export interface PolicyFilters {
+  status?: string;
+  lifecycleStatus?: string;
+  carrierId?: string;
+  product?: string;
+  productId?: string;
+  userId?: string;
+  dateFrom?: string; // YYYY-MM-DD
+  dateTo?: string; // YYYY-MM-DD
+  dateField?: "submit_date" | "effective_date";
+  searchTerm?: string;
+}
+
+/**
+ * Minimal chainable surface of a PostgREST query, used so the shared filter
+ * helpers can mutate any policy query while preserving its concrete type.
+ */
+interface PolicyQueryBuilder {
+  eq(column: string, value: string | number | boolean): this;
+  gte(column: string, value: string): this;
+  lte(column: string, value: string): this;
+  or(filters: string): this;
 }
 
 export class PolicyRepository extends BaseRepository<
@@ -45,6 +90,55 @@ export class PolicyRepository extends BaseRepository<
 > {
   constructor() {
     super(TABLES.POLICIES);
+  }
+
+  // -------------------------------------------------------------------------
+  // Shared helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Run a repository operation with a single error path.
+   *
+   * `handleError()` already builds and logs a friendly Error, so when we catch
+   * an Error here we re-throw it untouched (no double-logging). Only genuinely
+   * unexpected non-Error throws get wrapped.
+   */
+  private async run<R>(operation: string, fn: () => Promise<R>): Promise<R> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw this.wrapError(error, operation);
+    }
+  }
+
+  /**
+   * Apply the canonical equality + date-range filters to a policy query.
+   * One implementation shared by findAll, countPolicies, and getAggregateMetrics
+   * so the column mapping can never drift between them.
+   */
+  private applyEqualityAndDates<Q extends PolicyQueryBuilder>(
+    query: Q,
+    filters: PolicyFilters,
+  ): Q {
+    if (filters.status != null) query = query.eq("status", filters.status);
+    if (filters.lifecycleStatus != null)
+      query = query.eq("lifecycle_status", filters.lifecycleStatus);
+    if (filters.carrierId != null)
+      query = query.eq("carrier_id", filters.carrierId);
+    if (filters.product != null) query = query.eq("product", filters.product);
+    if (filters.productId != null)
+      query = query.eq("product_id", filters.productId);
+    if (filters.userId != null) query = query.eq("user_id", filters.userId);
+
+    // Default to submit_date because it's non-nullable — effective_date is null
+    // for freshly submitted policies and silently drops them.
+    const dateColumn: "submit_date" | "effective_date" =
+      filters.dateField === "effective_date" ? "effective_date" : "submit_date";
+    if (filters.dateFrom) query = query.gte(dateColumn, filters.dateFrom);
+    if (filters.dateTo) query = query.lte(dateColumn, filters.dateTo);
+
+    return query;
   }
 
   /**
@@ -83,117 +177,67 @@ export class PolicyRepository extends BaseRepository<
     return `policy_number.ilike.${likeTerm}`;
   }
 
-  // Override create to include client join (same as findById/update)
-  // This ensures the returned policy has complete client data for:
-  // 1. Immediate edit functionality (client name/state/age populate correctly)
-  // 2. Commission creation (correct client info stored on commission record)
+  // -------------------------------------------------------------------------
+  // CRUD overrides (each includes the client join so cached data is complete)
+  // -------------------------------------------------------------------------
+
+  // Override create to include client join (same as findById/update).
+  // Ensures the returned policy has complete client data for immediate edit
+  // and for correct client info on the auto-created commission record.
   async create(data: CreatePolicyData): Promise<Policy> {
-    try {
+    return this.run("create", async () => {
       const dbData = this.transformToDB(data);
 
       const { data: result, error } = await this.client
         .from(this.tableName)
         .insert(dbData)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .single();
 
-      if (error) {
-        throw this.handleError(error, "create");
-      }
+      if (error) throw this.handleError(error, "create");
 
       return this.transformFromDB(result);
-    } catch (error) {
-      throw this.wrapError(error, "create");
-    }
+    });
   }
 
-  // Override findById to include client join
   async findById(id: string): Promise<Policy | null> {
-    try {
+    return this.run("findById", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .eq("id", id)
         .single();
 
       if (error) {
-        if (error.code === "PGRST116") {
-          return null; // Not found
-        }
+        if (error.code === "PGRST116") return null; // Not found
         throw this.handleError(error, "findById");
       }
 
       return data ? this.transformFromDB(data) : null;
-    } catch (error) {
-      throw this.wrapError(error, "findById");
-    }
+    });
   }
 
-  // Override update to include client join so cached data is complete
   async update(
     id: string,
-    updates: Partial<import("../../types/policy.types").UpdatePolicyData>,
+    updates: Partial<UpdatePolicyData>,
   ): Promise<Policy> {
-    try {
+    return this.run("update", async () => {
       const dbData = this.transformToDB(updates, true);
 
       const { data, error } = await this.client
         .from(this.tableName)
         .update(dbData)
         .eq("id", id)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .single();
 
-      if (error) {
-        throw this.handleError(error, "update");
-      }
+      if (error) throw this.handleError(error, "update");
 
       return this.transformFromDB(data);
-    } catch (error) {
-      throw this.wrapError(error, "update");
-    }
+    });
   }
 
-  // Override findAll to include client join and support pagination + date filtering
+  // Override findAll to include client join and support pagination + filtering.
   async findAll(
     options?: {
       page?: number;
@@ -204,79 +248,24 @@ export class PolicyRepository extends BaseRepository<
       offset?: number;
       userId?: string; // Filter by specific user - CRITICAL for Policies page
     },
-    filters?: {
-      status?: string;
-      carrierId?: string;
-      product?: string;
-      dateFrom?: string; // YYYY-MM-DD format
-      dateTo?: string; // YYYY-MM-DD format
-      dateField?: "submit_date" | "effective_date";
-      searchTerm?: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-      [key: string]: any;
-    },
+    filters?: PolicyFilters,
   ): Promise<Policy[]> {
-    try {
-      let query = this.client.from(this.tableName).select(`
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `);
+    return this.run("findAll", async () => {
+      let query = this.client.from(this.tableName).select(POLICY_WITH_CLIENT);
 
-      // CRITICAL: Filter by user ID when specified
-      // This ensures Policies page shows only the user's own policies
-      // RLS still allows access to downline policies for Team/Hierarchy pages
+      // CRITICAL: Filter by user ID when specified. RLS still allows downline
+      // policies for Team/Hierarchy pages; this scopes the Policies page.
       if (options?.userId) {
         query = query.eq("user_id", options.userId);
       }
 
-      // Apply filters
       if (filters) {
-        // Handle standard equality filters
-        const { dateFrom, dateTo, dateField, searchTerm, ...equalityFilters } =
-          filters;
-
-        Object.entries(equalityFilters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            // Map filter keys to database columns
-            const columnMap: { [key: string]: string } = {
-              carrierId: "carrier_id",
-              product: "product",
-              status: "status",
-              lifecycleStatus: "lifecycle_status",
-            };
-            const column = columnMap[key] || key;
-            query = query.eq(column, value);
-          }
-        });
-
-        // Apply date range filters against the caller-selected column.
-        // Default to submit_date because it's non-nullable — effective_date is
-        // null for freshly submitted policies and silently drops them.
-        const dateColumn: "submit_date" | "effective_date" =
-          dateField === "effective_date" ? "effective_date" : "submit_date";
-        if (dateFrom) {
-          query = query.gte(dateColumn, dateFrom);
-        }
-        if (dateTo) {
-          query = query.lte(dateColumn, dateTo);
-        }
-
-        // Apply search term filter (searches policy_number and client name)
+        query = this.applyEqualityAndDates(query, filters);
         const searchFilter = await this.buildSearchFilter(
-          searchTerm,
+          filters.searchTerm,
           options?.userId,
         );
-        if (searchFilter) {
-          query = query.or(searchFilter);
-        }
+        if (searchFilter) query = query.or(searchFilter);
       }
 
       // Apply sorting
@@ -288,13 +277,11 @@ export class PolicyRepository extends BaseRepository<
         query = query.order("created_at", { ascending: false });
       }
 
-      // Apply pagination (support both old style and new style)
+      // Apply pagination (support both page-based and limit/offset styles)
       if (options?.page && options?.pageSize) {
-        // New style: page-based pagination
         const offset = (options.page - 1) * options.pageSize;
         query = query.range(offset, offset + options.pageSize - 1);
       } else if (options?.limit) {
-        // Old style: limit/offset pagination
         query = query.limit(options.limit);
         if (options?.offset) {
           query = query.range(
@@ -306,252 +293,128 @@ export class PolicyRepository extends BaseRepository<
 
       const { data, error } = await query;
 
-      if (error) {
-        throw this.handleError(error, "findAll");
-      }
+      if (error) throw this.handleError(error, "findAll");
 
       return data?.map((item) => this.transformFromDB(item)) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findAll");
-    }
+    });
   }
+
+  // -------------------------------------------------------------------------
+  // Finders
+  // -------------------------------------------------------------------------
 
   async findByPolicyNumber(
     policyNumber: string,
     userId?: string,
   ): Promise<Policy | null> {
-    try {
-      // Use .limit(1) instead of .single() to avoid 406 error when multiple
-      // users have the same policy number (RLS filters to current user, but
-      // if user has duplicates from double-click, .single() would fail)
+    return this.run("findByPolicyNumber", async () => {
+      // Use .limit(1) instead of .single() to avoid a 406 when a user has
+      // duplicate policy numbers (e.g. from a double-click).
       let query = this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .eq("policy_number", policyNumber);
 
-      // Scope to specific user to avoid false positives from upline RLS visibility
+      // Scope to a specific user to avoid false positives from upline RLS.
       if (userId) {
         query = query.eq("user_id", userId);
       }
 
       const { data, error } = await query.limit(1);
 
-      if (error) {
-        throw this.handleError(error, "findByPolicyNumber");
-      }
+      if (error) throw this.handleError(error, "findByPolicyNumber");
 
-      // .limit(1) returns an array, get the first element or null
       const record = data && data.length > 0 ? data[0] : null;
       return record ? this.transformFromDB(record) : null;
-    } catch (error) {
-      throw this.wrapError(error, "findByPolicyNumber");
-    }
+    });
   }
 
   async findByCarrier(carrierId: string): Promise<Policy[]> {
-    try {
+    return this.run("findByCarrier", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .eq("carrier_id", carrierId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw this.handleError(error, "findByCarrier");
-      }
+      if (error) throw this.handleError(error, "findByCarrier");
 
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findByCarrier");
-    }
+      return data?.map((item) => this.transformFromDB(item)) || [];
+    });
   }
 
   async findByAgent(userId: string): Promise<Policy[]> {
-    try {
+    return this.run("findByAgent", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw this.handleError(error, "findByAgent");
-      }
+      if (error) throw this.handleError(error, "findByAgent");
 
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findByAgent");
-    }
+      return data?.map((item) => this.transformFromDB(item)) || [];
+    });
   }
 
   /**
-   * Find recent policies that are NOT linked to any lead purchase
-   * Used for the policy selector in LeadPurchaseDialog
-   * Returns only the current user's policies from the last 90 days with client info
+   * Find recent policies that are NOT linked to any lead purchase.
+   * Used for the policy selector in LeadPurchaseDialog — current user's
+   * policies from the last 90 days, with client info.
    */
   async findUnlinkedRecent(
     userId: string,
     limit: number = 50,
   ): Promise<Policy[]> {
-    try {
+    return this.run("findUnlinkedRecent", async () => {
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT_MINIMAL)
         .eq("user_id", userId)
         .is("lead_purchase_id", null)
         .gte("effective_date", ninetyDaysAgo.toISOString().split("T")[0])
         .order("effective_date", { ascending: false })
         .limit(limit);
 
-      if (error) {
-        throw this.handleError(error, "findUnlinkedRecent");
-      }
+      if (error) throw this.handleError(error, "findUnlinkedRecent");
 
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findUnlinkedRecent");
-    }
+      return data?.map((item) => this.transformFromDB(item)) || [];
+    });
   }
 
   /**
-   * Find policies linked to a specific lead purchase
-   * Returns policies with client info for ROI tracking display
+   * Find policies linked to a specific lead purchase.
+   * Returns policies with client info + commissions for ROI tracking display.
    */
   async findByLeadPurchaseId(leadPurchaseId: string): Promise<Policy[]> {
-    try {
+    return this.run("findByLeadPurchaseId", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          ),
-          commissions (
-            id,
-            amount,
-            type
-          )
-        `,
-        )
+        .select(POLICY_WITH_CLIENT_AND_COMMISSIONS)
         .eq("lead_purchase_id", leadPurchaseId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw this.handleError(error, "findByLeadPurchaseId");
-      }
+      if (error) throw this.handleError(error, "findByLeadPurchaseId");
 
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findByLeadPurchaseId");
-    }
+      return data?.map((item) => this.transformFromDB(item)) || [];
+    });
   }
 
   // -------------------------------------------------------------------------
-  // BATCH METHODS (for hierarchy/team queries)
+  // Batch / hierarchy methods
   // -------------------------------------------------------------------------
 
   /**
-   * Find policies for multiple agents (batch)
-   */
-  async findByAgents(userIds: string[]): Promise<Policy[]> {
-    if (userIds.length === 0) return [];
-
-    try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
-        .in("user_id", userIds)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        throw this.handleError(error, "findByAgents");
-      }
-
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findByAgents");
-    }
-  }
-
-  /**
-   * Find policy metrics for multiple users (lightweight query)
-   * Used by hierarchy service for calculating team metrics
+   * Find policy metrics for multiple users (lightweight projection).
+   * Used by the hierarchy service for team metric calculations.
    */
   async findMetricsByUserIds(userIds: string[]): Promise<PolicyMetricRow[]> {
     if (userIds.length === 0) return [];
 
-    try {
+    return this.run("findMetricsByUserIds", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
         .select(
@@ -559,53 +422,35 @@ export class PolicyRepository extends BaseRepository<
         )
         .in("user_id", userIds);
 
-      if (error) {
-        throw this.handleError(error, "findMetricsByUserIds");
-      }
+      if (error) throw this.handleError(error, "findMetricsByUserIds");
 
       return (data as PolicyMetricRow[]) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findMetricsByUserIds");
-    }
+    });
   }
 
-  /**
-   * Find policies with client/carrier relations for a user
-   */
+  /** Find policies with client/carrier names for a user. */
   async findWithRelationsByUserId(
     userId: string,
   ): Promise<PolicyWithRelations[]> {
-    try {
+    return this.run("findWithRelationsByUserId", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
-        .select(
-          `
-          *,
-          client:clients(name),
-          carrier:carriers(name)
-        `,
-        )
+        .select(POLICY_WITH_RELATION_NAMES)
         .eq("user_id", userId)
         .order("effective_date", { ascending: false });
 
-      if (error) {
-        throw this.handleError(error, "findWithRelationsByUserId");
-      }
+      if (error) throw this.handleError(error, "findWithRelationsByUserId");
 
-      return (data as PolicyWithRelations[]) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findWithRelationsByUserId");
-    }
+      return (data as unknown as PolicyWithRelations[]) || [];
+    });
   }
 
-  /**
-   * Find recent policies for a user
-   */
+  /** Find the N most recent policies for a user (no client join). */
   async findRecentByUserId(
     userId: string,
     limit: number = 5,
   ): Promise<Policy[]> {
-    try {
+    return this.run("findRecentByUserId", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
         .select("*")
@@ -613,280 +458,73 @@ export class PolicyRepository extends BaseRepository<
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (error) {
-        throw this.handleError(error, "findRecentByUserId");
-      }
+      if (error) throw this.handleError(error, "findRecentByUserId");
 
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findRecentByUserId");
-    }
+      return data?.map((item) => this.transformFromDB(item)) || [];
+    });
   }
 
-  async findActiveByDateRange(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<Policy[]> {
-    try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select(
-          `
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          )
-        `,
-        )
-        // "active" is a lifecycle_status; the status column only holds
-        // approved/pending/withdrawn/denied, so filtering status='active'
-        // silently matches nothing.
-        .eq("lifecycle_status", "active")
-        .gte("effective_date", formatDateForDB(startDate))
-        .lte("effective_date", formatDateForDB(endDate))
-        .order("effective_date", { ascending: false });
-
-      if (error) {
-        throw this.handleError(error, "findActiveByDateRange");
-      }
-
-      return data?.map(this.transformFromDB) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findActiveByDateRange");
-    }
-  }
-
-  async getTotalAnnualPremiumByCarrier(carrierId: string): Promise<number> {
-    try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select("annual_premium")
-        .eq("carrier_id", carrierId)
-        // "active" is a lifecycle_status, not a status value (which only holds
-        // approved/pending/withdrawn/denied). See getAggregateMetrics.
-        .eq("lifecycle_status", "active");
-
-      if (error) {
-        throw this.handleError(error, "getTotalAnnualPremiumByCarrier");
-      }
-
-      return (
-        data?.reduce(
-          (total, policy) => total + parseFloat(policy.annual_premium || "0"),
-          0,
-        ) || 0
-      );
-    } catch (error) {
-      throw this.wrapError(error, "getTotalAnnualPremiumByCarrier");
-    }
-  }
+  // -------------------------------------------------------------------------
+  // Counts & aggregates
+  // -------------------------------------------------------------------------
 
   /**
-   * Find policies with cursor-based pagination to handle Supabase 1000 row limit
-   * @param options Pagination options including cursor, limit, and filters
-   * @returns Paginated policy results with next cursor
-   */
-  async findPaginated(options: {
-    cursor?: string;
-    limit?: number;
-    filters?: {
-      status?: string;
-      carrierId?: string;
-      productId?: string;
-      userId?: string;
-    };
-    orderBy?: "created_at" | "effective_date" | "id";
-    orderDirection?: "asc" | "desc";
-  }): Promise<{
-    data: Policy[];
-    nextCursor: string | null;
-    hasMore: boolean;
-  }> {
-    try {
-      const {
-        cursor,
-        limit = 50,
-        filters = {},
-        orderBy = "created_at",
-        orderDirection = "desc",
-      } = options;
-
-      // Build base query
-      let query = this.client.from(this.tableName).select(`
-          *,
-          clients!policies_client_id_fkey (
-            id,
-            name,
-            email,
-            phone,
-            address,
-            date_of_birth,
-            state
-          ),
-          products!policies_product_id_fkey(*)
-        `); // Include client and product details
-
-      // Apply cursor (for pagination)
-      if (cursor) {
-        if (orderDirection === "desc") {
-          query = query.lt(orderBy, cursor);
-        } else {
-          query = query.gt(orderBy, cursor);
-        }
-      }
-
-      // Apply filters
-      if (filters.status) query = query.eq("status", filters.status);
-      if (filters.carrierId) query = query.eq("carrier_id", filters.carrierId);
-      if (filters.productId) query = query.eq("product_id", filters.productId);
-      if (filters.userId) query = query.eq("user_id", filters.userId);
-
-      // Order and limit
-      query = query
-        .order(orderBy, { ascending: orderDirection === "asc" })
-        .limit(limit + 1); // Fetch one extra to check if there's more
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw this.handleError(error, "findPaginated");
-      }
-
-      const hasMore = data ? data.length > limit : false;
-      const policies = data
-        ? data.slice(0, limit).map(this.transformFromDB)
-        : [];
-
-      // Next cursor is the last item's orderBy field
-      const nextCursor =
-        hasMore && policies.length > 0
-          ? policies[policies.length - 1][
-              orderBy === "created_at"
-                ? "createdAt"
-                : orderBy === "effective_date"
-                  ? "effectiveDate"
-                  : "id"
-            ]
-          : null;
-
-      return {
-        data: policies,
-        nextCursor: typeof nextCursor === "string" ? nextCursor : null,
-        hasMore,
-      };
-    } catch (error) {
-      throw this.wrapError(error, "findPaginated");
-    }
-  }
-
-  /**
-   * Count total policies with filters (separate from pagination for performance)
-   * @param filters - Optional filters including userId for user-specific counts
-   * @param currentUserId - CRITICAL: Current user's ID to filter to only their policies
+   * Count total policies with filters (separate from pagination for perf).
+   * @param currentUserId - CRITICAL: scopes the count to the user's policies.
    */
   async countPolicies(
-    filters?: {
-      status?: string;
-      carrierId?: string;
-      productId?: string;
-      product?: string;
-      userId?: string;
-      dateFrom?: string; // YYYY-MM-DD format
-      dateTo?: string; // YYYY-MM-DD format
-      dateField?: "submit_date" | "effective_date";
-      searchTerm?: string;
-    },
+    filters?: PolicyFilters,
     currentUserId?: string,
   ): Promise<number> {
-    try {
+    return this.run("countPolicies", async () => {
       let query = this.client
         .from(this.tableName)
-        .select("id", { count: "exact", head: true }); // Only count, don't fetch data
+        .select("id", { count: "exact", head: true }); // Count only, no rows
 
-      // CRITICAL: Filter by current user ID when specified
       if (currentUserId) {
         query = query.eq("user_id", currentUserId);
       }
 
       if (filters) {
-        // Standard equality filters
-        if (filters.status) query = query.eq("status", filters.status);
-        if (filters.carrierId)
-          query = query.eq("carrier_id", filters.carrierId);
-        if (filters.productId)
-          query = query.eq("product_id", filters.productId);
-        if (filters.product) query = query.eq("product", filters.product);
-        if (filters.userId) query = query.eq("user_id", filters.userId);
-
-        // Date range filters — target column chosen by caller (default submit_date)
-        const dateColumn: "submit_date" | "effective_date" =
-          filters.dateField === "effective_date"
-            ? "effective_date"
-            : "submit_date";
-        if (filters.dateFrom) {
-          query = query.gte(dateColumn, filters.dateFrom);
-        }
-        if (filters.dateTo) {
-          query = query.lte(dateColumn, filters.dateTo);
-        }
-
-        // Search term filter (searches policy_number and client name)
+        query = this.applyEqualityAndDates(query, filters);
         const searchFilter = await this.buildSearchFilter(
           filters.searchTerm,
           currentUserId,
         );
-        if (searchFilter) {
-          query = query.or(searchFilter);
-        }
+        if (searchFilter) query = query.or(searchFilter);
       }
 
       const { count, error } = await query;
 
-      if (error) {
-        throw this.handleError(error, "countPolicies");
-      }
+      if (error) throw this.handleError(error, "countPolicies");
 
       return count || 0;
-    } catch (error) {
-      throw this.wrapError(error, "countPolicies");
-    }
+    });
   }
 
   /**
-   * Count how many policies share the same client_id
-   * Used for pre-delete warnings when multiple policies share a client
-   * @param clientId - The client ID to check
-   * @returns Count of policies with this client_id
+   * Count how many policies share the same client_id.
+   * Used for pre-delete warnings when policies share a client.
    */
   async countPoliciesByClientId(clientId: string): Promise<number> {
-    try {
+    return this.run("countPoliciesByClientId", async () => {
       const { count, error } = await this.client
         .from(this.tableName)
         .select("id", { count: "exact", head: true })
         .eq("client_id", clientId);
 
-      if (error) {
-        throw this.handleError(error, "countPoliciesByClientId");
-      }
+      if (error) throw this.handleError(error, "countPoliciesByClientId");
 
       return count || 0;
-    } catch (error) {
-      throw this.wrapError(error, "countPoliciesByClientId");
-    }
+    });
   }
 
   /**
-   * Get client_id for a specific policy
-   * Used to check if client is shared before deletion
+   * Get client_id for a policy. Used to check if a client is shared before
+   * deletion.
    */
   async getClientIdForPolicy(policyId: string): Promise<string | null> {
-    try {
+    return this.run("getClientIdForPolicy", async () => {
       const { data, error } = await this.client
         .from(this.tableName)
         .select("client_id")
@@ -894,94 +532,24 @@ export class PolicyRepository extends BaseRepository<
         .single();
 
       if (error) {
-        if (error.code === "PGRST116") {
-          return null; // Not found
-        }
+        if (error.code === "PGRST116") return null; // Not found
         throw this.handleError(error, "getClientIdForPolicy");
       }
 
       return data?.client_id || null;
-    } catch (error) {
-      throw this.wrapError(error, "getClientIdForPolicy");
-    }
-  }
-
-  async getMonthlyMetrics(
-    year: number,
-    month: number,
-  ): Promise<{
-    totalPolicies: number;
-    totalPremium: number;
-    averagePremium: number;
-    newPolicies: number;
-  }> {
-    try {
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0);
-
-      const [allPolicies, newPolicies] = await Promise.all([
-        this.client
-          .from(this.tableName)
-          // "active" is a lifecycle_status, not a status value (status holds
-          // approved/pending/withdrawn/denied). Filtering status='active'
-          // matched nothing on prod.
-          .select("annual_premium")
-          .eq("lifecycle_status", "active")
-          .lte("effective_date", formatDateForDB(endDate)),
-        this.client
-          .from(this.tableName)
-          .select("annual_premium")
-          .gte("effective_date", formatDateForDB(startDate))
-          .lte("effective_date", formatDateForDB(endDate)),
-      ]);
-
-      if (allPolicies.error) {
-        throw this.handleError(allPolicies.error, "getMonthlyMetrics");
-      }
-
-      if (newPolicies.error) {
-        throw this.handleError(newPolicies.error, "getMonthlyMetrics");
-      }
-
-      const totalPolicies = allPolicies.data?.length || 0;
-      const totalPremium =
-        allPolicies.data?.reduce(
-          (sum, p) => sum + parseFloat(p.annual_premium || "0"),
-          0,
-        ) || 0;
-      const averagePremium =
-        totalPolicies > 0 ? totalPremium / totalPolicies : 0;
-      const newPolicyCount = newPolicies.data?.length || 0;
-
-      return {
-        totalPolicies,
-        totalPremium,
-        averagePremium,
-        newPolicies: newPolicyCount,
-      };
-    } catch (error) {
-      throw this.wrapError(error, "getMonthlyMetrics");
-    }
+    });
   }
 
   /**
-   * Get aggregate metrics for policies matching filters
-   * Returns totals across ALL matching policies (not just current page)
-   * @param filters - Optional filters to apply
-   * @param currentUserId - CRITICAL: Current user's ID to filter to only their policies
+   * Get aggregate metrics across ALL policies matching filters (not just the
+   * current page).
+   * @param currentUserId - CRITICAL: scopes the metrics to the user's policies.
+   *
+   * NOTE: aggregation runs client-side over the matching rows (≤~171/user in
+   * practice). Pushing this into a Postgres RPC is deferred as premature.
    */
   async getAggregateMetrics(
-    filters?: {
-      status?: string;
-      carrierId?: string;
-      product?: string;
-      dateFrom?: string;
-      dateTo?: string;
-      dateField?: "submit_date" | "effective_date";
-      searchTerm?: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-      [key: string]: any;
-    },
+    filters?: PolicyFilters,
     currentUserId?: string,
   ): Promise<{
     totalPolicies: number;
@@ -994,69 +562,35 @@ export class PolicyRepository extends BaseRepository<
     ytdPolicies: number;
     ytdPremium: number;
   }> {
-    try {
-      // Build base query with filters
+    return this.run("getAggregateMetrics", async () => {
       let query = this.client
         .from(this.tableName)
         .select("status, lifecycle_status, annual_premium, effective_date", {
           count: "exact",
         });
 
-      // CRITICAL: Filter by current user ID when specified
       if (currentUserId) {
         query = query.eq("user_id", currentUserId);
       }
 
-      // Apply filters (same logic as findAll)
       if (filters) {
-        const { dateFrom, dateTo, dateField, searchTerm, ...equalityFilters } =
-          filters;
-
-        Object.entries(equalityFilters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            const columnMap: { [key: string]: string } = {
-              status: "status",
-              carrierId: "carrier_id",
-              product: "product",
-            };
-            const column = columnMap[key] || key;
-            query = query.eq(column, value);
-          }
-        });
-
-        // Date range filters — target column chosen by caller (default submit_date)
-        const dateColumn: "submit_date" | "effective_date" =
-          dateField === "effective_date" ? "effective_date" : "submit_date";
-        if (dateFrom) {
-          query = query.gte(dateColumn, dateFrom);
-        }
-        if (dateTo) {
-          query = query.lte(dateColumn, dateTo);
-        }
-
-        // Apply search term filter (searches policy_number and client name)
+        query = this.applyEqualityAndDates(query, filters);
         const searchFilter = await this.buildSearchFilter(
-          searchTerm,
+          filters.searchTerm,
           currentUserId,
         );
-        if (searchFilter) {
-          query = query.or(searchFilter);
-        }
+        if (searchFilter) query = query.or(searchFilter);
       }
 
       const { data, count, error } = await query;
 
-      if (error) {
-        console.error("PolicyRepository.getAggregateMetrics error:", error);
-        throw error;
-      }
+      if (error) throw this.handleError(error, "getAggregateMetrics");
 
-      // Calculate aggregates from returned data
       const currentYear = new Date().getFullYear();
       const policies = data || [];
 
-      // Use lifecycle_status for active/lapsed/cancelled (issued policy lifecycle)
-      // Use status for pending (application outcome)
+      // lifecycle_status drives active/lapsed/cancelled (issued lifecycle);
+      // status drives pending (application outcome).
       const activePolicies = policies.filter(
         (p) => p.lifecycle_status === "active",
       ).length;
@@ -1071,24 +605,20 @@ export class PolicyRepository extends BaseRepository<
       ).length;
 
       const totalPremium = policies.reduce(
-        (sum, p) => sum + (parseFloat(p.annual_premium) || 0),
+        (sum, p) => sum + toNumber(p.annual_premium),
         0,
       );
       const avgPremium =
         policies.length > 0 ? totalPremium / policies.length : 0;
 
-      const ytdPolicies = policies.filter(
-        (p) =>
-          p.effective_date &&
-          parseLocalDate(p.effective_date).getFullYear() === currentYear,
-      ).length;
+      const isYtd = (p: (typeof policies)[number]) =>
+        !!p.effective_date &&
+        parseLocalDate(p.effective_date).getFullYear() === currentYear;
+
+      const ytdPolicies = policies.filter(isYtd).length;
       const ytdPremium = policies
-        .filter(
-          (p) =>
-            p.effective_date &&
-            parseLocalDate(p.effective_date).getFullYear() === currentYear,
-        )
-        .reduce((sum, p) => sum + (parseFloat(p.annual_premium) || 0), 0);
+        .filter(isYtd)
+        .reduce((sum, p) => sum + toNumber(p.annual_premium), 0);
 
       return {
         totalPolicies: count || 0,
@@ -1101,119 +631,23 @@ export class PolicyRepository extends BaseRepository<
         ytdPolicies,
         ytdPremium,
       };
-    } catch (error) {
-      console.error("PolicyRepository.getAggregateMetrics error:", error);
-      throw error;
-    }
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-  protected transformFromDB(dbRecord: any): Policy {
-    // Handle joined client data from foreign key relationship
-    let clientData;
-    if (dbRecord.clients) {
-      // Client was joined - parse address JSONB field for state
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-      let address: any = {};
-      if (dbRecord.clients.address) {
-        if (typeof dbRecord.clients.address === "string") {
-          try {
-            address = JSON.parse(dbRecord.clients.address);
-          } catch {
-            // Silent fail - use defaults
-          }
-        } else {
-          address = dbRecord.clients.address;
-        }
-      }
+  // -------------------------------------------------------------------------
+  // Transforms
+  // -------------------------------------------------------------------------
 
-      // Calculate age from date_of_birth
-      let age = 0;
-      if (dbRecord.clients.date_of_birth) {
-        const dob = new Date(dbRecord.clients.date_of_birth);
-        const today = new Date();
-        age = today.getFullYear() - dob.getFullYear();
-        // Adjust if birthday hasn't occurred this year
-        const monthDiff = today.getMonth() - dob.getMonth();
-        if (
-          monthDiff < 0 ||
-          (monthDiff === 0 && today.getDate() < dob.getDate())
-        ) {
-          age--;
-        }
-      }
-
-      clientData = {
-        id: dbRecord.clients.id || undefined,
-        name: dbRecord.clients.name || "Unknown",
-        // Prefer the dedicated clients.state column; fall back to legacy
-        // address-embedded state for older clients that only stored it there.
-        state: dbRecord.clients.state || address.state || "Unknown",
-        // Use calculated age from DOB, fallback to legacy address.age for existing clients
-        age: age || address.age || 0,
-        dateOfBirth: dbRecord.clients.date_of_birth || undefined,
-        email: dbRecord.clients.email,
-        phone: dbRecord.clients.phone,
-        street: address.street || undefined,
-        city: address.city || undefined,
-        zipCode: address.zipCode || undefined,
-      };
-    } else if (dbRecord.client) {
-      // Fallback to JSONB client field for backward compatibility
-      clientData = dbRecord.client;
-    } else {
-      // No client data - create minimal object
-      clientData = {
-        name: "Unknown",
-        state: "Unknown",
-        age: 0,
-      };
-    }
-
-    const policy = {
-      id: dbRecord.id,
-      policyNumber: dbRecord.policy_number,
-      status: dbRecord.status,
-      lifecycleStatus: dbRecord.lifecycle_status || null,
-      client: clientData,
-      carrierId: dbRecord.carrier_id,
-      productId: dbRecord.product_id,
-      userId: dbRecord.user_id,
-      product: dbRecord.product,
-      productDetails: dbRecord.products || undefined,
-      submitDate: dbRecord.submit_date || undefined,
-      effectiveDate: dbRecord.effective_date,
-      termLength: dbRecord.term_length,
-      expirationDate: dbRecord.expiration_date || undefined,
-      annualPremium:
-        dbRecord.annual_premium != null
-          ? parseFloat(String(dbRecord.annual_premium))
-          : 0,
-      monthlyPremium:
-        dbRecord.monthly_premium != null
-          ? parseFloat(String(dbRecord.monthly_premium))
-          : 0,
-      paymentFrequency: dbRecord.payment_frequency,
-      commissionPercentage:
-        dbRecord.commission_percentage != null
-          ? parseFloat(String(dbRecord.commission_percentage))
-          : 0,
-      createdAt: dbRecord.created_at,
-      updatedAt: dbRecord.updated_at,
-      created_at: dbRecord.created_at,
-      updated_at: dbRecord.updated_at,
-      createdBy: dbRecord.created_by,
-      notes: dbRecord.notes,
-      leadPurchaseId: dbRecord.lead_purchase_id,
-      leadSourceType: dbRecord.lead_source_type,
-    };
-    return policy;
+  protected transformFromDB(dbRecord: Record<string, unknown>): Policy {
+    return mapPolicyFromDb(dbRecord as unknown as PolicyDbRecord);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- transform function requires flexible typing
-  protected transformToDB(data: any, _isUpdate = false): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-    const dbData: any = {};
+  protected transformToDB(
+    data: any,
+    _isUpdate = false,
+  ): Record<string, unknown> {
+    const dbData: Record<string, unknown> = {};
 
     if (data.policyNumber !== undefined)
       dbData.policy_number = data.policyNumber;
@@ -1225,9 +659,9 @@ export class PolicyRepository extends BaseRepository<
       // Defend against forms / callers that omit it on create.
       dbData.lifecycle_status = "active";
     }
-    if (data.clientId !== undefined) dbData.client_id = data.clientId; // Use client_id foreign key
+    if (data.clientId !== undefined) dbData.client_id = data.clientId;
     if (data.carrierId !== undefined) dbData.carrier_id = data.carrierId;
-    if (data.productId !== undefined) dbData.product_id = data.productId; // NEW: Product ID field
+    if (data.productId !== undefined) dbData.product_id = data.productId;
     if (data.userId !== undefined) dbData.user_id = data.userId;
     if (data.product !== undefined) dbData.product = data.product;
     if (data.effectiveDate !== undefined) {
@@ -1257,7 +691,6 @@ export class PolicyRepository extends BaseRepository<
       dbData.payment_frequency = data.paymentFrequency;
     if (data.commissionPercentage !== undefined)
       dbData.commission_percentage = data.commissionPercentage;
-    // advanceMonths removed - now only in commissions table
     if (data.createdBy !== undefined) dbData.created_by = data.createdBy;
     if (data.notes !== undefined) dbData.notes = data.notes;
     // Lead source tracking
