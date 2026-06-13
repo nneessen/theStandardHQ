@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TINT } from "@/components/ui/StatusBadge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,21 +72,7 @@ const OUTCOME_LABEL = new Map<string, string>(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
 );
 
-// Tinted (not flat-dark) semantic badges: a soft colored fill + readable text in
-// BOTH themes, so a status reads at a glance instead of being one more charcoal
-// pill. Each carries an explicit dark-mode variant (plain palette colors don't
-// auto-adapt). Mirrors the KIND_STYLE approach in GeneratedScriptView.
-const TINT = {
-  emerald:
-    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
-  blue: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
-  amber:
-    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
-  slate:
-    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
-  rose: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
-} as const;
-
+// Status → tint mapping (the shared TINT palette lives in StatusBadge).
 const STATUS_CLASSES: Record<string, string> = {
   analyzed: TINT.emerald,
   transcribed: TINT.blue,
