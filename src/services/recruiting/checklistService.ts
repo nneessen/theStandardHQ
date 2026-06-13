@@ -712,6 +712,11 @@ export const checklistService = {
         roles: (profile.roles as string[]) || ["recruit"],
         isAdmin: false,
         skipPipeline: true, // Pipeline already exists, just need auth
+        // The recruit's user_profiles row already exists (selected above), so the
+        // new auth user MUST reuse its id. Without this, createUser mints a fresh
+        // UUID and handle_new_user's INSERT collides on UNIQUE(email) (its ON
+        // CONFLICT is keyed on id, not email) → the function returns HTTP 400.
+        existingProfileId: userId,
       });
 
       // Check if user already existed
