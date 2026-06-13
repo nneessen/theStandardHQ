@@ -15884,21 +15884,6 @@ export type Database = {
           },
         ];
       };
-      mv_cohort_retention: {
-        Row: {
-          active_premium: number | null;
-          cancelled_count: number | null;
-          cohort_month: string | null;
-          cohort_size: number | null;
-          lapsed_count: number | null;
-          months_since_issue: number | null;
-          retention_rate: number | null;
-          still_active: number | null;
-          total_premium: number | null;
-          user_id: string | null;
-        };
-        Relationships: [];
-      };
       mv_commission_aging: {
         Row: {
           aging_bucket: string | null;
@@ -18874,27 +18859,6 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "mv_client_ltv";
-          isOneToOne: false;
-          isSetofReturn: true;
-        };
-      };
-      get_user_cohort_retention: {
-        Args: never;
-        Returns: {
-          active_premium: number | null;
-          cancelled_count: number | null;
-          cohort_month: string | null;
-          cohort_size: number | null;
-          lapsed_count: number | null;
-          months_since_issue: number | null;
-          retention_rate: number | null;
-          still_active: number | null;
-          total_premium: number | null;
-          user_id: string | null;
-        }[];
-        SetofOptions: {
-          from: "*";
-          to: "mv_cohort_retention";
           isOneToOne: false;
           isSetofReturn: true;
         };
