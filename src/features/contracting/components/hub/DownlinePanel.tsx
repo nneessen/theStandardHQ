@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Board, EmptyState, Pill, StatusDot, T } from "@/components/board";
 import { useMyDownlines } from "@/hooks/hierarchy";
+import { useIsMobile } from "@/hooks/ui";
 import { Pager } from "./Pager";
 import { statusColor, STATUS_OPTIONS } from "./StatusTag";
 import {
@@ -49,6 +50,7 @@ const detailRow: React.CSSProperties = {
 };
 
 export function DownlinePanel() {
+  const isMobile = useIsMobile();
   const downlines = useMyDownlines();
   const contracts = useDownlineContracts();
   const carriers = useHubCarriers();
@@ -182,15 +184,19 @@ export function DownlinePanel() {
 
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "340px 1fr",
-        gap: 14,
-        height: "100%",
-        minHeight: 0,
-      }}
+      style={
+        isMobile
+          ? { display: "flex", flexDirection: "column", gap: 14 }
+          : {
+              display: "grid",
+              gridTemplateColumns: "340px 1fr",
+              gap: 14,
+              height: "100%",
+              minHeight: 0,
+            }
+      }
     >
-      {/* ── Roster (left) ── */}
+      {/* ── Roster (left / top on mobile) ── */}
       <Board
         pad={0}
         style={{
@@ -198,6 +204,9 @@ export function DownlinePanel() {
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
+          // On mobile the roster sits above the detail pane in one scrolling
+          // column — cap it so the auto-selected agent's detail stays reachable.
+          maxHeight: isMobile ? "45vh" : undefined,
         }}
       >
         <div style={cardHead}>
@@ -373,7 +382,13 @@ export function DownlinePanel() {
                 </div>
               )}
             </div>
-            <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+            <div
+              style={
+                isMobile
+                  ? { overflowX: "auto" }
+                  : { flex: 1, minHeight: 0, overflow: "auto" }
+              }
+            >
               {rows.length === 0 ? (
                 <EmptyState
                   title="No carriers yet"
@@ -381,7 +396,7 @@ export function DownlinePanel() {
                   pad={40}
                 />
               ) : (
-                <>
+                <div style={isMobile ? { minWidth: 440 } : undefined}>
                   <div
                     style={{
                       ...detailRow,
@@ -551,7 +566,7 @@ export function DownlinePanel() {
                       );
                     })}
                   </ul>
-                </>
+                </div>
               )}
             </div>
           </>

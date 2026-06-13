@@ -8,6 +8,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { FileCheck, Users } from "lucide-react";
 import { SectionShell } from "@/components/v2";
 import { Cap, T } from "@/components/board";
+import { useIsMobile } from "@/hooks/ui";
 import { ActionCenter } from "./components/hub/ActionCenter";
 import { MyContractingPanel } from "./components/hub/MyContractingPanel";
 import { DownlinePanel } from "./components/hub/DownlinePanel";
@@ -20,6 +21,7 @@ function normalizeTab(tab?: string): ContractingTab {
 
 export function ContractingHubPage({ initialTab }: { initialTab?: string }) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState<ContractingTab>(normalizeTab(initialTab));
 
   useEffect(() => setTab(normalizeTab(initialTab)), [initialTab]);
@@ -40,7 +42,11 @@ export function ContractingHubPage({ initialTab }: { initialTab?: string }) {
       <div className="mx-auto w-full max-w-[1820px] px-4 py-5 sm:px-8 lg:px-12 lg:py-6">
         <div
           className="flex flex-col gap-4"
-          style={{ height: "calc(100vh - 7rem)", minHeight: 0 }}
+          style={
+            isMobile
+              ? undefined
+              : { height: "calc(100vh - 7rem)", minHeight: 0 }
+          }
         >
           {/* header + segmented control */}
           <header
@@ -114,7 +120,7 @@ export function ContractingHubPage({ initialTab }: { initialTab?: string }) {
           <ActionCenter />
 
           {/* segmented body */}
-          <div style={{ flex: 1, minHeight: 0 }}>
+          <div style={isMobile ? undefined : { flex: 1, minHeight: 0 }}>
             {tab === "mine" ? <MyContractingPanel /> : <DownlinePanel />}
           </div>
         </div>

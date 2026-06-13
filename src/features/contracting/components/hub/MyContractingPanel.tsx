@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Board, EmptyState, StatusDot, T } from "@/components/board";
+import { useIsMobile } from "@/hooks/ui";
 import { Pager } from "./Pager";
 import { StatusTag, statusColor, STATUS_OPTIONS } from "./StatusTag";
 import { RequestDifferentUplineDialog } from "./RequestDifferentUplineDialog";
@@ -107,6 +108,7 @@ function CountChip({
 }
 
 export function MyContractingPanel() {
+  const isMobile = useIsMobile();
   const contracts = useMyContracts();
   const sponsorships = useMySponsorships();
   const cancelMut = useCancelSponsorship();
@@ -181,7 +183,7 @@ export function MyContractingPanel() {
     <Board
       pad={0}
       style={{
-        height: "100%",
+        height: isMobile ? undefined : "100%",
         display: "flex",
         flexDirection: "column",
         minHeight: 0,
@@ -189,7 +191,7 @@ export function MyContractingPanel() {
       }}
     >
       {/* header */}
-      <div style={cardHead}>
+      <div style={isMobile ? { ...cardHead, flexWrap: "wrap" } : cardHead}>
         <div style={{ minWidth: 0 }}>
           <div style={{ font: `700 15px ${T.disp}`, color: T.ink }}>
             My carrier contracting
@@ -201,9 +203,11 @@ export function MyContractingPanel() {
         </div>
         <div
           style={{
-            marginLeft: "auto",
+            marginLeft: isMobile ? 0 : "auto",
+            width: isMobile ? "100%" : undefined,
             display: "flex",
             alignItems: "center",
+            flexWrap: isMobile ? "wrap" : "nowrap",
             gap: 8,
           }}
         >
@@ -263,7 +267,11 @@ export function MyContractingPanel() {
       </div>
 
       {/* table */}
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+      <div
+        style={
+          isMobile ? undefined : { flex: 1, minHeight: 0, overflow: "auto" }
+        }
+      >
         {isLoading ? (
           <Loading label="Loading your carriers…" />
         ) : filtered.length === 0 ? (
@@ -283,189 +291,200 @@ export function MyContractingPanel() {
           />
         ) : (
           <>
-            <div style={colHead}>
-              <span style={{ flex: 1, minWidth: 0 }}>Carrier</span>
-              <span style={{ width: 128 }}>Status</span>
-              <span style={{ width: 150 }}>Writing #</span>
-              <span style={{ width: 70, textAlign: "right" }}>Submitted</span>
-              <span style={{ width: 70, textAlign: "right" }}>Approved</span>
-              <span style={{ width: 96 }} />
-            </div>
-            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-              {pageRows.map((r) => {
-                const blocked = r.status === "denied";
-                const editing = editKey === r.carrierId;
-                return (
-                  <li
-                    key={r.carrierId}
-                    className="hover:bg-white/[0.03]"
-                    style={rowStyle}
-                  >
-                    <span
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        flex: 1,
-                        minWidth: 0,
-                      }}
-                    >
-                      <StatusDot
-                        color={statusColor(r.status)}
-                        size={8}
-                        glow={r.status === "approved"}
-                      />
-                      <span
-                        style={{
-                          font: `600 13px ${T.data}`,
-                          color: T.ink,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
+            {/* Only the wide fixed-column table scrolls sideways on mobile —
+                the Pager below stays at viewport width. */}
+            <div style={isMobile ? { overflowX: "auto" } : undefined}>
+              <div style={isMobile ? { minWidth: 680 } : undefined}>
+                <div style={colHead}>
+                  <span style={{ flex: 1, minWidth: 0 }}>Carrier</span>
+                  <span style={{ width: 128 }}>Status</span>
+                  <span style={{ width: 150 }}>Writing #</span>
+                  <span style={{ width: 70, textAlign: "right" }}>
+                    Submitted
+                  </span>
+                  <span style={{ width: 70, textAlign: "right" }}>
+                    Approved
+                  </span>
+                  <span style={{ width: 96 }} />
+                </div>
+                <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                  {pageRows.map((r) => {
+                    const blocked = r.status === "denied";
+                    const editing = editKey === r.carrierId;
+                    return (
+                      <li
+                        key={r.carrierId}
+                        className="hover:bg-white/[0.03]"
+                        style={rowStyle}
                       >
-                        {r.carrierName}
-                      </span>
-                    </span>
-                    <span style={{ width: 128 }}>
-                      <Select
-                        value={r.status}
-                        onValueChange={(v) =>
-                          me.data &&
-                          setStatus.mutate({
-                            agentId: me.data,
-                            carrierId: r.carrierId,
-                            status: v as ContractStatus,
-                          })
-                        }
-                      >
-                        <SelectTrigger className="h-7 text-xs w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_OPTIONS.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>
-                              {o.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </span>
-                    <span
-                      style={{
-                        width: 150,
-                        display: "flex",
-                        justifyContent: "flex-start",
-                      }}
-                    >
-                      {r.status === "approved" ? (
-                        editing ? (
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                            }}
-                          >
-                            <Input
-                              value={draft}
-                              onChange={(e) => setDraft(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") saveWriting(r.carrierId);
-                                if (e.key === "Escape") setEditKey(null);
-                              }}
-                              autoFocus
-                              placeholder="Writing #"
-                              className="h-7 text-xs w-28"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => saveWriting(r.carrierId)}
-                              aria-label="Save"
-                            >
-                              <Check
-                                className="h-3.5 w-3.5"
-                                style={{ color: T.green }}
-                              />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => setEditKey(null)}
-                              aria-label="Cancel"
-                            >
-                              <X
-                                className="h-3.5 w-3.5"
-                                style={{ color: T.red }}
-                              />
-                            </Button>
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditKey(r.carrierId);
-                              setDraft(r.writingNumber ?? "");
-                            }}
-                            className="inline-flex items-center gap-1.5 hover:opacity-80"
-                            style={{
-                              font: `700 12.5px ${T.mono}`,
-                              color: r.writingNumber ? T.cream : T.mut2,
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              padding: 0,
-                            }}
-                          >
-                            {r.writingNumber ?? "Add #"}
-                            <Pencil
-                              className="h-3 w-3"
-                              style={{ color: T.mut2 }}
-                            />
-                          </button>
-                        )
-                      ) : (
                         <span
                           style={{
-                            font: `700 12.5px ${T.mono}`,
-                            color: T.mut2,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flex: 1,
+                            minWidth: 0,
                           }}
                         >
-                          —
+                          <StatusDot
+                            color={statusColor(r.status)}
+                            size={8}
+                            glow={r.status === "approved"}
+                          />
+                          <span
+                            style={{
+                              font: `600 13px ${T.data}`,
+                              color: T.ink,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {r.carrierName}
+                          </span>
                         </span>
-                      )}
-                    </span>
-                    <span style={dateCol}>{r.submittedDate ?? "—"}</span>
-                    <span style={dateCol}>{r.approvedDate ?? "—"}</span>
-                    <span
-                      style={{
-                        width: 96,
-                        display: "flex",
-                        justifyContent: "flex-end",
-                      }}
-                    >
-                      {blocked && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="xs"
-                          className="shrink-0"
-                          onClick={() => openDialog(r.carrierId)}
+                        <span style={{ width: 128 }}>
+                          <Select
+                            value={r.status}
+                            onValueChange={(v) =>
+                              me.data &&
+                              setStatus.mutate({
+                                agentId: me.data,
+                                carrierId: r.carrierId,
+                                status: v as ContractStatus,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-7 text-xs w-[120px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {STATUS_OPTIONS.map((o) => (
+                                <SelectItem key={o.value} value={o.value}>
+                                  {o.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </span>
+                        <span
+                          style={{
+                            width: 150,
+                            display: "flex",
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          <UserPlus className="h-3 w-3" />
-                          Try alt upline
-                        </Button>
-                      )}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+                          {r.status === "approved" ? (
+                            editing ? (
+                              <span
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                }}
+                              >
+                                <Input
+                                  value={draft}
+                                  onChange={(e) => setDraft(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter")
+                                      saveWriting(r.carrierId);
+                                    if (e.key === "Escape") setEditKey(null);
+                                  }}
+                                  autoFocus
+                                  placeholder="Writing #"
+                                  className="h-7 text-xs w-28"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => saveWriting(r.carrierId)}
+                                  aria-label="Save"
+                                >
+                                  <Check
+                                    className="h-3.5 w-3.5"
+                                    style={{ color: T.green }}
+                                  />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => setEditKey(null)}
+                                  aria-label="Cancel"
+                                >
+                                  <X
+                                    className="h-3.5 w-3.5"
+                                    style={{ color: T.red }}
+                                  />
+                                </Button>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditKey(r.carrierId);
+                                  setDraft(r.writingNumber ?? "");
+                                }}
+                                className="inline-flex items-center gap-1.5 hover:opacity-80"
+                                style={{
+                                  font: `700 12.5px ${T.mono}`,
+                                  color: r.writingNumber ? T.cream : T.mut2,
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  padding: 0,
+                                }}
+                              >
+                                {r.writingNumber ?? "Add #"}
+                                <Pencil
+                                  className="h-3 w-3"
+                                  style={{ color: T.mut2 }}
+                                />
+                              </button>
+                            )
+                          ) : (
+                            <span
+                              style={{
+                                font: `700 12.5px ${T.mono}`,
+                                color: T.mut2,
+                              }}
+                            >
+                              —
+                            </span>
+                          )}
+                        </span>
+                        <span style={dateCol}>{r.submittedDate ?? "—"}</span>
+                        <span style={dateCol}>{r.approvedDate ?? "—"}</span>
+                        <span
+                          style={{
+                            width: 96,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          {blocked && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              className="shrink-0"
+                              onClick={() => openDialog(r.carrierId)}
+                            >
+                              <UserPlus className="h-3 w-3" />
+                              Try alt upline
+                            </Button>
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
             <Pager
               page={pageSafe}
               pageSize={ROWS_PAGE}

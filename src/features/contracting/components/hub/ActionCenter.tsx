@@ -5,6 +5,7 @@
 import { Sparkles, Inbox, ArrowRight, Check, X } from "lucide-react";
 import { Board, Cap, StatusDot, T } from "@/components/board";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/ui";
 import {
   useApproveSponsorship,
   useMyUserId,
@@ -113,11 +114,18 @@ function ApprovalRow({ row }: { row: SponsorshipInboxRow }) {
 
 export function ActionCenter() {
   const me = useMyUserId();
+  const isMobile = useIsMobile();
   const eligible = useNewlyEligibleCarriers();
   const inbox = useSponsorshipInbox();
   const setStatus = useSetContractStatus();
   const eList = eligible.data ?? [];
   const aList = inbox.data ?? [];
+
+  // On mobile let the boxes grow with content (no capped scroll window inside an
+  // already-short column); desktop keeps the fixed-height board look.
+  const box: React.CSSProperties = isMobile
+    ? { ...boxStyle, maxHeight: undefined, overflow: undefined }
+    : boxStyle;
 
   return (
     <Board pad={0} style={{ flexShrink: 0 }}>
@@ -133,9 +141,14 @@ export function ActionCenter() {
       >
         Action Center
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        }}
+      >
         {/* NEWLY ELIGIBLE */}
-        <div style={boxStyle}>
+        <div style={box}>
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <Sparkles className="h-3.5 w-3.5" style={{ color: T.blue }} />
             <Cap>Newly eligible</Cap>
@@ -182,7 +195,14 @@ export function ActionCenter() {
         </div>
 
         {/* APPROVALS NEEDED */}
-        <div style={{ ...boxStyle, borderLeft: `1px solid ${T.line}` }}>
+        <div
+          style={{
+            ...box,
+            ...(isMobile
+              ? { borderTop: `1px solid ${T.line}` }
+              : { borderLeft: `1px solid ${T.line}` }),
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <Inbox className="h-3.5 w-3.5" style={{ color: T.amber }} />
             <Cap>Approvals needed</Cap>

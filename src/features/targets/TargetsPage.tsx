@@ -26,6 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/ui";
 import { formatCurrency, formatPercent } from "../../lib/format";
 import { toast } from "sonner";
 import {
@@ -127,6 +128,7 @@ function progressColor(pct100: number): string {
 }
 
 export function TargetsPage() {
+  const isMobile = useIsMobile();
   const { data: targets, isLoading, error } = useTargets();
   const actualMetrics = useActualMetrics();
   const updateTargets = useUpdateTargets();
@@ -554,9 +556,11 @@ export function TargetsPage() {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: 10,
+                  // Desktop: a fixed 340px cluster beside the ring. Mobile: fill
+                  // the row so it never forces the hero band past the viewport.
                   flexShrink: 0,
-                  width: 340,
-                  minWidth: 240,
+                  width: isMobile ? "100%" : 340,
+                  minWidth: isMobile ? 0 : 240,
                 }}
               >
                 <FlapTile
@@ -776,7 +780,9 @@ export function TargetsPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fit, minmax(0, 1fr))",
               gap: 18,
               alignItems: "stretch",
             }}
@@ -1562,7 +1568,9 @@ export function TargetsPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fit, minmax(0, 1fr))",
               gap: 18,
               alignItems: "stretch",
             }}
@@ -1836,7 +1844,9 @@ export function TargetsPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(0, 1fr))",
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fit, minmax(0, 1fr))",
               gap: 18,
               alignItems: "stretch",
             }}

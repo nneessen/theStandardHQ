@@ -474,7 +474,7 @@ export function LeaderboardTable({
     scope === "agency" ? "Agency" : scope === "team" ? "Team" : "Agent";
 
   return (
-    <div className="h-full overflow-auto">
+    <div className="h-full w-full overflow-auto">
       <table className="w-full text-left">
         <thead className="sticky top-0 bg-v2-canvas/80 backdrop-blur-sm z-10 border-b border-v2-ring">
           {isSubmit ? (

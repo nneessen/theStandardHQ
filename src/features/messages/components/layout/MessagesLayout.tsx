@@ -4,6 +4,7 @@
 import { ReactNode } from "react";
 import { ResizablePanel } from "@/components/ui/resizable-panel";
 import { useResizableSidebar } from "@/hooks";
+import { useIsMobile } from "@/hooks/ui";
 
 interface MessagesLayoutProps {
   list: ReactNode;
@@ -11,6 +12,8 @@ interface MessagesLayoutProps {
 }
 
 export function MessagesLayout({ list, detail }: MessagesLayoutProps) {
+  const isMobile = useIsMobile();
+
   // Resizable sidebar for Email thread list
   const emailSidebar = useResizableSidebar({
     storageKey: "messages-email-sidebar-width",
@@ -18,6 +21,23 @@ export function MessagesLayout({ list, detail }: MessagesLayoutProps) {
     minWidth: 200,
     maxWidth: 500,
   });
+
+  // Mobile: the fixed-px resizable sidebar can't share a 375px row with the
+  // detail pane, so stack vertically — thread list (capped, scrollable) above
+  // the detail view, which fills the rest of the app-shell height.
+  if (isMobile) {
+    return (
+      <div className="h-full flex flex-col gap-2 min-h-0">
+        <div
+          className="overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft shrink-0"
+          style={{ maxHeight: "42vh" }}
+        >
+          <div className="h-full overflow-auto">{list}</div>
+        </div>
+        <div className="flex-1 min-h-0 overflow-hidden">{detail}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex gap-2">

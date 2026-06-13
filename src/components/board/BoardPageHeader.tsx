@@ -1,6 +1,7 @@
 import React from "react";
 import { Num } from "./Num";
 import { T } from "./tokens";
+import { useIsMobile } from "@/hooks/ui";
 
 export interface BoardPageHeaderProps {
   /** Large display title, e.g. "MAY 2026" or "POLICIES". */
@@ -31,6 +32,7 @@ export function BoardPageHeader({
   actions,
   style,
 }: BoardPageHeaderProps) {
+  const isMobile = useIsMobile();
   return (
     <div
       style={{
@@ -43,10 +45,21 @@ export function BoardPageHeader({
         ...style,
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          flexWrap: "wrap",
+          gap: isMobile ? 8 : 14,
+          minWidth: 0,
+        }}
+      >
         <div
           style={{
-            font: `800 40px ${T.disp}`,
+            // The 40px display title can't fit beside its meta on a phone and
+            // won't wrap (single word) — shrink it on mobile so the header
+            // never forces the page wider than the viewport.
+            font: `800 ${isMobile ? 26 : 40}px ${T.disp}`,
             letterSpacing: "0.01em",
             color: T.ink,
             lineHeight: 1,
@@ -57,7 +70,14 @@ export function BoardPageHeader({
         </div>
         {meta != null && <Num text={meta} size="sm" color={T.amber} />}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
         {periods && periods.length > 0 && (
           <div
             style={{

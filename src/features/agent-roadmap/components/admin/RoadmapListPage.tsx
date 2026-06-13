@@ -503,31 +503,37 @@ function AdminRoadmapCard({
   onDelete,
 }: AdminRoadmapCardProps) {
   return (
-    <div className="flex items-center gap-3 bg-card rounded-lg px-3 py-3 border border-border dark:border-border hover:border-border dark:hover:border-border transition-colors group">
-      {leftSlot}
+    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3 bg-card rounded-lg px-3 py-3 border border-border dark:border-border hover:border-border dark:hover:border-border transition-colors group">
+      <div className="flex w-full items-center gap-3 sm:contents">
+        {leftSlot}
 
-      {/* Info section */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          {roadmap.is_default && (
-            <Badge variant="warning" size="sm" className="gap-0.5 text-[10px]">
-              <Star className="h-2.5 w-2.5 fill-current" />
-              DEFAULT
-            </Badge>
+        {/* Info section */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            {roadmap.is_default && (
+              <Badge
+                variant="warning"
+                size="sm"
+                className="gap-0.5 text-[10px]"
+              >
+                <Star className="h-2.5 w-2.5 fill-current" />
+                DEFAULT
+              </Badge>
+            )}
+            <button
+              type="button"
+              onClick={onEdit}
+              className="text-sm font-semibold text-foreground dark:text-foreground hover:underline underline-offset-2 truncate text-left"
+            >
+              {roadmap.title}
+            </button>
+          </div>
+          {roadmap.description && (
+            <p className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate">
+              {roadmap.description}
+            </p>
           )}
-          <button
-            type="button"
-            onClick={onEdit}
-            className="text-sm font-semibold text-foreground dark:text-foreground hover:underline underline-offset-2 truncate text-left"
-          >
-            {roadmap.title}
-          </button>
         </div>
-        {roadmap.description && (
-          <p className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate">
-            {roadmap.description}
-          </p>
-        )}
       </div>
 
       {/* Status */}
@@ -550,7 +556,7 @@ function AdminRoadmapCard({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-[11px] gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-7 text-[11px] gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
           onClick={onTeam}
         >
           <Users className="h-3 w-3" />
