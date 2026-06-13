@@ -308,11 +308,17 @@ serve(async (req) => {
       .eq("imo_id", imoId)
       .maybeSingle();
 
+    // instagram_user_id is GLOBALLY unique (instagram_integrations_ig_user_unique):
+    // the IGSID routes inbound webhooks, so one Instagram account maps to exactly one
+    // row platform-wide. Look it up WITHOUT an imo filter — otherwise reconnecting an
+    // account that was previously connected under a different IMO/user (e.g. a user
+    // whose IMO moved FFG -> Epic Life) finds nothing here, falls through to INSERT,
+    // and violates the unique constraint -> "save_failed". Matching the constraint
+    // makes it UPDATE (reassign) the existing row to the re-authenticating user.
     const { data: existingByInstagram } = await supabase
       .from("instagram_integrations")
       .select("id")
       .eq("instagram_user_id", instagramBusinessAccountId)
-      .eq("imo_id", imoId)
       .maybeSingle();
 
     // Prefer user match (to handle reconnecting with different Instagram account)
