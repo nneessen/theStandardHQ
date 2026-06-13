@@ -93,8 +93,12 @@ console.log(`• ${tracks.length} word tracks in library`);
 // 2. Digests (bounded check)
 const digests = calls.map((c, i) => buildDigest(c, i));
 const maxLen = Math.max(...digests.map((d) => d.length));
-console.log(`• built ${digests.length} digests (max ${maxLen} chars)`);
-if (maxLen > 7200) fail("a digest exceeded the char cap");
+console.log(
+  `• built ${digests.length} cleaned transcripts (max ${maxLen} chars)`,
+);
+// Now we feed the full cleaned transcript (MAX_DIGEST_CHARS=30000) + head/tail
+// markup on overflow; allow a little slack over the cap.
+if (maxLen > 31000) fail("a transcript exceeded the char cap");
 
 // 3. Anthropic reduce (the real call)
 console.log(`• calling Anthropic (sonnet reduce, max_tokens=${MAX_TOKENS})…`);
@@ -181,6 +185,17 @@ console.log(
       )
       .join("\n"),
 );
+
+// Dump the first two phases' SAY/DO lines — the acceptance test is whether the
+// OPENING is service-first (handle the caller's stated need) and not a pitch.
+console.log("\n--- opening phases (verbatim say/do) ---");
+for (const p of (phases as Record<string, unknown>[]).slice(0, 2)) {
+  console.log(`\n▶ ${p.title}`);
+  for (const st of (p.steps as Record<string, unknown>[]).slice(0, 4)) {
+    const main = (st.kind === "do" ? st.do : st.say) as string;
+    console.log(`  [${st.kind}] ${main}`);
+  }
+}
 
 // Show one fully-annotated step so a human can eyeball the quality.
 const sample = (phases as Record<string, unknown>[])
