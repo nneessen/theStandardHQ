@@ -286,6 +286,13 @@ enabled = false
 
 # Clerk auth configuration removed - not valid in this version
 
+# Public OAuth callback: Meta redirects a browser here with no Supabase JWT.
+# It authenticates via the HMAC-signed `state` param, so the gateway JWT check
+# MUST be off — otherwise the gateway returns UNAUTHORIZED_NO_AUTH_HEADER before
+# the function runs. Keep this block so a plain `functions deploy` cannot regress it.
+[functions.instagram-oauth-callback]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
