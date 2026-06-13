@@ -445,9 +445,12 @@ SET session_replication_role = origin;  -- triggers back ON for inserts
             comp = ag.level + rng.choice([-5, 0, 0, 5])
             freq = rng.choice(["monthly", "monthly", "monthly", "quarterly", "annual"])
             lst = rng.choice(["lead_purchase", "free_lead", "other"])
+            # Store the rate as a DECIMAL (0.95 = 95%) to match the app/prod
+            # convention. `comp` stays a whole-percentage contract level so the
+            # advance math below (comp / 100.0) remains correct.
             policies.append(row(pid, aid, rng.choice(client_ids), EPIC_IMO, AGENCY_ID, carrier_id,
                                 cname, f"EP-{ai:02d}-{pi:04d}", status, lifecycle, monthly, annual,
-                                eff, submit, comp, freq, lst))
+                                eff, submit, round(comp / 100.0, 4), freq, lst))
             if kind is None:
                 continue
             months_since = max(0, age_days // 30)

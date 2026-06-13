@@ -204,27 +204,27 @@ BEGIN
   INSERT INTO policies (user_id, client_id, imo_id, carrier_id, product, policy_number,
       status, lifecycle_status, monthly_premium, annual_premium, effective_date, commission_percentage)
     VALUES (v_uid, v_c1, v_imo, v_aflac, 'whole_life', 'POL-{idx}-1001',
-      'approved', 'active', {base_prem}, {base_prem}*12, current_date - 200, 100)
+      'approved', 'active', {base_prem}, {base_prem}*12, current_date - 200, 1.00)
     RETURNING id INTO v_p1;
   INSERT INTO policies (user_id, client_id, imo_id, carrier_id, product, policy_number,
       status, lifecycle_status, monthly_premium, annual_premium, effective_date, commission_percentage)
     VALUES (v_uid, v_c1, v_imo, v_amam, 'term_life', 'POL-{idx}-1002',
-      'approved', 'active', {base_prem}+15, ({base_prem}+15)*12, current_date - 140, 90)
+      'approved', 'active', {base_prem}+15, ({base_prem}+15)*12, current_date - 140, 0.90)
     RETURNING id INTO v_p2;
   INSERT INTO policies (user_id, client_id, imo_id, carrier_id, product, policy_number,
       status, lifecycle_status, monthly_premium, annual_premium, effective_date, commission_percentage)
     VALUES (v_uid, v_c2, v_imo, v_fg, 'indexed_universal_life', 'POL-{idx}-1003',
-      'approved', 'active', {base_prem}+40, ({base_prem}+40)*12, current_date - 95, 85)
+      'approved', 'active', {base_prem}+40, ({base_prem}+40)*12, current_date - 95, 0.85)
     RETURNING id INTO v_p3;
   INSERT INTO policies (user_id, client_id, imo_id, carrier_id, product, policy_number,
       status, lifecycle_status, monthly_premium, annual_premium, effective_date, commission_percentage)
     VALUES (v_uid, v_c3, v_imo, v_cb, 'whole_life', 'POL-{idx}-1004',
-      'approved', 'lapsed', {base_prem}+5, ({base_prem}+5)*12, current_date - 300, 100)
+      'approved', 'lapsed', {base_prem}+5, ({base_prem}+5)*12, current_date - 300, 1.00)
     RETURNING id INTO v_p4;
   INSERT INTO policies (user_id, client_id, imo_id, carrier_id, product, policy_number,
       status, lifecycle_status, monthly_premium, annual_premium, effective_date, commission_percentage)
     VALUES (v_uid, v_c3, v_imo, v_for, 'term_life', 'POL-{idx}-1005',
-      'approved', 'active', {base_prem}+25, ({base_prem}+25)*12, current_date - 30, 95)
+      'approved', 'active', {base_prem}+25, ({base_prem}+25)*12, current_date - 30, 0.95)
     RETURNING id INTO v_p5;
 
   -- ── Commissions (advance + renewal + one chargeback) ─────────────────────
