@@ -1,21 +1,20 @@
 // src/features/the-standard-team/LicensingHubPage.tsx
 // Free Licensing hub. Owns the SectionShell + page header + top tab bar.
-// Tabs: SureLC (free) · My Documents (free) · Writing Numbers (Pro/Team, gated inside the tab).
+// Tabs: SureLC (free) · My Documents (free).
+// (Writing Numbers now live on the Contracting page — removed from here.)
 
 import { useState } from "react";
-import { Link2, FileText, BarChart3 } from "lucide-react";
+import { Link2, FileText } from "lucide-react";
 import { SectionShell } from "@/components/v2";
 import { Board, Cap, T } from "@/components/board";
 import { SureLcLinksPanel } from "./components/SureLcLinksPanel";
 import { MyDocumentsPanel } from "./components/MyDocumentsPanel";
-import { WritingNumbersTab } from "./WritingNumbersTab";
 
-export type LicensingHubTab = "surelc" | "documents" | "writing-numbers";
+export type LicensingHubTab = "surelc" | "documents";
 
 const TABS: { id: LicensingHubTab; label: string; icon: typeof Link2 }[] = [
   { id: "surelc", label: "SureLC", icon: Link2 },
   { id: "documents", label: "My Documents", icon: FileText },
-  { id: "writing-numbers", label: "Writing Numbers", icon: BarChart3 },
 ];
 
 interface LicensingHubPageProps {
@@ -111,13 +110,7 @@ export function LicensingHubPage({ initialTab }: LicensingHubPageProps) {
               overflow: "hidden",
             }}
           >
-            {tab === "surelc" ? (
-              <SureLcLinksPanel />
-            ) : tab === "documents" ? (
-              <MyDocumentsPanel />
-            ) : (
-              <WritingNumbersTab />
-            )}
+            {tab === "surelc" ? <SureLcLinksPanel /> : <MyDocumentsPanel />}
           </Board>
         </div>
       </div>

@@ -990,8 +990,8 @@ const leadVendorsRoute = createRoute({
 });
 
 // Licensing hub route (legacy path /the-standard-team kept for backwards
-// compatibility). Free tabs: SureLC + My Documents; Writing Numbers stays gated
-// inside its own tab. `?tab=` deep-links a specific tab.
+// compatibility). Free tabs: SureLC + My Documents. `?tab=` deep-links a tab.
+// (Writing Numbers moved to the Contracting page.)
 const theStandardTeamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "the-standard-team",
@@ -999,9 +999,7 @@ const theStandardTeamRoute = createRoute({
     search: Record<string, unknown>,
   ): { tab?: LicensingHubTab } => {
     const tab = search.tab;
-    return tab === "surelc" || tab === "documents" || tab === "writing-numbers"
-      ? { tab }
-      : {};
+    return tab === "surelc" || tab === "documents" ? { tab } : {};
   },
   component: TheStandardTeamRouteComponent,
 });
