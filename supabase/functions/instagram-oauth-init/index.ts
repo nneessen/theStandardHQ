@@ -30,7 +30,9 @@ serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     const INSTAGRAM_APP_ID = Deno.env.get("INSTAGRAM_APP_ID");
+    const authHeader = req.headers.get("Authorization");
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       console.error("[instagram-oauth-init] Missing Supabase credentials");
@@ -74,6 +76,18 @@ serve(async (req) => {
     // Check Instagram access with temporary free access period support
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // User-scoped client so current_user_imo_grants_all_features() resolves
+    // auth.uid(). The service-role client above has no user context, so that RPC
+    // would always see auth.uid() = NULL and return false (the bug that 403'd
+    // Epic Life users despite imos.free_all_features = true). Mirrors
+    // close-ai-builder / business-tools-proxy, which call this same RPC this way.
+    const userClient =
+      SUPABASE_ANON_KEY && authHeader
+        ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: authHeader } },
+          })
+        : null;
+
     // Fetch user email for permanent access check
     const { data: userData } = await supabase.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
@@ -94,8 +108,9 @@ serve(async (req) => {
       );
       hasInstagramAccess = true;
     } else {
-      const { data: imoGrantsAllFeatures, error: imoAccessError } =
-        await supabase.rpc("current_user_imo_grants_all_features");
+      const { data: imoGrantsAllFeatures, error: imoAccessError } = userClient
+        ? await userClient.rpc("current_user_imo_grants_all_features")
+        : { data: false, error: null };
 
       if (imoAccessError) {
         console.error(
