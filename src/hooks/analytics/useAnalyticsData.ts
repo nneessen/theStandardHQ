@@ -6,10 +6,6 @@ import { useCommissions } from "../commissions";
 import { useExpenses } from "../expenses";
 import { useCarriers } from "../carriers";
 import {
-  getCohortRetention,
-  getChargebacksByCohort,
-  getEarningProgressByCohort,
-  getCohortSummary,
   segmentClientsByValue,
   calculatePolicyChargebackRisk,
   getClientLifetimeValue,
@@ -75,14 +71,6 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
   // Calculate loading state
   const isLoading =
     policiesLoading || commissionsLoading || expensesLoading || carriersLoading;
-
-  // Cohort Analysis - all cohort-related metrics (React 19.1 optimizes automatically)
-  const cohortData = {
-    retention: getCohortRetention(policies),
-    chargebacks: getChargebacksByCohort(policies, commissions),
-    earningProgress: getEarningProgressByCohort(policies, commissions),
-    summary: getCohortSummary(policies, commissions),
-  };
 
   // Client Segmentation - client value and chargeback risk (React 19.1 optimizes automatically)
   // Map commissions to the minimal shape needed for real-time at-risk calculation
@@ -157,7 +145,6 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
 
   return {
     isLoading,
-    cohort: cohortData,
     segmentation: segmentationData,
     forecast: forecastData,
     attribution: attributionData,

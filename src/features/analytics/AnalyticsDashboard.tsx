@@ -22,7 +22,7 @@ import { TimePeriodSelector } from "./components/TimePeriodSelector";
 import { PillButton, SectionShell, SoftCard } from "@/components/v2";
 import { Board, Cap, T } from "@/components/board";
 import { BoardPersistency } from "@/features/dashboard";
-import { usePersistencyCohorts } from "@/hooks/policies";
+import { useTeamPersistency } from "@/hooks/policies";
 import { downloadCSV, printAnalyticsToPDF } from "../../utils/exportHelpers";
 import {
   AnalyticsDateProvider,
@@ -207,8 +207,9 @@ function AnalyticsDashboardContent() {
   } = useAccessibleAnalyticsSections();
 
   // Persistency is an all-book retention metric (not period-scoped), so it sits
-  // outside the date-filtered panels as an always-visible headline row.
-  const { data: persistencyCohorts } = usePersistencyCohorts();
+  // outside the date-filtered panels as an always-visible headline row. Team
+  // scope here: own + downline (the RPC leans on policies RLS for that).
+  const { data: persistency } = useTeamPersistency();
 
   const handleExportCSV = () => {
     if (analyticsData.raw.policies.length > 0) {
@@ -340,9 +341,11 @@ function AnalyticsDashboardContent() {
               </AnalyticsSectionGate>
             </div>
 
-            {/* Persistency — all-book retention at 3/6/9/12-month anniversaries */}
-            {persistencyCohorts && persistencyCohorts.length > 0 && (
-              <BoardPersistency cohorts={persistencyCohorts} />
+            {/* Team persistency — own + downline retention at 3/6/9/12 months.
+                Only render once at least one milestone has policies (the RPC
+                always returns 4 rows, so guard on real data, not array length). */}
+            {persistency?.some((b) => b.issuedCount > 0) && (
+              <BoardPersistency buckets={persistency} scope="team" />
             )}
 
             {/* Trend | Growth */}

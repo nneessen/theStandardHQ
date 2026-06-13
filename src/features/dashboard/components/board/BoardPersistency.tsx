@@ -1,6 +1,6 @@
 import { Board, Bar, Cap, Num, T } from "@/components/board";
 import type { BarTone } from "@/components/board";
-import type { PersistencyCohort } from "@/hooks/policies";
+import type { PersistencyBucket } from "@/hooks/policies";
 
 /**
  * Persistency — what share of the policies that have reached each age are still
@@ -24,9 +24,9 @@ const TONE_HEX: Record<BarTone, string> = {
   red: T.red,
 };
 
-function PersistencyCell({ cohort }: { cohort: PersistencyCohort }) {
-  const { bucketMonths, cohortSize, activeCount, persistencyRate } = cohort;
-  const hasData = persistencyRate != null && cohortSize > 0;
+function PersistencyCell({ bucket }: { bucket: PersistencyBucket }) {
+  const { bucketMonths, issuedCount, activeCount, persistencyRate } = bucket;
+  const hasData = persistencyRate != null && issuedCount > 0;
   const tone = toneFor(persistencyRate);
 
   return (
@@ -59,7 +59,7 @@ function PersistencyCell({ cohort }: { cohort: PersistencyCohort }) {
 
       <div style={{ font: `600 12px ${T.data}`, color: T.mut }}>
         {hasData
-          ? `${activeCount} of ${cohortSize} still active`
+          ? `${activeCount} of ${issuedCount} still active`
           : "No policies this old yet"}
       </div>
     </div>
@@ -67,16 +67,23 @@ function PersistencyCell({ cohort }: { cohort: PersistencyCohort }) {
 }
 
 export function BoardPersistency({
-  cohorts,
+  buckets,
+  scope = "me",
 }: {
-  cohorts: PersistencyCohort[];
+  buckets: PersistencyBucket[];
+  /** "me" = the signed-in agent's own book; "team" = own + downline. */
+  scope?: "me" | "team";
 }) {
   // Blended headline: active / total across every milestone that has policies.
-  const totalActive = cohorts.reduce((s, c) => s + c.activeCount, 0);
-  const totalCount = cohorts.reduce((s, c) => s + c.cohortSize, 0);
+  const totalActive = buckets.reduce((s, b) => s + b.activeCount, 0);
+  const totalCount = buckets.reduce((s, b) => s + b.issuedCount, 0);
   const blended =
     totalCount > 0 ? Math.round((totalActive / totalCount) * 100) : null;
   const blendedTone = blended == null ? "blue" : toneFor(blended);
+  const heading =
+    scope === "team"
+      ? "Team Persistency · Policies Still Active"
+      : "Persistency · Policies Still Active";
 
   return (
     <Board pad={0} rivets={false} style={{ marginBottom: 16 }}>
@@ -89,7 +96,7 @@ export function BoardPersistency({
           borderBottom: `1px solid ${T.line}`,
         }}
       >
-        <Cap>Persistency · Policies Still Active</Cap>
+        <Cap>{heading}</Cap>
         <Num
           text={blended == null ? "—" : `${blended}%`}
           size="xs"
@@ -106,8 +113,8 @@ export function BoardPersistency({
           padding: "16px 20px",
         }}
       >
-        {cohorts.map((c) => (
-          <PersistencyCell key={c.bucketMonths} cohort={c} />
+        {buckets.map((b) => (
+          <PersistencyCell key={b.bucketMonths} bucket={b} />
         ))}
       </div>
 
@@ -119,9 +126,11 @@ export function BoardPersistency({
           color: T.mut2,
         }}
       >
-        Of the policies that have reached each age, the share still in force.
-        Pending applications aren't counted. A low count means few policies have
-        reached that age yet — read those numbers with care.
+        Of {scope === "team" ? "your team's" : "the"} policies that have reached
+        each age, the share still in force
+        {scope === "team" ? " (you and your downline)" : ""}. Pending
+        applications aren't counted. A low count means few policies have reached
+        that age yet — read those numbers with care.
       </div>
     </Board>
   );

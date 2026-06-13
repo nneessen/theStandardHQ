@@ -18,7 +18,7 @@ import { useImoAllFeaturesAccess } from "../../hooks/subscription/useImoAllFeatu
 import { useCreateExpense } from "../../hooks/expenses/useCreateExpense";
 import { useCreatePolicy } from "../../hooks/policies";
 import { useCurrentMonthChargebacks } from "../../hooks/commissions/useCurrentMonthChargebacks";
-import { usePersistencyCohorts } from "../../hooks/policies/usePersistencyCohorts";
+import { usePersistency } from "../../hooks/policies/usePersistency";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
 import { useCalculatedTargets } from "../../hooks/targets";
@@ -209,7 +209,7 @@ export const DashboardHome: React.FC = () => {
   const createPolicy = useCreatePolicy();
   const createOrFindClient = useCreateOrFindClient();
   const { data: currentMonthChargebacks } = useCurrentMonthChargebacks();
-  const { data: persistencyCohorts } = usePersistencyCohorts();
+  const { data: persistency } = usePersistency();
 
   const { grantsAllFeatures: imoGrantsAllFeatures } = useImoAllFeaturesAccess();
   const { hasAccess: hasTeamAccess } = useFeatureAccess("hierarchy");
@@ -549,8 +549,10 @@ export const DashboardHome: React.FC = () => {
 
           <BoardFlags alerts={flags} />
 
-          {persistencyCohorts && persistencyCohorts.length > 0 && (
-            <BoardPersistency cohorts={persistencyCohorts} />
+          {/* Guard on real data: the RPC always returns 4 rows, so an
+              array-length check would never hide the panel for a new agent. */}
+          {persistency?.some((b) => b.issuedCount > 0) && (
+            <BoardPersistency buckets={persistency} scope="me" />
           )}
 
           <SoftCard padding="lg" className="mb-4">

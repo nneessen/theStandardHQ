@@ -23,9 +23,9 @@ export type {
 // Re-export query keys for invalidation
 export { policyKeys, policyQueries } from "../../features/policies/queries";
 
-// Anniversary-cohort persistency (3/6/9/12-month)
-export { usePersistencyCohorts } from "./usePersistencyCohorts";
-export type { PersistencyCohort } from "./usePersistencyCohorts";
+// Anniversary persistency buckets (3/6/9/12-month)
+export { usePersistency, useTeamPersistency } from "./usePersistency";
+export type { PersistencyBucket } from "./usePersistency";
 
 // DEPRECATED: These hooks have been merged into useUpdatePolicy
 // useCancelPolicy → useUpdatePolicy({ id, status: 'cancelled', reason })

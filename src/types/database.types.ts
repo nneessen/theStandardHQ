@@ -18693,6 +18693,15 @@ export type Database = {
         }[];
       };
       get_team_member_ids: { Args: never; Returns: string[] };
+      get_team_persistency_buckets: {
+        Args: never;
+        Returns: {
+          active_count: number;
+          bucket_months: number;
+          issued_count: number;
+          persistency_rate: number;
+        }[];
+      };
       get_team_pipeline_snapshot: {
         Args: { p_target_user_ids?: string[] };
         Returns: {
@@ -18998,12 +19007,12 @@ export type Database = {
           code: string;
         }[];
       };
-      get_user_persistency_cohorts: {
+      get_user_persistency_buckets: {
         Args: never;
         Returns: {
           active_count: number;
           bucket_months: number;
-          cohort_size: number;
+          issued_count: number;
           persistency_rate: number;
         }[];
       };

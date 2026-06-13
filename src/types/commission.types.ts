@@ -181,12 +181,13 @@ export type ChargebackInsert =
 export type ChargebackUpdate =
   Database["public"]["Tables"]["chargebacks"]["Update"];
 
-/** Chargeback status enum (matches DB enum chargeback_status) */
-export type ChargebackStatus =
-  | "pending"
-  | "processed"
-  | "disputed"
-  | "resolved";
+/**
+ * Chargeback status enum — derived from the DB enum `chargeback_status`
+ * (pending | resolved | disputed) so app types can never drift from the
+ * database. Do NOT hand-list literals here: "processed" was a non-existent
+ * value that silently produced empty queries / runtime insert failures.
+ */
+export type ChargebackStatus = Database["public"]["Enums"]["chargeback_status"];
 
 /**
  * Chargeback — maps 1:1 to the `chargebacks` DB table.
