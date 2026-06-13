@@ -68,18 +68,35 @@ const OUTCOME_LABEL = new Map<string, string>(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
 );
 
+// Tinted (not flat-dark) semantic badges: a soft colored fill + readable text in
+// BOTH themes, so a status reads at a glance instead of being one more charcoal
+// pill. Each carries an explicit dark-mode variant (plain palette colors don't
+// auto-adapt). Mirrors the KIND_STYLE approach in GeneratedScriptView.
+const TINT = {
+  emerald:
+    "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
+  blue: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
+  amber:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+  slate:
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30",
+  rose: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30",
+} as const;
+
 const STATUS_CLASSES: Record<string, string> = {
-  analyzed: "text-emerald-700 border-emerald-300",
-  transcribed: "text-blue-700 border-blue-300",
-  analyzing: "text-amber-700 border-amber-300",
-  transcribing: "text-amber-700 border-amber-300",
-  uploaded: "text-v2-ink-muted border-v2-ring",
-  skipped: "text-v2-ink-subtle border-v2-ring",
-  failed: "text-rose-700 border-rose-300",
+  analyzed: TINT.emerald,
+  transcribed: TINT.blue,
+  analyzing: TINT.amber,
+  transcribing: TINT.amber,
+  uploaded: TINT.slate,
+  skipped: TINT.slate,
+  failed: TINT.rose,
 };
 
+// Wider fixed columns than before — the full-width container gives the room, and
+// bigger type needs it (avoids clipping the status/outcome badges).
 const ROW_GRID =
-  "grid grid-cols-[1fr_110px_84px_64px_84px_84px_56px_72px] gap-2 items-center";
+  "grid grid-cols-[1fr_150px_110px_92px_120px_140px_72px_100px] gap-2 items-center";
 
 // A recording counts as "newly uploaded" (gets a New badge) for this long after
 // it was added — so the team can spot fresh calls at a glance.
@@ -158,13 +175,13 @@ export function CallReviewsPage() {
   ) => setFilters((f) => ({ ...f, [key]: value }));
 
   return (
-    <div className="max-w-6xl mx-auto px-3 py-4 space-y-3">
+    <div className="w-full px-4 py-4 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-v2-ink flex items-center gap-2">
-            <Headphones className="h-4 w-4 text-v2-ink-muted" /> Call Reviews
+          <h1 className="text-xl font-semibold text-v2-ink flex items-center gap-2">
+            <Headphones className="h-5 w-5 text-v2-ink-muted" /> Call Reviews
           </h1>
-          <p className="text-[11px] text-v2-ink-muted mt-0.5">
+          <p className="text-xs text-v2-ink-muted mt-0.5">
             Listen to real sold &amp; unsold calls, read the diarized
             transcript, study the scripts, and mark key moments. A shared
             training library for every agent.
@@ -198,7 +215,7 @@ export function CallReviewsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search caller, file, transcript…"
-            className="h-8 text-xs pl-7"
+            className="h-8 text-sm pl-7"
           />
           {isFetching && !isFetchingNextPage && (
             <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-v2-ink-subtle" />
@@ -207,7 +224,7 @@ export function CallReviewsPage() {
         <select
           value={filters.callTypeId}
           onChange={(e) => setFilter("callTypeId", e.target.value)}
-          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          className="h-8 text-xs rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
         >
           <option value="all">All call types</option>
           {callTypes.map((c) => (
@@ -219,7 +236,7 @@ export function CallReviewsPage() {
         <select
           value={filters.outcome}
           onChange={(e) => setFilter("outcome", e.target.value)}
-          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          className="h-8 text-xs rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
         >
           <option value="all">All outcomes</option>
           {CALL_OUTCOME_OPTIONS.map((o) => (
@@ -231,7 +248,7 @@ export function CallReviewsPage() {
         <select
           value={filters.agentId}
           onChange={(e) => setFilter("agentId", e.target.value)}
-          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          className="h-8 text-xs rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
         >
           <option value="all">All agents</option>
           {agents.map((a) => (
@@ -245,7 +262,7 @@ export function CallReviewsPage() {
           onChange={(e) =>
             setFilter("sort", e.target.value as CallLibraryFilters["sort"])
           }
-          className="h-8 text-[11px] rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
+          className="h-8 text-xs rounded border border-v2-ring bg-v2-card px-2 text-v2-ink"
           title="Sort the library"
         >
           {SORT_OPTIONS.map((o) => (
@@ -257,7 +274,7 @@ export function CallReviewsPage() {
         <Button
           size="sm"
           variant={filters.showArchived ? "default" : "outline"}
-          className="h-8 text-[11px]"
+          className="h-8 text-xs"
           onClick={() => setFilter("showArchived", !filters.showArchived)}
         >
           <Archive className="h-3 w-3 mr-1" />
@@ -268,7 +285,7 @@ export function CallReviewsPage() {
       {/* Library table */}
       <div className="rounded-xl border border-v2-ring bg-v2-card shadow-sm overflow-hidden">
         <div
-          className={`${ROW_GRID} px-3 py-2 bg-v2-canvas/80 border-b border-v2-ring text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted`}
+          className={`${ROW_GRID} px-4 py-2.5 bg-v2-canvas/80 border-b border-v2-ring text-[11px] font-semibold uppercase tracking-wide text-v2-ink-muted`}
         >
           <div>Call</div>
           <div>Agent</div>
@@ -288,7 +305,7 @@ export function CallReviewsPage() {
             No calls match. Upload a recording to start building the library.
           </div>
         ) : (
-          <div>
+          <div className="divide-y divide-v2-ring">
             {rows.map((r) => {
               const status = deriveRecordingStatus(r);
               const archived = !!r.archived_at;
@@ -302,7 +319,7 @@ export function CallReviewsPage() {
               return (
                 <div
                   key={r.id}
-                  className={`${ROW_GRID} px-3 py-2 hover:bg-v2-canvas/70 text-xs group`}
+                  className={`${ROW_GRID} px-4 py-2.5 hover:bg-v2-canvas/70 text-sm group`}
                 >
                   <Link
                     to="/call-reviews/$recordingId"
@@ -311,55 +328,55 @@ export function CallReviewsPage() {
                   >
                     <div className="truncate text-v2-ink font-medium flex items-center gap-1.5">
                       {archived && (
-                        <Archive className="h-3 w-3 text-v2-ink-subtle shrink-0" />
+                        <Archive className="h-3.5 w-3.5 text-v2-ink-subtle shrink-0" />
                       )}
                       <span className="truncate">{title}</span>
                       {isNew && (
                         <Badge
                           variant="outline"
-                          className="shrink-0 text-[9px] px-1 py-0 text-emerald-600 border-emerald-300"
+                          className={`shrink-0 text-[11px] px-1.5 py-0.5 ${TINT.emerald}`}
                           title="Uploaded in the last 48 hours"
                         >
                           New
                         </Badge>
                       )}
                     </div>
-                    <div className="truncate text-v2-ink-muted text-[11px]">
+                    <div className="truncate text-v2-ink-muted text-[13px]">
                       {externalAgentName(r) ?? agentNames[r.agent_id] ?? "—"}
                     </div>
-                    <div className="text-v2-ink-muted text-[11px] tabular-nums">
+                    <div className="text-v2-ink-muted text-[13px] tabular-nums">
                       {r.call_at
                         ? new Date(r.call_at).toLocaleDateString()
                         : "—"}
                     </div>
-                    <div className="text-v2-ink-muted text-[11px] font-mono tabular-nums">
+                    <div className="text-v2-ink-muted text-[13px] font-mono tabular-nums">
                       {formatCallDuration(r.duration_seconds) ?? "—"}
                     </div>
                     <div>
                       {r.outcome ? (
                         <Badge
                           variant="outline"
-                          className={`text-[9px] px-1 py-0 ${r.outcome === "sold" ? "text-emerald-600 border-emerald-300" : ""}`}
+                          className={`text-[11px] px-1.5 py-0.5 ${r.outcome === "sold" ? TINT.emerald : TINT.slate}`}
                         >
                           {OUTCOME_LABEL.get(r.outcome) ?? r.outcome}
                         </Badge>
                       ) : (
-                        <span className="text-v2-ink-subtle text-[11px]">
+                        <span className="text-v2-ink-subtle text-[13px]">
                           —
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <Badge
                         variant="outline"
-                        className={`text-[9px] px-1 py-0 ${STATUS_CLASSES[status] ?? ""}`}
+                        className={`text-[11px] px-1.5 py-0.5 ${STATUS_CLASSES[status] ?? TINT.slate}`}
                       >
                         {recordingStatusLabel(status)}
                       </Badge>
                       {r.audio_deleted_at && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] px-1 py-0 text-v2-ink-subtle"
+                          className={`text-[11px] px-1.5 py-0.5 ${TINT.slate}`}
                           title="Audio expired after 180 days; transcript retained"
                         >
                           Transcript only
@@ -439,7 +456,7 @@ export function CallReviewsPage() {
         )}
       </div>
       {rows.length > 0 && (
-        <p className="text-[10px] text-v2-ink-subtle text-center">
+        <p className="text-[11px] text-v2-ink-subtle text-center">
           Showing {rows.length} call{rows.length === 1 ? "" : "s"}
           {hasNextPage ? " — load more for older calls" : ""}
         </p>
