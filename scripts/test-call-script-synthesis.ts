@@ -5,11 +5,21 @@
 // renderer contract (src/features/call-reviews/types.ts GeneratedScript).
 //
 // Prereqs: local supabase up + scripts/seed-call-scripts-content.sql applied.
-// Run:
+// Run (LOCAL — defaults to the seeded local Cash Out at the shipped cap):
 //   set -a; source .env; set +a
 //   SUPABASE_URL=http://127.0.0.1:54321 \
 //   SUPABASE_SERVICE_ROLE_KEY="<local service_role>" \
 //   deno run --allow-net --allow-env scripts/test-call-script-synthesis.ts
+//
+// Run (PROD — point at any real IMO/call-type; mirrors the deployed fn's cap):
+//   set -a; source .env; set +a
+//   SUPABASE_URL="$REMOTE_SUPABASE_URL" \
+//   SUPABASE_SERVICE_ROLE_KEY="$REMOTE_SUPABASE_SERVICE_ROLE_KEY" \
+//   IMO=<imo-uuid> CALL_TYPE=<call-type-uuid> MAX_TOKENS=16384 \
+//   deno run --allow-net --allow-env scripts/test-call-script-synthesis.ts
+//
+// IMO, CALL_TYPE, and MAX_TOKENS are overridable via env; defaults below target
+// the local seeded data at the function's shipped MAX_REDUCE_TOKENS.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
@@ -23,9 +33,13 @@ import {
   type WordTrack,
 } from "../supabase/functions/generate-call-script/synthesis.ts";
 
-const IMO = "2fd256e9-9abb-445e-b405-62436555648a";
-const CALL_TYPE = "91cae9ee-e7b5-495f-b7b3-79aae721b5e8"; // Cash Out
+const IMO = Deno.env.get("IMO") ?? "2fd256e9-9abb-445e-b405-62436555648a";
+const CALL_TYPE =
+  Deno.env.get("CALL_TYPE") ?? "91cae9ee-e7b5-495f-b7b3-79aae721b5e8"; // Cash Out
 const MODEL = "claude-sonnet-4-6";
+// Mirror the edge fn's MAX_REDUCE_TOKENS so this test exercises the SAME cap the
+// deployed function uses (6144 truncated real 5-call syntheses; 16384 is current).
+const MAX_TOKENS = Number(Deno.env.get("MAX_TOKENS") ?? "16384");
 
 const url = Deno.env.get("SUPABASE_URL") ?? "http://127.0.0.1:54321";
 const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -83,11 +97,11 @@ console.log(`• built ${digests.length} digests (max ${maxLen} chars)`);
 if (maxLen > 7200) fail("a digest exceeded the char cap");
 
 // 3. Anthropic reduce (the real call)
-console.log("• calling Anthropic (sonnet reduce)…");
+console.log(`• calling Anthropic (sonnet reduce, max_tokens=${MAX_TOKENS})…`);
 const client = new Anthropic({ apiKey: anthropicKey });
 const response = await client.messages.create({
   model: MODEL,
-  max_tokens: 6144,
+  max_tokens: MAX_TOKENS,
   system: systemPrompt(),
   messages: [
     { role: "user", content: userPrompt(callTypeName, digests, tracks) },

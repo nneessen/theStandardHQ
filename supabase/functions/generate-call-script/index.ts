@@ -49,7 +49,13 @@ import {
 const FN_NAME = "generate-call-script";
 const MIN_CALLS = 3; // floor for a meaningful synthesis (owner-confirmed)
 const MAX_SOURCE_CALLS = 15; // most-recent sold calls fed per generation
-const MAX_REDUCE_TOKENS = 6144; // headroom for a full 7-phase annotated script
+// Output cap for the master script. 6144 truncated real 5-call syntheses mid-JSON
+// (stop_reason=max_tokens → "truncated, try again", which never recovered because
+// the output is deterministically larger than the cap). 16384 is the skill-backed
+// non-streaming default — well under Sonnet 4.6's 64K output ceiling and the SDK's
+// ~10-min HTTP timeout, with real headroom for a full 7-phase annotated script
+// (its size is bounded by structure, not by how many source calls feed it).
+const MAX_REDUCE_TOKENS = 16384;
 
 // Roles per the IMO role model (mirror of src/types/imo.types.ts hasImoAdminRole).
 const ADMIN_ROLES = new Set(["imo_owner", "imo_admin"]);
