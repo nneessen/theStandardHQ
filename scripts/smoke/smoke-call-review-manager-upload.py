@@ -60,7 +60,7 @@ def sql(query: str) -> str:
         ["./scripts/migrations/run-sql.sh", query],
         capture_output=True,
         text=True,
-        cwd=str(pathlib.Path(__file__).resolve().parent.parent),
+        cwd=str(pathlib.Path(__file__).resolve().parent.parent.parent),
     )
     return (res.stdout or "") + (res.stderr or "")
 

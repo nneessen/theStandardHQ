@@ -29,7 +29,7 @@ import threading
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 BUILD_DIR = ROOT / "build"
 OUT = Path("/tmp")
 KNOWN_SLUG = "the-standard"  # NickCustomLayout slug, known to exist in prod

@@ -19,8 +19,6 @@
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
     "supabase:clone-remote-schema": "node scripts/clone-remote-supabase-schema.mjs",
-    "supabase:bootstrap-local-dev": "node scripts/bootstrap-local-supabase-dev.mjs",
-    "supabase:sync-local-from-remote": "npm run supabase:clone-remote-schema && npm run supabase:bootstrap-local-dev",
     "build": "tsc -b && vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -37,12 +35,8 @@
     "generate:types": "supabase gen types typescript --project-id pcyaqwodnyrpkaiojnpz --schema public > src/types/database.types.ts",
     "email:dev": "email dev --dir supabase/email-src --port 3001",
     "email:build": "email export --dir supabase/email-src --outDir supabase/templates",
-    "slack:leaderboard": "node scripts/invoke-slack-leaderboard.js",
-    "slack:ip-leaderboard": "node scripts/invoke-slack-ip-leaderboard.js",
-    "slack:auto-complete": "node scripts/invoke-slack-auto-complete.js",
     "bot:review": "node scripts/review-chat-bot-lead.mjs",
     "bot:review:recent": "node scripts/review-chat-bot-recent.mjs",
-    "fix:submit-dates": "node scripts/fix-submit-dates.js",
     "prepare": "husky && husky install"
   },
   "dependencies": {
