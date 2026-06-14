@@ -1909,7 +1909,6 @@ export type Database = {
           held_under_id: string | null;
           held_under_name: string | null;
           held_under_since: string | null;
-          held_under_until: string | null;
           id: string;
           notes: string | null;
           requested_date: string | null;
@@ -1927,7 +1926,6 @@ export type Database = {
           held_under_id?: string | null;
           held_under_name?: string | null;
           held_under_since?: string | null;
-          held_under_until?: string | null;
           id?: string;
           notes?: string | null;
           requested_date?: string | null;
@@ -1945,7 +1943,6 @@ export type Database = {
           held_under_id?: string | null;
           held_under_name?: string | null;
           held_under_since?: string | null;
-          held_under_until?: string | null;
           id?: string;
           notes?: string | null;
           requested_date?: string | null;
@@ -19862,7 +19859,6 @@ export type Database = {
           held_under_id: string | null;
           held_under_name: string | null;
           held_under_since: string | null;
-          held_under_until: string | null;
           id: string;
           notes: string | null;
           requested_date: string | null;
@@ -19895,7 +19891,6 @@ export type Database = {
           held_under_id: string | null;
           held_under_name: string | null;
           held_under_since: string | null;
-          held_under_until: string | null;
           id: string;
           notes: string | null;
           requested_date: string | null;
