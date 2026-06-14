@@ -17763,7 +17763,6 @@ export type Database = {
         Returns: {
           agent_id: string;
           agent_name: string;
-          contract_level: number;
         }[];
       };
       get_imo_admin: { Args: { p_imo_id: string }; Returns: string };

@@ -344,10 +344,13 @@ export const contractingHubService = {
       p_agent_id: agentId,
     });
     if (error) throw error;
-    return ((data ?? []) as RawSponsorOption[]).map((r) => ({
+    // The RPC intentionally no longer returns contract_level (comp tier) — name only.
+    return (
+      (data ?? []) as Array<{ agent_id: string; agent_name: string }>
+    ).map((r) => ({
       agentId: r.agent_id,
       agentName: r.agent_name,
-      contractLevel: r.contract_level,
+      contractLevel: null,
     }));
   },
 
