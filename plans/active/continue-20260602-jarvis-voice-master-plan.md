@@ -1,10 +1,9 @@
-# MASTER PLAN — Jarvis: flawless voice + total recall + a real second brain
+# MASTER PLAN — Jarvis: flawless voice + total recall
 
 **Created:** 2026-06-02 · **Owner:** Nick · **Surface:** `/command-center` (Jarvis)
 **Decisions locked (this session):**
 1. **Voice architecture →** adopt a **realtime agent framework** (LiveKit Agents / Pipecat) that KEEPS the Claude orchestrator + ElevenLabs voice, and adds WebRTC transport, streaming STT, server-side turn-taking, and barge-in.
 2. **Sequencing →** **stabilize first** (instrument + targeted fixes to stop the gibberish in days), **then rebuild** on the realtime stack.
-3. **Second brain →** **in-app per-user RAG/knowledge graph + one-click Obsidian export** (no live Obsidian API exists; this is the real-world equivalent).
 
 > This plan is the senior-engineer "A-to-Z." It is deliberately opinionated. Read §1 (why it's broken) and §2 (the target) first; everything else is execution.
 
@@ -146,27 +145,7 @@ On **the user's actual device/browser**: 5 consecutive turns with (1) intelligib
 
 ---
 
-## 7. PHASE 4 — The second brain (in-app RAG + knowledge graph + Obsidian export)
-
-**Reality check first (the user asked "what happened to the Obsidian stuff"):** there is **no server-callable Obsidian API** — the Local REST/MCP plugin runs on-device and edge functions/workers can't reach a user's localhost. So "Jarvis lives in my Obsidian vault" isn't buildable server-side. The real-world equivalent (and what was designed, not yet built) is an **in-app knowledge store Jarvis owns, that gets smarter over time, with one-click export to your Obsidian vault.**
-
-### 7.1 Storage + retrieval (greenfield, self-contained)
-- `user_knowledge_entries` (RLS `user_id = auth.uid()`), `pgvector`, `embedding vector(1536)`.
-- `embed-knowledge-entry` edge fn (OpenAI `text-embedding-3-small` or Voyage) on insert/update.
-- `match_documents(query_embedding, k)` RPC (cosine, RLS-scoped).
-- `searchUserKnowledge` tool + knowledge-aware agent; gated by `assistant_preferences.enabled_knowledge`.
-
-### 7.2 Make it a GRAPH, not just flat vectors (the "knowledge graph" ask)
-- Lightweight entity + relationship extraction (clients ↔ policies ↔ carriers ↔ interactions) into Postgres (`knowledge_entities`, `knowledge_edges`), so Jarvis can answer relational questions ("everything tied to the Gore household") and traverse, not just nearest-neighbor.
-- Hybrid retrieval: structured entities + vector recall + the §6 query tools = "look up anything" + "remember everything."
-
-### 7.3 Ingestion (how it gets smarter over time)
-- In-app note/daily-log editor.
-- **Voice daily-log:** reuse the realtime STT — talk to Jarvis, it files structured notes.
-- Auto-ingest: opt-in capture of Jarvis's own grounded answers + the entities they touched, so context compounds.
-
-### 7.4 Obsidian export (honest, one-click)
-- "Export to Obsidian": `.zip` of `.md` files with **YAML frontmatter + `[[wikilinks]]`** mirroring the entity graph → the user drops it into their own vault. Re-runnable/incremental. No live API promised.
+## 7. ~~PHASE 4 — Second brain (RAG + knowledge graph + Obsidian export)~~ — DROPPED Jun 13 2026 (deliberately cut from scope). Never built. The shipped `jarvis_memory` Phase A durable-preferences memory is unrelated and stays.
 
 ---
 
@@ -196,7 +175,7 @@ Barge-in mid-sentence · user silence / no-speech / accidental tap · overlappin
 - **M1 — 1–2 wks:** Agent worker + LiveKit + Deepgram streaming STT + turn-taking; brain bridged; flagged parallel run; Nick dogfoods.
 - **M2 — ~1 wk:** Streaming TTS + barge-in + WebRTC playout; SLOs met for a week; cut over; delete old path.
 - **M3 — ~1 wk:** Retrieval tool family (§6) + tenancy smokes.
-- **M4 — 1–2 wks:** Second brain (§7) — RAG + graph + ingestion + Obsidian export.
+- ~~**M4 — 1–2 wks:** Second brain (§7).~~ DROPPED Jun 13 2026.
 - **Cross-cutting (§8) runs the whole time;** every phase ships with its evals/tests.
 
 ## 12. Decisions — LOCKED 2026-06-02 (owner delegated the call)

@@ -187,7 +187,7 @@ All slot into the existing machinery; metadata fields shown are grounded in `cor
 - **Proactive / ambient nudges (Phase 5+):** a SECURITY DEFINER pg_cron evaluator (modeled on `account-lifecycle-daily-cron`) scoped per-user by explicit `user_id` (no JWT at cron time), writing **rule-based** candidate rows to `assistant_nudges` — **never sends, never calls Anthropic per-user**. When the user accepts in-session, Jarvis runs the suggested tool **with the user's JWT** → normal draft→approve gate. True push-when-app-closed (APNs/FCM) rides on the companion and is deferred.
 - **Context-awareness (Phase 1-adjacent, low-risk):** a `body.context` envelope `{route, primaryRecord:{type,id}, selection}` from the web router (and voice/companion). The orchestrator treats `context.primaryRecord.id` as an **untrusted hint** (like `x-jarvis-surface`) and re-resolves it through an RLS-scoped tool — a spoofed ID simply fails RLS. Can land early; it's cheap and additive.
 - **Multimodal screen capture → vision → act (Phase 4+):** user-initiated only, never continuous; **on-device PII redaction pre-pass before any upload** (a real OCR+PII-detection pipeline, NOT a `redaction.ts` tweak — feasibility review); **no screenshot persistence**; visible "Jarvis is looking" indicator; HIPAA-adjacent — needs its own data-classification + legal framework (see Risks).
-- **Second brain — memory + RAG (Phase 5, parallelizable):** in-app pgvector `searchKnowledge` read tool (RLS-scoped) + a `jarvis_memory` table for durable preferences injected into `buildSystemPrompt`, + one-click Obsidian **export** (no live Obsidian API exists).
+- **Durable memory (shipped, Phase A):** a `jarvis_memory` table for durable preferences injected into `buildSystemPrompt`. *(The broader "second brain" — pgvector `searchKnowledge` RAG + knowledge graph + Obsidian export — was DROPPED Jun 13 2026; never built.)*
 - **Personality:** already configurable via `core/agents.ts` `buildSystemPrompt` + `assistant_preferences.assistant_name`. Calm, dry Iron-Man-butler register; earcons for listening/thinking/done; spoken nudges only when a session is live.
 
 ---
@@ -226,9 +226,9 @@ All slot into the existing machinery; metadata fields shown are grounded in `cor
 - **Deliverables (in order):** `screenshot` (Screen Recording + **on-device PII pipeline** as its own scoped project) → `type_text` (EDR risk accepted, always-confirm) → **hotword** (Porcupine, opt-in, OFF by default).
 - **Dependencies:** Phase 3. **Feasibility review recommends `type_text` and hotword are CUT from v1.**
 
-### Phase 5 — Second brain + ambient (parallelizable after Phase 1) — *3–5 wks*
-- **Goal:** long-term memory, RAG, and proactive nudges.
-- **Deliverables:** pgvector `searchKnowledge` + `jarvis_memory` + Obsidian export; `assistant_nudges` table + rule-based SECDEF cron evaluator + in-session HUD surfacing.
+### Phase 5 — Ambient nudges (parallelizable after Phase 1) — *2–3 wks*
+- **Goal:** proactive, rule-based nudges. *(Second brain / RAG / Obsidian export dropped Jun 13 2026.)*
+- **Deliverables:** `assistant_nudges` table + rule-based SECDEF cron evaluator + in-session HUD surfacing.
 - **Dependencies:** Phase 1 (governance kernel); orthogonal to local control.
 
 ---

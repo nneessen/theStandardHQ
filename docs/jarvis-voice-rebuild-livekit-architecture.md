@@ -106,8 +106,8 @@ from the LiveKit-signed room name) and rejects a mismatch. The frontend MUST pub
 - ⏭️ **Remaining (owner-gated):** fix creds → `fly deploy` + `fly scale count 1` → live
   first-audio smoke against the §5 "awesome" bar → flip default to `realtime` → delete legacy path.
 
-## Second brain (planned, not built)
+## Second brain — DROPPED (Jun 13 2026)
 
-In-app per-user `pgvector` RAG + a knowledge graph (entities + relationships) that learns over
-time, with one-click **Obsidian export** (there is no server-callable Obsidian API — the plugin
-is on-device — so true live two-way sync isn't buildable; export is the real equivalent).
+The in-app per-user `pgvector` RAG + knowledge graph + one-click Obsidian export concept was
+deliberately cut from scope. It was never built. (The shipped `jarvis_memory` durable-preferences
+memory is unrelated and remains.)
