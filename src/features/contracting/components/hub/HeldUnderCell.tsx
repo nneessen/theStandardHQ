@@ -166,13 +166,6 @@ export function HeldUnderCell({
                       >
                         {c.agentName}
                       </span>
-                      {c.contractLevel != null && (
-                        <span
-                          style={{ font: `600 9px ${T.mono}`, color: T.mut2 }}
-                        >
-                          L{c.contractLevel}
-                        </span>
-                      )}
                       {c.agentId === heldUnderId && (
                         <Check
                           className="h-3.5 w-3.5"
