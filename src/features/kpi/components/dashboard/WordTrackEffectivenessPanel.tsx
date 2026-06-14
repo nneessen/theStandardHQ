@@ -26,7 +26,7 @@ const TH: React.CSSProperties = {
   font: `700 12px ${T.mono}`,
   letterSpacing: "0.1em",
   textTransform: "uppercase",
-  color: T.mut2,
+  color: T.mut,
   padding: "0 12px 10px",
   textAlign: "left",
   whiteSpace: "nowrap",

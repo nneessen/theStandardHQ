@@ -226,7 +226,7 @@ export function DownlinePanel() {
             style={{
               marginLeft: "auto",
               font: `700 11px ${T.mono}`,
-              color: T.mut2,
+              color: T.mut,
             }}
           >
             {roster.length}
@@ -295,7 +295,7 @@ export function DownlinePanel() {
                         </span>
                         {e.level != null && (
                           <span
-                            style={{ font: `600 9px ${T.mono}`, color: T.mut2 }}
+                            style={{ font: `600 9px ${T.mono}`, color: T.mut }}
                           >
                             L{e.level}
                           </span>
@@ -402,7 +402,7 @@ export function DownlinePanel() {
                     style={{
                       ...detailRow,
                       padding: "7px 14px",
-                      color: T.mut2,
+                      color: T.mut,
                       font: `700 10px ${T.mono}`,
                       letterSpacing: "0.06em",
                       textTransform: "uppercase",

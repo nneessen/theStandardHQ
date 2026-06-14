@@ -31,7 +31,7 @@ export function AgentTablePanel() {
         <div
           style={{
             font: `500 12px ${T.mono}`,
-            color: T.mut2,
+            color: T.mut,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
           }}
@@ -103,7 +103,7 @@ export function AgentTablePanel() {
             <div
               style={{
                 font: `500 11px ${T.mono}`,
-                color: T.mut2,
+                color: T.mut,
                 letterSpacing: "0.10em",
                 textTransform: "uppercase",
                 marginTop: 3,
@@ -152,10 +152,10 @@ export function AgentTablePanel() {
                     <th
                       key={col.label}
                       style={{
-                        font: `700 11.5px ${T.mono}`,
+                        font: `700 12.5px ${T.mono}`,
                         letterSpacing: "0.14em",
                         textTransform: "uppercase",
-                        color: T.mut2,
+                        color: T.mut,
                         textAlign: col.align,
                         paddingBottom: 8,
                         paddingLeft: col.align === "right" ? 18 : 0,

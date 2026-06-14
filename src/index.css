@@ -211,8 +211,11 @@
     --v2-accent-strong: #82bcff;
     --v2-accent-soft: rgba(91, 155, 255, 0.12);
     --v2-ink: #f1e9d6;
-    --v2-ink-muted: rgba(236, 226, 205, 0.55);
-    --v2-ink-subtle: rgba(236, 226, 205, 0.36);
+    /* Two-tier muted text. Lifted Jun 14 2026 (muted 0.55→0.66, subtle 0.36→0.50)
+       so labels/captions read clearly app-wide while staying secondary to --v2-ink.
+       Kept in lockstep with T.mut/T.mut2 (tokens.ts) + --mut/--mut2 below. */
+    --v2-ink-muted: rgba(236, 226, 205, 0.66);
+    --v2-ink-subtle: rgba(236, 226, 205, 0.5);
     --v2-ring: rgba(236, 226, 205, 0.1);
     --v2-ring-strong: rgba(236, 226, 205, 0.18);
     --v2-shadow-soft:
@@ -230,8 +233,8 @@
     --line: rgba(236, 226, 205, 0.1);
     --line2: rgba(236, 226, 205, 0.18);
     --ink: #f1e9d6;
-    --mut: rgba(236, 226, 205, 0.55);
-    --mut2: rgba(236, 226, 205, 0.36);
+    --mut: rgba(236, 226, 205, 0.66);
+    --mut2: rgba(236, 226, 205, 0.5);
     --blue: #5b9bff;
     --cyan: #46d8f5;
     --amber: #f4b43a;

@@ -62,7 +62,7 @@ export function RedirectLedgerPanel() {
         <span style={{ font: `700 13px ${T.disp}`, color: T.ink }}>
           Overrides owed back to you
         </span>
-        <span style={{ font: `500 11px ${T.data}`, color: T.mut2 }}>
+        <span style={{ font: `500 11px ${T.data}`, color: T.mut }}>
           carriers your downline holds under a different upline
         </span>
         <span
@@ -81,7 +81,7 @@ export function RedirectLedgerPanel() {
         style={{
           ...row,
           padding: "7px 14px",
-          color: T.mut2,
+          color: T.mut,
           font: `700 10px ${T.mono}`,
           letterSpacing: "0.06em",
           textTransform: "uppercase",

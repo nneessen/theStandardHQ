@@ -58,7 +58,7 @@ export function CallTimingPanel() {
                 font: `700 10px ${T.mono}`,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: T.mut2,
+                color: T.mut,
               }}
             >
               {d.label}

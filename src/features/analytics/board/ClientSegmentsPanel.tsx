@@ -29,7 +29,7 @@ export function ClientSegmentsPanel() {
         <div
           style={{
             font: `500 12px ${T.mono}`,
-            color: T.mut2,
+            color: T.mut,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
           }}
@@ -158,7 +158,7 @@ export function ClientSegmentsPanel() {
           <div
             style={{
               font: `500 11px ${T.mono}`,
-              color: T.mut2,
+              color: T.mut,
               letterSpacing: "0.14em",
               textTransform: "uppercase",
               marginTop: 4,
@@ -194,10 +194,10 @@ export function ClientSegmentsPanel() {
                 <th
                   key={col}
                   style={{
-                    font: `700 11px ${T.mono}`,
+                    font: `700 12.5px ${T.mono}`,
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    color: T.mut2,
+                    color: T.mut,
                     textAlign: col === "Tier" ? "left" : "right",
                     paddingBottom: 10,
                     paddingLeft: col !== "Tier" ? 8 : 0,

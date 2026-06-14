@@ -90,7 +90,7 @@ export function HeldUnderCell({
               font: `700 10px ${T.mono}`,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
-              color: T.mut2,
+              color: T.mut,
             }}
           >
             Held under a different upline

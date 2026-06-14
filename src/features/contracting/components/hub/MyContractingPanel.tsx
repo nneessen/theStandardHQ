@@ -68,7 +68,7 @@ const rowStyle: React.CSSProperties = {
 const colHead: React.CSSProperties = {
   ...rowStyle,
   padding: "7px 14px",
-  color: T.mut2,
+  color: T.mut,
   font: `700 10px ${T.mono}`,
   letterSpacing: "0.06em",
   textTransform: "uppercase",
@@ -206,7 +206,7 @@ export function MyContractingPanel() {
           <div style={{ font: `700 15px ${T.disp}`, color: T.ink }}>
             My carrier contracting
           </div>
-          <div style={{ font: `500 11px ${T.data}`, color: T.mut2 }}>
+          <div style={{ font: `500 11px ${T.data}`, color: T.mut }}>
             {rows.length} carrier{rows.length === 1 ? "" : "s"} ·{" "}
             {counts.approved} approved
           </div>
@@ -527,7 +527,7 @@ export function MyContractingPanel() {
                 font: `700 11px ${T.mono}`,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: T.mut2,
+                color: T.mut,
               }}
             >
               My alternate-sponsor requests
@@ -552,7 +552,7 @@ export function MyContractingPanel() {
                       <span
                         style={{
                           font: `500 11px ${T.data}`,
-                          color: T.mut2,
+                          color: T.mut,
                           marginLeft: 8,
                         }}
                       >

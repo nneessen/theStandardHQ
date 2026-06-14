@@ -42,7 +42,7 @@ function Stat({
           font: `700 12px ${T.mono}`,
           letterSpacing: "0.1em",
           textTransform: "uppercase",
-          color: T.mut2,
+          color: T.mut,
         }}
       >
         {label}

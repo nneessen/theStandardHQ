@@ -48,7 +48,7 @@ const CustomTooltip = ({
       <div
         style={{
           font: `700 11px ${T.mono}`,
-          color: T.mut2,
+          color: T.mut,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           marginBottom: 6,

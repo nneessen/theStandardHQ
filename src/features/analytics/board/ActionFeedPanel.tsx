@@ -31,7 +31,7 @@ export function ActionFeedPanel() {
         <div
           style={{
             font: `500 12px ${T.mono}`,
-            color: T.mut2,
+            color: T.mut,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
           }}
@@ -220,10 +220,10 @@ export function ActionFeedPanel() {
                         <th
                           key={col}
                           style={{
-                            font: `700 11px ${T.mono}`,
+                            font: `700 12.5px ${T.mono}`,
                             letterSpacing: "0.14em",
                             textTransform: "uppercase",
-                            color: T.mut2,
+                            color: T.mut,
                             textAlign: col === "Scenario" ? "left" : "right",
                             paddingBottom: 8,
                             paddingLeft: col !== "Scenario" ? 18 : 0,

@@ -120,8 +120,8 @@ export function CarriersPanel() {
   });
 
   const thStyle: React.CSSProperties = {
-    font: `600 10px ${T.mono}`,
-    color: T.mut2,
+    font: `600 12.5px ${T.mono}`,
+    color: T.mut,
     letterSpacing: "0.12em",
     textTransform: "uppercase",
     paddingBottom: 6,
@@ -171,7 +171,7 @@ export function CarriersPanel() {
             <div
               style={{
                 font: `500 10px ${T.mono}`,
-                color: T.mut2,
+                color: T.mut,
                 letterSpacing: "0.1em",
                 marginTop: 3,
               }}

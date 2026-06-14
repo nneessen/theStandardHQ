@@ -77,7 +77,7 @@ function ActivityRow({ r }: { r: ContractingActivityRow }) {
       <span
         style={{
           font: `500 11px ${T.data}`,
-          color: T.mut2,
+          color: T.mut,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -125,7 +125,7 @@ function ArrangementRow({ r }: { r: DownlineSponsorshipRow }) {
         }}
       >
         {r.requesterName}
-        <span style={{ font: `500 11px ${T.data}`, color: T.mut2 }}>
+        <span style={{ font: `500 11px ${T.data}`, color: T.mut }}>
           {" "}
           · {r.carrierName} under {r.sponsorName}
         </span>

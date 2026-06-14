@@ -39,7 +39,7 @@ export function CallDemographicsPanel() {
               font: `700 10px ${T.mono}`,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: T.mut2,
+              color: T.mut,
               marginBottom: 8,
             }}
           >

@@ -19,7 +19,7 @@ export function PipelinePanel() {
         <div
           style={{
             font: `500 12px ${T.mono}`,
-            color: T.mut2,
+            color: T.mut,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
           }}

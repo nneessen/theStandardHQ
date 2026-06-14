@@ -133,7 +133,7 @@ export function RadialProgress({
           style={{
             font: `700 10px ${T.mono}`,
             letterSpacing: "0.16em",
-            color: T.mut2,
+            color: T.mut,
             textTransform: "uppercase",
             textAlign: "center",
             maxWidth: size * 0.7,

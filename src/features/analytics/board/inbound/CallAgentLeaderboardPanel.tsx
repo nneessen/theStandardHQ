@@ -8,10 +8,10 @@ import { CallBoard } from "./shared";
 import { closingTone, useInboundCallRange } from "./utils";
 
 const thStyle: React.CSSProperties = {
-  font: `700 10px ${T.mono}`,
+  font: `700 12.5px ${T.mono}`,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
-  color: T.mut2,
+  color: T.mut,
   paddingBottom: 8,
   borderBottom: `1px solid ${T.line}`,
 };
@@ -63,7 +63,7 @@ export function CallAgentLeaderboardPanel() {
                 <td
                   style={{
                     font: `800 13px ${T.disp}`,
-                    color: T.mut2,
+                    color: T.mut,
                     padding: "9px 0",
                   }}
                 >

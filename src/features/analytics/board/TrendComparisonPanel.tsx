@@ -180,7 +180,7 @@ export function TrendComparisonPanel() {
             <div
               style={{
                 font: `500 12px ${T.mono}`,
-                color: T.mut2,
+                color: T.mut,
                 marginTop: 6,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",

@@ -421,7 +421,7 @@ function AnalyticsDashboardContent() {
                   font: `700 12px ${T.mono}`,
                   letterSpacing: "0.16em",
                   textTransform: "uppercase",
-                  color: T.mut2,
+                  color: T.mut,
                 }}
               >
                 Inbound Calls

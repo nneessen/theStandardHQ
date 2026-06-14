@@ -166,7 +166,7 @@ export function DemographicsPanel({ range }: Props) {
                   >
                     {b.calls === 0 ? "—" : `${b.closingRate.toFixed(0)}%`}
                   </span>
-                  <span style={{ font: `500 11.5px ${T.mono}`, color: T.mut2 }}>
+                  <span style={{ font: `500 11.5px ${T.mono}`, color: T.mut }}>
                     close
                   </span>
                 </div>

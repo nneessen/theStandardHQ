@@ -57,7 +57,7 @@ export function Ticker({ items, tab = "◈ ORG", style }: TickerProps) {
                 style={{
                   font: `700 10px ${T.mono}`,
                   letterSpacing: "0.08em",
-                  color: T.mut2,
+                  color: T.mut,
                 }}
               >
                 {label}

@@ -173,7 +173,7 @@ export function TimeOfDayPanel({ range }: Props) {
                   >
                     {d.calls === 0 ? "—" : `${d.closingRate.toFixed(0)}%`}
                   </span>
-                  <span style={{ font: `500 12px ${T.mono}`, color: T.mut2 }}>
+                  <span style={{ font: `500 12px ${T.mono}`, color: T.mut }}>
                     {d.calls}
                   </span>
                 </div>

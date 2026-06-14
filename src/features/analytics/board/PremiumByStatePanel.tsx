@@ -75,7 +75,7 @@ export function PremiumByStatePanel() {
             <div
               style={{
                 font: `700 12px ${T.mono}`,
-                color: T.mut2,
+                color: T.mut,
                 marginTop: 2,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",

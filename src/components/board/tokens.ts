@@ -20,8 +20,11 @@ export const T = {
   // Text
   ink: "#f1e9d6",
   cream: "#ece2cd",
-  mut: "rgba(236,226,205,0.55)",
-  mut2: "rgba(236,226,205,0.36)",
+  // Two-tier muted text. Lifted Jun 14 2026 (mut 0.55→0.66, mut2 0.36→0.50) so
+  // labels/eyebrows/captions read clearly while staying secondary to `ink`.
+  // Kept in lockstep with --v2-ink-muted/--v2-ink-subtle + --mut/--mut2 in index.css.
+  mut: "rgba(236,226,205,0.66)",
+  mut2: "rgba(236,226,205,0.50)",
   // Accents — semantic. Blue = primary, cyan = Jarvis ONLY, amber/red/green = status.
   blue: "#5b9bff",
   blueLit: "#82bcff",
