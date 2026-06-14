@@ -12,6 +12,8 @@ export interface BlockRenderContext {
   displayName: string;
   recruiterFullName: string;
   logoUrl: string | null;
+  /** Recruiter's headshot/portrait (storage URL). Rendered via encodeURI. */
+  headshotUrl: string | null;
   calendlyUrl: string | null;
   supportPhone: string | null;
   socialLinks: SocialLinks;

@@ -9806,6 +9806,7 @@ export type Database = {
           enabled_features: Json | null;
           headline: string | null;
           hero_image_url: string | null;
+          headshot_url: string | null;
           id: string;
           imo_id: string;
           layout_variant: string | null;
@@ -9834,6 +9835,7 @@ export type Database = {
           enabled_features?: Json | null;
           headline?: string | null;
           hero_image_url?: string | null;
+          headshot_url?: string | null;
           id?: string;
           imo_id: string;
           layout_variant?: string | null;
@@ -9862,6 +9864,7 @@ export type Database = {
           enabled_features?: Json | null;
           headline?: string | null;
           hero_image_url?: string | null;
+          headshot_url?: string | null;
           id?: string;
           imo_id?: string;
           layout_variant?: string | null;

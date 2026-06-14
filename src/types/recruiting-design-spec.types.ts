@@ -112,6 +112,35 @@ export const SPEC_ICONS = [
 export type SpecIcon = (typeof SPEC_ICONS)[number];
 
 // ============================================================================
+// LAYOUT SHELLS
+// ============================================================================
+
+/**
+ * The top-level page LAYOUT — selects which trusted React shell renders the
+ * spec. This is what makes templates structurally DIFFERENT (not just recolored):
+ * each shell is its own hero treatment, headshot placement, and form position.
+ *
+ * NOT to be confused with the legacy `layout_variant` on RecruitingPageTheme
+ * (split-panel/centered-card/...), which is vestigial and ignored by the renderer.
+ *
+ * Adding a value here requires a matching entry in the shell registry
+ * (src/features/recruiting/layouts/shells/registry.ts) and the server mirror
+ * (spec-validator.ts LAYOUT_NAMES). "split-form" is the default (back-compat with
+ * every spec authored before this field existed → renders exactly as before).
+ */
+export const LAYOUT_NAMES = [
+  "split-form",
+  "cover-hero",
+  "centered-funnel",
+  "identity-sidebar",
+  "editorial-bands",
+  "stacked-card",
+  "poster-impact",
+  "split-hero-stack",
+] as const;
+export type LayoutName = (typeof LAYOUT_NAMES)[number];
+
+// ============================================================================
 // BLOCK ENUMS
 // ============================================================================
 
@@ -256,6 +285,8 @@ export interface DesignTheme {
 
 export interface RecruitingDesignSpec {
   version: number;
+  /** Which trusted render shell draws this spec. Defaults to "split-form". */
+  layout: LayoutName;
   theme: DesignTheme;
   blocks: DesignBlock[];
 }

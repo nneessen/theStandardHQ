@@ -7,6 +7,7 @@ import {
   RADIUS_TOKENS,
   PALETTE_MODES,
   BACKGROUND_STYLES,
+  LAYOUT_NAMES,
 } from "./spec-validator.ts";
 
 // Render an allowlist as `"a" | "b" | "c"` for the schema, derived from the
@@ -35,6 +36,7 @@ Return ONLY a single JSON object — the design spec. No prose, no markdown fenc
 
 {
   "version": 1,
+  "layout": ${asUnion(LAYOUT_NAMES)},
   "theme": {
     "palette": { "primary": "#RRGGBB", "accent": "#RRGGBB" },
     "mode": ${asUnion(PALETTE_MODES)},
@@ -44,6 +46,18 @@ Return ONLY a single JSON object — the design spec. No prose, no markdown fenc
   },
   "blocks": [ /* ordered, 2–10 blocks */ ]
 }
+
+## LAYOUT (page shell — picks the overall structure, not just styling)
+Choose ONE "layout". Each is a genuinely different page structure:
+- "split-form"       — content on the left, the lead form pinned in a right panel. Classic, balanced.
+- "cover-hero"       — full-bleed cover image with the headline overlaid; form is an inline section mid-page. Bold, visual.
+- "centered-funnel"  — narrow centered single column, minimal hero, form right below. Focused, high-conversion.
+- "identity-sidebar" — a sticky left rail with the recruiter's photo/name/socials; content + form on the right. Personal.
+- "editorial-bands"  — full-width alternating magazine bands; form near the end. Premium, editorial.
+- "stacked-card"     — centered stack of cards on a tinted background; form is the final card. Modern, friendly.
+- "poster-impact"    — oversized poster-style hero (use font_pairing "impact"); form below. High-energy.
+- "split-hero-stack" — a split hero at top, then a single-column stack of sections below. Versatile.
+When REFINING, keep the current "layout" unless the user explicitly asks to change the layout/template.
 
 ## BLOCK TYPES (discriminated union on "type")
 - hero      { type, variant: "stacked"|"split"|"minimal", eyebrow?, headline (required), subhead?, primary_cta? (button label), secondary_cta?: "book_call"|"none" }

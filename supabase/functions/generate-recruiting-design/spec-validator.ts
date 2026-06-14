@@ -29,6 +29,18 @@ export const BACKGROUND_STYLES = [
   "floating-shapes",
   "lattice",
 ];
+// Mirror of LAYOUT_NAMES in src/types/recruiting-design-spec.types.ts. Exported so
+// system-prompt.ts derives its union from the SAME source. "split-form" is default.
+export const LAYOUT_NAMES = [
+  "split-form",
+  "cover-hero",
+  "centered-funnel",
+  "identity-sidebar",
+  "editorial-bands",
+  "stacked-card",
+  "poster-impact",
+  "split-hero-stack",
+];
 const HERO_VARIANTS = ["stacked", "split", "minimal"];
 const STATS_STYLES = ["lattice", "inline"];
 const CTA_ACTIONS = ["open_form", "book_call"];
@@ -305,6 +317,7 @@ export function validateDesignSpec(input: unknown): ServerValidateResult {
     return {
       spec: {
         version: DESIGN_SPEC_VERSION,
+        layout: "split-form",
         theme: validateTheme(undefined),
         blocks: [
           { id: "form-auto", type: "form", heading: "Express Your Interest" },
@@ -358,7 +371,11 @@ export function validateDesignSpec(input: unknown): ServerValidateResult {
     errors.push(`Too many blocks; trimmed to ${CAPS.maxBlocks}.`);
   }
 
-  return { spec: { version: DESIGN_SPEC_VERSION, theme, blocks }, errors };
+  const layout = pickEnum(input.layout, LAYOUT_NAMES, "split-form");
+  return {
+    spec: { version: DESIGN_SPEC_VERSION, layout, theme, blocks },
+    errors,
+  };
 }
 
 /** A spec is "usable" if it has at least one non-form content block. */

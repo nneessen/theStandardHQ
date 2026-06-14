@@ -110,6 +110,7 @@ export const brandingSettingsService = {
         "logo_light_url",
         "logo_dark_url",
         "hero_image_url",
+        "headshot_url",
       ] as const;
       for (const field of urlFields) {
         const value = validatedInput[field];

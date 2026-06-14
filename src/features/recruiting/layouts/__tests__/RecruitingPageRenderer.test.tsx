@@ -1,11 +1,11 @@
-// src/features/recruiting/layouts/__tests__/AiComposedLayout.test.tsx
+// src/features/recruiting/layouts/__tests__/RecruitingPageRenderer.test.tsx
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeAll, describe, it, expect, vi } from "vitest";
-import { AiComposedLayout } from "../AiComposedLayout";
+import { RecruitingPageRenderer } from "../shells/registry";
 
 // Radix Select (inside LeadInterestForm) sets up a ResizeObserver on mount,
 // which jsdom doesn't provide. Stub it so the form mounts.
@@ -18,6 +18,7 @@ beforeAll(() => {
   vi.stubGlobal("ResizeObserver", ResizeObserverStub);
 });
 import { validateDesignSpec } from "@/lib/recruiting-design-spec";
+import { LAYOUT_NAMES } from "@/types/recruiting-design-spec.types";
 import { DEFAULT_THEME } from "@/types/recruiting-theme.types";
 import type { PublicRecruiterInfo } from "@/types/leads.types";
 
@@ -31,7 +32,7 @@ function renderLayout(specInput: unknown) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
-      <AiComposedLayout
+      <RecruitingPageRenderer
         spec={spec}
         theme={{ ...DEFAULT_THEME, display_name: "Acme Agency" }}
         recruiterInfo={{ is_active: true } as PublicRecruiterInfo}
@@ -42,7 +43,7 @@ function renderLayout(specInput: unknown) {
   );
 }
 
-describe("AiComposedLayout", () => {
+describe("RecruitingPageRenderer (default split-form shell)", () => {
   it("renders exactly ONE lead form when the spec has two form blocks", () => {
     const { container } = renderLayout({
       theme: { palette: { primary: "#112233", accent: "#445566" } },
@@ -54,7 +55,6 @@ describe("AiComposedLayout", () => {
     });
     expect(formCount(container)).toBe(1);
     expect(screen.getByText(/Join Acme/)).toBeInTheDocument();
-    // First step of the multi-step form is shown.
     expect(screen.getByText(/About you/i)).toBeInTheDocument();
   });
 
@@ -112,17 +112,41 @@ describe("AiComposedLayout", () => {
   });
 });
 
+// R4: regardless of which shell renders, EXACTLY ONE frozen lead form must mount
+// (single-form guarantee + preview inertness ride on this). Every layout in the
+// registry is exercised here.
+describe("every shell mounts exactly one lead form", () => {
+  for (const layout of LAYOUT_NAMES) {
+    it(`${layout} renders exactly one form`, () => {
+      const { container } = renderLayout({
+        layout,
+        theme: { palette: { primary: "#112233", accent: "#445566" } },
+        blocks: [
+          { type: "hero", variant: "split", headline: "Join" },
+          {
+            type: "value_grid",
+            heading: "Why",
+            items: [{ title: "Growth" }],
+          },
+          { type: "form" },
+        ],
+      });
+      expect(formCount(container)).toBe(1);
+    });
+  }
+});
+
 describe("XSS guard: no raw HTML injection sink in the renderer", () => {
-  it("no block component or layout uses dangerouslySetInnerHTML", () => {
+  it("no block component, shell, or scaffold uses dangerouslySetInnerHTML", () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const layoutsDir = join(here, "..");
     const blocksDir = join(layoutsDir, "blocks");
-    const files = [
-      join(layoutsDir, "AiComposedLayout.tsx"),
-      ...readdirSync(blocksDir)
+    const shellsDir = join(layoutsDir, "shells");
+    const collect = (dir: string) =>
+      readdirSync(dir)
         .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"))
-        .map((f) => join(blocksDir, f)),
-    ];
+        .map((f) => join(dir, f));
+    const files = [...collect(shellsDir), ...collect(blocksDir)];
     for (const file of files) {
       const src = readFileSync(file, "utf8");
       expect(src, `${file} must not use dangerouslySetInnerHTML`).not.toContain(

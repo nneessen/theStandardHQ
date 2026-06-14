@@ -17,7 +17,7 @@ import {
   clearRecruitingTheme,
   mergeWithDefaults,
 } from "@/lib/recruiting-theme";
-import { AiComposedLayout } from "../layouts/AiComposedLayout";
+import { RecruitingPageRenderer } from "../layouts";
 import {
   validateDesignSpec,
   legacyThemeToSpec,
@@ -219,10 +219,10 @@ export function PublicJoinPage() {
     onFormSuccess: (leadId: string) => setSubmittedLeadId(leadId),
   };
 
-  // All recruiting pages render through the AI block composer — a validated design
+  // All recruiting pages render through the shell dispatcher — a validated design
   // spec when the recruiter has built one, otherwise the legacy-theme fallback
-  // computed above. The builder is the single source of truth for every page.
-  return <AiComposedLayout spec={resolvedSpec} {...layoutProps} />;
+  // computed above. spec.layout selects which shell draws it (default split-form).
+  return <RecruitingPageRenderer spec={resolvedSpec} {...layoutProps} />;
 }
 
 export default PublicJoinPage;

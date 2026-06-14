@@ -79,6 +79,8 @@ export interface RecruitingPageTheme {
   logo_light_url: string | null;
   logo_dark_url: string | null;
   hero_image_url: string | null;
+  /** Recruiter portrait/headshot. Optional until the column is populated. */
+  headshot_url?: string | null;
 
   // CTA & Actions
   cta_text: string;
@@ -127,6 +129,7 @@ export interface RecruitingPageSettings {
   logo_light_url: string | null;
   logo_dark_url: string | null;
   hero_image_url: string | null;
+  headshot_url: string | null;
 
   // CTA & Actions
   cta_text: string | null;
@@ -168,6 +171,7 @@ export interface RecruitingPageSettingsInput {
   logo_light_url?: string | null;
   logo_dark_url?: string | null;
   hero_image_url?: string | null;
+  headshot_url?: string | null;
   cta_text?: string | null;
   calendly_url?: string | null;
   support_phone?: string | null;
@@ -198,6 +202,7 @@ export const DEFAULT_THEME: RecruitingPageTheme = {
   logo_light_url: null,
   logo_dark_url: null,
   hero_image_url: null,
+  headshot_url: null,
   cta_text: "Apply Now",
   calendly_url: null,
   support_phone: null,
@@ -253,7 +258,11 @@ export const COLOR_PRESETS = {
 /**
  * Asset type for upload service
  */
-export type RecruitingAssetType = "logo_light" | "logo_dark" | "hero";
+export type RecruitingAssetType =
+  | "logo_light"
+  | "logo_dark"
+  | "hero"
+  | "headshot";
 
 /**
  * Storage path structure for recruiting assets

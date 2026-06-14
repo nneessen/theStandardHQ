@@ -1,8 +1,10 @@
 // src/features/recruiting/layouts/index.ts
-// Recruiting page layouts. The old hand-built layouts were replaced by the AI
-// block composer (AiComposedLayout), which is now the single source of truth for
-// every public recruiting page (validated design spec, or a legacy-theme fallback).
+// Recruiting page layouts. A validated design spec is rendered by the shell
+// dispatcher (RecruitingPageRenderer), which picks one of the layout shells in
+// ./shells based on spec.layout (default "split-form"). The legacy hand-built
+// layouts and the single AiComposedLayout shell were folded into this system.
 
-export { AiComposedLayout } from "./AiComposedLayout";
+export { RecruitingPageRenderer, SHELL_REGISTRY } from "./shells";
+export type { ShellProps, ShellComponent } from "./shells";
 export type { LayoutProps, ActiveSocialLink } from "./types";
 export { getActiveSocialLinks } from "./types";

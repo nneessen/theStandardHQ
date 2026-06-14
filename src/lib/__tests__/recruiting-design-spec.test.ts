@@ -321,4 +321,43 @@ describe("DEFAULT_DESIGN_SPEC + legacyThemeToSpec", () => {
     const spec = legacyThemeToSpec({ ...DEFAULT_THEME, about_text: null });
     expect(spec.blocks.some((b) => b.type === "about")).toBe(false);
   });
+
+  it("legacyThemeToSpec uses the split-form layout", () => {
+    expect(legacyThemeToSpec(DEFAULT_THEME).layout).toBe("split-form");
+  });
+});
+
+describe("validateDesignSpec — layout (shell selector)", () => {
+  const base = {
+    theme: { palette: { primary: "#112233", accent: "#445566" } },
+    blocks: [{ type: "hero", variant: "split", headline: "Hi" }],
+  };
+
+  it("defaults to split-form when layout is omitted", () => {
+    expect(validateDesignSpec(base).spec.layout).toBe("split-form");
+  });
+
+  it("coerces an unknown layout to split-form", () => {
+    expect(
+      validateDesignSpec({ ...base, layout: "fancy-3d-carousel" }).spec.layout,
+    ).toBe("split-form");
+  });
+
+  it("preserves every valid layout name", () => {
+    for (const layout of [
+      "cover-hero",
+      "centered-funnel",
+      "identity-sidebar",
+      "editorial-bands",
+      "stacked-card",
+      "poster-impact",
+      "split-hero-stack",
+    ]) {
+      expect(validateDesignSpec({ ...base, layout }).spec.layout).toBe(layout);
+    }
+  });
+
+  it("DEFAULT_DESIGN_SPEC is split-form", () => {
+    expect(DEFAULT_DESIGN_SPEC.layout).toBe("split-form");
+  });
 });

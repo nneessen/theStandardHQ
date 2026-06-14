@@ -242,6 +242,16 @@
   color: var(--landing-icy-blue);
 }
 
+/* A light "paper" card nested inside a dark section (e.g. the lead-form card on
+   dark recruiting shells) must keep DARK headings — declared after .surface-dark
+   so it wins at equal specificity for an h* inside both. */
+.theme-landing .surface-paper h1,
+.theme-landing .surface-paper h2,
+.theme-landing .surface-paper h3,
+.theme-landing .surface-paper h4 {
+  color: var(--landing-deep-green);
+}
+
 .theme-landing .surface-forest {
   background: var(--landing-forest-green);
   color: var(--landing-icy-blue);

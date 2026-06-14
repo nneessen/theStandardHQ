@@ -33,6 +33,7 @@ interface RecruitingPageTheme {
   logo_light_url: string | null;
   logo_dark_url: string | null;
   hero_image_url: string | null;
+  headshot_url: string | null;
   cta_text: string;
   calendly_url: string | null;
   support_phone: string | null;
@@ -125,6 +126,9 @@ function sanitizeTheme(rawTheme: Record<string, unknown>): RecruitingPageTheme {
       : null,
     hero_image_url: isValidUrl(rawTheme.hero_image_url)
       ? String(rawTheme.hero_image_url)
+      : null,
+    headshot_url: isValidUrl(rawTheme.headshot_url)
+      ? String(rawTheme.headshot_url)
       : null,
 
     // CTA & Actions

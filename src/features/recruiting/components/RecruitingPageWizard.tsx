@@ -38,7 +38,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { subdomainUrl } from "@/lib/hostname";
 import { isValidHexColor, isValidSafeUrl } from "@/lib/recruiting-validation";
 import { CustomDomainManager } from "@/features/settings";
-import { AiDesignStep } from "./wizard/AiDesignStep";
+import { DesignStep } from "./wizard/DesignStep";
 import type {
   RecruitingPageSettingsInput,
   SocialLinks,
@@ -52,7 +52,7 @@ type StepId = "link" | "design" | "booking" | "review";
 
 const STEPS: { id: StepId; label: string; hint: string }[] = [
   { id: "link", label: "Your link", hint: "Pick your web address" },
-  { id: "design", label: "Design", hint: "Colors, logo & AI builder" },
+  { id: "design", label: "Design", hint: "Pick & customize your design" },
   {
     id: "booking",
     label: "Booking & contact",
@@ -286,7 +286,7 @@ export function RecruitingPageWizard() {
   const [savingBranding, setSavingBranding] = useState(false);
   const [savedTick, setSavedTick] = useState(false);
   const [uploadingType, setUploadingType] = useState<
-    "logo_light" | "logo_dark" | "hero" | null
+    "logo_light" | "logo_dark" | "hero" | "headshot" | null
   >(null);
   const [published, setPublished] = useState(false);
 
@@ -323,7 +323,10 @@ export function RecruitingPageWizard() {
   );
 
   const handleUpload = useCallback(
-    async (file: File, type: "logo_light" | "logo_dark" | "hero") => {
+    async (
+      file: File,
+      type: "logo_light" | "logo_dark" | "hero" | "headshot",
+    ) => {
       setUploadingType(type);
       try {
         const url = await uploadAsset(file, type);
@@ -331,6 +334,7 @@ export function RecruitingPageWizard() {
           logo_light: "logo_light_url",
           logo_dark: "logo_dark_url",
           hero: "hero_image_url",
+          headshot: "headshot_url",
         } as const;
         updateField(map[type], url);
         toast.success("Image uploaded.");
@@ -344,7 +348,13 @@ export function RecruitingPageWizard() {
   );
 
   const handleDeleteImage = useCallback(
-    async (field: "logo_light_url" | "logo_dark_url" | "hero_image_url") => {
+    async (
+      field:
+        | "logo_light_url"
+        | "logo_dark_url"
+        | "hero_image_url"
+        | "headshot_url",
+    ) => {
       const url = form[field];
       if (!url) return;
       try {
@@ -460,19 +470,29 @@ export function RecruitingPageWizard() {
           type="button"
           variant="outline"
           size="sm"
-          disabled={!previewUrl}
-          onClick={() =>
-            previewUrl && window.open(previewUrl, "_blank", "noopener")
-          }
+          disabled={!previewUrl || savingBranding}
+          onClick={async () => {
+            if (!previewUrl) return;
+            // Save first so the live page reflects the latest design — otherwise
+            // it opens the last PUBLISHED version ("it's my old page").
+            if (canBrand && !hasBrandingErrors) {
+              const ok = await persistBranding({ silent: true });
+              if (!ok) {
+                toast.error("Couldn't save before opening — try again.");
+                return;
+              }
+            }
+            window.open(previewUrl, "_blank", "noopener");
+          }}
           className="h-9"
           title={
             previewUrl
-              ? "Open your live recruiting page"
+              ? "Save your changes and open your live recruiting page"
               : "Pick your link first"
           }
         >
           <Eye className="mr-1.5 h-4 w-4" />
-          Preview my page
+          {savingBranding ? "Saving…" : "View published page"}
           <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
         </Button>
       </div>
@@ -497,7 +517,7 @@ export function RecruitingPageWizard() {
 
           {step === "design" && (
             <FeatureGate feature="custom_branding" promptVariant="card">
-              <AiDesignStep
+              <DesignStep
                 form={form}
                 updateField={updateField}
                 onUpload={handleUpload}
@@ -933,7 +953,7 @@ function ReviewStep({
             <SummaryRow label="Headline" value={form.headline?.trim() || "—"} />
             <SummaryRow
               label="Design"
-              value={form.design_spec ? "AI-built page" : "Default layout"}
+              value={form.design_spec ? "Custom design" : "Default design"}
             />
             <SummaryRow
               label="Button text"

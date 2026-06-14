@@ -11,6 +11,7 @@ const ctx: BlockRenderContext = {
   displayName: "Acme",
   recruiterFullName: "Jane Doe",
   logoUrl: null,
+  headshotUrl: null,
   calendlyUrl: null,
   supportPhone: null,
   socialLinks: {},

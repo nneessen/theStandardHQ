@@ -23,6 +23,7 @@ import {
   RADIUS_TOKENS,
   PALETTE_MODES,
   BACKGROUND_STYLES,
+  LAYOUT_NAMES,
   SPEC_ICONS,
   HERO_VARIANTS,
   STATS_STYLES,
@@ -136,6 +137,7 @@ function pickBool(v: unknown, fallback: boolean): boolean {
 
 export const DEFAULT_DESIGN_SPEC: RecruitingDesignSpec = {
   version: DESIGN_SPEC_VERSION,
+  layout: "split-form",
   theme: {
     palette: {
       primary: DEFAULT_THEME.primary_color,
@@ -394,8 +396,12 @@ export function validateDesignSpec(input: unknown): ValidateResult {
     errors.push(`Too many blocks; trimmed to ${SPEC_CAPS.maxBlocks}.`);
   }
 
+  // layout selects the trusted render shell; default "split-form" preserves the
+  // pre-layout-field look for any spec (legacy/AI/template) that omits it.
+  const layout = pickEnum(input.layout, LAYOUT_NAMES, "split-form");
+
   return {
-    spec: { version: DESIGN_SPEC_VERSION, theme, blocks },
+    spec: { version: DESIGN_SPEC_VERSION, layout, theme, blocks },
     errors,
   };
 }
@@ -471,6 +477,7 @@ export function legacyThemeToSpec(
   // Run through the validator so the result is provably canonical/safe.
   return validateDesignSpec({
     version: DESIGN_SPEC_VERSION,
+    layout: "split-form",
     theme: {
       palette: {
         primary: theme.primary_color || DEFAULT_THEME.primary_color,

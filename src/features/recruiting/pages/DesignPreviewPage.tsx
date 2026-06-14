@@ -2,12 +2,12 @@
 //
 // Renders inside the wizard's live-preview iframe. Receives a design spec + a
 // preview theme from the parent window via postMessage (same-origin only) and
-// renders the REAL AiComposedLayout — so what the agent sees is exactly what
+// renders the REAL shell dispatcher — so what the agent sees is exactly what
 // recruits will see, at a true viewport width. The lead form points at the
 // sentinel "__preview__" slug, so any test submission is inert.
 
 import { useEffect, useState } from "react";
-import { AiComposedLayout } from "../layouts/AiComposedLayout";
+import { RecruitingPageRenderer } from "../layouts";
 import { validateDesignSpec } from "@/lib/recruiting-design-spec";
 import { DEFAULT_THEME } from "@/types/recruiting-theme.types";
 import type { RecruitingPageTheme } from "@/types/recruiting-theme.types";
@@ -70,7 +70,7 @@ export function DesignPreviewPage() {
   }
 
   return (
-    <AiComposedLayout
+    <RecruitingPageRenderer
       spec={spec}
       theme={theme}
       recruiterInfo={{ is_active: true } as PublicRecruiterInfo}
