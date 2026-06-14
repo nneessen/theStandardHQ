@@ -18,6 +18,7 @@ import { useMyDownlines } from "@/hooks/hierarchy";
 import { useIsMobile } from "@/hooks/ui";
 import { Pager } from "./Pager";
 import { statusColor, STATUS_OPTIONS } from "./StatusTag";
+import { HeldUnderCell } from "./HeldUnderCell";
 import {
   useDownlineContracts,
   useHubCarriers,
@@ -396,7 +397,7 @@ export function DownlinePanel() {
                   pad={40}
                 />
               ) : (
-                <div style={isMobile ? { minWidth: 440 } : undefined}>
+                <div style={isMobile ? { minWidth: 600 } : undefined}>
                   <div
                     style={{
                       ...detailRow,
@@ -409,6 +410,7 @@ export function DownlinePanel() {
                   >
                     <span style={{ flex: 1 }}>Carrier</span>
                     <span style={{ width: 150 }}>Writing #</span>
+                    <span style={{ width: 150 }}>Held under</span>
                     <span style={{ width: 130 }}>Status</span>
                   </div>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -537,6 +539,14 @@ export function DownlinePanel() {
                               </span>
                             )}
                           </span>
+
+                          <HeldUnderCell
+                            agentId={r.agentId}
+                            carrierId={r.carrierId}
+                            heldUnderId={r.heldUnderId}
+                            heldUnderName={r.heldUnderName}
+                            heldUnderUserName={r.heldUnderUserName}
+                          />
 
                           <span style={{ width: 130 }}>
                             <Select

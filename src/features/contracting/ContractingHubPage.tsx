@@ -13,6 +13,7 @@ import { ActionCenter } from "./components/hub/ActionCenter";
 import { DownlineActivityPanel } from "./components/hub/DownlineActivityPanel";
 import { MyContractingPanel } from "./components/hub/MyContractingPanel";
 import { DownlinePanel } from "./components/hub/DownlinePanel";
+import { RedirectLedgerPanel } from "./components/hub/RedirectLedgerPanel";
 
 export type ContractingTab = "mine" | "downline";
 
@@ -122,6 +123,9 @@ export function ContractingHubPage({ initialTab }: { initialTab?: string }) {
 
           {/* always-on downline awareness (managers / super-admins) */}
           <DownlineActivityPanel />
+
+          {/* overrides redirected off your leg (held-under arrangements) */}
+          {tab === "downline" && <RedirectLedgerPanel />}
 
           {/* segmented body */}
           <div style={isMobile ? undefined : { flex: 1, minHeight: 0 }}>

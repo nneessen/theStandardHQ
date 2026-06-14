@@ -29,6 +29,7 @@ import { Pager } from "./Pager";
 import { StatusTag, statusColor, STATUS_OPTIONS } from "./StatusTag";
 import { RequestDifferentUplineDialog } from "./RequestDifferentUplineDialog";
 import { CarrierContractingInfo } from "./CarrierContractingInfo";
+import { HeldUnderCell } from "./HeldUnderCell";
 import {
   useMyContracts,
   useMySponsorships,
@@ -303,11 +304,12 @@ export function MyContractingPanel() {
             {/* Only the wide fixed-column table scrolls sideways on mobile —
                 the Pager below stays at viewport width. */}
             <div style={isMobile ? { overflowX: "auto" } : undefined}>
-              <div style={isMobile ? { minWidth: 680 } : undefined}>
+              <div style={isMobile ? { minWidth: 840 } : undefined}>
                 <div style={colHead}>
                   <span style={{ flex: 1, minWidth: 0 }}>Carrier</span>
                   <span style={{ width: 128 }}>Status</span>
                   <span style={{ width: 150 }}>Writing #</span>
+                  <span style={{ width: 150 }}>Held under</span>
                   <span style={{ width: 70, textAlign: "right" }}>
                     Submitted
                   </span>
@@ -472,6 +474,13 @@ export function MyContractingPanel() {
                             </span>
                           )}
                         </span>
+                        <HeldUnderCell
+                          agentId={me.data ?? ""}
+                          carrierId={r.carrierId}
+                          heldUnderId={r.heldUnderId}
+                          heldUnderName={r.heldUnderName}
+                          heldUnderUserName={r.heldUnderUserName}
+                        />
                         <span style={dateCol}>{r.submittedDate ?? "—"}</span>
                         <span style={dateCol}>{r.approvedDate ?? "—"}</span>
                         <span

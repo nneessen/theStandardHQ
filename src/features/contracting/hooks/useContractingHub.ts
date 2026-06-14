@@ -22,6 +22,7 @@ export const hubKeys = {
   activity: () => [...hubKeys.all, "activity"] as const,
   downlineSponsorships: () =>
     [...hubKeys.all, "downline-sponsorships"] as const,
+  overrideLedger: () => [...hubKeys.all, "override-ledger"] as const,
 };
 
 export function useMyUserId() {
@@ -111,6 +112,24 @@ export function useDownlineSponsorships(enabled = true) {
   });
 }
 
+export function useHeldUnderCandidates(agentId: string | null) {
+  return useQuery({
+    queryKey: [...hubKeys.all, "held-under-candidates", agentId] as const,
+    queryFn: () => contractingHubService.getHeldUnderCandidates(agentId!),
+    enabled: !!agentId,
+    staleTime: 60_000,
+  });
+}
+
+export function useOverrideRedirectLedger(enabled = true) {
+  return useQuery({
+    queryKey: hubKeys.overrideLedger(),
+    queryFn: () => contractingHubService.getOverrideRedirectLedger(),
+    staleTime: 30_000,
+    enabled,
+  });
+}
+
 function errMessage(e: unknown): string {
   if (e && typeof e === "object" && "message" in e) {
     return String((e as { message: unknown }).message);
@@ -132,6 +151,25 @@ export function useSetContractStatus() {
       qc.invalidateQueries({ queryKey: hubKeys.downlineContracts() });
       qc.invalidateQueries({ queryKey: hubKeys.newlyEligible() });
       qc.invalidateQueries({ queryKey: hubKeys.activity() });
+    },
+    onError: (e) => toast.error(errMessage(e)),
+  });
+}
+
+export function useSetContractedUnder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: {
+      agentId: string;
+      carrierId: string;
+      heldUnderId?: string | null;
+      heldUnderName?: string | null;
+    }) => contractingHubService.setContractedUnder(args),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: hubKeys.myContracts() });
+      qc.invalidateQueries({ queryKey: hubKeys.downlineContracts() });
+      qc.invalidateQueries({ queryKey: hubKeys.overrideLedger() });
+      toast.success("Updated");
     },
     onError: (e) => toast.error(errMessage(e)),
   });

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       _eqcheck_rls: {
@@ -1881,6 +1906,10 @@ export type Database = {
           carrier_id: string;
           created_at: string | null;
           created_by: string | null;
+          held_under_id: string | null;
+          held_under_name: string | null;
+          held_under_since: string | null;
+          held_under_until: string | null;
           id: string;
           notes: string | null;
           requested_date: string | null;
@@ -1895,6 +1924,10 @@ export type Database = {
           carrier_id: string;
           created_at?: string | null;
           created_by?: string | null;
+          held_under_id?: string | null;
+          held_under_name?: string | null;
+          held_under_since?: string | null;
+          held_under_until?: string | null;
           id?: string;
           notes?: string | null;
           requested_date?: string | null;
@@ -1909,6 +1942,10 @@ export type Database = {
           carrier_id?: string;
           created_at?: string | null;
           created_by?: string | null;
+          held_under_id?: string | null;
+          held_under_name?: string | null;
+          held_under_since?: string | null;
+          held_under_until?: string | null;
           id?: string;
           notes?: string | null;
           requested_date?: string | null;
@@ -1963,6 +2000,27 @@ export type Database = {
           {
             foreignKeyName: "carrier_contracts_created_by_fkey";
             columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_contracts_held_under_id_fkey";
+            columns: ["held_under_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_contracts_held_under_id_fkey";
+            columns: ["held_under_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "carrier_contracts_held_under_id_fkey";
+            columns: ["held_under_id"];
             isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
@@ -7719,6 +7777,8 @@ export type Database = {
           policy_id: string;
           policy_premium: number;
           product_id: string | null;
+          redirect_carrier_contract_id: string | null;
+          redirected_from_upline_id: string | null;
           status: string;
           unearned_amount: number | null;
           updated_at: string | null;
@@ -7746,6 +7806,8 @@ export type Database = {
           policy_id: string;
           policy_premium: number;
           product_id?: string | null;
+          redirect_carrier_contract_id?: string | null;
+          redirected_from_upline_id?: string | null;
           status?: string;
           unearned_amount?: number | null;
           updated_at?: string | null;
@@ -7773,6 +7835,8 @@ export type Database = {
           policy_id?: string;
           policy_premium?: number;
           product_id?: string | null;
+          redirect_carrier_contract_id?: string | null;
+          redirected_from_upline_id?: string | null;
           status?: string;
           unearned_amount?: number | null;
           updated_at?: string | null;
@@ -7853,6 +7917,34 @@ export type Database = {
             columns: ["product_id"];
             isOneToOne: false;
             referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "override_commissions_redirect_carrier_contract_id_fkey";
+            columns: ["redirect_carrier_contract_id"];
+            isOneToOne: false;
+            referencedRelation: "carrier_contracts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "override_commissions_redirected_from_upline_id_fkey";
+            columns: ["redirected_from_upline_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "override_commissions_redirected_from_upline_id_fkey";
+            columns: ["redirected_from_upline_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "override_commissions_redirected_from_upline_id_fkey";
+            columns: ["redirected_from_upline_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -17669,6 +17761,14 @@ export type Database = {
           contract_level: number;
         }[];
       };
+      get_held_under_candidates: {
+        Args: { p_agent_id: string };
+        Returns: {
+          agent_id: string;
+          agent_name: string;
+          contract_level: number;
+        }[];
+      };
       get_imo_admin: { Args: { p_imo_id: string }; Returns: string };
       get_imo_call_recording_usage_bytes: { Args: never; Returns: number };
       get_imo_contract_stats: {
@@ -18131,6 +18231,22 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      get_my_contracts: {
+        Args: never;
+        Returns: {
+          approved_date: string;
+          carrier_id: string;
+          carrier_name: string;
+          held_under_id: string;
+          held_under_name: string;
+          held_under_user_name: string;
+          notes: string;
+          requested_date: string;
+          status: string;
+          submitted_date: string;
+          writing_number: string;
+        }[];
+      };
       get_my_downline_contracts: {
         Args: never;
         Returns: {
@@ -18140,6 +18256,9 @@ export type Database = {
           carrier_id: string;
           carrier_name: string;
           contract_level: number;
+          held_under_id: string;
+          held_under_name: string;
+          held_under_user_name: string;
           requested_date: string;
           status: string;
           submitted_date: string;
@@ -18176,6 +18295,19 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      get_my_override_redirect_ledger: {
+        Args: never;
+        Returns: {
+          agent_id: string;
+          agent_name: string;
+          carrier_id: string;
+          carrier_name: string;
+          policy_count: number;
+          recipient_id: string;
+          recipient_name: string;
+          total_amount: number;
+        }[];
       };
       get_my_scheduled_reports: {
         Args: never;
@@ -19727,6 +19859,43 @@ export type Database = {
           carrier_id: string;
           created_at: string | null;
           created_by: string | null;
+          held_under_id: string | null;
+          held_under_name: string | null;
+          held_under_since: string | null;
+          held_under_until: string | null;
+          id: string;
+          notes: string | null;
+          requested_date: string | null;
+          status: string;
+          submitted_date: string | null;
+          updated_at: string | null;
+          writing_number: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "carrier_contracts";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      set_contracted_under: {
+        Args: {
+          p_agent_id: string;
+          p_carrier_id: string;
+          p_held_under_id?: string;
+          p_held_under_name?: string;
+          p_since?: string;
+        };
+        Returns: {
+          agent_id: string;
+          approved_date: string | null;
+          carrier_id: string;
+          created_at: string | null;
+          created_by: string | null;
+          held_under_id: string | null;
+          held_under_name: string | null;
+          held_under_since: string | null;
+          held_under_until: string | null;
           id: string;
           notes: string | null;
           requested_date: string | null;
@@ -20064,6 +20233,7 @@ export type Database = {
         Args: { p_content: string; p_platform: string };
         Returns: boolean;
       };
+      verify_hierarchy_integrity: { Args: never; Returns: number };
       wipe_user_business_data: {
         Args: { p_reassign_to_user_id: string; p_user_id: string };
         Returns: Json;
@@ -20380,6 +20550,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       agent_status: ["unlicensed", "licensed", "not_applicable"],

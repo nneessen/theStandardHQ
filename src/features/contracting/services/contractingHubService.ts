@@ -35,6 +35,9 @@ export interface MyContractRow {
   submittedDate: string | null;
   approvedDate: string | null;
   notes: string | null;
+  heldUnderId: string | null;
+  heldUnderName: string | null;
+  heldUnderUserName: string | null;
 }
 
 export interface NewlyEligibleCarrier {
@@ -56,6 +59,20 @@ export interface DownlineContractRow {
   submittedDate: string | null;
   approvedDate: string | null;
   updatedAt: string | null;
+  heldUnderId: string | null;
+  heldUnderName: string | null;
+  heldUnderUserName: string | null;
+}
+
+export interface OverrideRedirectLedgerRow {
+  agentId: string;
+  agentName: string;
+  carrierId: string;
+  carrierName: string;
+  recipientId: string;
+  recipientName: string;
+  policyCount: number;
+  totalAmount: number;
 }
 
 export interface SponsorOption {
@@ -131,13 +148,16 @@ export interface DownlineSponsorshipRow {
 // ── Raw row shapes returned by the (untyped) client ──────────────────────────
 interface RawMyContract {
   carrier_id: string;
+  carrier_name: string;
   status: string;
   writing_number: string | null;
   requested_date: string | null;
   submitted_date: string | null;
   approved_date: string | null;
   notes: string | null;
-  carriers: { name: string } | { name: string }[] | null;
+  held_under_id: string | null;
+  held_under_name: string | null;
+  held_under_user_name: string | null;
 }
 interface RawNewlyEligible {
   carrier_id: string;
@@ -157,6 +177,19 @@ interface RawDownlineContract {
   submitted_date: string | null;
   approved_date: string | null;
   updated_at: string | null;
+  held_under_id: string | null;
+  held_under_name: string | null;
+  held_under_user_name: string | null;
+}
+interface RawOverrideRedirectLedger {
+  agent_id: string;
+  agent_name: string;
+  carrier_id: string;
+  carrier_name: string;
+  recipient_id: string;
+  recipient_name: string;
+  policy_count: number;
+  total_amount: number;
 }
 interface RawSponsorOption {
   agent_id: string;
@@ -219,11 +252,6 @@ interface RawDownlineSponsorship {
   approved_at: string | null;
 }
 
-function carrierNameOf(c: RawMyContract["carriers"]): string {
-  if (!c) return "Unknown carrier";
-  return Array.isArray(c) ? (c[0]?.name ?? "Unknown carrier") : c.name;
-}
-
 async function currentUid(): Promise<string> {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) throw new Error("Not authenticated");
@@ -232,23 +260,20 @@ async function currentUid(): Promise<string> {
 
 export const contractingHubService = {
   async getMyContracts(): Promise<MyContractRow[]> {
-    const uid = await currentUid();
-    const { data, error } = await supabase
-      .from("carrier_contracts")
-      .select(
-        "carrier_id, status, writing_number, requested_date, submitted_date, approved_date, notes, carriers(name)",
-      )
-      .eq("agent_id", uid);
+    const { data, error } = await supabase.rpc("get_my_contracts");
     if (error) throw error;
     return ((data ?? []) as RawMyContract[]).map((r) => ({
       carrierId: r.carrier_id,
-      carrierName: carrierNameOf(r.carriers),
+      carrierName: r.carrier_name,
       status: r.status,
       writingNumber: r.writing_number,
       requestedDate: r.requested_date,
       submittedDate: r.submitted_date,
       approvedDate: r.approved_date,
       notes: r.notes,
+      heldUnderId: r.held_under_id,
+      heldUnderName: r.held_under_name,
+      heldUnderUserName: r.held_under_user_name,
     }));
   },
 
@@ -293,6 +318,53 @@ export const contractingHubService = {
       submittedDate: r.submitted_date,
       approvedDate: r.approved_date,
       updatedAt: r.updated_at,
+      heldUnderId: r.held_under_id,
+      heldUnderName: r.held_under_name,
+      heldUnderUserName: r.held_under_user_name,
+    }));
+  },
+
+  async setContractedUnder(args: {
+    agentId: string;
+    carrierId: string;
+    heldUnderId?: string | null;
+    heldUnderName?: string | null;
+  }): Promise<void> {
+    const { error } = await supabase.rpc("set_contracted_under", {
+      p_agent_id: args.agentId,
+      p_carrier_id: args.carrierId,
+      p_held_under_id: args.heldUnderId ?? undefined,
+      p_held_under_name: args.heldUnderName ?? undefined,
+    });
+    if (error) throw error;
+  },
+
+  async getHeldUnderCandidates(agentId: string): Promise<SponsorOption[]> {
+    const { data, error } = await supabase.rpc("get_held_under_candidates", {
+      p_agent_id: agentId,
+    });
+    if (error) throw error;
+    return ((data ?? []) as RawSponsorOption[]).map((r) => ({
+      agentId: r.agent_id,
+      agentName: r.agent_name,
+      contractLevel: r.contract_level,
+    }));
+  },
+
+  async getOverrideRedirectLedger(): Promise<OverrideRedirectLedgerRow[]> {
+    const { data, error } = await supabase.rpc(
+      "get_my_override_redirect_ledger",
+    );
+    if (error) throw error;
+    return ((data ?? []) as RawOverrideRedirectLedger[]).map((r) => ({
+      agentId: r.agent_id,
+      agentName: r.agent_name,
+      carrierId: r.carrier_id,
+      carrierName: r.carrier_name,
+      recipientId: r.recipient_id,
+      recipientName: r.recipient_name,
+      policyCount: Number(r.policy_count),
+      totalAmount: Number(r.total_amount),
     }));
   },
 
