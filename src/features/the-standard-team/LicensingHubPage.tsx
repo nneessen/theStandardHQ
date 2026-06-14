@@ -85,7 +85,7 @@ export function LicensingHubPage({ initialTab }: LicensingHubPageProps) {
                       letterSpacing: "0.04em",
                       textTransform: "uppercase",
                       background: active
-                        ? "rgba(91,155,255,0.16)"
+                        ? "rgba(107,151,255,0.16)"
                         : "transparent",
                       color: active ? T.blue : T.mut,
                       transition: "background 0.15s, color 0.15s",

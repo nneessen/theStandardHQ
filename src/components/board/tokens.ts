@@ -5,29 +5,30 @@
 // bespoke board components can lift the handoff's inline-style logic faithfully.
 
 export const T = {
-  // Surfaces — NEUTRAL CHARCOAL (no warm/brown cast). Text + accents stay warm.
-  bg: "#0d0d0e",
-  panel: "#161617",
-  panel2: "#1b1b1c",
-  tile: "#222224",
-  tileText: "#ece2cd",
+  // FULLY NEUTRAL palette (Jun 14 2026 — warm cream retired). Black neutral
+  // surfaces, off-white text, blue accent. Kept in lockstep with index.css .theme-v2.
+  bg: "#0d0d0d",
+  panel: "#161616",
+  panel2: "#1c1c1c",
+  tile: "#232323",
+  tileText: "#ededed",
   tileEdge: "rgba(0,0,0,0.55)",
   litBg: "#1a2740",
   litText: "#cfe0ff",
   // Lines
-  line: "rgba(236,226,205,0.10)",
-  line2: "rgba(236,226,205,0.18)",
+  line: "rgba(255,255,255,0.10)",
+  line2: "rgba(255,255,255,0.18)",
   // Text
-  ink: "#f1e9d6",
-  cream: "#ece2cd",
+  ink: "#fafafa",
+  cream: "#ededed",
   // Two-tier muted text. Lifted Jun 14 2026 (mut 0.55→0.66, mut2 0.36→0.50) so
   // labels/eyebrows/captions read clearly while staying secondary to `ink`.
   // Kept in lockstep with --v2-ink-muted/--v2-ink-subtle + --mut/--mut2 in index.css.
-  mut: "rgba(236,226,205,0.66)",
-  mut2: "rgba(236,226,205,0.50)",
+  mut: "rgba(255,255,255,0.66)",
+  mut2: "rgba(255,255,255,0.50)",
   // Accents — semantic. Blue = primary, cyan = Jarvis ONLY, amber/red/green = status.
-  blue: "#5b9bff",
-  blueLit: "#82bcff",
+  blue: "#6b97ff",
+  blueLit: "#8fb4ff",
   cyan: "#46d8f5",
   cyan2: "#35d6f5",
   amber: "#f4b43a",
@@ -38,7 +39,7 @@ export const T = {
   mono: '"Space Mono", monospace',
   data: '"Hanken Grotesk", system-ui, sans-serif',
   // Chrome
-  panelGradient: "linear-gradient(180deg, #1b1b1c, #161617)",
+  panelGradient: "linear-gradient(180deg, #1c1c1c, #161616)",
   panelShadow:
     "inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 26px rgba(0,0,0,0.45)",
   brushed:

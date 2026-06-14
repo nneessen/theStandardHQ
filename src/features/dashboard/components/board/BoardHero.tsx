@@ -153,7 +153,7 @@ export function BoardHero({
                 gap: 6,
                 padding: "6px 13px",
                 borderRadius: 999,
-                background: "rgba(91,155,255,0.12)",
+                background: "rgba(107,151,255,0.12)",
                 color: T.blue,
                 font: `800 11px ${T.data}`,
               }}

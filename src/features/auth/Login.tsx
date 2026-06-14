@@ -146,7 +146,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0b0b0c] text-[#f1e9d6] lg:flex-row">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0b0b0b] text-[#fafafa] lg:flex-row">
       {/* ───────────── LEFT — cinematic Jarvis reactor ───────────── */}
       <section
         aria-hidden
@@ -185,14 +185,14 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               fontSize: "clamp(34px, 4.5vw, 64px)",
               letterSpacing: "-0.01em",
               textTransform: "uppercase",
-              color: "#f1e9d6",
+              color: "#fafafa",
             }}
           >
             The Standard
           </div>
           <p
             className="mt-2 max-w-sm text-sm leading-relaxed"
-            style={{ color: "rgba(236,226,205,0.6)" }}
+            style={{ color: "rgba(255,255,255,0.6)" }}
           >
             Your agency command center — KPIs, recruiting, and Jarvis, in one
             place.
@@ -208,7 +208,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             style={{
               fontFamily: '"Space Mono", monospace',
               letterSpacing: "0.18em",
-              color: "rgba(236,226,205,0.45)",
+              color: "rgba(255,255,255,0.45)",
             }}
           >
             {isRecruitIntent ? "Onboarding" : "Sign in"}
@@ -218,14 +218,14 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             style={{
               fontFamily: '"Archivo", system-ui, sans-serif',
               fontWeight: 800,
-              color: "#f1e9d6",
+              color: "#fafafa",
             }}
           >
             {title}
           </h1>
           <p
             className="mt-2 text-sm leading-relaxed"
-            style={{ color: "rgba(236,226,205,0.55)" }}
+            style={{ color: "rgba(255,255,255,0.55)" }}
           >
             {subtitle}
           </p>
@@ -281,7 +281,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           {mode === "signin" && (
             <p
               className="mt-6 text-[12px] leading-relaxed"
-              style={{ color: "rgba(236,226,205,0.5)" }}
+              style={{ color: "rgba(255,255,255,0.5)" }}
             >
               The Standard is invitation-only. If you don&apos;t have an account
               yet, your recruiter will send you a link.
@@ -290,26 +290,26 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
           <p
             className="mt-6 text-center text-[11px]"
-            style={{ color: "rgba(236,226,205,0.4)" }}
+            style={{ color: "rgba(255,255,255,0.4)" }}
           >
             By continuing, you agree to our{" "}
             <Link
               to="/terms"
-              className="underline underline-offset-4 transition-colors hover:text-[#f1e9d6]"
+              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
             >
               Terms
             </Link>{" "}
             and{" "}
             <Link
               to="/privacy"
-              className="underline underline-offset-4 transition-colors hover:text-[#f1e9d6]"
+              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
             >
               Privacy Policy
             </Link>
             .{" "}
             <Link
               to="/accessibility"
-              className="underline underline-offset-4 transition-colors hover:text-[#f1e9d6]"
+              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
             >
               Accessibility
             </Link>
@@ -321,7 +321,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           style={{
             fontFamily: '"Space Mono", monospace',
             letterSpacing: "0.18em",
-            color: "rgba(236,226,205,0.3)",
+            color: "rgba(255,255,255,0.3)",
           }}
         >
           © {new Date().getFullYear()} Nick Neessen. All rights reserved.

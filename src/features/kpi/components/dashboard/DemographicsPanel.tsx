@@ -32,12 +32,12 @@ const GENDER_COLORS: Record<string, string> = {
   male: T.blue,
   female: T.amber,
   other: T.green,
-  unknown: "rgba(236,226,205,0.4)",
+  unknown: "rgba(255,255,255,0.4)",
 };
 
 const axisTick = { fontSize: 12, fill: T.mut, fontFamily: T.mono };
 const tipStyle = {
-  background: "#161617",
+  background: "#161616",
   border: `1px solid ${T.line2}`,
   borderRadius: 8,
   fontFamily: T.mono,

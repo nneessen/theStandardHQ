@@ -88,7 +88,7 @@ export function BoardPageHeader({
               // A lifted panel + brighter hairline so the control reads as one
               // distinct widget rather than text floating on the page.
               background: T.panel2,
-              border: `1px solid rgba(236,226,205,0.28)`,
+              border: `1px solid rgba(255,255,255,0.28)`,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
           >

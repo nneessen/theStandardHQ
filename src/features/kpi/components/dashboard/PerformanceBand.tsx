@@ -158,7 +158,7 @@ export function LoadingRow() {
         padding: "28px 0",
         textAlign: "center",
         fontSize: 13,
-        color: "rgba(236,226,205,0.45)",
+        color: "rgba(255,255,255,0.45)",
       }}
     >
       Loading…
