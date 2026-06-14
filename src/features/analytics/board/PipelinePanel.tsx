@@ -3,14 +3,7 @@ import { Clock, TrendingUp } from "lucide-react";
 import { useAnalyticsData } from "@/hooks";
 import { formatCurrency } from "@/lib/format";
 import { parseLocalDate } from "@/lib/date";
-import {
-  Board,
-  Cap,
-  AnimatedNumber,
-  Pill,
-  EmptyState,
-  T,
-} from "@/components/board";
+import { Board, Cap, AnimatedNumber, EmptyState, T } from "@/components/board";
 
 export function PipelinePanel() {
   // Period-independent: pending pipeline + trailing-90-day paid are forward
@@ -83,10 +76,11 @@ export function PipelinePanel() {
     }
   });
 
-  // Trailing 90-day paid commissions (~one quarter of realized cash) — the
-  // baseline the pending pipeline is measured against.
+  // Trailing 90-day realized (paid) commissions — used as a naive next-quarter
+  // run-rate "projection": the baseline the pending pipeline is measured against
+  // ("% of quarterly target booked"). One quarter ≈ 90 days of realized cash.
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const paidLast90 = raw.commissions
+  const quarterlyProjection = raw.commissions
     .filter((c) => {
       if (c.status !== "paid") return false;
       const payDate = c.paymentDate
@@ -99,18 +93,17 @@ export function PipelinePanel() {
   const allBucketsEmpty = bucket30 === 0 && bucket60 === 0 && bucket90 === 0;
   const isEmpty = totalPending === 0 && allBucketsEmpty;
 
-  const pipelinePct =
-    paidLast90 > 0 ? Math.round((totalPending / paidLast90) * 100) : 0;
+  const bookedPct =
+    quarterlyProjection > 0
+      ? Math.round((totalPending / quarterlyProjection) * 100)
+      : 0;
 
-  const pillTone =
-    totalPending > 50000 ? "green" : totalPending > 25000 ? "amber" : "red";
-
-  const pillLabel =
-    totalPending > 50000
-      ? "Strong pipeline"
-      : totalPending > 25000
-        ? "Moderate pipeline"
-        : "Weak pipeline";
+  // Plain-text health note (spec §5.7). The spec hardcodes "Healthy"; we keep
+  // the lead word + color honest to the actual ratio instead of always green.
+  const noteColor =
+    bookedPct >= 70 ? T.green : bookedPct >= 40 ? T.amber : T.red;
+  const noteWord =
+    bookedPct >= 70 ? "Healthy" : bookedPct >= 40 ? "Moderate" : "Building";
 
   const buckets: { label: string; value: number }[] = [
     { label: "Next 30 days", value: bucket30 },
@@ -126,13 +119,7 @@ export function PipelinePanel() {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <Cap>Commission Pipeline</Cap>
-        <div
-          style={{
-            font: `600 18px ${T.data}`,
-            color: T.ink,
-            marginTop: 4,
-          }}
-        >
+        <div style={{ font: `500 18px ${T.data}`, color: T.mut, marginTop: 4 }}>
           Cash flow forecast
         </div>
       </div>
@@ -153,36 +140,25 @@ export function PipelinePanel() {
             <AnimatedNumber value={totalPending} prefix="$" size="lg" />
           </div>
 
-          {/* Trailing 90-day paid */}
+          {/* Quarterly projection */}
           <div
             style={{
-              font: `500 12px ${T.data}`,
+              font: `500 15px ${T.data}`,
               color: T.mut,
               marginBottom: 20,
             }}
           >
-            Last 90 days paid &middot;{" "}
-            <span style={{ color: T.cream }}>{formatCurrency(paidLast90)}</span>
+            Quarterly projection &middot;{" "}
+            <b style={{ color: T.cream, fontWeight: 700 }}>
+              {formatCurrency(quarterlyProjection)}
+            </b>
           </div>
 
           {/* Divider */}
-          <div
-            style={{
-              height: 1,
-              background: T.line2,
-              marginBottom: 16,
-            }}
-          />
+          <div style={{ height: 1, background: T.line, marginBottom: 4 }} />
 
           {/* Bucket rows */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              flex: 1,
-            }}
-          >
+          <div style={{ flex: 1 }}>
             {buckets.map((b) => (
               <div
                 key={b.label}
@@ -190,28 +166,25 @@ export function PipelinePanel() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  padding: "14px 0",
+                  borderBottom: `1px solid ${T.line}`,
                 }}
               >
-                <div
+                <span
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
+                    gap: 13,
+                    font: `600 16px ${T.data}`,
+                    color: T.ink,
                   }}
                 >
-                  <Clock size={13} style={{ color: T.green, flexShrink: 0 }} />
-                  <span
-                    style={{
-                      font: `500 13px ${T.data}`,
-                      color: T.mut,
-                    }}
-                  >
-                    {b.label}
-                  </span>
-                </div>
+                  <Clock size={16} style={{ color: T.mut, flexShrink: 0 }} />
+                  {b.label}
+                </span>
                 <span
                   style={{
-                    font: `700 14px ${T.data}`,
+                    font: `800 18px ${T.disp}`,
                     color: T.green,
                     fontVariantNumeric: "tabular-nums",
                   }}
@@ -222,29 +195,20 @@ export function PipelinePanel() {
             ))}
           </div>
 
-          {/* Footer note */}
-          <div
-            style={{
-              marginTop: 18,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Pill tone={pillTone} dot>
-              {pillLabel}
-            </Pill>
-            {paidLast90 > 0 && (
-              <span
-                style={{
-                  font: `500 12px ${T.data}`,
-                  color: T.green,
-                }}
-              >
-                {pipelinePct}% of last-90-day paid
-              </span>
-            )}
-          </div>
+          {/* Footer health note (plain text) */}
+          {quarterlyProjection > 0 && (
+            <div
+              style={{
+                marginTop: 18,
+                textAlign: "center",
+                font: `600 15px ${T.data}`,
+                color: noteColor,
+              }}
+            >
+              {noteWord} pipeline &middot; {bookedPct}% of quarterly target
+              booked
+            </div>
+          )}
         </div>
       )}
     </Board>

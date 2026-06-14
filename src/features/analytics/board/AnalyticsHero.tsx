@@ -123,7 +123,7 @@ export function AnalyticsHero() {
   const willMiss = !noGoal && projectedShort > 0;
 
   // Display strings
-  const pctMonthRounded = Math.round(pctMonth * 100);
+  const pctProjectedRounded = Math.round(pctProjected * 100);
   const ringTone =
     pctProjected >= 1 ? "green" : pctProjected >= 0.8 ? "blue" : "amber";
 
@@ -149,25 +149,25 @@ export function AnalyticsHero() {
         style={{
           display: "flex",
           flexWrap: "wrap",
-          gap: 32,
+          gap: 40,
           alignItems: "center",
         }}
       >
         {/* ── 1. Radial ring ── */}
         <div style={{ flexShrink: 0 }}>
           <RadialProgress
-            pct={pctProjected}
+            pct={pctMonth}
             size={208}
             thickness={18}
             tone={ringTone}
-            caption="PROJECTED VS GOAL"
+            caption="OF MONTHLY GOAL"
           />
         </div>
 
         {/* ── 2. Verdict block ── */}
-        <div style={{ flex: "1 1 280px", minWidth: 220 }}>
+        <div style={{ flex: "1 1 280px", minWidth: 300 }}>
           <Cap style={{ marginBottom: 10 }}>
-            MONTHLY PERFORMANCE · {monthLabel}
+            DEPARTURE STATUS · {monthLabel}
           </Cap>
 
           {/* Huge lit projected AP */}
@@ -189,7 +189,7 @@ export function AnalyticsHero() {
             }}
           >
             <Pill tone="amber" dot>
-              {noGoal ? "WRITTEN" : `WRITTEN · ${pctMonthRounded}%`}
+              {noGoal ? "PROJECTED" : `PROJECTED · ${pctProjectedRounded}%`}
             </Pill>
           </div>
 
@@ -224,7 +224,7 @@ export function AnalyticsHero() {
                 margin: 0,
               }}
             >
-              On current pace you&apos;ll finish{" "}
+              Behind the board&apos;s pace —{" "}
               <b style={{ color: T.red }}>
                 {formatCurrency(projectedShort)} short
               </b>{" "}
@@ -262,9 +262,9 @@ export function AnalyticsHero() {
             gap: 10,
             // Fluid: grow/shrink and wrap below the verdict on narrow screens
             // instead of forcing a hard 340px width that overflows the card.
-            flex: "1 1 280px",
+            flex: "1 1 330px",
             maxWidth: 340,
-            minWidth: 0,
+            minWidth: 330,
           }}
         >
           {/* MTD Written — always real */}

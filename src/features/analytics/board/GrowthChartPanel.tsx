@@ -7,19 +7,15 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
-import { useAnalyticsData } from "@/hooks";
-import { ANALYTICS_CONSTANTS } from "@/constants/financial";
+import { useAnalyticsData, useConstants, useCalculatedTargets } from "@/hooks";
+import { useHistoricalAverages } from "../../../hooks/targets/useHistoricalAverages";
+import { resolveGoalAvgAP } from "@/lib/goal";
 
 const GRADIENT_ID = "growthCommissionGradient";
-
-// Renewal-rate multiplier expressed as a percentage string (e.g. "2.5%"),
-// derived from the single source of truth so the footnote can never drift.
-const RENEWAL_RATE_PCT_LABEL = `${(
-  ANALYTICS_CONSTANTS.RENEWAL_RATE_MULTIPLIER * 100
-).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
 /** Per-point confidence colour: idx 0-3 = green, 4-7 = amber, 8-11 = red */
 function confidenceColor(idx: number): string {
@@ -77,7 +73,7 @@ const CustomTooltip = ({
   );
 };
 
-/** Recharts custom dot — colour driven by index position */
+/** Recharts custom dot — hollow ring: fill = panel bg, stroke = confidence color */
 const ConfidenceDot = (props: { cx?: number; cy?: number; index?: number }) => {
   const { cx, cy, index = 0 } = props;
   if (cx == null || cy == null) return null;
@@ -87,15 +83,15 @@ const ConfidenceDot = (props: { cx?: number; cy?: number; index?: number }) => {
       cx={cx}
       cy={cy}
       r={4}
-      fill={color}
+      fill="#161617"
       stroke={color}
-      strokeWidth={1}
+      strokeWidth={2.4}
       style={{ filter: `drop-shadow(0 0 4px ${color})` }}
     />
   );
 };
 
-const CustomLegend = () => (
+const CustomLegend = ({ goalLabel }: { goalLabel: string }) => (
   <div
     style={{
       display: "flex",
@@ -136,6 +132,28 @@ const CustomLegend = () => (
         {label}
       </span>
     ))}
+    {/* Goal reference line legend entry */}
+    <span
+      style={{
+        font: `700 11px ${T.mono}`,
+        color: T.blue,
+        letterSpacing: "0.12em",
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+      }}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          width: 12,
+          height: 2,
+          borderTop: `2px dashed ${T.blue}`,
+          opacity: 0.7,
+        }}
+      />
+      {goalLabel}
+    </span>
   </div>
 );
 
@@ -147,7 +165,15 @@ function formatYAxis(value: number): string {
 export function GrowthChartPanel() {
   // Period-independent: growth forecast + renewal projection are inherently
   // 12-month / forward views computed from the full book.
-  const { forecast, isLoading } = useAnalyticsData();
+  const { forecast, isLoading: analyticsLoading } = useAnalyticsData();
+  const { data: constants, isLoading: constantsLoading } = useConstants();
+  const { calculated: calculatedTargets, isLoading: targetsLoading } =
+    useCalculatedTargets();
+  const { averages: historicalAverages, isLoading: averagesLoading } =
+    useHistoricalAverages();
+
+  const isLoading =
+    analyticsLoading || constantsLoading || targetsLoading || averagesLoading;
 
   const growth = useMemo(() => forecast?.growth ?? [], [forecast?.growth]);
   const renewals = useMemo(
@@ -167,12 +193,28 @@ export function GrowthChartPanel() {
     [renewals],
   );
 
-  // `growth[].growthRate` is a MONTHLY rate; the forecast chart spans 12 months,
-  // so the headline shows the compounded next-12-month growth (clearly labeled),
-  // not the raw per-month figure (which read as a misleadingly small number).
-  const monthlyGrowthRate = growth[0]?.growthRate ?? 0;
-  const annualGrowthPct = (Math.pow(1 + monthlyGrowthRate / 100, 12) - 1) * 100;
-  const growthUp = annualGrowthPct >= 0;
+  // Monthly AP goal — same formula as AnalyticsHero / DashboardHome.
+  const avgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages ?? {});
+  const policyTarget =
+    calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
+      ? calculatedTargets.realisticMonthlyAppsToWrite
+      : 0;
+  const monthlyGoal = avgAP > 0 && policyTarget > 0 ? avgAP * policyTarget : 0;
+
+  // Format goal for legend label, e.g. "$34K goal"
+  const goalLabelK =
+    monthlyGoal > 0 ? `$${Math.round(monthlyGoal / 1000)}K goal` : "$34K goal";
+
+  // Projected growth: (lastPoint - firstPoint) / firstPoint, capped to avoid
+  // compounding artifacts.  Falls back to the compounded monthly rate when the
+  // series has fewer than 2 points.
+  const firstProjected = growth[0]?.projectedRevenue ?? 0;
+  const lastProjected = growth[growth.length - 1]?.projectedRevenue ?? 0;
+  const projectedGrowthPct =
+    firstProjected > 0 && lastProjected > 0
+      ? ((lastProjected - firstProjected) / firstProjected) * 100
+      : (Math.pow(1 + (growth[0]?.growthRate ?? 0) / 100, 12) - 1) * 100;
+  const growthUp = projectedGrowthPct >= 0;
 
   if (isLoading) {
     return (
@@ -215,7 +257,7 @@ export function GrowthChartPanel() {
         }}
       >
         <div>
-          <Cap>Forecast</Cap>
+          <Cap>Predictive Analytics</Cap>
           <div
             style={{
               font: `600 18px ${T.data}`,
@@ -223,7 +265,7 @@ export function GrowthChartPanel() {
               marginTop: 4,
             }}
           >
-            Growth Forecast
+            Growth forecast &amp; renewals
           </div>
         </div>
         {!isEmpty && (
@@ -250,7 +292,7 @@ export function GrowthChartPanel() {
                 />
               )}
               <Num
-                text={`${growthUp ? "+" : ""}${annualGrowthPct.toFixed(1)}%`}
+                text={`${growthUp ? "+" : ""}${projectedGrowthPct.toFixed(1)}%`}
                 size="lg"
                 color={growthUp ? T.green : T.red}
               />
@@ -262,7 +304,7 @@ export function GrowthChartPanel() {
                 marginTop: 2,
               }}
             >
-              projected · next 12 mo
+              projected growth
             </div>
           </div>
         )}
@@ -313,7 +355,7 @@ export function GrowthChartPanel() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid
-                  strokeDasharray="4 4"
+                  strokeDasharray="4 10"
                   stroke={T.line}
                   vertical={false}
                 />
@@ -341,7 +383,7 @@ export function GrowthChartPanel() {
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
-                  dataKey="projectedCommission"
+                  dataKey="projectedRevenue"
                   name="Projected AP"
                   stroke={T.blue}
                   strokeWidth={2}
@@ -351,11 +393,20 @@ export function GrowthChartPanel() {
                   isAnimationActive
                   animationDuration={1100}
                 />
+                {monthlyGoal > 0 && (
+                  <ReferenceLine
+                    y={monthlyGoal}
+                    stroke={T.blue}
+                    strokeDasharray="5 5"
+                    opacity={0.7}
+                    strokeWidth={1.5}
+                  />
+                )}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
 
-          <CustomLegend />
+          <CustomLegend goalLabel={goalLabelK} />
 
           {/* Footnote */}
           <div
@@ -367,8 +418,9 @@ export function GrowthChartPanel() {
             }}
           >
             <strong style={{ color: T.mut }}>Note:</strong> Renewal revenue is
-            an estimate based on {RENEWAL_RATE_PCT_LABEL} of first-year
-            commission. Actual renewal rates vary by carrier and product.
+            an <strong style={{ color: T.mut }}>estimate</strong> based on 25%
+            of first-year commission rates. Actual renewal rates vary by carrier
+            and product.
           </div>
         </>
       )}

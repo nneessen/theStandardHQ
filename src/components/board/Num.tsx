@@ -29,7 +29,7 @@ export function Num({ text, size = "md", lit, color, style }: NumProps) {
         letterSpacing: size === "xl" ? "-0.01em" : "0.01em",
         fontVariantNumeric: "tabular-nums",
         whiteSpace: "nowrap",
-        textShadow: lit ? "0 0 14px rgba(91,155,255,0.4)" : "none",
+        textShadow: lit ? "0 0 22px rgba(91,155,255,0.35)" : "none",
         ...style,
       }}
     >

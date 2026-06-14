@@ -101,21 +101,21 @@ export function ActionFeedPanel() {
         }}
       >
         <div>
-          <Cap>Recommended Actions</Cap>
+          <Cap>Smart Moves · Flags</Cap>
           <div
             style={{
-              font: `600 18px ${T.data}`,
-              color: T.ink,
+              font: `500 18px ${T.data}`,
+              color: T.mut,
               marginTop: 4,
             }}
           >
-            What To Do Next
+            What to do about it
           </div>
         </div>
         {!isEmpty && (
           <div
             style={{
-              font: `800 28px ${T.disp}`,
+              font: `800 30px ${T.disp}`,
               color: T.amber,
               fontVariantNumeric: "tabular-nums",
               lineHeight: 1,
@@ -141,33 +141,31 @@ export function ActionFeedPanel() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 2,
               marginBottom: 16,
             }}
           >
-            {smartMoves.map((move) => {
+            {smartMoves.map((move, i) => {
               const isHigh = move.urgency === "high";
               const dotColor = isHigh ? T.red : T.amber;
+              const isLast = i === smartMoves.length - 1;
               return (
                 <div
                   key={move.id}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 12,
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: "rgba(255,255,255,0.02)",
-                    border: `1px solid ${T.line}`,
+                    gap: 16,
+                    padding: "17px 0",
+                    borderBottom: isLast ? undefined : `1px solid ${T.line}`,
                   }}
                 >
-                  <StatusDot color={dotColor} size={8} glow />
+                  <StatusDot color={dotColor} size={9} glow />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        font: `700 14px ${T.data}`,
+                        font: `800 16px ${T.disp}`,
                         color: T.ink,
-                        marginBottom: 2,
+                        marginBottom: 3,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -177,7 +175,7 @@ export function ActionFeedPanel() {
                     </div>
                     <div
                       style={{
-                        font: `500 12px ${T.data}`,
+                        font: `500 14px ${T.data}`,
                         color: T.mut,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -199,7 +197,7 @@ export function ActionFeedPanel() {
           <div
             style={{
               height: 1,
-              background: T.line2,
+              background: T.line,
               marginBottom: 16,
             }}
           />
@@ -244,8 +242,8 @@ export function ActionFeedPanel() {
                       <tr key={row.id}>
                         <td
                           style={{
-                            font: `500 13px ${T.data}`,
-                            color: T.mut,
+                            font: `700 15.5px ${T.data}`,
+                            color: T.ink,
                             paddingBottom: 6,
                           }}
                         >
@@ -253,7 +251,7 @@ export function ActionFeedPanel() {
                         </td>
                         <td
                           style={{
-                            font: `600 13px ${T.data}`,
+                            font: `600 15.5px ${T.data}`,
                             color: T.cream,
                             textAlign: "right",
                             paddingLeft: 18,
@@ -264,7 +262,7 @@ export function ActionFeedPanel() {
                         </td>
                         <td
                           style={{
-                            font: `700 13px ${T.data}`,
+                            font: `600 15.5px ${T.data}`,
                             color: pctColor,
                             textAlign: "right",
                             paddingLeft: 18,

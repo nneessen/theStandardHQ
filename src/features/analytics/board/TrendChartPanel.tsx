@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import {
-  BarChart,
-  Bar,
+  ComposedChart,
+  Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,7 +15,7 @@ import { useAnalyticsData } from "@/hooks";
 // eslint-disable-next-line no-restricted-imports
 import {
   getPolicyStatusSnapshot,
-  getMonthlyPoliciesWritten,
+  getMonthlyTrendData,
 } from "@/services/analytics/policyStatusService";
 
 const CustomTooltip = ({
@@ -69,6 +70,32 @@ const CustomTooltip = ({
   );
 };
 
+/** Legend dot + label below the chart. */
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        font: `600 14px ${T.data}`,
+        color: T.mut,
+      }}
+    >
+      <i
+        style={{
+          width: 10,
+          height: 10,
+          borderRadius: "50%",
+          background: color,
+          display: "inline-block",
+        }}
+      />
+      {label}
+    </span>
+  );
+}
+
 export function TrendChartPanel() {
   // Period-independent: the 12-month trend + current-status snapshot always
   // reflect the full book, not the page's period selector.
@@ -79,8 +106,11 @@ export function TrendChartPanel() {
     [raw?.policies],
   );
 
-  const monthlyWritten = useMemo(
-    () => (raw?.policies ? getMonthlyPoliciesWritten(raw.policies) : []),
+  // Active-vs-lapsed retention trend over the last 12 months (the handoff's
+  // "Policy Status · 12-Month Trend" — a retention curve, not a new-business
+  // histogram). `month` arrives as "MMM yyyy"; the axis shows just the abbrev.
+  const trend = useMemo(
+    () => (raw?.policies ? getMonthlyTrendData(raw.policies) : []),
     [raw?.policies],
   );
 
@@ -90,25 +120,18 @@ export function TrendChartPanel() {
         pad={26}
         style={{ height: "100%", display: "flex", flexDirection: "column" }}
       >
-        <div
-          style={{
-            font: `500 13px ${T.data}`,
-            color: T.mut2,
-          }}
-        >
+        <div style={{ font: `500 13px ${T.data}`, color: T.mut2 }}>
           Loading...
         </div>
       </Board>
     );
   }
 
-  const isEmpty =
-    !raw?.policies?.length || monthlyWritten.every((m) => m.written === 0);
+  const isEmpty = !raw?.policies?.length;
 
   const activeCount = snapshot?.active ?? 0;
   const lapsedCount = snapshot?.lapsed ?? 0;
   const cancelledCount = snapshot?.cancelled ?? 0;
-  const pendingCount = snapshot?.pending ?? 0;
 
   return (
     <Board
@@ -125,26 +148,18 @@ export function TrendChartPanel() {
         }}
       >
         <div>
-          <Cap>Policy Status</Cap>
+          <Cap>Policy Status · 12-Month Trend</Cap>
           <div
-            style={{
-              font: `600 18px ${T.data}`,
-              color: T.ink,
-              marginTop: 4,
-            }}
+            style={{ font: `500 18px ${T.data}`, color: T.mut, marginTop: 4 }}
           >
-            Written · Last 12 Months
+            Active vs lapsed retention
           </div>
         </div>
         {!isEmpty && (
           <div style={{ textAlign: "right" }}>
-            <Num text={activeCount} size="lg" color={T.green} />
+            <Num text={activeCount} size="lg" color={T.cream} />
             <div
-              style={{
-                font: `500 12px ${T.data}`,
-                color: T.mut,
-                marginTop: 2,
-              }}
+              style={{ font: `500 12px ${T.data}`, color: T.mut, marginTop: 2 }}
             >
               active
             </div>
@@ -161,68 +176,105 @@ export function TrendChartPanel() {
         />
       ) : (
         <>
-          {/* Flap Tiles */}
+          {/* Flap Tiles — Active / Lapsed / Cancelled */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 10,
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 14,
               marginBottom: 16,
             }}
           >
             <FlapTile label="Active" value={activeCount} tone="green" sm />
             <FlapTile label="Lapsed" value={lapsedCount} tone="amber" sm />
             <FlapTile label="Cancelled" value={cancelledCount} tone="red" sm />
-            <FlapTile label="Pending" value={pendingCount} tone="blue" sm />
           </div>
 
-          {/* Chart — policies written per month (production histogram) */}
+          {/* Chart — Active (green, gradient area) vs Lapsed (amber, dashed) */}
           <div style={{ flex: 1, minHeight: 250 }}>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart
-                data={monthlyWritten}
+              <ComposedChart
+                data={trend}
                 margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
               >
+                <defs>
+                  <linearGradient
+                    id="trendActiveFill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor={T.green} stopOpacity={0.32} />
+                    <stop
+                      offset="100%"
+                      stopColor={T.green}
+                      stopOpacity={0.02}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid
-                  strokeDasharray="4 4"
-                  stroke={T.line}
+                  strokeDasharray="4 10"
+                  stroke="rgba(255,255,255,0.08)"
                   vertical={false}
                 />
                 <XAxis
                   dataKey="month"
-                  tick={{
-                    fontSize: 11,
-                    fill: T.mut,
-                    fontFamily: T.mono,
-                  }}
+                  tickFormatter={(m: string) => String(m).split(" ")[0]}
+                  tick={{ fontSize: 11, fill: T.mut, fontFamily: T.mono }}
                   axisLine={false}
                   tickLine={false}
-                  interval={1}
+                  interval="preserveStartEnd"
+                  minTickGap={24}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{
-                    fontSize: 11,
-                    fill: T.mut,
-                    fontFamily: T.mono,
-                  }}
+                  tick={{ fontSize: 11, fill: T.mut, fontFamily: T.mono }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
                   content={<CustomTooltip />}
-                  cursor={{ fill: T.line, opacity: 0.4 }}
+                  cursor={{ stroke: T.line2 }}
                 />
-                <Bar
-                  dataKey="written"
-                  name="Written"
-                  fill={T.green}
-                  radius={[3, 3, 0, 0]}
+                <Area
+                  type="monotone"
+                  dataKey="active"
+                  name="Active policies"
+                  stroke={T.green}
+                  strokeWidth={2.4}
+                  fill="url(#trendActiveFill)"
+                  dot={false}
                   isAnimationActive
                   animationDuration={1100}
                 />
-              </BarChart>
+                <Line
+                  type="monotone"
+                  dataKey="lapsed"
+                  name="Lapsed"
+                  stroke={T.amber}
+                  strokeWidth={2.4}
+                  strokeDasharray="7 5"
+                  dot={false}
+                  isAnimationActive
+                  animationDuration={1100}
+                />
+              </ComposedChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Legend */}
+          <div
+            style={{
+              display: "flex",
+              gap: 22,
+              justifyContent: "center",
+              marginTop: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <LegendItem color={T.green} label="Active policies" />
+            <LegendItem color={T.amber} label="Lapsed" />
           </div>
         </>
       )}

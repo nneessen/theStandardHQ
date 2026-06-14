@@ -4,10 +4,10 @@ import { T } from "./tokens";
 // Four corner rivets — ported from TheBoard.jsx `Rivets`.
 export function Rivets() {
   const positions: Array<[string?, string?, string?, string?]> = [
-    ["8px", "8px"],
-    ["8px", undefined, "8px"],
-    [undefined, "8px", undefined, "8px"],
-    [undefined, undefined, "8px", "8px"],
+    ["9px", "9px"],
+    ["9px", undefined, "9px"],
+    [undefined, "9px", undefined, "9px"],
+    [undefined, undefined, "9px", "9px"],
   ];
   return (
     <>
@@ -53,7 +53,7 @@ export const Board = React.forwardRef<HTMLDivElement, BoardProps>(
         position: "relative",
         background: T.panelGradient,
         border: `1px solid ${T.line2}`,
-        borderRadius: 12,
+        borderRadius: 14,
         padding: pad,
         boxShadow: T.panelShadow,
         // Allow the card to shrink within a grid/flex track and never spill

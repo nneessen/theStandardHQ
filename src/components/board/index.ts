@@ -23,6 +23,8 @@ export { Pill } from "./Pill";
 export type { PillProps, PillTone } from "./Pill";
 export { FlapTile } from "./FlapTile";
 export type { FlapTileProps, FlapTileTone } from "./FlapTile";
+export { ComparisonCard } from "./ComparisonCard";
+export type { ComparisonCardProps, ComparisonDir } from "./ComparisonCard";
 export { RadialProgress } from "./RadialProgress";
 export type { RadialProgressProps, RadialTone } from "./RadialProgress";
 export { AnimatedNumber } from "./AnimatedNumber";

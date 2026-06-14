@@ -1,13 +1,14 @@
 import React from "react";
 import { T } from "./tokens";
 
-export type BarTone = "blue" | "amber" | "green" | "red";
+export type BarTone = "blue" | "amber" | "green" | "red" | "cyan";
 
 const TONE: Record<BarTone, string> = {
   blue: T.blue,
   amber: T.amber,
   green: T.green,
   red: T.red,
+  cyan: T.cyan,
 };
 
 export interface BarProps {
@@ -24,7 +25,7 @@ export interface BarProps {
  * workhorse "how far along" indicator for "The Board" aesthetic (extracted
  * from the dashboard hero so panels share one bar).
  */
-export function Bar({ pct, tone = "blue", height = 8, style }: BarProps) {
+export function Bar({ pct, tone = "blue", height = 9, style }: BarProps) {
   const color = TONE[tone];
   const width = `${Math.max(0, Math.min(1, pct)) * 100}%`;
   return (

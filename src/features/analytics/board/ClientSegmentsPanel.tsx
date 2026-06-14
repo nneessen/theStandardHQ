@@ -1,8 +1,20 @@
 // src/features/analytics/board/ClientSegmentsPanel.tsx
 import { Users } from "lucide-react";
 import { useAnalyticsData } from "@/hooks";
-import { formatCompactCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { Board, Cap, AnimatedNumber, EmptyState, T } from "@/components/board";
+
+/** Format a dollar amount as "$NNN.NK" with exactly 1 decimal place. */
+function formatOneDecimalK(value: number): string {
+  if (value === 0) return "$0";
+  if (Math.abs(value) >= 1_000_000) {
+    return `$${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `$${(value / 1_000).toFixed(1)}K`;
+  }
+  return formatCurrency(value);
+}
 
 export function ClientSegmentsPanel() {
   // Period-independent: client value tiers are a whole-book segmentation.
@@ -61,7 +73,7 @@ export function ClientSegmentsPanel() {
             marginBottom: 12,
           }}
         >
-          Value tiers
+          Value tiers &amp; mix
         </div>
         <EmptyState
           icon={<Users size={22} />}
@@ -133,11 +145,16 @@ export function ClientSegmentsPanel() {
               marginTop: 4,
             }}
           >
-            Value tiers
+            Value tiers &amp; mix
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <AnimatedNumber value={totalAP} prefix="$" size="lg" />
+          <AnimatedNumber
+            value={totalAP}
+            prefix="$"
+            size="lg"
+            style={{ fontSize: 30 }}
+          />
           <div
             style={{
               font: `500 11px ${T.mono}`,
@@ -195,16 +212,17 @@ export function ClientSegmentsPanel() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {rows.map((row, idx) => (
               <tr
                 key={row.tier}
                 style={{
                   borderTop: `1px solid ${T.line}`,
+                  borderBottom: idx === rows.length - 1 ? "none" : undefined,
                 }}
               >
                 <td
                   style={{
-                    font: `700 15.5px ${T.data}`,
+                    font: `800 15.5px ${T.disp}`,
                     color: row.color,
                     paddingTop: 10,
                     paddingBottom: 10,
@@ -238,7 +256,7 @@ export function ClientSegmentsPanel() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {formatCompactCurrency(row.totalAP)}
+                  {formatOneDecimalK(row.totalAP)}
                 </td>
                 <td
                   style={{
@@ -252,7 +270,7 @@ export function ClientSegmentsPanel() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {formatCompactCurrency(row.avgAP)}
+                  {formatCurrency(row.avgAP)}
                 </td>
                 <td
                   style={{

@@ -92,7 +92,11 @@ export function FunnelPanel() {
 
   const avgCloseTime =
     closeTimes.length > 0
-      ? Math.round(closeTimes.reduce((a, b) => a + b, 0) / closeTimes.length)
+      ? parseFloat(
+          (closeTimes.reduce((a, b) => a + b, 0) / closeTimes.length).toFixed(
+            1,
+          ),
+        )
       : 0;
 
   const leadToActivePct =
@@ -133,28 +137,6 @@ export function FunnelPanel() {
             Lead-to-policy pipeline
           </div>
         </div>
-        {!isEmpty && leadToActivePct !== null && (
-          <div style={{ textAlign: "right" }}>
-            <AnimatedNumber
-              value={parseFloat(leadToActivePct)}
-              suffix="%"
-              decimals={1}
-              size="lg"
-              color={T.green}
-            />
-            <div
-              style={{
-                font: `500 11px ${T.mono}`,
-                color: T.mut2,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                marginTop: 4,
-              }}
-            >
-              lead → active
-            </div>
-          </div>
-        )}
       </div>
 
       {isEmpty ? (
@@ -172,86 +154,37 @@ export function FunnelPanel() {
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 14,
               flex: 1,
             }}
           >
-            {stages.map((stage, idx) => {
+            {stages.map((stage) => {
               const pct = stage.count / maxCount;
-              const prevCount = idx > 0 ? stages[idx - 1].count : 0;
-              // Raw step ratio can exceed 100% because stages come from
-              // different date bases (leads by purchase date vs policies by
-              // submit/status). Display is clamped to a funnel-sane ≤100%; the
-              // true ratio is surfaced in the tooltip when clamped.
-              const rawConvPct =
-                prevCount > 0 ? (stage.count / prevCount) * 100 : null;
-              const convPct =
-                rawConvPct !== null ? Math.min(100, rawConvPct) : null;
-              const convTitle =
-                rawConvPct !== null && rawConvPct > 100
-                  ? `${rawConvPct.toFixed(0)}% of prior stage — exceeds 100% ` +
-                    `because stages span different time windows`
-                  : undefined;
 
               return (
-                <div key={stage.label}>
+                <div key={stage.label} style={{ marginBottom: 20 }}>
                   <div
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 6,
+                      alignItems: "baseline",
+                      marginBottom: 9,
                     }}
                   >
                     <span
                       style={{
-                        font: `500 12px ${T.data}`,
-                        color: T.mut,
+                        font: `600 15px ${T.data}`,
+                        color: T.ink,
                       }}
                     >
                       {stage.label}
                     </span>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <AnimatedNumber
-                        value={stage.count}
-                        size="sm"
-                        color={T.cream}
-                      />
-                      {convPct !== null && (
-                        <span
-                          title={convTitle}
-                          style={{
-                            font: `700 10px ${T.mono}`,
-                            letterSpacing: "0.1em",
-                            color:
-                              convPct >= 50
-                                ? T.green
-                                : convPct >= 25
-                                  ? T.amber
-                                  : T.red,
-                            background:
-                              convPct >= 50
-                                ? "rgba(95,208,138,0.12)"
-                                : convPct >= 25
-                                  ? "rgba(244,180,58,0.12)"
-                                  : "rgba(255,106,93,0.12)",
-                            padding: "2px 6px",
-                            borderRadius: 4,
-                            cursor: convTitle ? "help" : "default",
-                          }}
-                        >
-                          {convPct.toFixed(1)}%
-                        </span>
-                      )}
-                    </div>
+                    <AnimatedNumber
+                      value={stage.count}
+                      size="sm"
+                      color={T.cream}
+                    />
                   </div>
-                  <Bar pct={pct} tone={stage.tone} height={8} />
+                  <Bar pct={pct} tone={stage.tone} />
                 </div>
               );
             })}
@@ -274,7 +207,7 @@ export function FunnelPanel() {
             />
             <FlapTile
               label="Avg Close Time"
-              value={avgCloseTime > 0 ? `${avgCloseTime}d` : "—"}
+              value={avgCloseTime > 0 ? `${avgCloseTime.toFixed(1)}d` : "—"}
               sm
             />
           </div>

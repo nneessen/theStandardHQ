@@ -60,23 +60,25 @@ export function PremiumByStatePanel() {
         <div>
           <Cap>Premium by State</Cap>
           <div
-            style={{ font: `600 18px ${T.data}`, color: T.ink, marginTop: 4 }}
+            style={{ font: `500 18px ${T.data}`, color: T.mut, marginTop: 4 }}
           >
-            Geographic Mix
+            Top {rows.length} states by AP
           </div>
         </div>
         {!isEmpty && (
           <div style={{ textAlign: "right" }}>
             <Num
               text={formatCompactCurrency(totalPremium)}
-              size="md"
-              color={T.green}
+              size="lg"
+              color={T.cream}
             />
             <div
               style={{
-                font: `500 11px ${T.data}`,
-                color: T.mut,
+                font: `700 12px ${T.mono}`,
+                color: T.mut2,
                 marginTop: 2,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
               }}
             >
               total premium
@@ -93,13 +95,11 @@ export function PremiumByStatePanel() {
           pad={40}
         />
       ) : (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {rows.map((row) => {
             const pct = maxPremium > 0 ? row.premium / maxPremium : 0;
             return (
-              <div key={row.state}>
+              <div key={row.state} style={{ marginBottom: 16 }}>
                 {/* Row: state + value */}
                 <div
                   style={{
@@ -107,15 +107,14 @@ export function PremiumByStatePanel() {
                     justifyContent: "space-between",
                     alignItems: "baseline",
                     gap: 8,
-                    marginBottom: 5,
+                    marginBottom: 8,
                   }}
                 >
                   <span
                     style={{
-                      font: `700 12px "Archivo", system-ui, sans-serif`,
+                      font: `700 15px ${T.disp}`,
                       color: T.ink,
-                      letterSpacing: "0.01em",
-                      fontVariantNumeric: "tabular-nums",
+                      letterSpacing: "0.04em",
                       minWidth: 0,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -126,7 +125,7 @@ export function PremiumByStatePanel() {
                   </span>
                   <span
                     style={{
-                      font: `700 12px ${T.mono}`,
+                      font: `700 15px ${T.mono}`,
                       color: T.cream,
                       fontVariantNumeric: "tabular-nums",
                       flexShrink: 0,
@@ -135,7 +134,7 @@ export function PremiumByStatePanel() {
                     {formatCompactCurrency(row.premium)}
                   </span>
                 </div>
-                <Bar pct={pct} tone="green" height={6} />
+                <Bar pct={pct} tone="blue" />
               </div>
             );
           })}

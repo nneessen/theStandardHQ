@@ -22,6 +22,7 @@ const TONE_HEX: Record<BarTone, string> = {
   amber: T.amber,
   green: T.green,
   red: T.red,
+  cyan: T.cyan,
 };
 
 function PersistencyCell({ bucket }: { bucket: PersistencyBucket }) {

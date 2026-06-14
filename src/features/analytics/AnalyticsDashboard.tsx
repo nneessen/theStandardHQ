@@ -10,7 +10,7 @@
 import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
 import {
-  BarChart3,
+  TrendingUp,
   Sparkles,
   CheckCircle2,
   FileDown,
@@ -184,12 +184,12 @@ function PlainCell({
 // Responsive row grids. Multi-column rows collapse to a single column on
 // narrow screens so panels never get crushed below their content width.
 // `gap-4`/`mb-4` = 16px to match the prior inline layout.
-const ROW_2 = "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-stretch";
+const ROW_2 = "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 items-stretch";
 const ROW_3 =
-  "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4 items-stretch";
+  "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6 items-stretch";
 // Rows containing a 2-wide panel: stack until xl, then 3 columns (1 + span-2).
-const ROW_3_WIDE = "grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4 items-stretch";
-const ROW_1 = "grid grid-cols-1 gap-4 mb-4";
+const ROW_3_WIDE = "grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6 items-stretch";
+const ROW_1 = "grid grid-cols-1 gap-6 mb-6";
 
 function AnalyticsDashboardContent() {
   const { timePeriod, setTimePeriod, customRange, setCustomRange, dateRange } =
@@ -258,8 +258,8 @@ function AnalyticsDashboardContent() {
             flexWrap: "wrap",
             alignItems: "flex-end",
             justifyContent: "space-between",
-            gap: 16,
-            marginBottom: 18,
+            gap: 24,
+            marginBottom: 28,
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -271,7 +271,7 @@ function AnalyticsDashboardContent() {
                 letterSpacing: "0.22em",
               }}
             >
-              <BarChart3 size={13} />
+              <TrendingUp size={15} />
               Performance
             </Cap>
             <h1
@@ -286,7 +286,7 @@ function AnalyticsDashboardContent() {
             >
               Analytics
             </h1>
-            <p style={{ font: `500 14px ${T.data}`, color: T.mut, margin: 0 }}>
+            <p style={{ font: `500 18px ${T.data}`, color: T.mut, margin: 0 }}>
               Performance metrics and insights across your book.
             </p>
           </div>
@@ -333,7 +333,7 @@ function AnalyticsDashboardContent() {
         ) : (
           <>
             {/* Hero verdict band — am I on pace? */}
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 24 }}>
               <AnalyticsSectionGate section="pace_metrics">
                 <Suspense fallback={<PanelSkeleton minHeight={260} />}>
                   <AnalyticsHero />
@@ -389,7 +389,7 @@ function AnalyticsDashboardContent() {
               <div
                 style={{
                   display: "grid",
-                  gap: 16,
+                  gap: 24,
                   alignContent: "start",
                   minWidth: 0,
                 }}

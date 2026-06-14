@@ -106,6 +106,19 @@ export function useCountUp(
     // 0→0 first render before async data has loaded.
     if (fromValue === end) return;
 
+    // Safety net: rAF is throttled (or never fires) on a backgrounded/hidden
+    // tab, which can freeze the count partway — most visibly stuck at 0. Snap to
+    // the final value shortly after the animation should have completed so a
+    // displayed number is never left wrong. (Harmless if rAF already finished.)
+    const fallbackId = setTimeout(
+      () => {
+        valueRef.current = end;
+        setValue(end);
+        setIsAnimating(false);
+      },
+      delay + duration + 150,
+    );
+
     const startAnimation = () => {
       setIsAnimating(true);
       startTimeRef.current = null;
@@ -139,6 +152,7 @@ export function useCountUp(
       const timeoutId = setTimeout(startAnimation, delay);
       return () => {
         clearTimeout(timeoutId);
+        clearTimeout(fallbackId);
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current);
         }
@@ -146,6 +160,7 @@ export function useCountUp(
     } else {
       startAnimation();
       return () => {
+        clearTimeout(fallbackId);
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current);
         }

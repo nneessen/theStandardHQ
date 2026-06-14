@@ -57,6 +57,7 @@ export function AgentTablePanel() {
   const entries = data?.entries ?? [];
   const totals = data?.totals;
   const topAgent = entries[0];
+  const totalAgentCount = totals?.totalEntries ?? entries.length;
 
   return (
     <Board
@@ -76,22 +77,22 @@ export function AgentTablePanel() {
           <Cap>Agent Performance</Cap>
           <div
             style={{
-              font: `600 18px ${T.data}`,
-              color: T.ink,
+              font: `500 18px ${T.data}`,
+              color: T.mut,
               marginTop: 4,
             }}
           >
-            {entries.length} agents · top 10 shown
+            {totalAgentCount} agents · top 10 shown
           </div>
         </div>
         {topAgent && (
           <div style={{ textAlign: "right" }}>
             <div
               style={{
-                font: `700 16px ${T.disp}`,
+                font: `800 24px ${T.disp}`,
                 color: T.ink,
                 lineHeight: 1.2,
-                maxWidth: 180,
+                maxWidth: 200,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -151,7 +152,7 @@ export function AgentTablePanel() {
                     <th
                       key={col.label}
                       style={{
-                        font: `700 11px ${T.mono}`,
+                        font: `700 11.5px ${T.mono}`,
                         letterSpacing: "0.14em",
                         textTransform: "uppercase",
                         color: T.mut2,
@@ -166,16 +167,19 @@ export function AgentTablePanel() {
                 </tr>
               </thead>
               <tbody>
-                {entries.slice(0, 10).map((entry) => (
+                {entries.slice(0, 10).map((entry, idx, arr) => (
                   <tr
                     key={entry.agentId}
-                    style={{ borderBottom: `1px solid ${T.line}` }}
+                    style={{
+                      borderBottom:
+                        idx < arr.length - 1 ? `1px solid ${T.line}` : "none",
+                    }}
                   >
                     <td
                       style={{
                         font: `800 14px ${T.disp}`,
                         color: T.mut2,
-                        padding: "10px 0",
+                        padding: "14px 0",
                         width: 32,
                       }}
                     >
@@ -185,7 +189,7 @@ export function AgentTablePanel() {
                       style={{
                         font: `700 16px ${T.disp}`,
                         color: T.ink,
-                        padding: "10px 0",
+                        padding: "14px 0",
                         maxWidth: 160,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -199,8 +203,7 @@ export function AgentTablePanel() {
                         font: `600 15px ${T.data}`,
                         color: T.ink,
                         textAlign: "right",
-                        paddingLeft: 18,
-                        padding: "10px 0 10px 18px",
+                        padding: "14px 0 14px 18px",
                       }}
                     >
                       {entry.policyCount}
@@ -210,7 +213,7 @@ export function AgentTablePanel() {
                         font: `600 15px ${T.data}`,
                         color: T.ink,
                         textAlign: "right",
-                        padding: "10px 0 10px 18px",
+                        padding: "14px 0 14px 18px",
                       }}
                     >
                       {formatCurrency(entry.apTotal)}
@@ -220,7 +223,7 @@ export function AgentTablePanel() {
                         font: `600 15px ${T.data}`,
                         color: T.ink,
                         textAlign: "right",
-                        padding: "10px 0 10px 18px",
+                        padding: "14px 0 14px 18px",
                       }}
                     >
                       {formatCurrency(entry.ipTotal)}

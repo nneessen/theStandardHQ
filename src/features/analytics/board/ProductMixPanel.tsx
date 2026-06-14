@@ -1,9 +1,8 @@
 import { Package } from "lucide-react";
-import { Board, Cap, Num, Bar, EmptyState, T } from "@/components/board";
+import { Board, Cap, Bar, EmptyState, T } from "@/components/board";
 import type { BarTone } from "@/components/board";
 import { useAnalyticsData } from "@/hooks";
 import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
-import { formatCurrency } from "@/lib/format";
 
 function formatProductName(product: string): string {
   return product
@@ -12,8 +11,19 @@ function formatProductName(product: string): string {
     .join(" ");
 }
 
-// Cycle: blue → green → amber → red (cyan omitted — Jarvis-only per design system)
-const ROW_TONES: BarTone[] = ["blue", "green", "amber", "red", "blue", "green"];
+// Fixed color mapping by product type per §5.8 handoff
+function getProductTone(label: string): BarTone {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("term life")) return "blue";
+  if (normalized.includes("whole life")) return "cyan";
+  // DB enum is `indexed_universal_life` → "Indexed Universal Life"; match both
+  // that and a bare "IUL" so the real product name maps to green (not fallback).
+  if (normalized.includes("iul") || normalized.includes("indexed universal"))
+    return "green";
+  if (normalized.includes("final expense")) return "amber";
+  if (normalized.includes("annuity")) return "red";
+  return "blue";
+}
 
 export function ProductMixPanel() {
   const { dateRange } = useAnalyticsDateRange();
@@ -54,10 +64,9 @@ export function ProductMixPanel() {
     .map(([product, data]) => ({
       label: formatProductName(product),
       count: data.count,
-      revenue: data.revenue,
       pct: totalRevenue > 0 ? data.revenue / totalRevenue : 0,
     }))
-    .sort((a, b) => b.revenue - a.revenue);
+    .sort((a, b) => b.pct - a.pct);
 
   const isEmpty = productData.length === 0;
 
@@ -66,39 +75,14 @@ export function ProductMixPanel() {
       pad={26}
       style={{ height: "100%", display: "flex", flexDirection: "column" }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 18,
-        }}
-      >
-        <div>
-          <Cap>Product Mix</Cap>
-          <div
-            style={{ font: `600 18px ${T.data}`, color: T.ink, marginTop: 4 }}
-          >
-            {isEmpty
-              ? "0 products in book"
-              : `${productData.length} product${productData.length !== 1 ? "s" : ""} in book`}
-          </div>
+      {/* Header — eyebrow + subtitle only, no leading-product callout */}
+      <div style={{ marginBottom: 18 }}>
+        <Cap>Product Mix</Cap>
+        <div style={{ font: `600 18px ${T.data}`, color: T.mut, marginTop: 4 }}>
+          {isEmpty
+            ? "0 products in book"
+            : `${productData.length} product${productData.length !== 1 ? "s" : ""} in book`}
         </div>
-        {!isEmpty && productData[0] && (
-          <div style={{ textAlign: "right" }}>
-            <Num
-              text={`${(productData[0].pct * 100).toFixed(0)}%`}
-              size="lg"
-              color={T.blue}
-            />
-            <div
-              style={{ font: `500 11px ${T.data}`, color: T.mut, marginTop: 2 }}
-            >
-              {productData[0].label} leads
-            </div>
-          </div>
-        )}
       </div>
 
       {isEmpty ? (
@@ -109,20 +93,11 @@ export function ProductMixPanel() {
           pad={40}
         />
       ) : (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}
-        >
-          {productData.map((row, idx) => {
-            const tone = ROW_TONES[idx % ROW_TONES.length];
-            const accentMap: Record<BarTone, string> = {
-              blue: T.blue,
-              green: T.green,
-              amber: T.amber,
-              red: T.red,
-            };
-            const accentColor = accentMap[tone];
+        <div style={{ flex: 1 }}>
+          {productData.map((row) => {
+            const tone = getProductTone(row.label);
             return (
-              <div key={row.label}>
+              <div key={row.label} style={{ marginBottom: 18 }}>
                 {/* Row: label + pct */}
                 <div
                   style={{
@@ -130,14 +105,13 @@ export function ProductMixPanel() {
                     justifyContent: "space-between",
                     alignItems: "baseline",
                     gap: 8,
-                    marginBottom: 5,
+                    marginBottom: 8,
                   }}
                 >
                   <span
                     style={{
-                      font: `600 12px ${T.data}`,
+                      font: `600 15px ${T.data}`,
                       color: T.ink,
-                      letterSpacing: "0.01em",
                       minWidth: 0,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -146,35 +120,18 @@ export function ProductMixPanel() {
                   >
                     {row.label}
                   </span>
-                  <div
+                  <span
                     style={{
-                      display: "flex",
-                      alignItems: "baseline",
-                      gap: 8,
+                      font: `700 15px ${T.mono}`,
+                      color: T.cream,
+                      fontVariantNumeric: "tabular-nums",
                       flexShrink: 0,
                     }}
                   >
-                    <span
-                      style={{
-                        font: `700 11px ${T.mono}`,
-                        color: accentColor,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {(row.pct * 100).toFixed(1)}%
-                    </span>
-                    <span
-                      style={{
-                        font: `500 11px ${T.data}`,
-                        color: T.mut,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {formatCurrency(row.revenue)}
-                    </span>
-                  </div>
+                    {(row.pct * 100).toFixed(1)}%
+                  </span>
                 </div>
-                <Bar pct={row.pct} tone={tone} height={6} />
+                <Bar pct={row.pct} tone={tone} />
               </div>
             );
           })}
