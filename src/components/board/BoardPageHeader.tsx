@@ -85,8 +85,11 @@ export function BoardPageHeader({
               gap: 3,
               padding: 4,
               borderRadius: 10,
-              background: T.panel,
-              border: `1px solid ${T.line2}`,
+              // A lifted panel + brighter hairline so the control reads as one
+              // distinct widget rather than text floating on the page.
+              background: T.panel2,
+              border: `1px solid rgba(236,226,205,0.28)`,
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
           >
             {periods.map((p) => {
@@ -96,15 +99,25 @@ export function BoardPageHeader({
                   key={p}
                   type="button"
                   onClick={() => onPeriodChange?.(p)}
+                  // Inactive labels use full-opacity cream (was 55% T.mut, which
+                  // washed out on the dark panel) and brighten further on hover.
+                  onMouseEnter={(e) => {
+                    if (!active) e.currentTarget.style.background = T.tile;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active)
+                      e.currentTarget.style.background = "transparent";
+                  }}
                   style={{
-                    padding: "7px 12px",
+                    padding: "7px 13px",
                     borderRadius: 7,
-                    font: `700 11px ${T.mono}`,
+                    font: `700 12.5px ${T.mono}`,
                     letterSpacing: "0.06em",
                     background: active ? T.blue : "transparent",
-                    color: active ? "#08152b" : T.mut,
+                    color: active ? "#08152b" : T.cream,
                     border: "none",
                     cursor: "pointer",
+                    transition: "background 120ms ease, color 120ms ease",
                   }}
                 >
                   {p}

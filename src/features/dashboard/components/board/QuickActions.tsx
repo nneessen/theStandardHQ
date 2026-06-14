@@ -4,9 +4,10 @@ import {
   Send,
   Receipt,
   MessageSquare,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
-import { Board, JarvisOrbView, T } from "@/components/board";
+import { Board, T } from "@/components/board";
 
 interface ActionCell {
   icon: LucideIcon;
@@ -17,11 +18,11 @@ interface ActionCell {
 }
 
 export interface QuickActionsProps {
-  onJarvis: () => void;
   onAddPolicy: () => void;
-  onAddRecruit: () => void;
+  onAddToTeam: () => void;
   onSendEmail: () => void;
   onLogExpense: () => void;
+  onLeaderboard: () => void;
   /**
    * Show the Discord action. Limited to super-admins (Nick) and Epic Life
    * users (email contains "epiclife"). Hidden for everyone else.
@@ -30,15 +31,16 @@ export interface QuickActionsProps {
 }
 
 /**
- * Quick actions bar — Jarvis launcher (36%) + evenly-split icon action cells.
- * Ported from TheBoard.jsx `QuickActions`. Discord and Slack are placeholders (SOON).
+ * Quick actions bar — evenly-split icon action cells. Jarvis lives in the
+ * sidebar (Command Center), so it is intentionally not duplicated here.
+ * Ported from TheBoard.jsx `QuickActions`. Discord is a placeholder (SOON).
  */
 export function QuickActions({
-  onJarvis,
   onAddPolicy,
-  onAddRecruit,
+  onAddToTeam,
   onSendEmail,
   onLogExpense,
+  onLeaderboard,
   showDiscord = false,
 }: QuickActionsProps) {
   const acts: ActionCell[] = [
@@ -48,9 +50,10 @@ export function QuickActions({
       onClick: onAddPolicy,
       primary: true,
     },
-    { icon: UserPlus, label: "Add Recruit", onClick: onAddRecruit },
+    { icon: UserPlus, label: "Add to Team", onClick: onAddToTeam },
     { icon: Send, label: "Send Email", onClick: onSendEmail },
     { icon: Receipt, label: "Log Expense", onClick: onLogExpense },
+    { icon: Trophy, label: "Leaderboard", onClick: onLeaderboard },
     // Discord is gated to super-admins (Nick) + Epic Life emails.
     ...(showDiscord
       ? [{ icon: MessageSquare, label: "Discord", soon: true }]
@@ -58,86 +61,11 @@ export function QuickActions({
   ];
 
   return (
-    <Board
-      pad={0}
-      rivets={false}
-      className="mb-4 flex flex-col overflow-hidden md:flex-row"
-    >
-      {/* Jarvis launcher */}
-      <button
-        type="button"
-        onClick={onJarvis}
-        aria-label="Open Jarvis"
-        className="w-full border-b md:w-auto md:flex-[0_0_36%] md:border-b-0 md:border-r"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          padding: "14px 18px",
-          borderColor: "rgba(236,226,205,0.08)",
-          position: "relative",
-          cursor: "pointer",
-          background: `radial-gradient(130% 160% at 0% 0%, rgba(70,216,245,0.16), rgba(70,216,245,0.02))`,
-          textAlign: "left",
-          border: "none",
-        }}
-      >
-        <JarvisOrbView size={58} />
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                font: `800 19px ${T.disp}`,
-                letterSpacing: "0.06em",
-                color: T.ink,
-              }}
-            >
-              JARVIS
-            </span>
-            <span
-              style={{
-                font: `700 8.5px ${T.mono}`,
-                letterSpacing: "0.12em",
-                color: T.cyan,
-                padding: "2px 6px",
-                borderRadius: 4,
-                border: `1px solid rgba(70,216,245,0.4)`,
-              }}
-            >
-              AI
-            </span>
-          </span>
-          <span
-            style={{
-              display: "block",
-              fontSize: 12.5,
-              color: "rgba(70,216,245,0.8)",
-              marginTop: 3,
-            }}
-          >
-            Ask anything, run any task
-          </span>
-        </span>
-        <kbd
-          style={{
-            font: `700 11px ${T.mono}`,
-            color: T.cyan,
-            background: "rgba(70,216,245,0.1)",
-            borderRadius: 6,
-            padding: "6px 9px",
-            border: `1px solid rgba(70,216,245,0.35)`,
-            flexShrink: 0,
-          }}
-        >
-          ⌘J
-        </kbd>
-      </button>
-
+    <Board pad={0} rivets={false} className="mb-4 overflow-hidden">
       {/* action cells — auto-fit so they wrap to multiple rows on narrow screens
           instead of overflowing horizontally. */}
       <div
         style={{
-          flex: 1,
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(76px, 1fr))",
         }}

@@ -10,14 +10,14 @@ export interface BoardFlag {
 
 // severity → [status word, color]
 const TAG: Record<FlagSeverity, [string, string]> = {
-  warning: ["DELAYED", T.amber],
-  danger: ["HALTED", T.red],
-  error: ["HALTED", T.red],
-  info: ["BOARDING", T.blue],
+  warning: ["WARNING", T.amber],
+  danger: ["URGENT", T.red],
+  error: ["URGENT", T.red],
+  info: ["INFO", T.blue],
 };
 
 /**
- * Alerts reframed as a flight departure board.
+ * Flags panel — items needing attention, tagged by severity.
  * Ported from TheBoard.jsx `Flags`.
  */
 export function BoardFlags({ alerts }: { alerts: BoardFlag[] }) {
@@ -32,7 +32,7 @@ export function BoardFlags({ alerts }: { alerts: BoardFlag[] }) {
           borderBottom: `1px solid ${T.line}`,
         }}
       >
-        <Cap>Flags · Departure Status</Cap>
+        <Cap>Flags</Cap>
         <Num
           text={String(alerts.length).padStart(2, "0")}
           size="xs"

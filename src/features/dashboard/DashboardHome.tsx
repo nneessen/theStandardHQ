@@ -71,6 +71,7 @@ const PERIOD_TO_LABEL: Record<TimePeriod, string> = {
 
 import { ExpenseDialogCompact as ExpenseDialog } from "../expenses/components/ExpenseDialogCompact";
 import { PolicyDialog } from "../policies/components/PolicyDialog";
+import { AddToTeamChooser } from "../recruiting/components/AddToTeamChooser";
 
 import { generateKPIConfig } from "./config/kpiConfig";
 import { generateAlertsConfig } from "./config/alertsConfig";
@@ -179,9 +180,9 @@ export const DashboardHome: React.FC = () => {
   const dashboardFeatures = useDashboardFeatures();
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("MTD");
   const [periodOffset, setPeriodOffset] = useState<number>(0);
-  const [activeDialog, setActiveDialog] = useState<"policy" | "expense" | null>(
-    null,
-  );
+  const [activeDialog, setActiveDialog] = useState<
+    "policy" | "expense" | "team" | null
+  >(null);
   const [policyFormErrors, setPolicyFormErrors] = useState<
     Record<string, string>
   >({});
@@ -231,8 +232,9 @@ export const DashboardHome: React.FC = () => {
   const { data: unreadMessages } = useUnreadMessageCount();
 
   const navigate = useNavigate();
-  // Current user's REAL leaderboard rank for the Season Rank hero panel.
-  const myRank = useMyRank();
+  // Current user's REAL leaderboard rank for the hero Rank panel — follows the
+  // selected period toggle.
+  const myRank = useMyRank(timePeriod);
 
   // Realistic target plan — same source the Targets page tunes via Realism
   // Settings. Falls back to breakeven-based pace if no target set yet.
@@ -537,11 +539,11 @@ export const DashboardHome: React.FC = () => {
           />
 
           <QuickActions
-            onJarvis={() => navigate({ to: "/command-center" })}
             onAddPolicy={() => setActiveDialog("policy")}
-            onAddRecruit={() => navigate({ to: "/recruiting" })}
+            onAddToTeam={() => setActiveDialog("team")}
             onSendEmail={() => navigate({ to: "/messages" })}
             onLogExpense={() => setActiveDialog("expense")}
+            onLeaderboard={() => navigate({ to: "/leaderboard" })}
             showDiscord={showDiscord}
           />
 
@@ -611,6 +613,11 @@ export const DashboardHome: React.FC = () => {
         }}
         onSave={handleAddPolicy}
         externalErrors={policyFormErrors}
+      />
+
+      <AddToTeamChooser
+        open={activeDialog === "team"}
+        onOpenChange={(open) => setActiveDialog(open ? "team" : null)}
       />
     </>
   );

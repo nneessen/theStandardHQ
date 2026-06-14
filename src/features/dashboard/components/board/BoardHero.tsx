@@ -21,7 +21,7 @@ export interface BoardHeroProps {
 }
 
 /**
- * The hero row — Premium Written (1.6fr) + Season Rank (1fr split-flap).
+ * The hero row — Premium Written (1.6fr) + Rank (1fr split-flap).
  * Ported from TheBoard.jsx `Hero`. All values are real (passed from the
  * dashboard's existing data hooks + useMyRank).
  */
@@ -111,7 +111,7 @@ export function BoardHero({
           gap: 14,
         }}
       >
-        <Cap>Season Rank</Cap>
+        <Cap>Rank</Cap>
         <SplitFlap
           text={rank ? `#${String(rank).padStart(2, "0")}` : "--"}
           size="lg"
