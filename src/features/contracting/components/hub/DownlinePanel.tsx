@@ -270,7 +270,7 @@ export function DownlinePanel() {
                       padding: "9px 14px",
                       borderBottom: `1px solid ${T.line}`,
                       cursor: "pointer",
-                      background: on ? "rgba(107,151,255,0.10)" : "transparent",
+                      background: on ? "rgba(91,155,255,0.10)" : "transparent",
                       boxShadow: on ? `inset 3px 0 0 ${T.blue}` : "none",
                     }}
                   >

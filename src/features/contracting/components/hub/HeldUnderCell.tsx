@@ -150,7 +150,7 @@ export function HeldUnderCell({
                         padding: "7px 12px",
                         background:
                           c.agentId === heldUnderId
-                            ? "rgba(107,151,255,0.10)"
+                            ? "rgba(91,155,255,0.10)"
                             : "transparent",
                         border: "none",
                         cursor: "pointer",

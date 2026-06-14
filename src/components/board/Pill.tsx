@@ -14,7 +14,7 @@ const COLOR: Record<PillTone, string> = {
 
 // Tinted backgrounds — accent at ~14% alpha per the Color System convention.
 const TINT: Record<PillTone, string> = {
-  blue: "rgba(107,151,255,0.14)",
+  blue: "rgba(91,155,255,0.14)",
   amber: "rgba(244,180,58,0.14)",
   green: "rgba(95,208,138,0.14)",
   red: "rgba(255,106,93,0.14)",

@@ -40,8 +40,8 @@ function HeroSkeleton() {
       pad={26}
       rivets
       style={{
-        background: `radial-gradient(130% 180% at 0% 0%, rgba(107,151,255,0.12), rgba(107,151,255,0.01)), ${T.panelGradient}`,
-        border: "1px solid rgba(107,151,255,0.28)",
+        background: `radial-gradient(130% 180% at 0% 0%, rgba(91,155,255,0.12), rgba(91,155,255,0.01)), ${T.panelGradient}`,
+        border: "1px solid rgba(91,155,255,0.28)",
         height: "100%",
         display: "flex",
         alignItems: "center",
@@ -140,8 +140,8 @@ export function AnalyticsHero() {
       pad={26}
       rivets
       style={{
-        background: `radial-gradient(130% 180% at 0% 0%, rgba(107,151,255,0.12), rgba(107,151,255,0.01)), ${T.panelGradient}`,
-        border: "1px solid rgba(107,151,255,0.28)",
+        background: `radial-gradient(130% 180% at 0% 0%, rgba(91,155,255,0.12), rgba(91,155,255,0.01)), ${T.panelGradient}`,
+        border: "1px solid rgba(91,155,255,0.28)",
         height: "100%",
       }}
     >

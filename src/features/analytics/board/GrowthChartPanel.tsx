@@ -38,7 +38,7 @@ const CustomTooltip = ({
   return (
     <div
       style={{
-        background: "#161616",
+        background: "#252525",
         border: `1px solid ${T.line2}`,
         borderRadius: 8,
         padding: "10px 14px",
@@ -83,7 +83,7 @@ const ConfidenceDot = (props: { cx?: number; cy?: number; index?: number }) => {
       cx={cx}
       cy={cy}
       r={4}
-      fill="#161616"
+      fill="#252525"
       stroke={color}
       strokeWidth={2.4}
       style={{ filter: `drop-shadow(0 0 4px ${color})` }}

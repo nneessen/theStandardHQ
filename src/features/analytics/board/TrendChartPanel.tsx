@@ -31,7 +31,7 @@ const CustomTooltip = ({
   return (
     <div
       style={{
-        background: "#161616",
+        background: "#252525",
         border: `1px solid ${T.line2}`,
         borderRadius: 8,
         padding: "10px 14px",

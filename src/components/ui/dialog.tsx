@@ -42,10 +42,13 @@ const dialogContentVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-card border border-border shadow-2xl rounded-lg",
+        // Dialog content floats at surface-7 per the elevation ramp; falls back to
+        // --card outside the board theme (.theme-v2 defines --surface-7).
+        default:
+          "bg-[var(--surface-7,var(--card))] border border-border shadow-2xl rounded-lg",
 
         elevated:
-          "bg-card border border-border shadow-2xl shadow-foreground/20 rounded-lg",
+          "bg-[var(--surface-7,var(--card))] border border-border shadow-2xl shadow-foreground/20 rounded-lg",
 
         minimal: "bg-muted border border-border shadow-lg rounded-md",
       },

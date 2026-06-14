@@ -96,9 +96,7 @@ export function QuickActions({
                   i < acts.length - 1
                     ? "1px solid rgba(255,255,255,0.06)"
                     : "none",
-                background: a.primary
-                  ? "rgba(107,151,255,0.12)"
-                  : "transparent",
+                background: a.primary ? "rgba(91,155,255,0.12)" : "transparent",
               }}
             >
               {a.soon && (
@@ -124,7 +122,7 @@ export function QuickActions({
                 style={{
                   color: a.primary ? T.blue : T.ink,
                   filter: a.primary
-                    ? "drop-shadow(0 0 9px rgba(107,151,255,0.65))"
+                    ? "drop-shadow(0 0 9px rgba(91,155,255,0.65))"
                     : "none",
                 }}
               />

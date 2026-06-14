@@ -67,8 +67,17 @@ export default {
           pending: "var(--warning)",
           lapsed: "var(--error)",
         },
-        // Design System V2 — repointed to "The Board" warm near-black palette
+        // Design System V2 — "Surface / Substrate Elevation" ramp (The Standard HQ)
         v2: {
+          // 8-level elevation ramp — usage: bg-v2-surface-1 … bg-v2-surface-8
+          "surface-1": "var(--v2-surface-1)",
+          "surface-2": "var(--v2-surface-2)",
+          "surface-3": "var(--v2-surface-3)",
+          "surface-4": "var(--v2-surface-4)",
+          "surface-5": "var(--v2-surface-5)",
+          "surface-6": "var(--v2-surface-6)",
+          "surface-7": "var(--v2-surface-7)",
+          "surface-8": "var(--v2-surface-8)",
           canvas: "var(--v2-bg-canvas)",
           card: "var(--v2-bg-card)",
           "card-tinted": "var(--v2-bg-card-tinted)",

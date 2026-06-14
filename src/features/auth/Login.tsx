@@ -146,7 +146,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0b0b0b] text-[#fafafa] lg:flex-row">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0b0b0b] text-[#f3f3f4] lg:flex-row">
       {/* ───────────── LEFT — cinematic Jarvis reactor ───────────── */}
       <section
         aria-hidden
@@ -185,7 +185,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
               fontSize: "clamp(34px, 4.5vw, 64px)",
               letterSpacing: "-0.01em",
               textTransform: "uppercase",
-              color: "#fafafa",
+              color: "#f3f3f4",
             }}
           >
             The Standard
@@ -218,7 +218,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             style={{
               fontFamily: '"Archivo", system-ui, sans-serif',
               fontWeight: 800,
-              color: "#fafafa",
+              color: "#f3f3f4",
             }}
           >
             {title}
@@ -295,21 +295,21 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             By continuing, you agree to our{" "}
             <Link
               to="/terms"
-              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
+              className="underline underline-offset-4 transition-colors hover:text-[#f3f3f4]"
             >
               Terms
             </Link>{" "}
             and{" "}
             <Link
               to="/privacy"
-              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
+              className="underline underline-offset-4 transition-colors hover:text-[#f3f3f4]"
             >
               Privacy Policy
             </Link>
             .{" "}
             <Link
               to="/accessibility"
-              className="underline underline-offset-4 transition-colors hover:text-[#fafafa]"
+              className="underline underline-offset-4 transition-colors hover:text-[#f3f3f4]"
             >
               Accessibility
             </Link>

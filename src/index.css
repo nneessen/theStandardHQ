@@ -169,85 +169,107 @@
   .theme-v2,
   .theme-v2.dark,
   .dark .theme-v2 {
-    /* shadcn semantic tokens (board) */
-    --background: #0d0d0d;
-    --foreground: #fafafa;
-    --card: #161616;
-    --card-foreground: #fafafa;
-    --popover: #1c1c1c;
-    --popover-foreground: #fafafa;
-    --primary: #6b97ff;
+    /* Surface / Substrate Elevation ramp (Jun 14 2026 — "The Standard HQ" handoff).
+       Eight levels, lightest-on-top; exact hex. A component renders ONE level above
+       whatever it sits on. Kept in lockstep with the `surface` ramp in tokens.ts. */
+    --surface-1: #171717; /* page / app canvas        */
+    --surface-2: #1e1e1e; /* controls: search, chips   */
+    --surface-3: #252525; /* cards / panels            */
+    --surface-4: #2c2c2c; /* card hover / raised tile   */
+    --surface-5: #333333; /* popover                   */
+    --surface-6: #3a3a3a; /* menu on a popover          */
+    --surface-7: #414141; /* dialog content            */
+    --surface-8: #484848; /* menu inside a dialog       */
+
+    /* shadcn semantic tokens (board) — mapped to the ramp BY ROLE */
+    --background: var(--surface-1);
+    --foreground: #f3f3f4;
+    --card: var(--surface-3);
+    --card-foreground: #f3f3f4;
+    --popover: var(--surface-5);
+    --popover-foreground: #f3f3f4;
+    --primary: #5b9bff;
     --primary-foreground: #08152b;
-    --secondary: #232323;
-    --secondary-foreground: #fafafa;
-    --muted: #232323;
-    --muted-foreground: rgba(255, 255, 255, 0.55);
-    --accent: #6b97ff;
+    --secondary: var(--surface-4);
+    --secondary-foreground: #f3f3f4;
+    --muted: var(--surface-4);
+    --muted-foreground: rgba(255, 255, 255, 0.62);
+    --accent: #5b9bff;
     --accent-foreground: #08152b;
     --destructive: #ff6a5d;
     --destructive-foreground: #08152b;
-    --border: rgba(255, 255, 255, 0.1);
-    --input: rgba(255, 255, 255, 0.18);
-    --ring: #6b97ff;
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.14);
+    --ring: #5b9bff;
     --border-soft: rgba(255, 255, 255, 0.06);
     --success: #5fd08a;
     --success-foreground: #08152b;
     --warning: #f4b43a;
-    --warning-foreground: #0d0d0d;
+    --warning-foreground: #171717;
     --error: #ff6a5d;
     --error-foreground: #08152b;
     --info: #46d8f5;
     --info-foreground: #08152b;
-    --accent-strong: #8fb4ff;
-    --surface-deep: #1c1c1c;
-    --surface-deep-foreground: #fafafa;
+    --accent-strong: #82bcff;
+    --surface-deep: var(--surface-4);
+    --surface-deep-foreground: #f3f3f4;
 
     /* v2 tokens (board) */
-    --v2-bg-canvas: #0d0d0d;
-    --v2-bg-card: #161616;
-    --v2-bg-card-tinted: #232323;
-    --v2-bg-card-dark: #1c1c1c;
-    --v2-accent: #6b97ff;
-    --v2-accent-strong: #8fb4ff;
-    --v2-accent-soft: rgba(107, 151, 255, 0.12);
-    --v2-ink: #fafafa;
-    /* Two-tier muted text. Lifted Jun 14 2026 (muted 0.55→0.66, subtle 0.36→0.50)
-       so labels/captions read clearly app-wide while staying secondary to --v2-ink.
-       Kept in lockstep with T.mut/T.mut2 (tokens.ts) + --mut/--mut2 below. */
-    --v2-ink-muted: rgba(255, 255, 255, 0.66);
-    --v2-ink-subtle: rgba(255, 255, 255, 0.5);
-    --v2-ring: rgba(255, 255, 255, 0.1);
-    --v2-ring-strong: rgba(255, 255, 255, 0.18);
+    --v2-surface-1: var(--surface-1);
+    --v2-surface-2: var(--surface-2);
+    --v2-surface-3: var(--surface-3);
+    --v2-surface-4: var(--surface-4);
+    --v2-surface-5: var(--surface-5);
+    --v2-surface-6: var(--surface-6);
+    --v2-surface-7: var(--surface-7);
+    --v2-surface-8: var(--surface-8);
+    --v2-bg-canvas: var(--surface-1);
+    --v2-bg-card: var(--surface-3);
+    --v2-bg-card-tinted: var(--surface-4);
+    --v2-bg-card-dark: var(--surface-4);
+    --v2-accent: #5b9bff;
+    --v2-accent-strong: #82bcff;
+    --v2-accent-soft: rgba(91, 155, 255, 0.12);
+    --v2-ink: #f3f3f4;
+    /* Two-tier muted text — spec verbatim (muted 0.62 / subtle 0.42), tuned against
+       the lighter #252525 cards. Kept in lockstep with T.mut/T.mut2 (tokens.ts) +
+       --mut/--mut2 below. Verify labels read clearly on #252525; lift only if dim. */
+    --v2-ink-muted: rgba(255, 255, 255, 0.62);
+    --v2-ink-subtle: rgba(255, 255, 255, 0.42);
+    --v2-ring: rgba(255, 255, 255, 0.08);
+    --v2-ring-strong: rgba(255, 255, 255, 0.14);
     --v2-shadow-soft:
-      inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px -2px rgba(0, 0, 0, 0.4);
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 16px -2px rgba(0, 0, 0, 0.4);
     --v2-shadow-lift:
       inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 26px rgba(0, 0, 0, 0.45);
     --v2-font-display: "Archivo", system-ui, sans-serif;
 
     /* board raw tokens (consumed by src/components/board/* + board-* classes) */
-    --bg: #0d0d0d;
-    --panel: #161616;
-    --panel2: #1c1c1c;
-    --tile: #232323;
-    --cream: #ededed;
-    --line: rgba(255, 255, 255, 0.1);
-    --line2: rgba(255, 255, 255, 0.18);
-    --ink: #fafafa;
-    --mut: rgba(255, 255, 255, 0.66);
-    --mut2: rgba(255, 255, 255, 0.5);
-    --blue: #6b97ff;
+    --bg: var(--surface-1);
+    --panel: var(--surface-3);
+    --panel2: var(--surface-4);
+    --tile: var(--surface-4);
+    --cream: #fbfbfc;
+    --line: rgba(255, 255, 255, 0.08);
+    --line2: rgba(255, 255, 255, 0.14);
+    --ink: #f3f3f4;
+    --mut: rgba(255, 255, 255, 0.62);
+    --mut2: rgba(255, 255, 255, 0.42);
+    --blue: #5b9bff;
     --cyan: #46d8f5;
     --amber: #f4b43a;
     --red: #ff6a5d;
     --green: #5fd08a;
+    --violet: #b69bff;
     --board-brushed: repeating-linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.012) 0 1px,
       transparent 1px 3px
     );
-    --board-panel-gradient: linear-gradient(180deg, #1c1c1c, #161616);
-    --board-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 8px 26px rgba(0, 0, 0, 0.45);
+    --board-panel-gradient: linear-gradient(180deg, #2c2c2c, #252525);
+    --board-panel-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 26px rgba(0, 0, 0, 0.45);
 
     /* board fonts */
     --font-sans:
@@ -267,7 +289,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
-
 
 /* ==================== APP TYPOGRAPHY UTILITIES ==================== */
 /* Landing-derived accents adapted for app density. These are app-scope
@@ -334,7 +355,7 @@
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(107, 151, 255, 0.1) 0%,
+      rgba(91, 155, 255, 0.1) 0%,
       transparent 60%
     ),
     radial-gradient(
@@ -357,7 +378,7 @@
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(107, 151, 255, 0.1) 0%,
+      rgba(91, 155, 255, 0.1) 0%,
       transparent 60%
     ),
     radial-gradient(
@@ -386,7 +407,7 @@
   background-image:
     radial-gradient(
       circle at 84% 18%,
-      rgba(107, 151, 255, 0.06) 0%,
+      rgba(91, 155, 255, 0.06) 0%,
       transparent 40%
     ),
     var(--board-brushed);
@@ -514,20 +535,14 @@
 
 /* Recruiting grid pattern backgrounds */
 .bg-recruiting-grid-light {
-  background-image: linear-gradient(
-      to right,
-      rgb(0 0 0 / 0.03) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(to right, rgb(0 0 0 / 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(0 0 0 / 0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 .bg-recruiting-grid-dark {
-  background-image: linear-gradient(
-      to right,
-      rgb(255 255 255 / 0.02) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.02) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(255 255 255 / 0.02) 1px, transparent 1px);
   background-size: 40px 40px;
 }
@@ -595,9 +610,15 @@
   margin-bottom: 0.4em;
 }
 
-.rich-text-content h1 { font-size: 1.25em; }
-.rich-text-content h2 { font-size: 1.1em; }
-.rich-text-content h3 { font-size: 1em; }
+.rich-text-content h1 {
+  font-size: 1.25em;
+}
+.rich-text-content h2 {
+  font-size: 1.1em;
+}
+.rich-text-content h3 {
+  font-size: 1em;
+}
 
 .rich-text-content p {
   margin-bottom: 0.5em;
@@ -718,10 +739,19 @@
 .sidebar-nav:hover {
   scrollbar-color: var(--border) transparent;
 }
-.sidebar-nav::-webkit-scrollbar { width: 4px; }
-.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
-.sidebar-nav::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; }
-.sidebar-nav:hover::-webkit-scrollbar-thumb { background: var(--border); }
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+}
+.sidebar-nav:hover::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
 
 /* ==================== LAYOUT UTILITIES ==================== */
 @layer components {
@@ -822,7 +852,7 @@
 }
 
 .recruiting-section::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background-image:
@@ -837,7 +867,7 @@
   position: relative;
 }
 .recruiting-accent-top::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -851,7 +881,7 @@
   position: relative;
 }
 .recruiting-accent-left::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   bottom: 0;
@@ -868,7 +898,7 @@
 
 /* Massive number typography */
 .recruiting-number {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 900;
   line-height: 0.7;
   letter-spacing: -0.02em;
@@ -912,18 +942,35 @@
   opacity: 0;
 }
 
-.animate-stagger-fade-in > *:nth-child(1) { animation-delay: 0ms; }
-.animate-stagger-fade-in > *:nth-child(2) { animation-delay: 50ms; }
-.animate-stagger-fade-in > *:nth-child(3) { animation-delay: 100ms; }
-.animate-stagger-fade-in > *:nth-child(4) { animation-delay: 150ms; }
-.animate-stagger-fade-in > *:nth-child(5) { animation-delay: 200ms; }
-.animate-stagger-fade-in > *:nth-child(6) { animation-delay: 250ms; }
-.animate-stagger-fade-in > *:nth-child(7) { animation-delay: 300ms; }
-.animate-stagger-fade-in > *:nth-child(8) { animation-delay: 350ms; }
+.animate-stagger-fade-in > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.animate-stagger-fade-in > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.animate-stagger-fade-in > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.animate-stagger-fade-in > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+.animate-stagger-fade-in > *:nth-child(5) {
+  animation-delay: 200ms;
+}
+.animate-stagger-fade-in > *:nth-child(6) {
+  animation-delay: 250ms;
+}
+.animate-stagger-fade-in > *:nth-child(7) {
+  animation-delay: 300ms;
+}
+.animate-stagger-fade-in > *:nth-child(8) {
+  animation-delay: 350ms;
+}
 
 /* Step pulse animation for active items */
 @keyframes stepPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(var(--recruiting-primary-rgb), 0.4);
   }
   50% {
