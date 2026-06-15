@@ -100,6 +100,21 @@ def main() -> int:
         else:
             print("✓ feed toolbar rendered")
 
+        # Folder rail (Step B): the restored Inbox / Starred / Sent / Archived
+        # navigation that Option C had dropped. "Sent" uses exact match to avoid
+        # the header's "Sent today" quota label.
+        for f in ("Inbox", "Starred", "Sent", "Archived"):
+            if page.get_by_text(f, exact=True).count() == 0:
+                failures.append(f"folder rail '{f}' missing")
+            else:
+                print(f"✓ folder rail: '{f}' present")
+        # Selecting a folder must re-scope the feed (refetch) without JS errors.
+        arch = page.get_by_text("Archived", exact=True).first
+        if arch.count() > 0:
+            arch.click()
+            page.wait_for_timeout(1800)
+            print("✓ folder click (Archived) re-scoped feed without error")
+
         # Channel tabs now render the SAME unified feed (filtered) — click both.
         for tab_name in ("Email", "Instagram"):
             tab = page.get_by_text(tab_name, exact=True).first
@@ -113,6 +128,40 @@ def main() -> int:
                 full_page=True,
             )
             print(f"✓ {tab_name} tab rendered (unified feed / connect state)")
+
+        # Reading pane (Option C #1): open the first conversation on the unified
+        # feed and assert the IN-PAGE detail pane renders (replaces the old
+        # right-side drawer). Graceful when the demo inbox is empty.
+        all_tab = page.get_by_text("All inboxes", exact=True).first
+        if all_tab.count() > 0:
+            all_tab.click()
+            page.wait_for_timeout(1500)
+        cards = page.locator("[data-testid=feed-card]")
+        if cards.count() > 0:
+            cards.first.click()
+            page.wait_for_timeout(2500)
+            pane = page.locator("[data-testid=reading-pane]").first
+            if pane.count() == 0 or not pane.is_visible():
+                failures.append("reading pane did not open on conversation click")
+            else:
+                print("✓ reading pane opened in-page (master–detail, no drawer)")
+                page.screenshot(
+                    path=str(OUT / "messages-reading-pane.png"), full_page=True
+                )
+        else:
+            print("• demo inbox empty — reading-pane open not exercised")
+
+        # Templates tab (Step C restyle): must render in board language, no errors.
+        tpl = page.get_by_text("Templates", exact=True).first
+        if tpl.count() > 0:
+            tpl.click()
+            page.wait_for_timeout(2000)
+            page.screenshot(
+                path=str(OUT / "messages-templates.png"), full_page=True
+            )
+            print("✓ Templates tab rendered")
+        else:
+            print("• Templates tab not available for demo agent (skipped)")
 
         browser.close()
 

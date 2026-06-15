@@ -5,7 +5,7 @@
 // Owns feed-local state (unread / sort / open thread) and wires bulk actions to
 // the real per-channel mutations.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   useActiveInstagramIntegration,
@@ -20,8 +20,10 @@ import {
 } from "../../hooks/useUnifiedInbox";
 import { InstagramTabContent } from "../instagram/InstagramTabContent";
 import { FeedColumn } from "./FeedColumn";
+import { FolderRail } from "./FolderRail";
 import { InsightRail } from "./InsightRail";
-import { ThreadDrawer, type OpenTarget } from "./ThreadDrawer";
+import { ReadingPane } from "./ReadingPane";
+import type { OpenTarget } from "./types";
 
 export function UnifiedInboxView({
   searchQuery,
@@ -33,6 +35,14 @@ export function UnifiedInboxView({
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [sort, setSort] = useState<FeedSort>("newest");
   const [openTarget, setOpenTarget] = useState<OpenTarget | null>(null);
+  const [folder, setFolder] = useState("all");
+
+  // Folders are scoped to the active tab; switching channels (or the page
+  // re-scoping the feed) clears a stale selection and closes the reading pane.
+  useEffect(() => {
+    setFolder("all");
+    setOpenTarget(null);
+  }, [channel]);
 
   const { data: igIntegration } = useActiveInstagramIntegration();
   const data = useUnifiedInbox({
@@ -40,6 +50,7 @@ export function UnifiedInboxView({
     channel,
     unreadOnly,
     sort,
+    folder,
   });
 
   // Bulk actions reuse the real per-channel mutations (shared query cache).
@@ -76,8 +87,23 @@ export function UnifiedInboxView({
     );
   }
 
+  // The reading pane replaces the insight rail (master–detail) when a
+  // conversation is open; the matching feed card is highlighted via openKey.
+  const openKey = openTarget
+    ? `${openTarget.channel === "instagram" ? "ig" : "email"}:${openTarget.refId}`
+    : null;
+
   return (
     <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
+      <FolderRail
+        channel={channel}
+        folder={folder}
+        onSelect={(f) => {
+          setFolder(f);
+          setOpenTarget(null);
+        }}
+        labels={data.labels}
+      />
       <FeedColumn
         data={data}
         unreadOnly={unreadOnly}
@@ -87,9 +113,14 @@ export function UnifiedInboxView({
         onOpenThread={setOpenTarget}
         onBulkStar={handleBulkStar}
         onBulkArchive={handleBulkArchive}
+        narrow={!!openTarget}
+        openKey={openKey}
       />
-      <InsightRail data={data} onOpenThread={setOpenTarget} />
-      <ThreadDrawer target={openTarget} onClose={() => setOpenTarget(null)} />
+      {openTarget ? (
+        <ReadingPane target={openTarget} onClose={() => setOpenTarget(null)} />
+      ) : (
+        <InsightRail data={data} onOpenThread={setOpenTarget} />
+      )}
     </div>
   );
 }

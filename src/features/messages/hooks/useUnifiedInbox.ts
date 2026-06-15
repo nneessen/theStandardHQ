@@ -67,6 +67,12 @@ export interface FeedGroup {
   threads: UnifiedThread[];
 }
 
+export interface InboxLabel {
+  name: string;
+  tone: AccentTone;
+  count: number;
+}
+
 export interface UnifiedInboxData {
   groups: FeedGroup[];
   allCount: number;
@@ -75,6 +81,8 @@ export interface UnifiedInboxData {
   instagramCount: number;
   followups: FollowUpItem[];
   channelMix: ChannelMix;
+  /** Distinct labels present across the feed — drives the folder rail. */
+  labels: InboxLabel[];
   isLoading: boolean;
   isEmpty: boolean;
 }
@@ -286,6 +294,69 @@ interface UseUnifiedInboxOptions {
   channel?: FeedChannel;
   unreadOnly?: boolean;
   sort?: FeedSort;
+  /** Folder rail selection, e.g. "all", "email:starred", "ig:priority", "label:Lead". */
+  folder?: string;
+}
+
+type EmailFilter = "all" | "inbox" | "sent" | "starred" | "archived";
+interface FolderSpec {
+  // Server-side email query (each folder is capped at 50 most-recent at the
+  // source, so status folders MUST push down to the query — a client-side filter
+  // over the non-archived window would miss older starred/sent/archived threads).
+  emailFilter: EmailFilter;
+  // Channel the folder narrows to ("all" keeps the tab's channel scope).
+  effChannel: FeedChannel;
+  // Extra in-memory predicate (unread / priority / label) applied after scoping.
+  predicate: ((t: UnifiedThread) => boolean) | null;
+}
+
+// Translate a folder id into the email query + channel scope + predicate. The
+// rail only ever offers folders valid for the active tab, so channel-specific
+// folders safely override the tab's channel scope (e.g. "email:archived" on the
+// "all" tab narrows to archived email).
+function parseFolder(folder: string, tabChannel: FeedChannel): FolderSpec {
+  if (folder.startsWith("email:")) {
+    const box = folder.slice(6);
+    if (box === "inbox")
+      return { emailFilter: "inbox", effChannel: "email", predicate: null };
+    if (box === "starred")
+      return { emailFilter: "starred", effChannel: "email", predicate: null };
+    if (box === "sent")
+      return { emailFilter: "sent", effChannel: "email", predicate: null };
+    if (box === "archived")
+      return { emailFilter: "archived", effChannel: "email", predicate: null };
+    if (box === "unread")
+      return {
+        emailFilter: "all",
+        effChannel: "email",
+        predicate: (t) => t.unread,
+      };
+  }
+  if (folder.startsWith("ig:")) {
+    const box = folder.slice(3);
+    if (box === "unread")
+      return {
+        emailFilter: "all",
+        effChannel: "instagram",
+        predicate: (t) => t.unread,
+      };
+    if (box === "priority")
+      return {
+        emailFilter: "all",
+        effChannel: "instagram",
+        predicate: (t) => t.starred,
+      };
+    return { emailFilter: "all", effChannel: "instagram", predicate: null };
+  }
+  if (folder.startsWith("label:")) {
+    const name = folder.slice(6);
+    return {
+      emailFilter: "all",
+      effChannel: tabChannel,
+      predicate: (t) => t.label?.name === name,
+    };
+  }
+  return { emailFilter: "all", effChannel: tabChannel, predicate: null };
 }
 
 export function useUnifiedInbox(
@@ -296,13 +367,19 @@ export function useUnifiedInbox(
     channel = "all",
     unreadOnly = false,
     sort = "newest",
+    folder = "all",
   } = options;
   const { user } = useAuth();
 
-  // Email threads (all non-archived). Search is applied client-side so the feed
-  // stays snappy and filters both channels identically.
+  // The folder selection drives which email set we fetch (folders are capped at
+  // the source, so status folders push down to the query) plus the channel scope
+  // and an in-memory predicate. Memoized so the predicate identity is stable.
+  const spec = useMemo(() => parseFolder(folder, channel), [folder, channel]);
+
+  // Email threads for the active folder. Search is applied client-side so the
+  // feed stays snappy and filters both channels identically.
   const { threads: emailThreads, isLoading: emailLoading } = useThreads({
-    filter: "all",
+    filter: spec.emailFilter,
   });
 
   // Instagram conversations for the active integration (empty if not connected).
@@ -347,21 +424,41 @@ export function useUnifiedInbox(
         )
       : allThreads;
 
-    const channelScoped =
-      channel === "all"
+    // Channel scope comes from the folder spec (which already folds in the tab
+    // channel); the folder's predicate (unread / priority / label) narrows further.
+    const scoped =
+      spec.effChannel === "all"
         ? searched
-        : searched.filter((t) => t.channel === channel);
+        : searched.filter((t) => t.channel === spec.effChannel);
+    const folderScoped = spec.predicate
+      ? scoped.filter(spec.predicate)
+      : scoped;
 
     const allCount = searched.length;
     const emailCount = searched.filter((t) => t.channel === "email").length;
     const instagramCount = searched.filter(
       (t) => t.channel === "instagram",
     ).length;
-    const unreadCount = channelScoped.filter((t) => t.unread).length;
+    const unreadCount = folderScoped.filter((t) => t.unread).length;
+
+    // Distinct labels across the fetched feed (pre-folder) → folder-rail items.
+    const labelMap = new Map<string, InboxLabel>();
+    for (const t of allThreads) {
+      if (!t.label) continue;
+      const existing = labelMap.get(t.label.name);
+      if (existing) existing.count += 1;
+      else
+        labelMap.set(t.label.name, {
+          name: t.label.name,
+          tone: t.label.tone,
+          count: 1,
+        });
+    }
+    const labels = [...labelMap.values()].sort((a, b) => b.count - a.count);
 
     const displayed = unreadOnly
-      ? channelScoped.filter((t) => t.unread)
-      : channelScoped;
+      ? folderScoped.filter((t) => t.unread)
+      : folderScoped;
 
     displayed.sort((a, b) =>
       sort === "newest" ? b.timestamp - a.timestamp : a.timestamp - b.timestamp,
@@ -423,8 +520,9 @@ export function useUnifiedInbox(
       instagramCount,
       followups,
       channelMix,
+      labels,
       isLoading,
-      isEmpty: !isLoading && channelScoped.length === 0,
+      isEmpty: !isLoading && folderScoped.length === 0,
     };
   }, [
     emailThreads,
@@ -432,7 +530,7 @@ export function useUnifiedInbox(
     receipts,
     analytics,
     search,
-    channel,
+    spec,
     unreadOnly,
     sort,
     emailLoading,

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDeleteInstagramTemplate } from "@/hooks";
 import type { InstagramMessageTemplate } from "@/types/instagram.types";
+import { T } from "@/components/board/tokens";
 
 interface TemplateDeleteDialogProps {
   template: InstagramMessageTemplate | null;
@@ -42,12 +43,30 @@ export function TemplateDeleteDialog({
 
   return (
     <AlertDialog open={!!template} onOpenChange={() => onClose()}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        style={{
+          background: T.surface7,
+          border: `1px solid ${T.line2}`,
+          borderRadius: 14,
+          fontFamily: T.data,
+          color: T.ink,
+        }}
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-[13px]">
+          <AlertDialogTitle
+            style={{
+              font: `800 15px ${T.disp}`,
+              color: T.cream,
+            }}
+          >
             Delete Template
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[11px]">
+          <AlertDialogDescription
+            style={{
+              font: `500 13px/1.5 ${T.data}`,
+              color: T.mut,
+            }}
+          >
             Are you sure you want to delete &quot;{template?.name}&quot;? This
             action cannot be undone.
           </AlertDialogDescription>
@@ -56,17 +75,45 @@ export function TemplateDeleteDialog({
           <AlertDialogCancel
             onClick={onClose}
             disabled={deleteMutation.isPending}
-            className="h-8 text-[11px]"
+            style={{
+              height: 32,
+              padding: "0 14px",
+              borderRadius: 8,
+              background: "transparent",
+              border: `1px solid ${T.line2}`,
+              color: T.mut,
+              font: `600 12px ${T.data}`,
+              cursor: "pointer",
+            }}
           >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="h-8 text-[11px] bg-destructive hover:bg-destructive focus:ring-destructive"
+            style={{
+              height: 32,
+              padding: "0 14px",
+              borderRadius: 8,
+              background: T.red,
+              border: "none",
+              color: "#fff",
+              font: `700 12px ${T.data}`,
+              cursor: deleteMutation.isPending ? "not-allowed" : "pointer",
+              opacity: deleteMutation.isPending ? 0.6 : 1,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
           >
             {deleteMutation.isPending && (
-              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+              <Loader2
+                style={{
+                  width: 13,
+                  height: 13,
+                  animation: "spin 1s linear infinite",
+                }}
+              />
             )}
             Delete
           </AlertDialogAction>

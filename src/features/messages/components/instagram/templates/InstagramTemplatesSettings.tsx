@@ -3,8 +3,6 @@
 
 import { useState, useMemo, type ReactNode } from "react";
 import { Plus, Search, SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -25,6 +23,9 @@ import { TemplateList } from "./TemplateList";
 import { TemplateForm } from "./TemplateForm";
 import { TemplatePreviewSheet } from "./TemplatePreviewSheet";
 import { CategoryManager } from "./CategoryManager";
+import { T } from "@/components/board/tokens";
+
+const MUT3 = "rgba(255,255,255,0.28)";
 
 export function InstagramTemplatesSettings(): ReactNode {
   const { isSuperAdmin } = useImo();
@@ -40,13 +41,10 @@ export function InstagramTemplatesSettings(): ReactNode {
   const { data: templates = [], isLoading } = useInstagramTemplates();
   const { data: customCategories = [] } = useInstagramTemplateCategories();
 
-  // Only super-admin can edit templates
   const canEdit = isSuperAdmin;
 
-  // Filter templates based on search and filters
   const filteredTemplates = useMemo(() => {
     return templates.filter((template) => {
-      // Search filter
       if (search) {
         const searchLower = search.toLowerCase();
         if (
@@ -57,9 +55,7 @@ export function InstagramTemplatesSettings(): ReactNode {
         }
       }
 
-      // Prospect type filter
       if (prospectTypeFilter !== "all") {
-        // Handle both new format (custom:{uuid}) and legacy format (category name)
         const filterValue = prospectTypeFilter;
         const templateCategory = template.category;
 
@@ -67,12 +63,9 @@ export function InstagramTemplatesSettings(): ReactNode {
           return false;
         }
 
-        // Direct match (handles built-in types and new custom format)
         if (templateCategory === filterValue) {
           // Match
-        }
-        // Legacy support: if filter is custom:{uuid}, also check if template has legacy name
-        else if (filterValue.startsWith("custom:")) {
+        } else if (filterValue.startsWith("custom:")) {
           const categoryId = filterValue.slice(7);
           const matchingCategory = customCategories.find(
             (c) => c.id === categoryId,
@@ -87,7 +80,6 @@ export function InstagramTemplatesSettings(): ReactNode {
         }
       }
 
-      // Message stage filter
       if (messageStageFilter !== "all") {
         if (template.message_stage !== messageStageFilter) {
           return false;
@@ -125,9 +117,27 @@ export function InstagramTemplatesSettings(): ReactNode {
   };
 
   return (
-    <div className="h-full flex bg-card rounded-v2-md border border-border shadow-v2-soft overflow-hidden">
-      {/* Sidebar - Categories */}
-      <div className="w-48 border-r border-border flex flex-col">
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        background: T.surface3,
+        border: `1px solid ${T.line}`,
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      {/* Left sidebar — category rail */}
+      <div
+        style={{
+          width: 192,
+          flexShrink: 0,
+          borderRight: `1px solid ${T.line}`,
+          display: "flex",
+          flexDirection: "column",
+          background: "linear-gradient(180deg, #1c1c1c, #181818)",
+        }}
+      >
         <CategoryManager
           selectedCategory={prospectTypeFilter}
           onSelectCategory={setProspectTypeFilter}
@@ -135,97 +145,206 @@ export function InstagramTemplatesSettings(): ReactNode {
         />
       </div>
 
-      {/* Main Content - Templates */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="p-3 border-b border-border flex items-center gap-2">
+      {/* Main content */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        {/* Filters bar */}
+        <div
+          style={{
+            padding: "10px 14px",
+            borderBottom: `1px solid ${T.line}`,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
           {/* Search */}
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
+          <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
+            <Search
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 13,
+                height: 13,
+                color: T.mut2,
+                pointerEvents: "none",
+              }}
+            />
+            <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search templates..."
-              className="h-7 pl-7 text-[11px]"
+              className="placeholder-v2-ink-subtle"
+              style={{
+                width: "100%",
+                paddingLeft: 32,
+                paddingRight: 10,
+                height: 32,
+                background: T.surface3,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 10,
+                font: `500 13px ${T.data}`,
+                color: T.ink,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex items-center gap-1.5">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+          {/* Filters icon */}
+          <SlidersHorizontal
+            style={{ width: 14, height: 14, color: T.mut2, flexShrink: 0 }}
+          />
 
-            <Select
-              value={messageStageFilter}
-              onValueChange={setMessageStageFilter}
+          {/* Stage select */}
+          <Select
+            value={messageStageFilter}
+            onValueChange={setMessageStageFilter}
+          >
+            <SelectTrigger
+              style={{
+                height: 32,
+                width: 120,
+                background: T.surface3,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 8,
+                font: `500 12px ${T.data}`,
+                color: T.ink,
+                flexShrink: 0,
+              }}
             >
-              <SelectTrigger className="h-7 w-28 text-[11px]">
-                <SelectValue placeholder="Stage" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-[11px]">
-                  All Stages
-                </SelectItem>
-                {Object.entries(MESSAGE_STAGE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value} className="text-[11px]">
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={prospectTypeFilter}
-              onValueChange={setProspectTypeFilter}
+              <SelectValue placeholder="Stage" />
+            </SelectTrigger>
+            <SelectContent
+              style={{
+                background: T.surface5,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 10,
+              }}
             >
-              <SelectTrigger className="h-7 w-32 text-[11px]">
-                <SelectValue placeholder="Prospect Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-[11px]">
-                  All Types
+              <SelectItem
+                value="all"
+                style={{ font: `500 12px ${T.data}`, color: T.ink }}
+              >
+                All Stages
+              </SelectItem>
+              {Object.entries(MESSAGE_STAGE_LABELS).map(([value, label]) => (
+                <SelectItem
+                  key={value}
+                  value={value}
+                  style={{ font: `500 12px ${T.data}`, color: T.ink }}
+                >
+                  {label}
                 </SelectItem>
-                {/* Built-in types */}
-                {BUILT_IN_PROSPECT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type} className="text-[11px]">
-                    {PROSPECT_TYPE_LABELS[type]}
-                  </SelectItem>
-                ))}
-                {/* Custom categories */}
-                {customCategories.length > 0 && (
-                  <>
-                    <div className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Custom
-                    </div>
-                    {customCategories.map((cat) => (
-                      <SelectItem
-                        key={cat.id}
-                        value={createCustomCategoryValue(cat.id)}
-                        className="text-[11px]"
-                      >
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+              ))}
+            </SelectContent>
+          </Select>
 
-          {/* New Template Button - Super Admin Only */}
+          {/* Prospect type select */}
+          <Select
+            value={prospectTypeFilter}
+            onValueChange={setProspectTypeFilter}
+          >
+            <SelectTrigger
+              style={{
+                height: 32,
+                width: 138,
+                background: T.surface3,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 8,
+                font: `500 12px ${T.data}`,
+                color: T.ink,
+                flexShrink: 0,
+              }}
+            >
+              <SelectValue placeholder="Prospect Type" />
+            </SelectTrigger>
+            <SelectContent
+              style={{
+                background: T.surface5,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 10,
+              }}
+            >
+              <SelectItem
+                value="all"
+                style={{ font: `500 12px ${T.data}`, color: T.ink }}
+              >
+                All Types
+              </SelectItem>
+              {BUILT_IN_PROSPECT_TYPES.map((type) => (
+                <SelectItem
+                  key={type}
+                  value={type}
+                  style={{ font: `500 12px ${T.data}`, color: T.ink }}
+                >
+                  {PROSPECT_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+              {customCategories.length > 0 && (
+                <>
+                  <div
+                    style={{
+                      padding: "8px 10px 4px",
+                      font: `700 10px ${T.mono}`,
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                      color: MUT3,
+                    }}
+                  >
+                    Custom
+                  </div>
+                  {customCategories.map((cat) => (
+                    <SelectItem
+                      key={cat.id}
+                      value={createCustomCategoryValue(cat.id)}
+                      style={{ font: `500 12px ${T.data}`, color: T.ink }}
+                    >
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+
+          {/* New template button */}
           {canEdit && (
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={handleNewTemplate}
-              className="h-7 text-[11px]"
+              style={{
+                flexShrink: 0,
+                height: 32,
+                padding: "0 14px",
+                borderRadius: 8,
+                background: T.violet,
+                border: "none",
+                color: "#1a0f33",
+                font: `700 12px ${T.data}`,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
-              <Plus className="h-3.5 w-3.5 mr-1" />
+              <Plus style={{ width: 13, height: 13 }} />
               New Template
-            </Button>
+            </button>
           )}
         </div>
 
-        {/* Template List */}
-        <div className="flex-1 overflow-auto">
+        {/* Template list */}
+        <div style={{ flex: 1, overflowY: "auto" }}>
           <TemplateList
             templates={filteredTemplates}
             isLoading={isLoading}

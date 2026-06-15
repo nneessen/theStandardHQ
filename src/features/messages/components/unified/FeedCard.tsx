@@ -20,6 +20,8 @@ interface FeedCardProps {
   thread: UnifiedThread;
   selectMode: boolean;
   selected: boolean;
+  /** This conversation is the one currently open in the reading pane. */
+  isOpen?: boolean;
   onToggleSelect: () => void;
   onOpen: () => void;
 }
@@ -28,6 +30,7 @@ export function FeedCard({
   thread,
   selectMode,
   selected,
+  isOpen = false,
   onToggleSelect,
   onOpen,
 }: FeedCardProps) {
@@ -35,11 +38,24 @@ export function FeedCard({
   const [replyOpen, setReplyOpen] = useState(false);
   const unread = thread.unread;
 
-  const bg = unread ? "rgba(91,155,255,0.05)" : hover ? "#262626" : T.surface2;
-  const border = unread ? tint("blue", 0.22) : hover ? T.line2 : T.line;
+  const bg = isOpen
+    ? tint("blue", 0.1)
+    : unread
+      ? "rgba(91,155,255,0.05)"
+      : hover
+        ? "#262626"
+        : T.surface2;
+  const border = isOpen
+    ? tint("blue", 0.45)
+    : unread
+      ? tint("blue", 0.22)
+      : hover
+        ? T.line2
+        : T.line;
 
   return (
     <div
+      data-testid="feed-card"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={() => (selectMode ? onToggleSelect() : onOpen())}

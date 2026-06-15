@@ -1,5 +1,5 @@
 // src/features/messages/components/instagram/InstagramMessageBubble.tsx
-// Single message display in a conversation thread
+// Single message display in a conversation thread — board token restyle
 
 import { type ReactNode } from "react";
 import { format } from "date-fns";
@@ -13,9 +13,16 @@ import {
   FileText,
   Mic,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { T } from "@/components/board/tokens";
 import { selectMediaUrl } from "@/lib/instagram";
 import type { InstagramMessage } from "@/types/instagram.types";
+
+// rgba(255,255,255,0.28) — T.mut3 does not exist in tokens.ts, use literal
+const MUT3 = "rgba(255,255,255,0.28)";
+
+// Violet tint values — T has solid violet only; tints are literals per mock
+const VIOLET_BG = "rgba(182,155,255,0.16)";
+const VIOLET_BORDER = "rgba(182,155,255,0.30)";
 
 interface InstagramMessageBubbleProps {
   message: InstagramMessage;
@@ -34,15 +41,15 @@ export function InstagramMessageBubble({
   const getStatusIcon = () => {
     switch (message.status) {
       case "pending":
-        return <Clock className="h-2.5 w-2.5 text-v2-ink-subtle" />;
+        return <Clock style={{ width: 10, height: 10, color: T.mut2 }} />;
       case "sent":
-        return <Check className="h-2.5 w-2.5 text-v2-ink-subtle" />;
+        return <Check style={{ width: 10, height: 10, color: T.mut2 }} />;
       case "delivered":
-        return <CheckCheck className="h-2.5 w-2.5 text-v2-ink-subtle" />;
+        return <CheckCheck style={{ width: 10, height: 10, color: T.mut2 }} />;
       case "read":
-        return <CheckCheck className="h-2.5 w-2.5 text-info" />;
+        return <CheckCheck style={{ width: 10, height: 10, color: T.blue }} />;
       case "failed":
-        return <AlertCircle className="h-2.5 w-2.5 text-destructive" />;
+        return <AlertCircle style={{ width: 10, height: 10, color: T.red }} />;
       default:
         return null;
     }
@@ -52,15 +59,15 @@ export function InstagramMessageBubble({
     switch (message.message_type) {
       case "media":
         if (message.media_type === "audio") {
-          return <Mic className="h-3 w-3" />;
+          return <Mic style={{ width: 12, height: 12 }} />;
         }
         if (message.media_type?.startsWith("video")) {
-          return <Film className="h-3 w-3" />;
+          return <Film style={{ width: 12, height: 12 }} />;
         }
-        return <Image className="h-3 w-3" />;
+        return <Image style={{ width: 12, height: 12 }} />;
       case "story_reply":
       case "story_mention":
-        return <FileText className="h-3 w-3" />;
+        return <FileText style={{ width: 12, height: 12 }} />;
       default:
         return null;
     }
@@ -70,8 +77,19 @@ export function InstagramMessageBubble({
   const storyIndicator =
     message.message_type === "story_reply" ||
     message.message_type === "story_mention" ? (
-      <div className="flex items-center gap-1 text-[9px] text-v2-ink-subtle mb-1">
-        <FileText className="h-2.5 w-2.5" />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          font: `600 9px ${T.mono}`,
+          color: MUT3,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: 4,
+        }}
+      >
+        <FileText style={{ width: 10, height: 10 }} />
         <span>
           {message.message_type === "story_reply"
             ? "Replied to your story"
@@ -80,18 +98,24 @@ export function InstagramMessageBubble({
       </div>
     ) : null;
 
-  // Media content - prefer cached URL, fall back to original
+  // Media content — prefer cached URL, fall back to original
   const mediaUrl = selectMediaUrl(message.media_cached_url, message.media_url);
   const mediaContent = mediaUrl ? (
-    <div className="mb-1 rounded overflow-hidden max-w-[200px]">
+    <div
+      style={{
+        marginBottom: 4,
+        borderRadius: 8,
+        overflow: "hidden",
+        maxWidth: 200,
+      }}
+    >
       {message.media_type === "audio" ? (
         <audio
           src={mediaUrl}
           controls
-          className="w-full min-w-[180px]"
+          style={{ width: "100%", minWidth: 180 }}
           preload="metadata"
           onError={(e) => {
-            // Hide broken audio player, will fall through to "Unsupported message"
             e.currentTarget.style.display = "none";
           }}
         />
@@ -99,13 +123,23 @@ export function InstagramMessageBubble({
         <video
           src={mediaUrl}
           controls
-          className="w-full max-h-[200px] object-contain bg-v2-ring"
+          style={{
+            width: "100%",
+            maxHeight: 200,
+            objectFit: "contain",
+            background: T.surface4,
+          }}
         />
       ) : (
         <img
           src={mediaUrl}
           alt="Shared media"
-          className="w-full max-h-[200px] object-contain bg-v2-ring"
+          style={{
+            width: "100%",
+            maxHeight: 200,
+            objectFit: "contain",
+            background: T.surface4,
+          }}
           loading="lazy"
           onError={(e) => {
             e.currentTarget.style.display = "none";
@@ -115,49 +149,92 @@ export function InstagramMessageBubble({
     </div>
   ) : null;
 
+  // Bubble styling per direction
+  const bubbleStyle: React.CSSProperties = isOutbound
+    ? {
+        background: VIOLET_BG,
+        border: `1px solid ${VIOLET_BORDER}`,
+        color: T.ink,
+        borderRadius: 16,
+        borderBottomRightRadius: 5,
+        padding: "10px 14px",
+        maxWidth: "72%",
+        minWidth: 60,
+      }
+    : {
+        background: T.surface4,
+        color: T.ink,
+        borderRadius: 16,
+        borderBottomLeftRadius: 5,
+        padding: "10px 14px",
+        maxWidth: "72%",
+        minWidth: 60,
+      };
+
   return (
     <div
-      className={cn(
-        "flex w-full",
-        isOutbound ? "justify-end" : "justify-start",
-        isGrouped ? "mt-0.5" : "mt-2",
-      )}
+      style={{
+        display: "flex",
+        width: "100%",
+        justifyContent: isOutbound ? "flex-end" : "flex-start",
+        marginTop: isGrouped ? 2 : 8,
+      }}
     >
       <div
-        className={cn(
-          "max-w-[75%] min-w-[60px]",
-          isOutbound ? "items-end" : "items-start",
-        )}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: isOutbound ? "flex-end" : "flex-start",
+          maxWidth: "72%",
+        }}
       >
         {/* Sender username for inbound messages (non-grouped) */}
         {!isOutbound && !isGrouped && message.sender_username && (
-          <p className="text-[9px] text-v2-ink-muted mb-0.5 px-1">
+          <p
+            style={{
+              font: `600 9px ${T.mono}`,
+              color: T.mut2,
+              marginBottom: 2,
+              paddingLeft: 2,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
             @{message.sender_username}
           </p>
         )}
 
         {/* Message bubble */}
-        <div
-          className={cn(
-            "px-2.5 py-1.5 rounded-2xl",
-            isOutbound
-              ? "bg-info text-info-foreground rounded-br-md"
-              : "bg-v2-ring text-v2-ink rounded-bl-md",
-          )}
-        >
+        <div style={bubbleStyle}>
           {storyIndicator}
           {mediaContent}
 
           {/* Message text */}
           {message.message_text && (
-            <p className="text-[11px] whitespace-pre-wrap break-words leading-relaxed">
+            <p
+              style={{
+                font: `500 13.5px/1.5 ${T.data}`,
+                color: T.ink,
+                margin: 0,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
               {message.message_text}
             </p>
           )}
 
           {/* Empty message placeholder */}
           {!message.message_text && !mediaUrl && (
-            <div className="flex items-center gap-1 text-[10px] opacity-70">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                font: `500 11px ${T.data}`,
+                color: MUT3,
+              }}
+            >
               {getMessageTypeIcon()}
               <span>
                 {message.message_type === "media"
@@ -170,13 +247,23 @@ export function InstagramMessageBubble({
 
         {/* Timestamp and status row */}
         <div
-          className={cn(
-            "flex items-center gap-1 mt-0.5 px-1",
-            isOutbound ? "justify-end" : "justify-start",
-          )}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            marginTop: 2,
+            paddingLeft: 4,
+            paddingRight: 4,
+            justifyContent: isOutbound ? "flex-end" : "flex-start",
+          }}
         >
           {timestamp && (
-            <span className="text-[9px] text-v2-ink-subtle">
+            <span
+              style={{
+                font: `600 10px ${T.data}`,
+                color: MUT3,
+              }}
+            >
               {format(timestamp, "h:mm a")}
             </span>
           )}
@@ -187,7 +274,7 @@ export function InstagramMessageBubble({
   );
 }
 
-// Grouped messages helper - groups consecutive messages from same sender
+// Grouped messages helper — groups consecutive messages from same sender
 export function groupMessages(
   messages: InstagramMessage[],
 ): InstagramMessage[][] {

@@ -1,15 +1,13 @@
 // src/features/messages/components/thread/ThreadView.tsx
-// Display a full email thread with zinc palette styling
+// Email thread detail view — restyled to "Standard HQ board" design language.
+// Visual restyle only: props, hooks, state logic, data flow, and exports are unchanged.
 
 import { useState, useEffect } from "react";
 import { useThread } from "../../hooks/useThread";
 import { useThreads } from "../../hooks/useThreads";
 import { ComposeDialog } from "../compose/ComposeDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   X,
   Reply,
@@ -20,7 +18,6 @@ import {
   Archive,
   Trash2,
   Paperclip,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   Bot,
@@ -37,9 +34,55 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { format, isToday, isYesterday } from "date-fns";
-import { cn } from "@/lib/utils";
 import { getInitialsFromEmail } from "@/lib/string";
 import { sanitizeHtml } from "@/features/email";
+import { T } from "@/components/board/tokens";
+
+// Scoped style block for sanitized HTML body descendants.
+// Defined once as a module constant so it's not emitted per card.
+const EMAIL_BODY_STYLES = `
+.tv-email-body {
+  font: 500 13.5px/1.72 "${T.data.replace(/"/g, "")}";
+  color: ${T.ink};
+}
+.tv-email-body p { margin: 0 0 12px; }
+.tv-email-body p:last-child { margin-bottom: 0; }
+.tv-email-body a { color: ${T.blue}; text-decoration: none; }
+.tv-email-body a:hover { text-decoration: underline; }
+.tv-email-body b, .tv-email-body strong { color: ${T.cream}; }
+.tv-email-body blockquote {
+  border-left: 2px solid ${T.line2};
+  margin: 10px 0;
+  padding: 4px 0 4px 12px;
+  color: ${T.mut};
+  font-style: italic;
+}
+.tv-email-body code {
+  background: ${T.surface4};
+  color: ${T.ink};
+  font-size: 11.5px;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+.tv-email-body pre {
+  background: ${T.surface4};
+  color: ${T.ink};
+  font-size: 11.5px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.tv-email-body ul, .tv-email-body ol { margin: 8px 0; padding-left: 20px; }
+.tv-email-body li { margin: 3px 0; }
+.tv-email-body img { max-width: 100%; height: auto; }
+.tv-email-body .sig { color: ${T.mut2}; font-size: 12.5px; }
+.tv-iconbtn:hover { color: ${T.ink} !important; border-color: rgba(255,255,255,0.28) !important; }
+.tv-iconbtn.amber:hover { color: ${T.amber} !important; }
+.tv-ghostbtn:hover { color: ${T.ink} !important; background: rgba(255,255,255,0.05) !important; }
+.tv-msgcard-toggle:hover { background: rgba(255,255,255,0.03) !important; }
+.tv-loadmore:hover { color: ${T.ink} !important; background: rgba(255,255,255,0.04) !important; }
+`;
 
 interface ThreadViewProps {
   threadId: string;
@@ -145,11 +188,36 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
 
   if (error || !thread) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 bg-card rounded-v2-md border border-border shadow-v2-soft">
-        <p className="text-[11px] text-muted-foreground">
+      <div
+        style={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          background: T.surface2,
+          borderRadius: 13,
+          border: `1px solid ${T.line}`,
+        }}
+      >
+        <p
+          style={{
+            font: `600 12px ${T.data}`,
+            color: T.mut,
+            margin: 0,
+          }}
+        >
           Failed to load conversation
         </p>
-        <p className="text-[10px] mt-1 text-muted-foreground">
+        <p
+          style={{
+            font: `500 11px ${T.data}`,
+            color: T.mut2,
+            marginTop: 4,
+            marginBottom: 0,
+          }}
+        >
           {error?.message || "Thread not found"}
         </p>
       </div>
@@ -186,195 +254,386 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
       ? messages.length - EXPANDED_MESSAGE_COUNT
       : 0;
 
+  // Icon button: 32×32, T.surface3 bg, T.line2 border, T.mut icon → T.ink on hover
+  const iconBtnBase: React.CSSProperties = {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    background: T.surface3,
+    border: `1px solid ${T.line2}`,
+    color: T.mut,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    flexShrink: 0,
+    transition: "color .12s, border-color .12s",
+  };
+
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-card rounded-v2-md border border-border shadow-v2-soft">
-      {/* Header */}
-      <div className="flex-shrink-0 border-b border-border px-3 py-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-foreground leading-tight truncate">
+    <>
+      <style>{EMAIL_BODY_STYLES}</style>
+      <div
+        style={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          background: T.surface2,
+          borderRadius: 13,
+          border: `1px solid ${T.line}`,
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            flexShrink: 0,
+            borderBottom: `1px solid ${T.line}`,
+            padding: "16px 22px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 14,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Eyebrow */}
+            <div
+              style={{
+                font: `700 10px ${T.mono}`,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: T.mut2,
+                marginBottom: 6,
+              }}
+            >
+              Email thread &middot; {totalMessages} message
+              {totalMessages !== 1 ? "s" : ""}
+            </div>
+            {/* Subject */}
+            <h2
+              style={{
+                font: `800 18px ${T.disp}`,
+                color: T.ink,
+                margin: 0,
+                lineHeight: 1.18,
+              }}
+            >
               {thread.subject}
             </h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-muted-foreground">
-                {totalMessages} message{totalMessages !== 1 ? "s" : ""}
-              </span>
-              {thread.isStarred && (
-                <Star className="h-3 w-3 text-warning fill-yellow-500" />
-              )}
-            </div>
           </div>
 
-          <div className="flex items-center gap-0.5">
-            <Button
-              size="sm"
-              variant="ghost"
-              className={cn(
-                "h-6 w-6 p-0",
-                thread.isArchived
-                  ? "bg-muted text-muted-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-              onClick={handleArchiveToggle}
-              disabled={isArchiving || isUnarchiving}
-              title={thread.isArchived ? "Unarchive" : "Archive"}
-            >
-              <Archive className="h-3 w-3" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className={cn(
-                "h-6 w-6 p-0",
-                thread.isStarred
-                  ? "text-warning hover:text-warning"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
+          {/* Action buttons */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0,
+            }}
+          >
+            {/* Star */}
+            <button
+              className="tv-iconbtn amber"
+              style={{
+                ...iconBtnBase,
+                color: thread.isStarred ? T.amber : T.mut,
+                opacity: isStarring ? 0.5 : 1,
+                cursor: isStarring ? "not-allowed" : "pointer",
+              }}
               onClick={handleToggleStar}
               disabled={isStarring}
               title={thread.isStarred ? "Unstar" : "Star"}
             >
               <Star
-                className={cn("h-3 w-3", thread.isStarred && "fill-yellow-500")}
+                size={15}
+                fill={thread.isStarred ? T.amber : "none"}
+                strokeWidth={2}
               />
-            </Button>
+            </button>
+
+            {/* Archive */}
+            <button
+              className="tv-iconbtn"
+              style={{
+                ...iconBtnBase,
+                color: thread.isArchived ? T.ink : T.mut,
+                background: thread.isArchived ? T.surface4 : T.surface3,
+                opacity: isArchiving || isUnarchiving ? 0.5 : 1,
+                cursor:
+                  isArchiving || isUnarchiving ? "not-allowed" : "pointer",
+              }}
+              onClick={handleArchiveToggle}
+              disabled={isArchiving || isUnarchiving}
+              title={thread.isArchived ? "Unarchive" : "Archive"}
+            >
+              <Archive size={15} strokeWidth={2} />
+            </button>
+
+            {/* More dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                <button
+                  className="tv-iconbtn"
+                  style={iconBtnBase}
+                  title="More actions"
                 >
-                  <MoreVertical className="h-3 w-3" />
-                </Button>
+                  <MoreVertical size={15} strokeWidth={2} />
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem className="text-[11px]" onClick={handleReply}>
-                  <Reply className="h-3.5 w-3.5 mr-2" /> Reply
+              <DropdownMenuContent
+                align="end"
+                style={{
+                  background: T.surface5,
+                  border: `1px solid ${T.line2}`,
+                  borderRadius: 10,
+                  padding: "4px",
+                  minWidth: 148,
+                }}
+              >
+                <DropdownMenuItem
+                  style={{
+                    font: `600 12.5px ${T.data}`,
+                    color: T.ink,
+                    borderRadius: 7,
+                    padding: "7px 10px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                  onClick={handleReply}
+                >
+                  <Reply size={13} strokeWidth={2} /> Reply
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-[11px]"
+                  style={{
+                    font: `600 12.5px ${T.data}`,
+                    color: T.ink,
+                    borderRadius: 7,
+                    padding: "7px 10px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
                   onClick={handleForward}
                 >
-                  <Forward className="h-3.5 w-3.5 mr-2" /> Forward
+                  <Forward size={13} strokeWidth={2} /> Forward
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator
+                  style={{ background: T.line, margin: "4px 0" }}
+                />
                 <DropdownMenuItem
-                  className="text-[11px] text-destructive"
+                  style={{
+                    font: `600 12.5px ${T.data}`,
+                    color: T.red,
+                    borderRadius: 7,
+                    padding: "7px 10px",
+                    cursor: isDeleting ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    opacity: isDeleting ? 0.5 : 1,
+                  }}
                   onClick={handleDelete}
                   disabled={isDeleting}
                 >
-                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                  <Trash2 size={13} strokeWidth={2} /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive dark:hover:text-destructive"
+
+            {/* Close */}
+            <button
+              className="tv-iconbtn"
+              style={iconBtnBase}
               onClick={onClose}
+              title="Close"
             >
-              <X className="h-3 w-3" />
-            </Button>
+              <X size={15} strokeWidth={2} />
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1.5">
-          {/* Load More Button */}
-          {hasMore && (
-            <div className="flex justify-center py-1.5">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
-                onClick={loadMoreMessages}
-                disabled={isLoadingMore}
+        {/* Messages */}
+        <ScrollArea className="flex-1">
+          <div
+            style={{
+              padding: "18px 22px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            {/* Load More */}
+            {hasMore && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  paddingBottom: 4,
+                }}
               >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    <ChevronUp className="h-3 w-3" />
-                    Load earlier messages
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
+                <button
+                  className="tv-loadmore"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    height: 30,
+                    padding: "0 12px",
+                    borderRadius: 8,
+                    background: "transparent",
+                    border: `1px solid ${T.line2}`,
+                    color: T.mut,
+                    font: `700 11px ${T.mono}`,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    cursor: isLoadingMore ? "not-allowed" : "pointer",
+                    opacity: isLoadingMore ? 0.6 : 1,
+                    transition: "color .12s, background .12s",
+                  }}
+                  onClick={loadMoreMessages}
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" />
+                      Loading…
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp size={12} strokeWidth={2.5} />
+                      Load earlier messages
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
 
-          {/* Collapsed messages indicator */}
-          {collapsedCount > 0 && !hasMore && (
-            <div className="flex items-center justify-center py-1.5">
-              <span className="text-[10px] text-muted-foreground">
-                {collapsedCount} earlier message
+            {/* Collapsed indicator */}
+            {collapsedCount > 0 && !hasMore && (
+              <div
+                style={{
+                  textAlign: "center",
+                  font: `600 11px ${T.mono}`,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: T.mut2,
+                  padding: "4px 0",
+                }}
+              >
+                &#9662; {collapsedCount} earlier message
                 {collapsedCount !== 1 ? "s" : ""} collapsed
-              </span>
-            </div>
-          )}
+              </div>
+            )}
 
-          {messages?.map((message, index) => {
-            const isExpanded = getIsExpanded(message.id, index);
-            const isLast = index === messages.length - 1;
+            {messages?.map((message, index) => {
+              const isExpanded = getIsExpanded(message.id, index);
+              const isLast = index === messages.length - 1;
 
-            return (
-              <MessageCard
-                key={message.id}
-                message={message}
-                isExpanded={isExpanded}
-                isLast={isLast}
-                onToggle={() => toggleMessage(message.id, isExpanded)}
-              />
-            );
-          })}
-        </div>
-      </ScrollArea>
+              return (
+                <MessageCard
+                  key={message.id}
+                  message={message}
+                  isExpanded={isExpanded}
+                  isLast={isLast}
+                  onToggle={() => toggleMessage(message.id, isExpanded)}
+                />
+              );
+            })}
+          </div>
+        </ScrollArea>
 
-      {/* Quick Reply Footer */}
-      <div className="flex-shrink-0 border-t border-border p-1.5">
-        <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            className="h-6 text-[10px] gap-1 px-2"
+        {/* Quick Reply Footer */}
+        <div
+          style={{
+            flexShrink: 0,
+            borderTop: `1px solid ${T.line}`,
+            padding: "14px 22px",
+            background: T.surface2,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {/* Primary reply button — cream bg, dark text (mock .btn.cream) */}
+          <button
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              height: 34,
+              padding: "0 14px",
+              borderRadius: 9,
+              background: T.cream,
+              border: "none",
+              color: "#141414",
+              font: `700 12.5px ${T.data}`,
+              cursor: "pointer",
+            }}
             onClick={handleReply}
           >
-            <Reply className="h-3 w-3" />
+            <Reply size={13} strokeWidth={2.2} />
             Reply
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-[10px] gap-1 px-2 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
+          </button>
+
+          {/* Ghost: Reply All */}
+          <button
+            className="tv-ghostbtn"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              height: 34,
+              padding: "0 14px",
+              borderRadius: 9,
+              background: "transparent",
+              border: `1px solid ${T.line2}`,
+              color: T.mut,
+              font: `700 12.5px ${T.data}`,
+              cursor: "pointer",
+              transition: "color .12s, background .12s",
+            }}
             onClick={handleReply}
           >
-            <ReplyAll className="h-3 w-3" />
-            Reply All
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-[10px] gap-1 px-2 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
+            <ReplyAll size={13} strokeWidth={2.2} />
+            Reply all
+          </button>
+
+          {/* Ghost: Forward */}
+          <button
+            className="tv-ghostbtn"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              height: 34,
+              padding: "0 14px",
+              borderRadius: 9,
+              background: "transparent",
+              border: `1px solid ${T.line2}`,
+              color: T.mut,
+              font: `700 12.5px ${T.data}`,
+              cursor: "pointer",
+              transition: "color .12s, background .12s",
+            }}
             onClick={handleForward}
           >
-            <Forward className="h-3 w-3" />
+            <Forward size={13} strokeWidth={2.2} />
             Forward
-          </Button>
+          </button>
         </div>
-      </div>
 
-      {/* Compose Dialog */}
-      <ComposeDialog
-        open={composeState.open}
-        onOpenChange={(open) => setComposeState({ ...composeState, open })}
-        replyTo={composeState.replyTo}
-        forward={composeState.forward}
-      />
-    </div>
+        {/* Compose Dialog — unchanged */}
+        <ComposeDialog
+          open={composeState.open}
+          onOpenChange={(open) => setComposeState({ ...composeState, open })}
+          replyTo={composeState.replyTo}
+          forward={composeState.forward}
+        />
+      </div>
+    </>
   );
 }
 
@@ -425,150 +684,255 @@ function MessageCard({
           .slice(0, 2)
       : getInitialsFromEmail(message.fromAddress);
 
+  // Sent/you messages: blue tint bg + blue border
+  const cardBg = isSent ? "rgba(91,155,255,0.06)" : T.surface3;
+  const cardBorder = isSent ? "rgba(91,155,255,0.22)" : T.line;
+
+  // Avatar: "me" = blue16 bg + blueLit text; "them" = T.surface5 bg + ink text
+  const avBg = isSent ? "rgba(91,155,255,0.16)" : T.surface5;
+  const avColor = isSent ? T.blueLit : T.ink;
+  const avShadow = isSent ? "inset 0 0 0 1px rgba(91,155,255,0.30)" : "none";
+
   return (
     <div
-      className={cn(
-        "rounded-md overflow-hidden transition-all",
-        isSent
-          ? "bg-info/10 dark:bg-info/10 border border-info/30 dark:border-info/30"
-          : "bg-background border border-border",
-      )}
+      style={{
+        borderRadius: 13,
+        overflow: "hidden",
+        border: `1px solid ${cardBorder}`,
+        background: cardBg,
+      }}
     >
-      {/* Header */}
+      {/* Card header / toggle row */}
       <button
-        className={cn(
-          "w-full text-left px-2.5 py-1.5 transition-colors",
-          isExpanded ? "border-b border-border/50 /50" : "",
-          "hover:bg-muted/50 dark:hover:bg-v2-card-dark/30",
-        )}
+        className="tv-msgcard-toggle"
+        style={{
+          width: "100%",
+          textAlign: "left",
+          padding: "13px 16px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 11,
+          borderBottom: isExpanded ? `1px solid ${T.line}` : "none",
+          transition: "background .1s",
+        }}
         onClick={onToggle}
       >
-        <div className="flex items-center gap-2">
-          <Avatar
-            className={cn(
-              "h-6 w-6 flex-shrink-0",
-              isSent ? "ring-1 ring-info/40 dark:ring-info" : "",
-            )}
+        {/* Avatar — 30×30 rounded-9 tile with initials */}
+        <span
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 9,
+            flexShrink: 0,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            font: `800 11px ${T.disp}`,
+            background: avBg,
+            color: avColor,
+            boxShadow: avShadow,
+          }}
+        >
+          {initials}
+        </span>
+
+        {/* Name + badges */}
+        <span
+          style={{
+            font: `700 13.5px ${T.data}`,
+            color: T.ink,
+            flexShrink: 0,
+            maxWidth: "40%",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {displayName}
+        </span>
+
+        {/* Sent badge */}
+        {isSent && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              height: 18,
+              padding: "0 6px",
+              borderRadius: 6,
+              font: `700 9.5px ${T.data}`,
+              background: "rgba(91,155,255,0.16)",
+              color: T.blueLit,
+              flexShrink: 0,
+            }}
           >
-            <AvatarFallback
-              className={cn(
-                "text-[9px] font-medium",
-                isSent
-                  ? "bg-info/20 dark:bg-info/50 text-info"
-                  : "bg-muted text-muted-foreground",
-              )}
-            >
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+            <Send size={10} strokeWidth={2} />
+            Sent
+          </span>
+        )}
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-foreground truncate">
-                {displayName}
-              </span>
-              {isSent && (
-                <Badge
-                  variant="outline"
-                  className="h-4 px-1 text-[9px] border-info/40 text-info"
-                >
-                  <Send className="h-2.5 w-2.5 mr-0.5" />
-                  Sent
-                </Badge>
-              )}
-              {isAutomated && (
-                <Badge
-                  variant="secondary"
-                  className="h-4 px-1 text-[9px] bg-muted"
-                >
-                  <Bot className="h-2.5 w-2.5 mr-0.5" />
-                  Auto
-                </Badge>
-              )}
-            </div>
-            {!isExpanded && (
-              <div className="text-[10px] text-muted-foreground truncate mt-0.5">
-                {message.bodyText?.slice(0, 80)}...
-              </div>
-            )}
-          </div>
+        {/* Auto badge */}
+        {isAutomated && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              height: 18,
+              padding: "0 6px",
+              borderRadius: 6,
+              font: `700 9.5px ${T.data}`,
+              background: T.surface4,
+              color: T.mut,
+              border: `1px solid ${T.line2}`,
+              flexShrink: 0,
+            }}
+          >
+            <Bot size={10} strokeWidth={2} />
+            Auto
+          </span>
+        )}
 
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {isSent && (message.openCount || 0) > 0 && (
-              <span
-                className="text-[9px] text-muted-foreground flex items-center gap-0.5"
-                title="Opens"
-              >
-                <Eye className="h-3 w-3" />
-                {message.openCount}
-              </span>
-            )}
-            {isSent && (message.clickCount || 0) > 0 && (
-              <span
-                className="text-[9px] text-muted-foreground flex items-center gap-0.5"
-                title="Clicks"
-              >
-                <MousePointer className="h-3 w-3" />
-                {message.clickCount}
-              </span>
-            )}
+        {/* Preview when collapsed */}
+        {!isExpanded && (
+          <span
+            style={{
+              flex: 1,
+              minWidth: 0,
+              font: `500 12.5px ${T.data}`,
+              color: T.mut,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {message.bodyText?.slice(0, 80)}…
+          </span>
+        )}
 
-            <span className="text-[10px] text-muted-foreground">
-              {formatMessageDate(message.createdAt)}
-            </span>
-            {isExpanded ? (
-              <ChevronUp className="h-3 w-3 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-            )}
-          </div>
-        </div>
+        <span style={{ flex: 1 }} />
+
+        {/* Open / click receipts */}
+        {isSent && (message.openCount || 0) > 0 && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              font: `600 11px ${T.data}`,
+              color: T.mut2,
+              flexShrink: 0,
+            }}
+            title="Opens"
+          >
+            <Eye size={12} strokeWidth={2} />
+            {message.openCount}
+          </span>
+        )}
+        {isSent && (message.clickCount || 0) > 0 && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              font: `600 11px ${T.data}`,
+              color: T.mut2,
+              flexShrink: 0,
+            }}
+            title="Clicks"
+          >
+            <MousePointer size={11} strokeWidth={2} />
+            {message.clickCount}
+          </span>
+        )}
+
+        {/* Timestamp */}
+        <span
+          style={{
+            font: `600 11.5px ${T.data}`,
+            color: T.mut2,
+            flexShrink: 0,
+          }}
+        >
+          {formatMessageDate(message.createdAt)}
+        </span>
+
+        {/* Chevron */}
+        {isExpanded ? (
+          <ChevronUp size={15} style={{ color: T.mut2, flexShrink: 0 }} />
+        ) : (
+          <ChevronDown size={15} style={{ color: T.mut2, flexShrink: 0 }} />
+        )}
       </button>
 
-      {/* Body */}
+      {/* Expanded body */}
       {isExpanded && (
         <div>
-          {/* Email metadata */}
-          <div className="px-2.5 py-1.5 bg-muted/50 dark:bg-muted/30 text-[10px] text-muted-foreground dark:text-muted-foreground space-y-0.5">
-            <div className="flex items-start gap-1">
-              <span className="font-medium w-8">From:</span>
-              <span className="truncate">{message.fromAddress}</span>
-            </div>
-            <div className="flex items-start gap-1">
-              <span className="font-medium w-8">To:</span>
-              <span className="truncate">
-                {message.toAddresses?.join(", ")}
-              </span>
-            </div>
-            {message.ccAddresses && message.ccAddresses.length > 0 && (
-              <div className="flex items-start gap-1">
-                <span className="font-medium w-8">CC:</span>
-                <span className="truncate">
-                  {message.ccAddresses.join(", ")}
+          {/* From / To / CC / Date meta block */}
+          <div
+            style={{
+              padding: "10px 16px",
+              background: "rgba(255,255,255,0.02)",
+              borderBottom: `1px solid ${T.line}`,
+              display: "flex",
+              flexDirection: "column",
+              gap: 3,
+            }}
+          >
+            {[
+              { label: "From", value: message.fromAddress },
+              { label: "To", value: message.toAddresses?.join(", ") },
+              ...(message.ccAddresses && message.ccAddresses.length > 0
+                ? [{ label: "CC", value: message.ccAddresses.join(", ") }]
+                : []),
+              {
+                label: "Date",
+                value: format(new Date(message.createdAt), "PPpp"),
+              },
+            ].map(({ label, value }) => (
+              <div
+                key={label}
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  font: `500 11px ${T.data}`,
+                  color: T.mut2,
+                }}
+              >
+                <span
+                  style={{
+                    font: `700 11px ${T.mono}`,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: T.mut2,
+                    minWidth: 38,
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {value}
                 </span>
               </div>
-            )}
-            <div className="flex items-start gap-1">
-              <span className="font-medium w-8">Date:</span>
-              <span>{format(new Date(message.createdAt), "PPpp")}</span>
-            </div>
+            ))}
           </div>
 
-          {/* Email body */}
+          {/* Email body (sanitized HTML) */}
           <div
-            className={cn(
-              "px-3 py-2 text-[11px] leading-relaxed text-muted-foreground",
-              "prose prose-sm max-w-none",
-              "prose-p:my-1.5 prose-p:leading-relaxed",
-              "prose-headings:my-2 prose-headings:font-semibold",
-              "prose-ul:my-1.5 prose-ol:my-1.5",
-              "prose-li:my-0.5",
-              "prose-a:text-info dark:prose-a:text-info prose-a:no-underline hover:prose-a:underline",
-              "prose-blockquote:border-l-2 prose-blockquote:border-border  prose-blockquote:pl-2.5 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-blockquote:dark:text-muted-foreground",
-              "prose-pre:bg-muted dark:prose-pre:bg-muted prose-pre:text-[10px]",
-              "prose-code:text-[10px] prose-code:bg-muted dark:prose-code:bg-muted prose-code:px-1 prose-code:rounded",
-              "dark:prose-invert",
-            )}
+            className="tv-email-body"
+            style={{ padding: "16px" }}
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(
                 message.bodyHtml || formatPlainText(message.bodyText) || "",
@@ -580,31 +944,46 @@ function MessageCard({
           {message.hasAttachments &&
             message.attachments &&
             message.attachments.length > 0 && (
-              <div className="px-2.5 py-1.5 border-t border-border/50 /50 bg-background/50 dark:bg-muted/30">
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1.5">
-                  <Paperclip className="h-3 w-3" />
-                  <span>
-                    {message.attachments.length} attachment
-                    {message.attachments.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {message.attachments.map((att, i) => (
-                    <Button
-                      key={i}
-                      size="sm"
-                      variant="ghost"
-                      className="h-5 text-[9px] gap-0.5 px-1.5 bg-muted text-muted-foreground dark:text-muted-foreground hover:text-foreground"
+              <div
+                style={{
+                  padding: "0 16px 16px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {message.attachments.map((att, i) => (
+                  <button
+                    key={i}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 9,
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      background: T.surface4,
+                      border: `1px solid ${T.line2}`,
+                      color: T.ink,
+                      font: `600 12px ${T.data}`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Paperclip size={14} strokeWidth={2} />
+                    <span
+                      style={{
+                        maxWidth: 140,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
                     >
-                      <Paperclip className="h-2.5 w-2.5" />
-                      <span className="max-w-[100px] truncate">{att.name}</span>
-                      <span className="text-muted-foreground">
-                        ({formatFileSize(att.size)})
-                      </span>
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </Button>
-                  ))}
-                </div>
+                      {att.name}
+                    </span>
+                    <span style={{ color: T.mut2, fontWeight: 500 }}>
+                      {formatFileSize(att.size)}
+                    </span>
+                  </button>
+                ))}
               </div>
             )}
         </div>
@@ -615,27 +994,123 @@ function MessageCard({
 
 function ThreadViewSkeleton() {
   return (
-    <div className="h-full flex flex-col bg-card rounded-v2-md border border-border shadow-v2-soft">
-      <div className="p-3 border-b border-border">
-        <Skeleton className="h-4 w-48 mb-1.5 bg-muted" />
-        <Skeleton className="h-3 w-24 bg-muted" />
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: T.surface2,
+        borderRadius: 13,
+        border: `1px solid ${T.line}`,
+      }}
+    >
+      {/* Skeleton header */}
+      <div
+        style={{
+          padding: "16px 22px",
+          borderBottom: `1px solid ${T.line}`,
+        }}
+      >
+        <Skeleton
+          style={{
+            height: 10,
+            width: 120,
+            marginBottom: 8,
+            background: T.surface4,
+            borderRadius: 6,
+          }}
+        />
+        <Skeleton
+          style={{
+            height: 16,
+            width: 240,
+            background: T.surface4,
+            borderRadius: 6,
+          }}
+        />
       </div>
-      <div className="flex-1 p-2 space-y-1.5">
+      {/* Skeleton cards */}
+      <div
+        style={{
+          flex: 1,
+          padding: "18px 22px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="border border-border rounded-md p-2.5 bg-background"
+            style={{
+              border: `1px solid ${T.line}`,
+              borderRadius: 13,
+              padding: "13px 16px",
+              background: T.surface3,
+            }}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <Skeleton className="h-6 w-6 rounded-full bg-muted" />
-              <div className="flex-1">
-                <Skeleton className="h-3 w-28 mb-1 bg-muted" />
-                <Skeleton className="h-2 w-40 bg-muted" />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 11,
+                marginBottom: 10,
+              }}
+            >
+              <Skeleton
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 9,
+                  background: T.surface4,
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <Skeleton
+                  style={{
+                    height: 12,
+                    width: 100,
+                    marginBottom: 6,
+                    background: T.surface4,
+                    borderRadius: 5,
+                  }}
+                />
+                <Skeleton
+                  style={{
+                    height: 10,
+                    width: 160,
+                    background: T.surface4,
+                    borderRadius: 5,
+                  }}
+                />
               </div>
-              <Skeleton className="h-3 w-16 bg-muted" />
+              <Skeleton
+                style={{
+                  height: 10,
+                  width: 50,
+                  background: T.surface4,
+                  borderRadius: 5,
+                }}
+              />
             </div>
-            <Skeleton className="h-3 w-full mb-1.5 bg-muted" />
-            <Skeleton className="h-3 w-3/4 bg-muted" />
+            <Skeleton
+              style={{
+                height: 10,
+                width: "100%",
+                marginBottom: 6,
+                background: T.surface4,
+                borderRadius: 5,
+              }}
+            />
+            <Skeleton
+              style={{
+                height: 10,
+                width: "72%",
+                background: T.surface4,
+                borderRadius: 5,
+              }}
+            />
           </div>
         ))}
       </div>
@@ -643,7 +1118,7 @@ function ThreadViewSkeleton() {
   );
 }
 
-// Helper functions
+// Helper functions — unchanged
 function formatEmailAddress(email: string): string {
   const namePart = email.split("@")[0];
   const parts = namePart.split(/[._-]/);

@@ -1,5 +1,6 @@
 // src/features/messages/components/instagram/InstagramContactInfoPanel.tsx
 // Collapsible panel for viewing/editing contact info in conversation header
+// Board token restyle — surfaces/text/borders via T
 
 import { type ReactNode, useState, useEffect, useMemo } from "react";
 import {
@@ -12,10 +13,9 @@ import {
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { T } from "@/components/board/tokens";
 import { useUpdateInstagramContactInfo } from "@/hooks/instagram";
 import type { InstagramConversation } from "@/types/instagram.types";
 
@@ -90,67 +90,151 @@ export function InstagramContactInfoPanel({
     conversation.participant_phone ||
     conversation.contact_notes;
 
-  // Collapsed state - show summary
+  const labelStyle: React.CSSProperties = {
+    font: `700 9px ${T.mono}`,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: T.mut2,
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: 3,
+  };
+
+  // Collapsed state — show summary
   if (!isExpanded) {
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="w-full flex items-center justify-between px-3 py-1.5 bg-v2-canvas border-b border-v2-ring hover:bg-v2-ring dark:hover:bg-v2-ring transition-colors"
+        type="button"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "6px 12px",
+          background: T.surface2,
+          borderBottom: `1px solid ${T.line}`,
+          borderTop: "none",
+          borderLeft: "none",
+          borderRight: "none",
+          cursor: "pointer",
+          transition: "background .12s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = T.surface3)}
+        onMouseLeave={(e) => (e.currentTarget.style.background = T.surface2)}
       >
-        <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            font: `500 11px ${T.data}`,
+            color: T.mut,
+          }}
+        >
           {hasContactInfo ? (
             <>
               {conversation.participant_email && (
-                <span className="flex items-center gap-0.5">
-                  <Mail className="h-3 w-3" />
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <Mail style={{ width: 11, height: 11, color: T.mut2 }} />
                   {conversation.participant_email}
                 </span>
               )}
               {conversation.participant_phone && (
-                <span className="flex items-center gap-0.5">
-                  <Phone className="h-3 w-3" />
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <Phone style={{ width: 11, height: 11, color: T.mut2 }} />
                   {conversation.participant_phone}
                 </span>
               )}
               {conversation.contact_notes &&
                 !conversation.participant_email &&
                 !conversation.participant_phone && (
-                  <span className="flex items-center gap-0.5">
-                    <FileText className="h-3 w-3" />
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 4 }}
+                  >
+                    <FileText
+                      style={{ width: 11, height: 11, color: T.mut2 }}
+                    />
                     Has notes
                   </span>
                 )}
             </>
           ) : (
-            <span className="italic">Add contact info</span>
+            <span style={{ fontStyle: "italic", color: T.mut2 }}>
+              Add contact info
+            </span>
           )}
         </div>
-        <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
+        <ChevronDown style={{ width: 12, height: 12, color: T.mut2 }} />
       </button>
     );
   }
 
-  // Expanded state - show form
+  // Expanded state — show form
   return (
-    <div className="px-3 py-2 bg-v2-canvas border-b border-v2-ring space-y-2">
+    <div
+      style={{
+        padding: "10px 12px",
+        background: T.surface2,
+        borderBottom: `1px solid ${T.line}`,
+      }}
+    >
       {/* Header with collapse button */}
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 8,
+        }}
+      >
+        <span
+          style={{
+            font: `700 9px ${T.mono}`,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: T.mut2,
+          }}
+        >
           Contact Info
         </span>
         <button
           onClick={() => setIsExpanded(false)}
-          className="p-0.5 hover:bg-v2-ring dark:hover:bg-v2-card-dark rounded"
+          type="button"
+          style={{
+            background: "none",
+            border: "none",
+            padding: 3,
+            cursor: "pointer",
+            borderRadius: 5,
+            color: T.mut2,
+            display: "flex",
+            alignItems: "center",
+          }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.color = T.ink)
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.color = T.mut2)
+          }
         >
-          <ChevronUp className="h-3 w-3 text-v2-ink-subtle" />
+          <ChevronUp style={{ width: 12, height: 12 }} />
         </button>
       </div>
 
       {/* Email and Phone row */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-0.5">
-          <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
-            <Mail className="h-2.5 w-2.5" />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          marginBottom: 8,
+        }}
+      >
+        <div>
+          <label style={labelStyle}>
+            <Mail style={{ width: 10, height: 10 }} />
             Email
           </label>
           <Input
@@ -161,9 +245,9 @@ export function InstagramContactInfoPanel({
             className="h-6 text-[10px] px-2"
           />
         </div>
-        <div className="space-y-0.5">
-          <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
-            <Phone className="h-2.5 w-2.5" />
+        <div>
+          <label style={labelStyle}>
+            <Phone style={{ width: 10, height: 10 }} />
             Phone
           </label>
           <Input
@@ -177,9 +261,9 @@ export function InstagramContactInfoPanel({
       </div>
 
       {/* Notes row */}
-      <div className="space-y-0.5">
-        <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
-          <FileText className="h-2.5 w-2.5" />
+      <div style={{ marginBottom: 8 }}>
+        <label style={labelStyle}>
+          <FileText style={{ width: 10, height: 10 }} />
           Notes
         </label>
         <Textarea
@@ -191,26 +275,47 @@ export function InstagramContactInfoPanel({
       </div>
 
       {/* Save button */}
-      <div className="flex justify-end">
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
         {showSaved ? (
-          <div className="flex items-center gap-1 text-[10px] text-success">
-            <Check className="h-3 w-3" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              font: `600 11px ${T.data}`,
+              color: T.green,
+            }}
+          >
+            <Check style={{ width: 12, height: 12 }} />
             Saved
           </div>
         ) : (
-          <Button
-            size="sm"
-            variant={hasChanges ? "default" : "ghost"}
-            className={cn(
-              "h-5 text-[9px] px-2",
-              !hasChanges && "text-v2-ink-subtle",
-            )}
+          <button
+            type="button"
             onClick={handleSave}
             disabled={!hasChanges || updateContactInfo.isPending}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              height: 24,
+              padding: "0 10px",
+              borderRadius: 7,
+              background: hasChanges ? T.surface4 : "transparent",
+              border: hasChanges ? `1px solid ${T.line2}` : "none",
+              color: hasChanges ? T.ink : T.mut2,
+              font: `700 11px ${T.data}`,
+              cursor:
+                hasChanges && !updateContactInfo.isPending
+                  ? "pointer"
+                  : "not-allowed",
+              opacity: !hasChanges || updateContactInfo.isPending ? 0.5 : 1,
+              transition: "background .12s",
+            }}
           >
-            <Save className="h-2.5 w-2.5 mr-1" />
+            <Save style={{ width: 10, height: 10 }} />
             {updateContactInfo.isPending ? "Saving..." : "Save"}
-          </Button>
+          </button>
         )}
       </div>
     </div>

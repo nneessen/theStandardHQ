@@ -4,15 +4,13 @@
 import { type ReactNode } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { useInstagramTemplateCategories } from "@/hooks";
 import {
@@ -21,6 +19,7 @@ import {
   type InstagramMessageTemplate,
   type MessageStage,
 } from "@/types/instagram.types";
+import { T } from "@/components/board/tokens";
 
 interface TemplatePreviewSheetProps {
   template: InstagramMessageTemplate | null;
@@ -29,22 +28,12 @@ interface TemplatePreviewSheetProps {
   onEdit: (template: InstagramMessageTemplate) => void;
 }
 
-const getStageBadgeVariant = (
-  stage: string | null,
-): "default" | "secondary" | "destructive" | "outline" => {
-  switch (stage) {
-    case "opener":
-      return "default";
-    case "follow_up":
-    case "engagement":
-      return "secondary";
-    case "discovery":
-      return "destructive";
-    case "closer":
-      return "outline";
-    default:
-      return "secondary";
-  }
+const STAGE_COLORS: Record<string, string> = {
+  opener: T.violet,
+  follow_up: T.blue,
+  engagement: T.green,
+  discovery: T.amber,
+  closer: T.mut,
 };
 
 const formatRelative = (iso: string | null): string => {
@@ -55,6 +44,30 @@ const formatRelative = (iso: string | null): string => {
     return "—";
   }
 };
+
+/** Highlight {{variable}} tokens in template content */
+function renderContentWithVars(content: string): ReactNode {
+  const parts = content.split(/({{[^}]+}})/g);
+  return parts.map((part, i) => {
+    if (/^{{[^}]+}}$/.test(part)) {
+      return (
+        <span
+          key={i}
+          style={{
+            color: T.violet,
+            fontWeight: 700,
+            background: "rgba(182,155,255,0.12)",
+            borderRadius: 4,
+            padding: "0 3px",
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
 
 export function TemplatePreviewSheet({
   template,
@@ -67,74 +80,194 @@ export function TemplatePreviewSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+      <SheetContent
+        className="w-[400px] sm:w-[540px] flex flex-col"
+        style={{
+          background: T.surface7,
+          border: `1px solid ${T.line2}`,
+          borderLeft: `1px solid ${T.line2}`,
+          fontFamily: T.data,
+          color: T.ink,
+          padding: "24px 24px 20px",
+        }}
+      >
         {template && (
           <>
-            <SheetHeader>
-              <SheetTitle className="text-[13px]">{template.name}</SheetTitle>
-              <SheetDescription className="text-[11px]">
+            <SheetHeader style={{ marginBottom: 0 }}>
+              <SheetTitle
+                style={{
+                  font: `800 16px ${T.disp}`,
+                  color: T.cream,
+                  letterSpacing: "0.01em",
+                }}
+              >
+                {template.name}
+              </SheetTitle>
+              <SheetDescription
+                style={{
+                  font: `500 12px/1.4 ${T.data}`,
+                  color: T.mut2,
+                  marginTop: 4,
+                }}
+              >
                 Preview only. Click Edit to make changes.
               </SheetDescription>
             </SheetHeader>
 
-            <div className="mt-4 space-y-4 flex-1 overflow-auto">
-              {/* Metadata row */}
-              <div className="flex flex-wrap items-center gap-1.5">
+            <div
+              style={{
+                marginTop: 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: 18,
+                flex: 1,
+                overflowY: "auto",
+              }}
+            >
+              {/* Metadata chips row */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
                 {template.message_stage && (
-                  <Badge
-                    variant={getStageBadgeVariant(template.message_stage)}
-                    className="text-[10px] h-5"
+                  <span
+                    style={{
+                      height: 22,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      background: "rgba(182,155,255,0.16)",
+                      border: "1px solid rgba(182,155,255,0.30)",
+                      color: STAGE_COLORS[template.message_stage] ?? T.violet,
+                      font: `700 11px ${T.mono}`,
+                      letterSpacing: "0.10em",
+                      textTransform: "uppercase",
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
                   >
                     {MESSAGE_STAGE_LABELS[
                       template.message_stage as MessageStage
                     ] || template.message_stage}
-                  </Badge>
+                  </span>
                 )}
                 {template.category && (
-                  <Badge variant="outline" className="text-[10px] h-5">
+                  <span
+                    style={{
+                      height: 22,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      background: "rgba(182,155,255,0.10)",
+                      border: `1px solid ${T.line2}`,
+                      color: T.mut,
+                      font: `600 11px ${T.data}`,
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
+                  >
                     {getCategoryLabel(template.category, customCategories)}
-                  </Badge>
+                  </span>
                 )}
-                <span className="text-[10px] text-muted-foreground ml-auto">
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    font: `600 11px ${T.data}`,
+                    color: T.mut2,
+                  }}
+                >
                   Used {template.use_count || 0}× · Last used{" "}
                   {formatRelative(template.last_used_at)}
                 </span>
               </div>
 
               {/* Full content */}
-              <div>
-                <div className="text-[11px] font-medium text-muted-foreground mb-1.5">
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div
+                  style={{
+                    font: `700 10px ${T.mono}`,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: T.mut2,
+                  }}
+                >
                   Content
                 </div>
-                <pre className="text-[11px] text-muted-foreground whitespace-pre-wrap break-words bg-background border border-border rounded-v2-sm p-3 font-sans leading-relaxed">
-                  {template.content}
+                <pre
+                  style={{
+                    font: `500 13px/1.65 ${T.data}`,
+                    color: T.ink,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    background: T.surface3,
+                    border: `1px solid ${T.line}`,
+                    borderRadius: 10,
+                    padding: "14px 16px",
+                    margin: 0,
+                  }}
+                >
+                  {renderContentWithVars(template.content)}
                 </pre>
               </div>
 
               {/* Created */}
-              <div className="text-[10px] text-muted-foreground">
+              <div
+                style={{
+                  font: `500 11px ${T.data}`,
+                  color: T.mut2,
+                }}
+              >
                 Created {formatRelative(template.created_at)}
               </div>
             </div>
 
-            <SheetFooter className="mt-4">
-              <Button
+            <SheetFooter
+              style={{
+                marginTop: 20,
+                display: "flex",
+                gap: 10,
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="h-8 text-[11px]"
+                style={{
+                  height: 34,
+                  padding: "0 16px",
+                  borderRadius: 8,
+                  background: "transparent",
+                  border: `1px solid ${T.line2}`,
+                  color: T.mut,
+                  font: `600 12px ${T.data}`,
+                  cursor: "pointer",
+                }}
               >
                 Close
-              </Button>
+              </button>
               {canEdit && (
-                <Button
+                <button
                   type="button"
                   onClick={() => onEdit(template)}
-                  className="h-8 text-[11px]"
+                  style={{
+                    height: 34,
+                    padding: "0 16px",
+                    borderRadius: 8,
+                    background: T.violet,
+                    border: "none",
+                    color: "#1a0f33",
+                    font: `700 12px ${T.data}`,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
                 >
-                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                  <Pencil style={{ width: 13, height: 13 }} />
                   Edit
-                </Button>
+                </button>
               )}
             </SheetFooter>
           </>

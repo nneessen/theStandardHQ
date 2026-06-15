@@ -1,20 +1,25 @@
 // src/features/messages/components/instagram/InstagramWindowIndicator.tsx
-// 24hr messaging window status indicator badge
+// 24hr messaging window status indicator badge — board token restyle
 
 import { type ReactNode } from "react";
-import { Clock, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { T } from "@/components/board/tokens";
 import {
   selectWindowStatus,
   selectWindowTimeRemaining,
   formatTimeRemaining,
 } from "@/lib/instagram";
+
+// Alpha tints — T has solid colors only; literals match mock exactly
+const AMBER_BG = "rgba(244,180,58,0.20)";
+const RED_BG = "rgba(255,106,93,0.18)";
+const MUT3 = "rgba(255,255,255,0.28)";
 
 interface InstagramWindowIndicatorProps {
   canReplyUntil: string | null;
@@ -26,7 +31,7 @@ interface InstagramWindowIndicatorProps {
 export function InstagramWindowIndicator({
   canReplyUntil,
   variant = "badge",
-  className,
+  className: _className,
   showTooltip = true,
 }: InstagramWindowIndicatorProps): ReactNode {
   const status = selectWindowStatus(canReplyUntil);
@@ -37,31 +42,25 @@ export function InstagramWindowIndicator({
     switch (status) {
       case "open":
         return {
-          icon: CheckCircle,
-          color: "text-success",
-          bgColor: "bg-success/20 dark:bg-success/30",
-          borderColor: "border-success/30",
-          dotColor: "bg-success",
+          bg: AMBER_BG,
+          color: T.amber,
+          dotColor: T.amber,
           label: formattedTime,
-          shortLabel: "Open",
+          shortLabel: formattedTime || "Open",
         };
       case "closing_soon":
         return {
-          icon: AlertCircle,
-          color: "text-warning",
-          bgColor: "bg-warning/20 dark:bg-warning/30",
-          borderColor: "border-warning/30",
-          dotColor: "bg-warning",
+          bg: AMBER_BG,
+          color: T.amber,
+          dotColor: T.amber,
           label: formattedTime,
-          shortLabel: "Closing soon",
+          shortLabel: formattedTime || "Closing soon",
         };
       case "closed":
         return {
-          icon: XCircle,
-          color: "text-muted-foreground",
-          bgColor: "bg-muted",
-          borderColor: "border-border",
-          dotColor: "bg-muted",
+          bg: RED_BG,
+          color: T.red,
+          dotColor: T.red,
           label: "Window closed",
           shortLabel: "Closed",
         };
@@ -69,18 +68,31 @@ export function InstagramWindowIndicator({
   };
 
   const config = getStatusConfig();
-  const Icon = config.icon;
 
   const tooltipContent = (
-    <div className="max-w-xs space-y-1">
-      <p className="font-medium text-[11px]">Instagram 24-Hour Window</p>
-      <p className="text-[10px] text-muted-foreground">
+    <div style={{ maxWidth: 240 }}>
+      <p
+        style={{
+          font: `700 11px ${T.data}`,
+          color: T.ink,
+          margin: "0 0 4px",
+        }}
+      >
+        Instagram 24-Hour Window
+      </p>
+      <p
+        style={{
+          font: `500 10px ${T.data}`,
+          color: T.mut,
+          margin: "0 0 4px",
+        }}
+      >
         {status === "closed"
           ? "You can only send messages within 24 hours of the user's last message. Wait for them to message you first."
           : "You can reply to this conversation until the window closes. After that, wait for the user to message you."}
       </p>
       {canReplyUntil && status !== "closed" && (
-        <p className="text-[10px] text-muted-foreground">
+        <p style={{ font: `500 10px ${T.data}`, color: T.mut2, margin: 0 }}>
           Expires:{" "}
           {new Date(canReplyUntil).toLocaleString(undefined, {
             month: "short",
@@ -98,15 +110,21 @@ export function InstagramWindowIndicator({
       case "badge":
         return (
           <div
-            className={cn(
-              "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium border",
-              config.bgColor,
-              config.borderColor,
-              config.color,
-              className,
-            )}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              height: 22,
+              padding: "0 9px",
+              borderRadius: 99,
+              background: config.bg,
+              color: config.color,
+              font: `700 10px ${T.mono}`,
+              letterSpacing: "0.04em",
+              flexShrink: 0,
+            }}
           >
-            <Icon className="h-2.5 w-2.5" />
+            <Clock style={{ width: 11, height: 11 }} />
             <span>{config.shortLabel}</span>
           </div>
         );
@@ -114,13 +132,15 @@ export function InstagramWindowIndicator({
       case "inline":
         return (
           <div
-            className={cn(
-              "inline-flex items-center gap-1.5 text-[10px]",
-              config.color,
-              className,
-            )}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              font: `600 11px ${T.data}`,
+              color: config.color,
+            }}
           >
-            <Clock className="h-3 w-3" />
+            <Clock style={{ width: 12, height: 12 }} />
             <span>{config.label}</span>
           </div>
         );
@@ -128,7 +148,12 @@ export function InstagramWindowIndicator({
       case "minimal":
         return (
           <div
-            className={cn("w-2 h-2 rounded-full", config.dotColor, className)}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 99,
+              background: config.dotColor,
+            }}
             title={config.label}
           />
         );
@@ -139,11 +164,38 @@ export function InstagramWindowIndicator({
     return indicator;
   }
 
+  // No canReplyUntil — render MUT3 minimal pill
+  if (!canReplyUntil && variant === "badge") {
+    return (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          height: 22,
+          padding: "0 9px",
+          borderRadius: 99,
+          background: "rgba(255,255,255,0.06)",
+          color: MUT3,
+          font: `700 10px ${T.mono}`,
+          letterSpacing: "0.04em",
+          flexShrink: 0,
+        }}
+      >
+        <Clock style={{ width: 11, height: 11 }} />
+        <span>No window</span>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>{indicator}</TooltipTrigger>
-        <TooltipContent side="top" className="p-2">
+        <TooltipContent
+          side="top"
+          style={{ background: T.surface5, border: `1px solid ${T.line2}` }}
+        >
           {tooltipContent}
         </TooltipContent>
       </Tooltip>

@@ -8,7 +8,7 @@ import { CheckSquare, Inbox, ListChecks, Star, Archive, X } from "lucide-react";
 import { T } from "@/components/board/tokens";
 import { FeedChip, tint } from "./atoms";
 import { FeedCard } from "./FeedCard";
-import type { OpenTarget } from "./ThreadDrawer";
+import type { OpenTarget } from "./types";
 import type {
   FeedSort,
   UnifiedInboxData,
@@ -24,6 +24,10 @@ interface FeedColumnProps {
   onOpenThread: (target: OpenTarget) => void;
   onBulkStar: (threads: UnifiedThread[]) => void;
   onBulkArchive: (threads: UnifiedThread[]) => void;
+  /** When a thread is open in the reading pane the feed shrinks to a list rail. */
+  narrow?: boolean;
+  /** UnifiedThread.key of the conversation currently open (highlighted). */
+  openKey?: string | null;
 }
 
 function DayDivider({ label }: { label: string }) {
@@ -94,6 +98,8 @@ export function FeedColumn({
   onOpenThread,
   onBulkStar,
   onBulkArchive,
+  narrow = false,
+  openKey = null,
 }: FeedColumnProps) {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -128,10 +134,19 @@ export function FeedColumn({
   }
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: "100%", overflowY: "auto" }}>
+    <div
+      style={{
+        flex: narrow ? "0 0 384px" : 1,
+        width: narrow ? 384 : undefined,
+        minWidth: 0,
+        height: "100%",
+        overflowY: "auto",
+        borderRight: narrow ? `1px solid ${T.line}` : undefined,
+      }}
+    >
       <div
         style={{
-          padding: "20px 26px",
+          padding: narrow ? "20px 18px" : "20px 26px",
           display: "flex",
           flexDirection: "column",
           gap: 13,
@@ -253,6 +268,7 @@ export function FeedColumn({
                   thread={t}
                   selectMode={selectMode}
                   selected={selected.has(t.key)}
+                  isOpen={t.key === openKey}
                   onToggleSelect={() => toggleSelect(t.key)}
                   onOpen={() =>
                     onOpenThread({ channel: t.channel, refId: t.refId })

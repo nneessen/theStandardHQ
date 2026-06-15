@@ -4,8 +4,6 @@
 import { useState, type ReactNode } from "react";
 import { Plus, Edit2, Trash2, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,11 +23,9 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import {
   useInstagramTemplateCategories,
   useCreateTemplateCategory,
@@ -42,11 +38,136 @@ import {
   createCustomCategoryValue,
 } from "@/types/instagram.types";
 import type { InstagramTemplateCategory } from "@/types/instagram.types";
+import { T } from "@/components/board/tokens";
+
+const MUT3 = "rgba(255,255,255,0.28)";
 
 interface CategoryManagerProps {
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
   canEdit: boolean;
+}
+
+function GroupHeader({ label, icon }: { label: string; icon?: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "14px 10px 7px",
+        font: `700 10px ${T.mono}`,
+        letterSpacing: "0.18em",
+        color: MUT3,
+        textTransform: "uppercase",
+      }}
+    >
+      <span style={{ flex: 1 }}>{label}</span>
+      {icon}
+    </div>
+  );
+}
+
+function CategoryItem({
+  label,
+  active,
+  onClick,
+  actions,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  actions?: ReactNode;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        height: 34,
+        padding: "0 10px",
+        borderRadius: 9,
+        background: active
+          ? "rgba(182,155,255,0.14)"
+          : hover
+            ? "rgba(255,255,255,0.05)"
+            : "transparent",
+        border: `1px solid ${active ? "rgba(182,155,255,0.30)" : "transparent"}`,
+        cursor: "pointer",
+        gap: 8,
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          flex: 1,
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          padding: 0,
+          font: `600 13px ${T.data}`,
+          color: active ? T.ink : T.mut,
+          cursor: "pointer",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          minWidth: 0,
+        }}
+      >
+        {label}
+      </button>
+      {hover && actions && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            flexShrink: 0,
+          }}
+        >
+          {actions}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IconBtn({
+  onClick,
+  title,
+  color,
+  children,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  color?: string;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: 5,
+        background: "transparent",
+        border: "none",
+        color: color ?? T.mut2,
+        cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {children}
+    </button>
+  );
 }
 
 export function CategoryManager({
@@ -135,185 +256,326 @@ export function CategoryManager({
     deleteMutation.isPending;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-3 border-b border-border">
-        <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "14px 12px 10px",
+          borderBottom: `1px solid ${T.line}`,
+        }}
+      >
+        <span
+          style={{
+            font: `700 10px ${T.mono}`,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: MUT3,
+          }}
+        >
           Categories
-        </h3>
+        </span>
       </div>
 
-      <div className="flex-1 overflow-auto p-2 space-y-2">
-        {/* All Categories - Filter Reset */}
-        <button
-          type="button"
+      {/* List */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "10px 10px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {/* All */}
+        <CategoryItem
+          label="All Categories"
+          active={selectedCategory === "all"}
           onClick={() => onSelectCategory("all")}
-          className={cn(
-            "w-full px-2 py-1.5 text-[11px] text-left rounded-sm transition-colors",
-            selectedCategory === "all"
-              ? "bg-info/20 dark:bg-info/15 text-info font-medium"
-              : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
-          )}
-        >
-          All Categories
-        </button>
+        />
 
-        {/* Built-in Categories */}
+        {/* Built-in */}
         <Collapsible open={builtInOpen} onOpenChange={setBuiltInOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground">
-            <span className="flex-1 text-left">Built-in</span>
-            <Lock className="h-3 w-3" />
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              style={{
+                width: "100%",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+              }}
+            >
+              <GroupHeader
+                label="Built-in"
+                icon={<Lock style={{ width: 10, height: 10, color: MUT3 }} />}
+              />
+            </button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-1 space-y-0.5">
-            {BUILT_IN_PROSPECT_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => onSelectCategory(type)}
-                className={cn(
-                  "w-full px-2 py-1.5 text-[11px] text-left rounded-sm transition-colors",
-                  selectedCategory === type
-                    ? "bg-info/20 dark:bg-info/15 text-info font-medium"
-                    : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
-                )}
-              >
-                {PROSPECT_TYPE_LABELS[type]}
-              </button>
-            ))}
+          <CollapsibleContent>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {BUILT_IN_PROSPECT_TYPES.map((type) => (
+                <CategoryItem
+                  key={type}
+                  label={PROSPECT_TYPE_LABELS[type]}
+                  active={selectedCategory === type}
+                  onClick={() => onSelectCategory(type)}
+                />
+              ))}
+            </div>
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Custom Categories */}
+        {/* Custom */}
         <Collapsible open={customOpen} onOpenChange={setCustomOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground">
-            <span className="flex-1 text-left">Custom</span>
-            {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              style={{
+                width: "100%",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+              }}
+            >
+              <GroupHeader
+                label="Custom"
+                icon={
+                  isLoading ? (
+                    <Loader2
+                      style={{
+                        width: 10,
+                        height: 10,
+                        color: MUT3,
+                        animation: "spin 1s linear infinite",
+                      }}
+                    />
+                  ) : undefined
+                }
+              />
+            </button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-1 space-y-0.5">
-            {customCategories.length === 0 && !isLoading && (
-              <p className="px-2 py-1 text-[10px] text-muted-foreground italic">
-                No custom categories
-              </p>
-            )}
-            {customCategories.map((category) => {
-              const categoryValue = createCustomCategoryValue(category.id);
-              return (
-                <div
-                  key={category.id}
-                  className={cn(
-                    "group flex items-center px-2 py-1.5 text-[11px] rounded-sm transition-colors",
-                    selectedCategory === categoryValue
-                      ? "bg-info/20 dark:bg-info/15 text-info font-medium"
-                      : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
-                  )}
+          <CollapsibleContent>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {customCategories.length === 0 && !isLoading && (
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    font: `500 11px ${T.data}`,
+                    color: T.mut2,
+                    fontStyle: "italic",
+                  }}
                 >
-                  <button
-                    type="button"
+                  No custom categories
+                </span>
+              )}
+              {customCategories.map((category) => {
+                const categoryValue = createCustomCategoryValue(category.id);
+                return (
+                  <CategoryItem
+                    key={category.id}
+                    label={category.name}
+                    active={selectedCategory === categoryValue}
                     onClick={() => onSelectCategory(categoryValue)}
-                    className="flex-1 truncate text-left"
-                  >
-                    {category.name}
-                  </button>
-                  {canEdit && (
-                    <div className="hidden group-hover:flex items-center gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenEdit(category);
-                        }}
-                        title="Edit category"
-                      >
-                        <Edit2 className="h-2.5 w-2.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-destructive hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteCategory(category);
-                        }}
-                        title="Delete category"
-                      >
-                        <Trash2 className="h-2.5 w-2.5" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    actions={
+                      canEdit ? (
+                        <>
+                          <IconBtn
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEdit(category);
+                            }}
+                            title="Edit category"
+                          >
+                            <Edit2 style={{ width: 10, height: 10 }} />
+                          </IconBtn>
+                          <IconBtn
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteCategory(category);
+                            }}
+                            title="Delete category"
+                            color={T.red}
+                          >
+                            <Trash2 style={{ width: 10, height: 10 }} />
+                          </IconBtn>
+                        </>
+                      ) : undefined
+                    }
+                  />
+                );
+              })}
 
-            {/* Add New Button - Super Admin Only */}
-            {canEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start h-7 text-[11px] text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
-                onClick={handleOpenCreate}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add Category
-              </Button>
-            )}
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={handleOpenCreate}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    height: 30,
+                    padding: "0 10px",
+                    borderRadius: 8,
+                    background: "transparent",
+                    border: `1px dashed ${T.line2}`,
+                    color: T.mut2,
+                    font: `600 11px ${T.data}`,
+                    cursor: "pointer",
+                    width: "100%",
+                    marginTop: 4,
+                  }}
+                >
+                  <Plus style={{ width: 12, height: 12 }} />
+                  Add Category
+                </button>
+              )}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </div>
 
       {/* Category Form Sheet */}
       <Sheet open={isFormOpen} onOpenChange={handleCloseForm}>
-        <SheetContent className="w-[320px]">
+        <SheetContent
+          style={{
+            width: 320,
+            background: T.surface7,
+            border: `1px solid ${T.line2}`,
+            borderLeft: `1px solid ${T.line2}`,
+            fontFamily: T.data,
+            color: T.ink,
+            padding: "24px 20px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
+          }}
+        >
           <SheetHeader>
-            <SheetTitle className="text-[13px]">
+            <SheetTitle
+              style={{
+                font: `800 15px ${T.disp}`,
+                color: T.cream,
+              }}
+            >
               {editingCategory ? "Edit Category" : "New Category"}
             </SheetTitle>
-            <SheetDescription className="text-[11px]">
+            <SheetDescription
+              style={{
+                font: `500 12px/1.4 ${T.data}`,
+                color: T.mut2,
+                marginTop: 4,
+              }}
+            >
               {editingCategory
                 ? "Update your custom category"
                 : "Create a new custom prospect type category"}
             </SheetDescription>
           </SheetHeader>
 
-          <div className="mt-4 space-y-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-medium">Category Name</label>
-              <Input
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                placeholder="e.g., Real Estate Agent"
-                className="h-8 text-[11px]"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSave();
-                  }
-                }}
-              />
-            </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <label
+              style={{
+                font: `700 10px ${T.mono}`,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: T.mut2,
+              }}
+            >
+              Category Name
+            </label>
+            <input
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="e.g., Real Estate Agent"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              style={{
+                width: "100%",
+                background: T.surface3,
+                border: `1px solid ${T.line2}`,
+                borderRadius: 8,
+                padding: "0 12px",
+                height: 36,
+                font: `500 13px ${T.data}`,
+                color: T.ink,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
           </div>
 
-          <SheetFooter className="mt-6">
-            <Button
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              justifyContent: "flex-end",
+              marginTop: "auto",
+            }}
+          >
+            <button
               type="button"
-              variant="outline"
               onClick={handleCloseForm}
               disabled={isPending}
-              className="h-8 text-[11px]"
+              style={{
+                height: 34,
+                padding: "0 14px",
+                borderRadius: 8,
+                background: "transparent",
+                border: `1px solid ${T.line2}`,
+                color: T.mut,
+                font: `600 12px ${T.data}`,
+                cursor: "pointer",
+                opacity: isPending ? 0.5 : 1,
+              }}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleSave}
               disabled={isPending || !categoryName.trim()}
-              className="h-8 text-[11px]"
+              style={{
+                height: 34,
+                padding: "0 16px",
+                borderRadius: 8,
+                background: T.violet,
+                border: "none",
+                color: "#1a0f33",
+                font: `700 12px ${T.data}`,
+                cursor:
+                  isPending || !categoryName.trim() ? "not-allowed" : "pointer",
+                opacity: isPending || !categoryName.trim() ? 0.6 : 1,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+              }}
             >
               {isPending && (
-                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                <Loader2
+                  style={{
+                    width: 13,
+                    height: 13,
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
               )}
               {editingCategory ? "Save" : "Create"}
-            </Button>
-          </SheetFooter>
+            </button>
+          </div>
         </SheetContent>
       </Sheet>
 
@@ -322,12 +584,30 @@ export function CategoryManager({
         open={!!deleteCategory}
         onOpenChange={() => setDeleteCategory(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent
+          style={{
+            background: T.surface7,
+            border: `1px solid ${T.line2}`,
+            borderRadius: 14,
+            fontFamily: T.data,
+            color: T.ink,
+          }}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[13px]">
+            <AlertDialogTitle
+              style={{
+                font: `800 15px ${T.disp}`,
+                color: T.cream,
+              }}
+            >
               Delete Category
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[11px]">
+            <AlertDialogDescription
+              style={{
+                font: `500 13px/1.5 ${T.data}`,
+                color: T.mut,
+              }}
+            >
               Are you sure you want to delete &quot;{deleteCategory?.name}
               &quot;? Templates using this category will be updated to
               &quot;Uncategorized&quot;.
@@ -337,17 +617,45 @@ export function CategoryManager({
             <AlertDialogCancel
               onClick={() => setDeleteCategory(null)}
               disabled={deleteMutation.isPending}
-              className="h-8 text-[11px]"
+              style={{
+                height: 32,
+                padding: "0 14px",
+                borderRadius: 8,
+                background: "transparent",
+                border: `1px solid ${T.line2}`,
+                color: T.mut,
+                font: `600 12px ${T.data}`,
+                cursor: "pointer",
+              }}
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
-              className="h-8 text-[11px] bg-destructive hover:bg-destructive focus:ring-destructive"
+              style={{
+                height: 32,
+                padding: "0 14px",
+                borderRadius: 8,
+                background: T.red,
+                border: "none",
+                color: "#fff",
+                font: `700 12px ${T.data}`,
+                cursor: deleteMutation.isPending ? "not-allowed" : "pointer",
+                opacity: deleteMutation.isPending ? 0.6 : 1,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
               {deleteMutation.isPending && (
-                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                <Loader2
+                  style={{
+                    width: 13,
+                    height: 13,
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
               )}
               Delete
             </AlertDialogAction>

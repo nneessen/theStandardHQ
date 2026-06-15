@@ -1,5 +1,5 @@
 // src/features/messages/components/instagram/InstagramMessageInput.tsx
-// Message composer with character limit for Instagram DMs
+// Message composer with character limit for Instagram DMs — board token restyle
 
 import {
   useState,
@@ -9,9 +9,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Send, Loader2, AlertCircle, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { T } from "@/components/board/tokens";
 import { selectWindowStatus } from "@/lib/instagram";
 import type {
   InstagramConversation,
@@ -20,6 +18,9 @@ import type {
 import { InstagramTemplateSelector } from "./InstagramTemplateSelector";
 
 const MAX_CHARS = 1000;
+
+// Violet — solid for Send button bg, dark text for contrast
+const VIOLET_SEND_TEXT = "#1a0f33";
 
 interface InstagramMessageInputProps {
   canReplyUntil: string | null;
@@ -93,13 +94,31 @@ export function InstagramMessageInput({
   // Window closed state
   if (isWindowClosed) {
     return (
-      <div className="flex items-center gap-2 p-2 bg-v2-ring rounded-lg border border-v2-ring">
-        <AlertCircle className="h-4 w-4 text-v2-ink-subtle flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 14px",
+          background: T.surface3,
+          borderRadius: 11,
+          border: `1px solid ${T.line}`,
+        }}
+      >
+        <AlertCircle
+          style={{ width: 16, height: 16, color: T.red, flexShrink: 0 }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              font: `600 12px ${T.data}`,
+              color: T.mut,
+              margin: "0 0 2px",
+            }}
+          >
             Messaging window closed
           </p>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
+          <p style={{ font: `500 11px ${T.data}`, color: T.mut2, margin: 0 }}>
             You can only reply within 24 hours of their last message. Wait for
             them to message you.
           </p>
@@ -109,14 +128,22 @@ export function InstagramMessageInput({
   }
 
   return (
-    <div className="space-y-1">
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      {/* Composer shell */}
       <div
-        className={cn(
-          "flex items-end gap-2 p-1.5 bg-v2-canvas rounded-lg border transition-colors",
-          isOverLimit ? "border-destructive/40" : "border-v2-ring",
-        )}
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          gap: 8,
+          padding: "8px 10px 8px 14px",
+          background: T.surface3,
+          borderRadius: 11,
+          border: `1px solid ${isOverLimit ? "rgba(255,106,93,0.40)" : T.line2}`,
+          transition: "border-color .12s",
+        }}
       >
-        <Textarea
+        {/* Textarea */}
+        <textarea
           ref={textareaRef}
           value={text}
           onChange={(e) => {
@@ -129,15 +156,35 @@ export function InstagramMessageInput({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={isDisabled}
-          className={cn(
-            "flex-1 min-h-[36px] max-h-[120px] resize-none border-0 bg-transparent p-1.5 text-[11px] placeholder:text-v2-ink-subtle",
-            "focus-visible:ring-0 focus-visible:ring-offset-0",
-          )}
           rows={1}
+          style={{
+            flex: 1,
+            minHeight: 36,
+            maxHeight: 120,
+            resize: "none",
+            border: "none",
+            background: "transparent",
+            padding: "0",
+            font: `500 13px ${T.data}`,
+            color: T.ink,
+            outline: "none",
+            lineHeight: 1.5,
+            opacity: isDisabled ? 0.5 : 1,
+          }}
+          // Inline ::placeholder doesn't work in style= but we set the color
+          // via a class fallback for the subtle placeholder
+          className="placeholder:text-[rgba(255,255,255,0.42)]"
         />
 
         {/* Action buttons */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            flexShrink: 0,
+          }}
+        >
           {/* Template selector */}
           <InstagramTemplateSelector
             onSelect={handleTemplateSelect}
@@ -148,48 +195,105 @@ export function InstagramMessageInput({
 
           {/* Schedule button */}
           {showScheduleButton && onScheduleClick && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
+            <button
+              type="button"
               onClick={onScheduleClick}
               disabled={isDisabled}
               title="Schedule message"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                background: "transparent",
+                border: `1px solid ${T.line2}`,
+                color: isDisabled ? T.mut2 : T.mut,
+                cursor: isDisabled ? "not-allowed" : "pointer",
+                transition: "color .12s, border-color .12s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isDisabled) {
+                  (e.currentTarget as HTMLButtonElement).style.color = T.ink;
+                  (e.currentTarget as HTMLButtonElement).style.borderColor =
+                    T.line2;
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = isDisabled
+                  ? T.mut2
+                  : T.mut;
+              }}
             >
-              <Clock className="h-3.5 w-3.5" />
-            </Button>
+              <Clock style={{ width: 13, height: 13 }} />
+            </button>
           )}
 
-          {/* Send button */}
-          <Button
-            size="icon"
-            className="h-7 w-7"
+          {/* Send button — solid violet */}
+          <button
+            type="button"
             onClick={handleSend}
             disabled={!canSend}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              height: 32,
+              padding: "0 14px",
+              borderRadius: 9,
+              background: canSend ? T.violet : "rgba(182,155,255,0.18)",
+              border: "none",
+              color: canSend ? VIOLET_SEND_TEXT : "rgba(182,155,255,0.40)",
+              font: `700 12.5px ${T.data}`,
+              cursor: canSend ? "pointer" : "not-allowed",
+              transition: "background .12s, color .12s",
+              flexShrink: 0,
+            }}
           >
             {isSending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2
+                style={{ width: 13, height: 13 }}
+                className="animate-spin"
+              />
             ) : (
-              <Send className="h-3.5 w-3.5" />
+              <Send style={{ width: 13, height: 13 }} />
             )}
-          </Button>
+            <span>Send</span>
+          </button>
         </div>
       </div>
 
-      {/* Character counter */}
-      <div className="flex items-center justify-between px-1">
-        <p className="text-[9px] text-v2-ink-subtle">
-          Press Enter to send, Shift+Enter for new line
+      {/* Character counter + hint */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 4px",
+        }}
+      >
+        <p
+          style={{
+            font: `500 10px ${T.data}`,
+            color: "rgba(255,255,255,0.28)",
+            margin: 0,
+          }}
+        >
+          Enter to send · Shift+Enter for new line
         </p>
         <p
-          className={cn(
-            "text-[9px]",
-            isOverLimit
-              ? "text-destructive font-medium"
+          style={{
+            font: `600 10px ${T.mono}`,
+            color: isOverLimit
+              ? T.red
               : charCount > MAX_CHARS * 0.9
-                ? "text-warning"
-                : "text-v2-ink-subtle",
-          )}
+                ? T.amber
+                : "rgba(255,255,255,0.28)",
+            margin: 0,
+            letterSpacing: "0.02em",
+          }}
         >
           {charCount}/{MAX_CHARS}
         </p>

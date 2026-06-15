@@ -5,7 +5,7 @@
 import { BarChart3, Bell, Zap } from "lucide-react";
 import { T } from "@/components/board/tokens";
 import { QuotaMeter } from "./atoms";
-import type { OpenTarget } from "./ThreadDrawer";
+import type { OpenTarget } from "./types";
 import { useSendPace } from "../../hooks/useSendPace";
 import type { UnifiedInboxData } from "../../hooks/useUnifiedInbox";
 

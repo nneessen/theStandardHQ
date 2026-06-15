@@ -7,9 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,7 +18,6 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -30,7 +26,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -46,6 +41,7 @@ import {
   isCustomCategory,
   type InstagramMessageTemplate,
 } from "@/types/instagram.types";
+import { T } from "@/components/board/tokens";
 
 const MAX_CONTENT_LENGTH = 1000;
 
@@ -73,6 +69,41 @@ interface TemplateFormProps {
   template: InstagramMessageTemplate | null;
 }
 
+const LABEL_STYLE: React.CSSProperties = {
+  font: `700 10px ${T.mono}`,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: T.mut2,
+  display: "block",
+  marginBottom: 6,
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  width: "100%",
+  background: T.surface2,
+  border: `1px solid ${T.line2}`,
+  borderRadius: 8,
+  padding: "0 12px",
+  height: 36,
+  font: `500 13px ${T.data}`,
+  color: T.ink,
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+const SELECT_TRIGGER_STYLE: React.CSSProperties = {
+  width: "100%",
+  background: T.surface2,
+  border: `1px solid ${T.line2}`,
+  borderRadius: 8,
+  padding: "0 12px",
+  height: 36,
+  font: `500 13px ${T.data}`,
+  color: T.ink,
+};
+
+const MUT3 = "rgba(255,255,255,0.28)";
+
 export function TemplateForm({
   open,
   onOpenChange,
@@ -96,11 +127,9 @@ export function TemplateForm({
 
   // Reset form when template changes
   useEffect(() => {
-    // Helper to resolve legacy category names to new format
     const resolveCategoryValue = (category: string | null): string => {
       if (!category) return "";
 
-      // Already in new format or built-in type
       if (
         isCustomCategory(category) ||
         BUILT_IN_PROSPECT_TYPES.includes(category as never)
@@ -108,13 +137,11 @@ export function TemplateForm({
         return category;
       }
 
-      // Legacy format: stored by name - find matching custom category
       const legacyMatch = customCategories.find((c) => c.name === category);
       if (legacyMatch) {
         return createCustomCategoryValue(legacyMatch.id);
       }
 
-      // Unknown category, return as-is
       return category;
     };
 
@@ -176,12 +203,36 @@ export function TemplateForm({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[540px]">
-        <SheetHeader>
-          <SheetTitle className="text-[13px]">
+      <SheetContent
+        className="w-[400px] sm:w-[540px]"
+        style={{
+          background: T.surface7,
+          border: `1px solid ${T.line2}`,
+          borderLeft: `1px solid ${T.line2}`,
+          fontFamily: T.data,
+          color: T.ink,
+          padding: "24px 24px 20px",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <SheetHeader style={{ marginBottom: 0 }}>
+          <SheetTitle
+            style={{
+              font: `800 16px ${T.disp}`,
+              color: T.cream,
+              letterSpacing: "0.01em",
+            }}
+          >
             {isEditing ? "Edit Template" : "New Template"}
           </SheetTitle>
-          <SheetDescription className="text-[11px]">
+          <SheetDescription
+            style={{
+              font: `500 12px/1.4 ${T.data}`,
+              color: T.mut2,
+              marginTop: 4,
+            }}
+          >
             {isEditing
               ? "Update your message template"
               : "Create a new message template for quick responses"}
@@ -191,7 +242,13 @@ export function TemplateForm({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="mt-4 space-y-4"
+            style={{
+              marginTop: 24,
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+              flex: 1,
+            }}
           >
             {/* Name */}
             <FormField
@@ -199,15 +256,21 @@ export function TemplateForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px]">Name</FormLabel>
+                  <label style={LABEL_STYLE}>Name</label>
                   <FormControl>
-                    <Input
+                    <input
                       {...field}
                       placeholder="e.g., Licensed Agent Opener"
-                      className="h-8 text-[11px]"
+                      style={INPUT_STYLE}
                     />
                   </FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage
+                    style={{
+                      font: `500 11px ${T.data}`,
+                      color: T.red,
+                      marginTop: 4,
+                    }}
+                  />
                 </FormItem>
               )}
             />
@@ -218,28 +281,53 @@ export function TemplateForm({
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel className="text-[11px]">Content</FormLabel>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <label style={{ ...LABEL_STYLE, marginBottom: 0 }}>
+                      Content
+                    </label>
                     <span
-                      className={`text-[10px] ${
-                        contentLength > MAX_CONTENT_LENGTH
-                          ? "text-destructive"
-                          : contentLength > MAX_CONTENT_LENGTH * 0.9
-                            ? "text-warning"
-                            : "text-muted-foreground"
-                      }`}
+                      style={{
+                        font: `700 10px ${T.mono}`,
+                        color:
+                          contentLength > MAX_CONTENT_LENGTH
+                            ? T.red
+                            : contentLength > MAX_CONTENT_LENGTH * 0.9
+                              ? T.amber
+                              : T.mut2,
+                        letterSpacing: "0.06em",
+                      }}
                     >
                       {contentLength}/{MAX_CONTENT_LENGTH}
                     </span>
                   </div>
                   <FormControl>
-                    <Textarea
+                    <textarea
                       {...field}
                       placeholder="Enter your message template..."
-                      className="h-32 text-[11px] resize-none"
+                      rows={6}
+                      style={{
+                        ...INPUT_STYLE,
+                        height: "auto",
+                        padding: "10px 12px",
+                        resize: "none",
+                        lineHeight: "1.55",
+                      }}
                     />
                   </FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage
+                    style={{
+                      font: `500 11px ${T.data}`,
+                      color: T.red,
+                      marginTop: 4,
+                    }}
+                  />
                 </FormItem>
               )}
             />
@@ -250,41 +338,59 @@ export function TemplateForm({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px]">Prospect Type</FormLabel>
+                  <label style={LABEL_STYLE}>Prospect Type</label>
                   <Select
                     value={field.value || ""}
                     onValueChange={field.onChange}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-8 text-[11px]">
+                      <SelectTrigger style={SELECT_TRIGGER_STYLE}>
                         <SelectValue placeholder="Select prospect type" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="" className="text-[11px]">
+                    <SelectContent
+                      style={{
+                        background: T.surface5,
+                        border: `1px solid ${T.line2}`,
+                        borderRadius: 10,
+                      }}
+                    >
+                      <SelectItem
+                        value=""
+                        style={{ font: `500 13px ${T.data}`, color: T.mut }}
+                      >
                         None
                       </SelectItem>
-                      {/* Built-in types */}
                       {BUILT_IN_PROSPECT_TYPES.map((type) => (
                         <SelectItem
                           key={type}
                           value={type}
-                          className="text-[11px]"
+                          style={{ font: `500 13px ${T.data}`, color: T.ink }}
                         >
                           {PROSPECT_TYPE_LABELS[type]}
                         </SelectItem>
                       ))}
-                      {/* Custom categories */}
                       {customCategories.length > 0 && (
                         <>
-                          <div className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                          <div
+                            style={{
+                              padding: "8px 10px 4px",
+                              font: `700 10px ${T.mono}`,
+                              letterSpacing: "0.16em",
+                              textTransform: "uppercase",
+                              color: MUT3,
+                            }}
+                          >
                             Custom
                           </div>
                           {customCategories.map((cat) => (
                             <SelectItem
                               key={cat.id}
                               value={createCustomCategoryValue(cat.id)}
-                              className="text-[11px]"
+                              style={{
+                                font: `500 13px ${T.data}`,
+                                color: T.ink,
+                              }}
                             >
                               {cat.name}
                             </SelectItem>
@@ -293,7 +399,13 @@ export function TemplateForm({
                       )}
                     </SelectContent>
                   </Select>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage
+                    style={{
+                      font: `500 11px ${T.data}`,
+                      color: T.red,
+                      marginTop: 4,
+                    }}
+                  />
                 </FormItem>
               )}
             />
@@ -304,23 +416,29 @@ export function TemplateForm({
               name="message_stage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[11px]">Message Stage</FormLabel>
+                  <label style={LABEL_STYLE}>Message Stage</label>
                   <Select
                     value={field.value || "opener"}
                     onValueChange={field.onChange}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-8 text-[11px]">
+                      <SelectTrigger style={SELECT_TRIGGER_STYLE}>
                         <SelectValue placeholder="Select stage" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent
+                      style={{
+                        background: T.surface5,
+                        border: `1px solid ${T.line2}`,
+                        borderRadius: 10,
+                      }}
+                    >
                       {Object.entries(MESSAGE_STAGE_LABELS).map(
                         ([value, label]) => (
                           <SelectItem
                             key={value}
                             value={value}
-                            className="text-[11px]"
+                            style={{ font: `500 13px ${T.data}`, color: T.ink }}
                           >
                             {label}
                           </SelectItem>
@@ -328,32 +446,75 @@ export function TemplateForm({
                       )}
                     </SelectContent>
                   </Select>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage
+                    style={{
+                      font: `500 11px ${T.data}`,
+                      color: T.red,
+                      marginTop: 4,
+                    }}
+                  />
                 </FormItem>
               )}
             />
 
-            <SheetFooter className="mt-6">
-              <Button
+            {/* Footer buttons */}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                justifyContent: "flex-end",
+                marginTop: "auto",
+                paddingTop: 8,
+              }}
+            >
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
-                className="h-8 text-[11px]"
+                style={{
+                  height: 34,
+                  padding: "0 16px",
+                  borderRadius: 8,
+                  background: "transparent",
+                  border: `1px solid ${T.line2}`,
+                  color: T.mut,
+                  font: `600 12px ${T.data}`,
+                  cursor: "pointer",
+                  opacity: isPending ? 0.5 : 1,
+                }}
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 type="submit"
                 disabled={isPending}
-                className="h-8 text-[11px]"
+                style={{
+                  height: 34,
+                  padding: "0 18px",
+                  borderRadius: 8,
+                  background: T.violet,
+                  border: "none",
+                  color: "#1a0f33",
+                  font: `700 12px ${T.data}`,
+                  cursor: isPending ? "not-allowed" : "pointer",
+                  opacity: isPending ? 0.7 : 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                }}
               >
                 {isPending && (
-                  <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  <Loader2
+                    style={{
+                      width: 13,
+                      height: 13,
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
                 )}
                 {isEditing ? "Save Changes" : "Create Template"}
-              </Button>
-            </SheetFooter>
+              </button>
+            </div>
           </form>
         </Form>
       </SheetContent>
