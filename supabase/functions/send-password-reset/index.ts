@@ -5,6 +5,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
+import {
+  getImoBrandName,
+  resolveImoSenderUserId,
+  sendViaConnectedGmail,
+} from "../_shared/connected-gmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -132,7 +137,7 @@ serve(async (req) => {
           options: {
             redirectTo: effectiveRedirectTo,
             expiresIn: 3600,
-          },
+          } as Record<string, unknown>,
         });
 
       if (localLinkError) {
@@ -172,7 +177,7 @@ serve(async (req) => {
         options: {
           redirectTo: effectiveRedirectTo,
           expiresIn: 259200, // 72 hours in seconds
-        },
+        } as Record<string, unknown>,
       });
 
     if (linkError) {
@@ -192,6 +197,27 @@ serve(async (req) => {
 
     const resetLink = linkData.properties.action_link;
 
+    // Resolve the target user's IMO so the email is branded (e.g. "Epic Life") and
+    // sent from that IMO's connected Gmail; everything degrades to Mailgun + the
+    // platform name on any failure.
+    let targetImoId: string | null = null;
+    try {
+      const { data: targetProfiles } = await supabaseAdmin
+        .from("user_profiles")
+        .select("imo_id")
+        .ilike("email", email.trim())
+        .limit(1);
+      targetImoId = targetProfiles?.[0]?.imo_id ?? null;
+    } catch {
+      targetImoId = null;
+    }
+    const brandName = await getImoBrandName(supabaseAdmin, targetImoId);
+    const senderUserId = await resolveImoSenderUserId(
+      supabaseAdmin,
+      targetImoId,
+    );
+    const subject = `Reset Your Password - ${brandName}`;
+
     // Build the email HTML
     const emailHtml = `
 <!DOCTYPE html>
@@ -210,7 +236,7 @@ serve(async (req) => {
             <td style="padding: 32px 32px 24px;">
               <h1 style="margin: 0 0 16px; font-size: 24px; font-weight: 600; color: #18181b;">Reset Your Password</h1>
               <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.6; color: #52525b;">
-                You requested a password reset for your account at The Standard HQ. Click the button below to set a new password.
+                You requested a password reset for your account at ${brandName}. Click the button below to set a new password.
               </p>
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                 <tr>
@@ -236,7 +262,7 @@ serve(async (req) => {
           <tr>
             <td style="padding: 16px 32px 24px; text-align: center;">
               <p style="margin: 0; font-size: 11px; color: #a1a1aa;">
-                © ${new Date().getFullYear()} The Standard HQ. All rights reserved.
+                © ${new Date().getFullYear()} ${brandName}. All rights reserved.
               </p>
             </td>
           </tr>
@@ -251,21 +277,43 @@ serve(async (req) => {
     const plainText = `
 Reset Your Password
 
-You requested a password reset for your account at The Standard HQ.
+You requested a password reset for your account at ${brandName}.
 
 Click this link to set a new password:
 ${resetLink}
 
 If you didn't request this password reset, you can safely ignore this email.
 
-© ${new Date().getFullYear()} The Standard HQ
+© ${new Date().getFullYear()} ${brandName}
     `.trim();
 
-    // Send via Mailgun API
+    // Primary path: send from the IMO's connected Gmail (e.g. epiclife.neessen@gmail.com)
+    if (senderUserId) {
+      const gmailResult = await sendViaConnectedGmail(
+        senderUserId,
+        email,
+        subject,
+        emailHtml,
+        plainText,
+      );
+      if (gmailResult.success) {
+        return jsonResponse({
+          success: true,
+          message: "Password reset email sent",
+          via: "gmail",
+        });
+      }
+      console.warn(
+        "[send-password-reset] Connected Gmail unavailable, falling back to Mailgun:",
+        { error: gmailResult.error, code: gmailResult.code || null },
+      );
+    }
+
+    // Fallback path: send via Mailgun API
     const form = new FormData();
-    form.append("from", `The Standard HQ <noreply@${MAILGUN_DOMAIN}>`);
+    form.append("from", `${brandName} <noreply@${MAILGUN_DOMAIN}>`);
     form.append("to", email);
-    form.append("subject", "Reset Your Password - The Standard HQ");
+    form.append("subject", subject);
     form.append("html", emailHtml);
     form.append("text", plainText);
     form.append("o:tracking", "no"); // Don't track password reset emails for privacy
@@ -306,6 +354,7 @@ If you didn't request this password reset, you can safely ignore this email.
       success: true,
       message: "Password reset email sent",
       mailgunId: mailgunData.id,
+      via: "mailgun",
     });
   } catch (err) {
     console.error("[send-password-reset] Error:", err);
