@@ -24,11 +24,18 @@ export const AuthCallback: React.FC = () => {
         const hashParams = new URLSearchParams(
           window.location.hash.substring(1),
         );
+        // Errors can arrive in the hash (implicit flow) OR the query string.
+        // Read both so a failed link never dead-ends on the generic error page.
+        const searchParams = new URLSearchParams(window.location.search);
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
-        const type = hashParams.get("type") as AuthCallbackType;
-        const errorCode = hashParams.get("error_code");
-        const errorDescription = hashParams.get("error_description");
+        const type = (hashParams.get("type") ||
+          searchParams.get("type")) as AuthCallbackType | null;
+        const errorCode =
+          hashParams.get("error_code") || searchParams.get("error_code");
+        const errorDescription =
+          hashParams.get("error_description") ||
+          searchParams.get("error_description");
 
         // Log all params for debugging (redact tokens)
         const allHashParams = Object.fromEntries(hashParams.entries());
@@ -38,10 +45,13 @@ export const AuthCallback: React.FC = () => {
           refresh_token: allHashParams.refresh_token ? "[REDACTED]" : undefined,
         });
 
-        // For recovery errors, route to ResetPassword with error context
+        // For recovery errors, route to ResetPassword with error context.
+        // Supabase OMITS `type` on error redirects, so we also treat a missing
+        // type as recovery — an expired/superseded/used reset link must land on
+        // the retry form, never the dead-end "Verification Failed" page.
         if (
           (errorCode || errorDescription) &&
-          type === AUTH_CALLBACK_TYPES.RECOVERY
+          (type === AUTH_CALLBACK_TYPES.RECOVERY || !type)
         ) {
           logger.auth(
             "[AuthCallback] Recovery error detected, routing to reset password",
