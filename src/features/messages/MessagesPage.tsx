@@ -1,7 +1,7 @@
 // src/features/messages/MessagesPage.tsx
-// Communications hub. Hero stat band + icon-rich tab nav + active workspace.
-// Per-tab layout is owned by the corresponding workspace component so the
-// page outline does not shape-shift between tabs.
+// Communications hub. A shared header (brand + stats + quota + channel tabs)
+// sits above a tab-owned workspace. The default "All inboxes" tab is the
+// unified feed (Option C); the per-channel tabs reuse their own workspaces.
 
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,33 +13,35 @@ import {
   Inbox,
   Instagram,
   Mail,
-  PenSquare,
-  Search,
-  Send,
   Settings,
-  X,
-  Zap,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { useUserRoles } from "@/hooks/permissions";
 import { useImo } from "@/contexts/ImoContext";
 import type { RoleName } from "@/types/permissions.types";
-import { cn } from "@/lib/utils";
 import { ComposeDialog } from "./components/compose/ComposeDialog";
 import { useFolderCounts } from "./hooks/useFolderCounts";
-import { useEmailQuota } from "./hooks/useSendEmail";
-import { EmailWorkspace } from "./components/workspaces/EmailWorkspace";
-import { InstagramWorkspace } from "./components/workspaces/InstagramWorkspace";
+import { useSendPace } from "./hooks/useSendPace";
+import { useMessagingAnalytics } from "./hooks/useMessagingAnalytics";
 import { InstagramTemplatesSettings } from "./components/instagram/templates";
 import { MessagesSettingsContainer } from "./components/settings";
 import { MessagingAnalyticsDashboard } from "./components/analytics";
+import {
+  InboxHeader,
+  type HeaderTab,
+  UnifiedInboxView,
+} from "./components/unified";
 
-type TabType = "email" | "instagram" | "templates" | "analytics" | "settings";
+type TabType =
+  | "all"
+  | "email"
+  | "instagram"
+  | "templates"
+  | "analytics"
+  | "settings";
 
 export function MessagesPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("email");
+  const [activeTab, setActiveTab] = useState<TabType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
@@ -66,9 +68,11 @@ export function MessagesPage() {
   );
   const hasBuiltInEmailAccess = hasEmailAccess || isStaffOnlyUser;
 
-  // Stats for hero band
+  // Header data
   const { counts, totalUnread } = useFolderCounts();
-  const { remainingDaily, percentUsed, quota } = useEmailQuota();
+  const pace = useSendPace();
+  const { data: analytics } = useMessagingAnalytics("7d");
+  const openRate = analytics?.email.openRate ?? 0;
 
   // Handle Instagram OAuth redirect
   useEffect(() => {
@@ -106,15 +110,20 @@ export function MessagesPage() {
     const all: {
       id: TabType;
       label: string;
-      description: string;
       icon: typeof Mail;
       hasAccess: boolean;
       badge?: number;
     }[] = [
       {
+        id: "all",
+        label: "All inboxes",
+        icon: Inbox,
+        hasAccess: hasBuiltInEmailAccess || hasInstagramAccess,
+        badge: counts.all,
+      },
+      {
         id: "email",
         label: "Email",
-        description: "Inbox, sent, threads, compose",
         icon: Mail,
         hasAccess: hasBuiltInEmailAccess,
         badge: totalUnread,
@@ -122,28 +131,24 @@ export function MessagesPage() {
       {
         id: "instagram",
         label: "Instagram",
-        description: "DMs from your IG business account",
         icon: Instagram,
         hasAccess: hasInstagramAccess,
       },
       {
         id: "templates",
         label: "Templates",
-        description: "Reusable message templates",
         icon: FileText,
         hasAccess: hasTemplatesAccess,
       },
       {
         id: "analytics",
         label: "Analytics",
-        description: "Engagement and reply rates",
         icon: BarChart3,
         hasAccess: true,
       },
       {
         id: "settings",
         label: "Settings",
-        description: "Channel integrations + preferences",
         icon: Settings,
         hasAccess: true,
       },
@@ -164,6 +169,7 @@ export function MessagesPage() {
     hasTemplatesAccess,
     isStaffOnlyUser,
     totalUnread,
+    counts.all,
   ]);
 
   // Auto-redirect if active tab disappears (e.g. subscription downgrade).
@@ -173,160 +179,42 @@ export function MessagesPage() {
     }
   }, [tabs, activeTab]);
 
-  const activeTabMeta = tabs.find((t) => t.id === activeTab);
-  const showSearch = activeTab === "email" || activeTab === "instagram";
-  const showCompose = activeTab === "email";
+  const showSearch =
+    activeTab === "all" || activeTab === "email" || activeTab === "instagram";
+  const showCompose = activeTab === "all" || activeTab === "email";
+
+  const headerTabs: HeaderTab[] = tabs.map((t) => ({
+    id: t.id,
+    label: t.label,
+    icon: t.icon,
+    badge: t.badge,
+  }));
 
   return (
     <>
       <div className="h-[calc(100vh-3rem)] flex flex-col gap-3 min-h-0">
-        {/* Hero band: title + big stat tiles + primary actions.
-            This replaces the dense one-line stats cluster the page used
-            to lead with — same data, way more presence. */}
-        <section className="relative bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden flex-shrink-0">
-          <div className="px-4 py-3 flex items-start justify-between gap-4 flex-wrap">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Mail className="h-4 w-4 text-v2-ink" />
-                <h1 className="font-display text-2xl font-extrabold uppercase tracking-tight text-v2-ink">
-                  Messages
-                </h1>
-              </div>
-              <p className="text-[11px] text-v2-ink-muted">
-                {activeTabMeta?.description ??
-                  "All your conversations in one place"}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 flex-wrap">
-              <HeroStat
-                icon={<Inbox className="h-3 w-3" />}
-                value={totalUnread}
-                label="Unread"
-                tone={totalUnread > 0 ? "accent" : "neutral"}
-              />
-              <Divider />
-              <HeroStat value={counts.all} label="Total" />
-              <Divider />
-              <HeroStat
-                icon={<Send className="h-3 w-3" />}
-                value={
-                  quota ? `${quota.dailyUsed}/${quota.dailyLimit}` : "0/50"
-                }
-                label="Sent today"
-              />
-              <Divider />
-              <HeroStat
-                icon={<Zap className="h-3 w-3" />}
-                value={remainingDaily}
-                label="Quota left"
-                tone={
-                  percentUsed > 90
-                    ? "danger"
-                    : percentUsed > 70
-                      ? "warn"
-                      : "neutral"
-                }
-              />
-            </div>
-          </div>
-
-          {/* Tab nav lives inside the hero card so the visual unit is
-              "this is the messages workspace" not "header + a strip of tabs". */}
-          <nav className="flex items-stretch gap-0.5 px-2 border-t border-v2-ring overflow-x-auto">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = tab.id === activeTab;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "relative flex items-center gap-1.5 px-3 py-2 text-[12px] whitespace-nowrap transition-colors -mb-px",
-                    isActive
-                      ? "text-v2-ink font-semibold"
-                      : "text-v2-ink-muted hover:text-v2-ink",
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span
-                      className={cn(
-                        "ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9.5px] font-semibold tabular-nums",
-                        isActive
-                          ? "bg-v2-ink text-v2-canvas"
-                          : "bg-info text-info-foreground",
-                      )}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-                  {isActive && (
-                    <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-v2-ink rounded-full" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </section>
-
-        {/* Action bar (search + compose) lives between hero and content,
-            tab-aware so it's only present when meaningful. */}
-        {(showSearch || showCompose) && (
-          <div className="flex items-center justify-end gap-1.5 flex-shrink-0">
-            {showSearch && (
-              <div className="relative w-72">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
-                <Input
-                  type="text"
-                  placeholder={
-                    activeTab === "email"
-                      ? "Search threads…"
-                      : "Search conversations…"
-                  }
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 pl-7 pr-7 text-[12px] bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0.5 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {showCompose && (
-              <button
-                type="button"
-                onClick={() => setIsComposeOpen(true)}
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-v2-pill bg-v2-ink text-v2-canvas text-[12px] font-medium hover:bg-v2-ink/90 transition-colors"
-              >
-                <PenSquare className="h-3.5 w-3.5" />
-                Compose
-              </button>
-            )}
-          </div>
-        )}
+        <InboxHeader
+          tabs={headerTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as TabType)}
+          stats={{ unread: totalUnread, threads: counts.all, openRate }}
+          pace={pace}
+          search={searchQuery}
+          onSearch={setSearchQuery}
+          showSearch={showSearch}
+          showCompose={showCompose}
+          onCompose={() => setIsComposeOpen(true)}
+        />
 
         {/* Active workspace owns its own internal layout. */}
-        <main className="flex-1 min-h-0 overflow-hidden">
-          {activeTab === "email" && (
-            <EmailWorkspace
+        <main className="flex-1 min-h-0 overflow-hidden rounded-v2-md bg-v2-canvas">
+          {(activeTab === "all" ||
+            activeTab === "email" ||
+            activeTab === "instagram") && (
+            <UnifiedInboxView
               searchQuery={searchQuery}
-              onCompose={() => setIsComposeOpen(true)}
+              channel={activeTab as "all" | "email" | "instagram"}
             />
-          )}
-
-          {activeTab === "instagram" && (
-            <InstagramWorkspace isActive={activeTab === "instagram"} />
           )}
 
           {activeTab === "templates" && (
@@ -354,51 +242,6 @@ export function MessagesPage() {
       <ComposeDialog open={isComposeOpen} onOpenChange={setIsComposeOpen} />
     </>
   );
-}
-
-interface HeroStatProps {
-  icon?: React.ReactNode;
-  value: string | number;
-  label: string;
-  tone?: "neutral" | "accent" | "warn" | "danger";
-}
-
-function HeroStat({ icon, value, label, tone = "neutral" }: HeroStatProps) {
-  return (
-    <div className="flex flex-col gap-0.5 min-w-[60px]">
-      <div className="flex items-baseline gap-1.5">
-        {icon && (
-          <span
-            className={cn(
-              "inline-flex items-center justify-center w-5 h-5 rounded-full self-center",
-              tone === "accent" && "bg-info text-info-foreground",
-              tone === "warn" && "bg-warning text-warning-foreground",
-              tone === "danger" && "bg-destructive text-destructive-foreground",
-              tone === "neutral" &&
-                "bg-v2-canvas text-v2-ink-muted border border-v2-ring",
-            )}
-          >
-            {icon}
-          </span>
-        )}
-        <span
-          className={cn(
-            "text-[22px] font-semibold tracking-tight leading-none tabular-nums",
-            tone === "danger" ? "text-destructive" : "text-v2-ink",
-          )}
-        >
-          {value}
-        </span>
-      </div>
-      <span className="text-[10px] uppercase tracking-wider text-v2-ink-muted font-medium">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function Divider() {
-  return <span className="w-px h-8 bg-v2-ring self-center" />;
 }
 
 function NoChannelsState() {
