@@ -4,6 +4,43 @@
 **Filed by owner feedback:** "labels for everything on all pages and all sections, cards, etc, across the entire
 app are following that barely visible pattern… quit making them small and hardly visible."
 
+---
+## ▶ KICKOFF PROMPT (paste this to start the session)
+
+> **App-wide label readability pass.** Goal: fix the "barely visible" labels / eyebrows / captions across the ENTIRE
+> app. They render in `T.mut2` (`rgba(236,226,205,0.36)` = 36% opacity) at small mono sizes (11–13px); the owner
+> (blunt + visually picky) finds them too dim and too small. Read this whole plan first:
+> `plans/active/continue-20260614-app-wide-label-readability.md`.
+>
+> **Locked context (don't relitigate):**
+> - Palette stays **warm-cream** — shared `T` tokens in `src/components/board/tokens.ts`. Do NOT fork or switch to
+>   cool-white (app-wide consistency decision; see [[project_analytics_handoff_redesign_20260614]]).
+> - Root offenders: (a) the shared **`<Cap>`** eyebrow primitive (`src/components/board/Cap.tsx`) defaults to
+>   `700 12px mono / T.mut2` — used in **70 files** (highest leverage); (b) the **`T.mut2` token** (102 uses / 41
+>   files) + **`--mut2`** CSS var (`src/index.css` `.theme-v2`, ~line 235); (c) `FlapTile` keys, table `<thead>`
+>   headers, `BoardListHeader`, and inline `mono-uppercase T.mut2` label spans.
+> - Keep the **two-tier hierarchy**: don't collapse `T.mut` (55%) and `T.mut2` (36%) into one value.
+> - Some dim text is **intentional** (footnotes, disclaimers, "30d ago"/"Now" captions) — don't over-brighten.
+>
+> **Step 1 — confirm the target spec with the owner via `AskUserQuestion` BEFORE editing** (app-wide visual change,
+> picky owner). Propose a TIERED target: primary metric/section labels → `T.ink` (full); secondary eyebrows/captions
+> → `T.mut` (55%); size bumps (eyebrows 12→13, table headers 11.5→12.5, flap keys 11→12). Ask whether to also nudge
+> the `T.mut2` token modestly (0.36→~0.48) for stragglers, and which dim usages must stay dim.
+>
+> **Step 2 — build, primitives/token first (serial):** `Cap.tsx`, `FlapTile.tsx`, table-header style, optionally the
+> `T.mut2`/`--mut2` token. **Step 3 — sweep inline label spans (Workflow fan-out, one agent per feature dir:** analytics,
+> contracting/hub, kpi/dashboard, dashboard, recruiting, agent-detail, policies, targets — start from `grep -rn "T\.mut2" src`,
+> 41 files). Each agent classifies every inline use as *label* (brighten to the agreed target) vs *intentional-dim* (leave).
+>
+> **Verify:** `npm run build` + `tsc` + `eslint`, then a visual sweep of Dashboard / Analytics / AgentDetail / Policies /
+> Targets / Contracting hub / KPI / Recruiting. ⚠️ Authed local screenshots are BLOCKED (E2E creds vs local DB →
+> [[feedback_never_touch_real_accounts_use_env_local]]) — needs owner visual sign-off or a viable screenshot path.
+> **Pause for owner go-ahead before commit**; ship to `main` + push (owner's workflow).
+>
+> Memories: [[feedback_labels_must_be_visible_not_dim]], [[project_analytics_handoff_redesign_20260614]],
+> [[feedback_plain_english_no_jargon_ui]], [[feedback_never_touch_real_accounts_use_env_local]].
+
+---
 ## Problem
 Labels / eyebrows / captions across the **entire app** render in `T.mut2` = `rgba(236,226,205,0.36)` (36% opacity)
 at small mono sizes (11–13px). The owner (blunt + visually picky — see [[feedback_plain_english_no_jargon_ui]])
