@@ -32,7 +32,7 @@
     "audit:zinc:count": "rg --type tsx -c '(bg|text|border|ring)-(zinc|slate|gray|blue|red|emerald|amber|green|yellow|orange|purple|indigo|sky|rose|pink|cyan|teal|lime)-[0-9]' src/features | wc -l",
     "preview": "vite preview",
     "start": "npm run dev",
-    "generate:types": "supabase gen types typescript --project-id pcyaqwodnyrpkaiojnpz --schema public > src/types/database.types.ts",
+    "generate:types": "npx -y supabase@2.40.7 gen types typescript --project-id pcyaqwodnyrpkaiojnpz > src/types/database.types.ts && npx prettier --write src/types/database.types.ts",
     "email:dev": "email dev --dir supabase/email-src --port 3001",
     "email:build": "email export --dir supabase/email-src --outDir supabase/templates",
     "bot:review": "node scripts/review-chat-bot-lead.mjs",

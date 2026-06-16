@@ -26,13 +26,14 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           set -e
-          npx -y supabase@2.40.7 gen types typescript --project-id ${{ secrets.SUPABASE_PROJECT_ID }} > generated.types.ts
-          if [ ! -s generated.types.ts ]; then
-            echo "Error: Generated types file is empty. Check SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_ID secrets."
+          # Use the SAME command devs run locally so CI output can never diverge
+          # from `npm run generate:types` (the script pins supabase@2.40.7 + prettier).
+          npm run generate:types
+          if [ ! -s src/types/database.types.ts ]; then
+            echo "Error: Generated types file is empty. Check the SUPABASE_ACCESS_TOKEN secret."
             exit 1
           fi
-          npx prettier --write generated.types.ts
-          diff -q generated.types.ts src/types/database.types.ts || {
+          git diff --exit-code src/types/database.types.ts || {
             echo "Database types are out of sync! Run 'npm run generate:types' locally and commit the changes."
             exit 1
           }
