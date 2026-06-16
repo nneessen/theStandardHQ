@@ -40,27 +40,20 @@ interface EditableEventType extends Partial<TriggerEventType> {
   isNew?: boolean;
 }
 
-const EVENT_CATEGORIES = [
-  "recruit",
-  "policy",
-  "commission",
-  "user",
-  "email",
-  "system",
-  "custom",
-];
+// Canonical active categories — matches the wizard picker and the seeded
+// trigger_event_types (src/features/workflows/eventCatalog.ts). Dead categories
+// (user/email/system/custom) were removed when their never-emitted events were
+// pruned; re-add a category here only when a real event in it is wired + seeded.
+const EVENT_CATEGORIES = ["recruit", "policy", "commission", "lead"];
 
+// Keys must match EVENT_CATEGORIES (the canonical active categories).
 const CATEGORY_COLORS: Record<string, string> = {
   recruit: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
   policy:
     "bg-success/20 text-success dark:bg-success/30 dark:text-success border-0",
   commission:
     "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning border-0",
-  user: "bg-info/20 text-info dark:bg-info/15 dark:text-info border-0",
-  email: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
-  system:
-    "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-subtle border-0",
-  custom: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
+  lead: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning border-0",
 };
 
 export default function EventTypeManager() {

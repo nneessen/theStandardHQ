@@ -9,6 +9,7 @@ import {
   DollarSign,
   Mail,
   User,
+  Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,11 @@ const CATEGORY_CONFIG = {
     icon: DollarSign,
     color: "text-success bg-success/10 border-success/20",
     label: "Commissions",
+  },
+  lead: {
+    icon: Target,
+    color: "text-warning bg-warning/10 border-warning/20",
+    label: "Leads",
   },
   email: {
     icon: Mail,
@@ -246,37 +252,40 @@ export default function EventSelectionDialog({
                             )}
                           </div>
 
-                          {/* Show available variables on hover/focus */}
-                          {event.availableVariables &&
-                            Object.keys(event.availableVariables).length >
-                              0 && (
+                          {/* Show available variables — available_variables is
+                              seeded as a JSON array of tag names (legacy object
+                              form tolerated). Render each as a tag chip. */}
+                          {(() => {
+                            const raw = event.availableVariables;
+                            const vars: string[] = Array.isArray(raw)
+                              ? (raw as string[])
+                              : raw && typeof raw === "object"
+                                ? Object.keys(raw)
+                                : [];
+                            if (vars.length === 0) return null;
+                            return (
                               <div className="mt-1.5 pt-1.5 border-t border-border/50">
                                 <p className="text-[9px] text-muted-foreground mb-1">
                                   Available variables:
                                 </p>
                                 <div className="flex flex-wrap gap-1">
-                                  {Object.entries(event.availableVariables)
-                                    .slice(0, 4)
-                                    .map(([key, type]) => (
-                                      <span
-                                        key={key}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[9px] text-muted-foreground"
-                                      >
-                                        {key}: {type as string}
-                                      </span>
-                                    ))}
-                                  {Object.keys(event.availableVariables)
-                                    .length > 4 && (
+                                  {vars.slice(0, 4).map((key) => (
+                                    <span
+                                      key={key}
+                                      className="inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[9px] text-muted-foreground"
+                                    >
+                                      {key}
+                                    </span>
+                                  ))}
+                                  {vars.length > 4 && (
                                     <span className="text-[9px] text-muted-foreground">
-                                      +
-                                      {Object.keys(event.availableVariables)
-                                        .length - 4}{" "}
-                                      more
+                                      +{vars.length - 4} more
                                     </span>
                                   )}
                                 </div>
                               </div>
-                            )}
+                            );
+                          })()}
                         </button>
                       ))}
                     </div>
