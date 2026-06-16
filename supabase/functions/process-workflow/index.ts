@@ -579,7 +579,7 @@ async function executeSendEmail(
         .select("id, email")
         .contains("roles", ["trainer"])
         .eq("imo_id", ownerProfile.imo_id)
-        .eq("is_deleted", false);
+        .is("archived_at", null);
 
       if (trainers && trainers.length > 0) {
         recipientEmails = trainers.map((t) => t.email);
@@ -595,7 +595,7 @@ async function executeSendEmail(
         .select("id, email")
         .eq("agent_status", "licensed")
         .eq("imo_id", ownerProfile.imo_id)
-        .eq("is_deleted", false);
+        .is("archived_at", null);
 
       console.log("Fetching all licensed agents, found:", agents?.length || 0);
       if (agentsError) {
@@ -1019,7 +1019,7 @@ async function executeSendSms(
         .select("phone")
         .eq("agent_status", "licensed")
         .eq("imo_id", ownerImoId)
-        .eq("is_deleted", false)
+        .is("archived_at", null)
         .not("phone", "is", null);
       if (agents) phones = agents.map((a) => a.phone).filter(Boolean);
       break;
@@ -1031,7 +1031,7 @@ async function executeSendSms(
         .select("phone")
         .contains("roles", ["trainer"])
         .eq("imo_id", ownerImoId)
-        .eq("is_deleted", false)
+        .is("archived_at", null)
         .not("phone", "is", null);
       if (trainers) phones = trainers.map((t) => t.phone).filter(Boolean);
       break;
@@ -1158,13 +1158,15 @@ async function executeCreateNotification(
     throw new Error("No recipient ID in context");
   }
 
-  // Create notification
+  // Create notification. NB: the column is `read` (boolean), not `is_read` —
+  // an `is_read` insert fails PostgREST schema-cache validation and the action
+  // errors out (verified against the live schema + database.types.ts).
   const { error: notifError } = await supabase.from("notifications").insert({
     user_id: recipientId,
     type: "workflow",
     title,
     message,
-    is_read: false,
+    read: false,
   });
 
   if (notifError) {
@@ -1344,7 +1346,7 @@ async function executeUpdateField(
         "email",
         "is_super_admin",
         "is_admin",
-        "is_deleted",
+        "archived_at",
         "role",
         "roles",
         "contract_level",
