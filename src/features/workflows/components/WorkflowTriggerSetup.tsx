@@ -19,7 +19,7 @@ import type {
   WorkflowTrigger,
 } from "@/types/workflow.types";
 import { useTriggerEventTypes } from "@/hooks/workflows";
-import EventSelectionDialog from "./EventSelectionDialog";
+import EventTriggerPicker from "./EventTriggerPicker";
 
 interface WorkflowTriggerSetupProps {
   data: WorkflowFormData;
@@ -325,8 +325,8 @@ export default function WorkflowTriggerSetup({
                 )}
               </div>
 
-              {/* Event Selection Dialog */}
-              <EventSelectionDialog
+              {/* Rebuilt Event Trigger picker */}
+              <EventTriggerPicker
                 open={eventDialogOpen}
                 onOpenChange={setEventDialogOpen}
                 eventTypes={eventTypes}

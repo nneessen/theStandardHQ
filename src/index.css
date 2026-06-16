@@ -262,6 +262,16 @@
     --red: #ff6a5d;
     --green: #5fd08a;
     --violet: #b69bff;
+    /* Completing the documented Board palette (workflows redesign handoff): hover
+       blue, users-accent pink, the 3rd line/mut steps, and the panel gradient +
+       shadow. Additive only — same ramp, no new greys. */
+    --blue2: #82bcff;
+    --pink: #ff86c2;
+    --line3: rgba(255, 255, 255, 0.22);
+    --mut3: rgba(255, 255, 255, 0.28);
+    --panelgrad: linear-gradient(180deg, var(--surface-4), var(--surface-3));
+    --panelshadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 8px 26px rgba(0, 0, 0, 0.45);
     --board-brushed: repeating-linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.012) 0 1px,
