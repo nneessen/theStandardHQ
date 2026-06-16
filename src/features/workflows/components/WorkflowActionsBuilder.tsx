@@ -5,6 +5,7 @@ import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import {
   Plus,
   Mail,
+  MessageSquare,
   Bell,
   Clock,
   Webhook,
@@ -65,6 +66,12 @@ const ACTION_TYPES = [
     label: "Send Email",
     icon: Mail,
     color: "bg-info/10 border-info/20 text-info",
+  },
+  {
+    type: "send_sms",
+    label: "Send SMS",
+    icon: MessageSquare,
+    color: "bg-success/10 border-success/20 text-success",
   },
   {
     type: "create_notification",

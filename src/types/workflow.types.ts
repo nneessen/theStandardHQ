@@ -35,11 +35,16 @@ export interface WorkflowAction {
   id?: string;
   type:
     | "send_email"
+    | "send_sms"
     | "create_notification"
     | "update_field"
-    | "create_task"
     | "webhook"
     | "wait"
+    // NOTE: branch/create_task/assignuser/ai_decision are not implemented — the
+    // engine (process-workflow) throws on them. Kept in the union only because
+    // ActionConfigPanel/TestRunDialog still reference them; the UI redesign will
+    // remove these along with their config panels.
+    | "create_task"
     | "branch"
     | "assignuser"
     | "ai_decision";
@@ -53,6 +58,9 @@ export interface WorkflowAction {
     recipientType?: string;
     recipientEmail?: string;
     variables?: Record<string, unknown>;
+
+    // SMS action (message body reuses the shared `message` field below)
+    recipientPhone?: string; // for recipientType "specific_phone"
 
     // Update field action
     entityType?: string;

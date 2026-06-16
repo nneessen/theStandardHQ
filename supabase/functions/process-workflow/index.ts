@@ -302,6 +302,9 @@ async function executeAction(
     case "send_email":
       return await executeSendEmail(action, context, isTest, supabase);
 
+    case "send_sms":
+      return await executeSendSms(action, context, isTest, supabase, _workflow);
+
     case "create_notification":
       return await executeCreateNotification(action, context, isTest, supabase);
 
@@ -324,8 +327,9 @@ async function executeAction(
       );
 
     default:
-      console.log(`Unknown action type: ${action.type}`);
-      return { skipped: true, reason: `Unknown action type: ${action.type}` };
+      // Throw (not silent-skip) so an unimplemented/typo'd action type fails the
+      // run loudly instead of reporting success without doing anything.
+      throw new Error(`Unsupported action type: ${action.type}`);
   }
 }
 
@@ -789,6 +793,210 @@ async function executeSendEmail(
     sentTo: sentEmails,
     failedTo: failedEmails.length > 0 ? failedEmails : undefined,
     provider,
+  };
+}
+
+// Hard cap on recipients per SMS action — a safety rail against runaway Twilio
+// spend from a mis-scoped all_agents send. (A per-IMO daily SMS budget is a
+// follow-up; send-sms itself enforces TCPA opt-out via is_suppressed.)
+const MAX_SMS_RECIPIENTS = 100;
+
+/**
+ * Send SMS action — renders action.config.message and delivers via the send-sms
+ * edge function (which normalizes to E.164 and enforces is_suppressed opt-out).
+ * Recipient PHONES are resolved tenant-scoped to the workflow owner's IMO.
+ */
+async function executeSendSms(
+  action: WorkflowAction,
+  context: Record<string, unknown>,
+  isTest: boolean,
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workflow: Record<string, unknown>,
+): Promise<unknown> {
+  const messageTemplate = action.config.message as string;
+  if (!messageTemplate) {
+    throw new Error("No message specified for send_sms action");
+  }
+
+  const workflowOwnerId = context.triggeredBy as string;
+  if (!workflowOwnerId) {
+    throw new Error("No workflow owner ID in context — cannot send SMS");
+  }
+
+  const { data: ownerProfile, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("id", workflowOwnerId)
+    .single();
+  if (profileError || !ownerProfile) {
+    throw new Error("Workflow owner profile not found");
+  }
+  const ownerImoId = ownerProfile.imo_id;
+
+  // Resolve recipient phone numbers (tenant-scoped). Mirrors the email path but
+  // selects `phone` and drops rows without one.
+  let phones: string[] = [];
+  const recipientType =
+    (action.config.recipientType as string) || "trigger_user";
+
+  switch (recipientType) {
+    case "trigger_user":
+      if (context.recipientPhone) {
+        phones = [context.recipientPhone as string];
+      } else if (context.recipientId) {
+        const { data } = await supabase
+          .from("user_profiles")
+          .select("phone")
+          .eq("id", context.recipientId)
+          .eq("imo_id", ownerImoId)
+          .single();
+        if (data?.phone) phones = [data.phone];
+      }
+      break;
+
+    case "specific_phone":
+      if (action.config.recipientPhone) {
+        phones = [action.config.recipientPhone as string];
+      }
+      break;
+
+    case "current_user":
+      if (ownerProfile.phone) phones = [ownerProfile.phone];
+      break;
+
+    case "manager":
+    case "direct_upline":
+      if (context.recipientId) {
+        const { data: userWithUpline } = await supabase
+          .from("user_profiles")
+          .select("upline_id")
+          .eq("id", context.recipientId)
+          .eq("imo_id", ownerImoId)
+          .single();
+        if (userWithUpline?.upline_id) {
+          const { data: manager } = await supabase
+            .from("user_profiles")
+            .select("phone")
+            .eq("id", userWithUpline.upline_id)
+            .eq("imo_id", ownerImoId)
+            .single();
+          if (manager?.phone) phones = [manager.phone];
+        }
+      }
+      break;
+
+    case "all_agents": {
+      // SECURITY: admin client bypasses RLS — scope to the owner's IMO.
+      const { data: agents } = await supabase
+        .from("user_profiles")
+        .select("phone")
+        .eq("agent_status", "licensed")
+        .eq("imo_id", ownerImoId)
+        .eq("is_deleted", false)
+        .not("phone", "is", null);
+      if (agents) phones = agents.map((a) => a.phone).filter(Boolean);
+      break;
+    }
+
+    case "all_trainers": {
+      const { data: trainers } = await supabase
+        .from("user_profiles")
+        .select("phone")
+        .contains("roles", ["trainer"])
+        .eq("imo_id", ownerImoId)
+        .eq("is_deleted", false)
+        .not("phone", "is", null);
+      if (trainers) phones = trainers.map((t) => t.phone).filter(Boolean);
+      break;
+    }
+  }
+
+  // De-dupe + drop empties, then cap.
+  phones = [...new Set(phones.filter((p) => p && p.trim().length > 0))];
+  if (phones.length === 0) {
+    throw new Error(
+      `No phone numbers found for recipient type: ${recipientType}`,
+    );
+  }
+  if (phones.length > MAX_SMS_RECIPIENTS) {
+    console.warn(
+      `[send_sms] capping ${phones.length} recipients to ${MAX_SMS_RECIPIENTS}`,
+    );
+    phones = phones.slice(0, MAX_SMS_RECIPIENTS);
+  }
+
+  // Render the message (plain text — strip nothing, no HTML).
+  const variables = await buildTemplateVariables(
+    context,
+    ownerProfile,
+    supabase,
+  );
+  const message = replaceTemplateVariables(messageTemplate, variables, "text");
+
+  if (isTest) {
+    return {
+      action: "send_sms",
+      message,
+      recipientType,
+      wouldSendTo: phones,
+      isTest: true,
+    };
+  }
+
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Missing SUPABASE_URL/SERVICE_ROLE_KEY for send_sms");
+  }
+  const workflowId = (context.workflowId as string) || (workflow.id as string);
+
+  const sent: string[] = [];
+  const skipped: string[] = [];
+  const failed: string[] = [];
+
+  for (const to of phones) {
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to,
+          message,
+          trigger: "workflow",
+          automationId: workflowId,
+        }),
+      });
+      const data = await resp.json();
+      if (data.suppressed) {
+        skipped.push(to); // recipient opted out (STOP) — not a failure
+      } else if (data.success) {
+        sent.push(to);
+      } else {
+        console.error(`[send_sms] failed for ${to}:`, data.error);
+        failed.push(to);
+      }
+    } catch (err) {
+      console.error(`[send_sms] error for ${to}:`, err);
+      failed.push(to);
+    }
+  }
+
+  if (sent.length === 0 && skipped.length === 0) {
+    throw new Error(
+      `Failed to send SMS to all recipients: ${failed.join(", ")}`,
+    );
+  }
+
+  return {
+    sent: true,
+    sentCount: sent.length,
+    skippedCount: skipped.length,
+    failedCount: failed.length,
+    skippedTo: skipped.length > 0 ? skipped : undefined,
+    failedTo: failed.length > 0 ? failed : undefined,
   };
 }
 

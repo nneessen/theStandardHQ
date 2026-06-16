@@ -434,6 +434,87 @@ export default function ActionConfigPanel({
           </>
         );
 
+      case "send_sms":
+        return (
+          <>
+            <div>
+              <Label className="text-sm font-medium">Send SMS To</Label>
+              <Select
+                value={
+                  (action.config.recipientType as string) || "trigger_user"
+                }
+                onValueChange={(value) =>
+                  onUpdate({
+                    config: { ...action.config, recipientType: value },
+                  })
+                }
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="trigger_user" className="text-sm">
+                    Person who triggered the workflow
+                  </SelectItem>
+                  <SelectItem value="current_user" className="text-sm">
+                    Workflow owner ({user?.email})
+                  </SelectItem>
+                  <SelectItem value="manager" className="text-sm">
+                    Manager / upline
+                  </SelectItem>
+                  <SelectItem value="all_agents" className="text-sm">
+                    All licensed agents
+                  </SelectItem>
+                  <SelectItem value="all_trainers" className="text-sm">
+                    All trainers
+                  </SelectItem>
+                  <SelectItem value="specific_phone" className="text-sm">
+                    A specific phone number
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {action.config.recipientType === "specific_phone" && (
+              <div>
+                <Label className="text-sm font-medium">Phone Number</Label>
+                <Input
+                  value={(action.config.recipientPhone as string) || ""}
+                  onChange={(e) =>
+                    onUpdate({
+                      config: {
+                        ...action.config,
+                        recipientPhone: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="+15555550123"
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
+
+            <div>
+              <Label className="text-sm font-medium">Message</Label>
+              <Textarea
+                value={(action.config.message as string) || ""}
+                onChange={(e) =>
+                  onUpdate({
+                    config: { ...action.config, message: e.target.value },
+                  })
+                }
+                placeholder="Hi {{recruit_first_name}}, ..."
+                rows={4}
+                className="text-sm"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Recipients who replied STOP are skipped automatically. Supports
+                template variables like {"{{recruit_first_name}}"}.
+              </p>
+            </div>
+          </>
+        );
+
       case "wait":
         return (
           <>
