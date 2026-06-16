@@ -171,8 +171,29 @@ serve(async (req) => {
       throw new Error(`Workflow run not found: ${runId}`);
     }
 
-    // Parse actions from workflow
-    const actions: WorkflowAction[] = workflow.actions || [];
+    // Cancellation: a run can be cancelled before/between steps (e.g. a nurture
+    // sequence stopped when the policy lapses). Honor it and stop.
+    if (run.cancelled) {
+      await adminSupabase
+        .from("workflow_runs")
+        .update({ status: "cancelled", completed_at: new Date().toISOString() })
+        .eq("id", runId);
+      return new Response(
+        JSON.stringify({ success: true, runId, cancelled: true }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // Execute the actions SNAPSHOTTED onto the run at enqueue time (so a run that
+    // started months ago is unaffected by later edits to the workflow). Falls
+    // back to the live workflow actions for legacy/direct-invocation runs.
+    const actions: WorkflowAction[] =
+      (run.actions_snapshot as WorkflowAction[] | null) ||
+      workflow.actions ||
+      [];
     const actionsExecuted: ActionResult[] = [];
     let emailsSent = 0;
     let actionsCompleted = 0;
