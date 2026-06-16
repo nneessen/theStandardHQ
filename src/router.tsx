@@ -556,12 +556,14 @@ const recruitingAdminRoute = createRoute({
   ),
 });
 
-// Workflow admin route - workflow/automation management - Super-admin only
+// Workflow admin route - workflow/automation management - IMO admin + super-admin.
+// Mirrors the Admin Control Center gate (nav.user_management, blocks staff roles);
+// super-admins bypass in RouteGuard. workflows RLS already scopes writes per-IMO.
 const workflowAdminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "system/workflows",
   component: () => (
-    <RouteGuard requireEmail="nickneessen@thestandardhq.com">
+    <RouteGuard permission="nav.user_management" noRecruits noStaffRoles>
       <WorkflowAdminPage />
     </RouteGuard>
   ),
