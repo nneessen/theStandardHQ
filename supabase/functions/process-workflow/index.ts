@@ -200,10 +200,14 @@ serve(async (req) => {
     // Resume point for runs re-queued after a `wait` step (0 on first run).
     const startIndex = (run.resume_action_index as number) || 0;
 
-    // Cooldown + conditions are evaluated ONCE, on the first invocation of a run
-    // (not on each delayed resume). Matching now happens in enqueue_workflow_event,
-    // so this is where the workflow's cooldown_minutes / conditions are enforced.
-    if (!isTest && startIndex === 0) {
+    // Cooldown + conditions are evaluated ONCE, on the genuine FIRST attempt of a
+    // run — never on a delayed resume (startIndex > 0) NOR on a reaper-requeued
+    // retry (attempts > 1). Gating only on startIndex===0 would let a run that was
+    // reaped mid-send (so it never advanced past action 0) re-enter this gate; if a
+    // sibling run completed in the death window, cooldown would wrongly mark the
+    // half-sent run 'skipped' and abandon its unsent recipients. dequeue increments
+    // attempts on each claim, so attempts<=1 == first real execution.
+    if (!isTest && startIndex === 0 && ((run.attempts as number) ?? 0) <= 1) {
       if (workflow.cooldown_minutes) {
         const cutoff = new Date(
           Date.now() - workflow.cooldown_minutes * 60000,
@@ -323,6 +327,7 @@ serve(async (req) => {
           workflow,
           isTest ?? false,
           adminSupabase,
+          runId,
         );
         actionsExecuted.push({
           actionId: `action-${action.order}`,
@@ -349,6 +354,26 @@ serve(async (req) => {
         actionsFailed++;
 
         // Continue with other actions unless it's a critical failure
+      }
+
+      // Persist forward progress after EACH action so a reaper-requeued resume
+      // restarts at the NEXT action (resume_action_index = i+1) instead of index 0
+      // — without this, a reaped run re-fires every prior action's side effect
+      // (a second webhook POST, a duplicate notification). Reset attempts: a run
+      // that is making progress is not a poison pill, so it shouldn't accumulate
+      // toward the dead-letter cap; only an action that never completes does.
+      if (!isTest) {
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            resume_action_index: i + 1,
+            actions_executed: actionsExecuted,
+            emails_sent: emailsSent,
+            actions_completed: actionsCompleted,
+            actions_failed: actionsFailed,
+            attempts: 0,
+          })
+          .eq("id", runId);
       }
     }
 
@@ -414,6 +439,89 @@ serve(async (req) => {
 });
 
 /**
+ * Idempotency ledger helpers (migration 20260616152822). A run that stays
+ * 'running' past the reaper TTL is re-queued, which re-runs the per-recipient
+ * send loop from the top. claimSend records a claim row for
+ * (run, action, channel, recipient) and returns true ONLY if THIS call created
+ * it — a reaped retry (or a racing second worker) gets false and MUST skip, so a
+ * re-queued run never double-sends. releaseSend frees a claim after a FAILED send
+ * so that recipient stays retriable. Both fail-open to delivery on infra error: a
+ * missed dedupe is far rarer and less harmful than dropping a legitimate send.
+ */
+async function claimSend(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipient: string,
+): Promise<boolean> {
+  if (!runId) return true; // no run context (legacy direct invoke) — can't dedupe
+  const { data, error } = await supabase.rpc("claim_workflow_send", {
+    p_run_id: runId,
+    p_action_order: actionOrder,
+    p_channel: channel,
+    p_recipient: recipient,
+  });
+  if (error) {
+    console.error("[claimSend] error (failing open to send):", error.message);
+    return true;
+  }
+  return data === true;
+}
+
+async function releaseSend(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipient: string,
+): Promise<void> {
+  if (!runId) return;
+  await supabase
+    .from("workflow_send_log")
+    .delete()
+    .eq("run_id", runId)
+    .eq("action_order", actionOrder)
+    .eq("channel", channel)
+    .eq("recipient", recipient);
+}
+
+/**
+ * Pre-filter recipients a prior attempt of THIS run+action already claimed, BEFORE
+ * the rate-limit check + send loop. Critical on a reaper re-run: without it the
+ * rate-limit check re-counts already-delivered recipients (recorded in
+ * workflow_email_tracking) against the limit and can throw, which would drop the
+ * genuinely-unsent recipients and fail the run. Returns the still-unclaimed set +
+ * how many were already handled. Fails OPEN (treats all as unclaimed) on error —
+ * the in-loop claimSend is the per-recipient backstop.
+ */
+async function filterUnclaimedRecipients(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipients: string[],
+): Promise<{ remaining: string[]; alreadyDone: number }> {
+  if (!runId) return { remaining: recipients, alreadyDone: 0 };
+  const { data, error } = await supabase
+    .from("workflow_send_log")
+    .select("recipient")
+    .eq("run_id", runId)
+    .eq("action_order", actionOrder)
+    .eq("channel", channel);
+  if (error || !data) {
+    console.error(
+      "[filterUnclaimedRecipients] error (failing open):",
+      error?.message,
+    );
+    return { remaining: recipients, alreadyDone: 0 };
+  }
+  const done = new Set(data.map((r) => r.recipient as string));
+  const remaining = recipients.filter((r) => !done.has(r));
+  return { remaining, alreadyDone: recipients.length - remaining.length };
+}
+
+/**
  * Execute a single workflow action
  */
 async function executeAction(
@@ -422,15 +530,23 @@ async function executeAction(
   _workflow: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
 ): Promise<unknown> {
   console.log(`Executing action: ${action.type}`, action.config);
 
   switch (action.type) {
     case "send_email":
-      return await executeSendEmail(action, context, isTest, supabase);
+      return await executeSendEmail(action, context, isTest, supabase, runId);
 
     case "send_sms":
-      return await executeSendSms(action, context, isTest, supabase, _workflow);
+      return await executeSendSms(
+        action,
+        context,
+        isTest,
+        supabase,
+        _workflow,
+        runId,
+      );
 
     case "create_notification":
       return await executeCreateNotification(action, context, isTest, supabase);
@@ -468,6 +584,7 @@ async function executeSendEmail(
   context: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
 ): Promise<unknown> {
   console.log(
     "executeSendEmail called with action config:",
@@ -613,6 +730,31 @@ async function executeSendEmail(
     throw new Error(`No recipients found for type: ${recipientType}`);
   }
 
+  // Idempotency pre-filter (BEFORE the rate-limit check): drop recipients a prior
+  // attempt of this run+action already claimed. On a reaper re-run this prevents
+  // the rate-limit check from re-counting already-delivered recipients (which
+  // would throw and drop the still-unsent ones). If none remain, the action
+  // already delivered — return success without re-sending.
+  let emailAlreadyDone = 0;
+  const emailPrefilter = await filterUnclaimedRecipients(
+    supabase,
+    runId,
+    action.order,
+    "email",
+    recipientEmails,
+  );
+  emailAlreadyDone = emailPrefilter.alreadyDone;
+  if (emailPrefilter.remaining.length === 0) {
+    return {
+      sent: true,
+      templateId,
+      sentCount: 0,
+      skippedCount: emailAlreadyDone,
+      note: "all recipients already delivered (idempotent re-run)",
+    };
+  }
+  recipientEmails = emailPrefilter.remaining;
+
   // Rate limit check - prevent runaway email costs
   const workflowId = (context.workflowId as string) || "";
   const { data: rateLimitCheck, error: rateLimitError } = await supabase.rpc(
@@ -705,8 +847,27 @@ async function executeSendEmail(
 
   const sentEmails: string[] = [];
   const failedEmails: string[] = [];
+  const skippedEmails: string[] = []; // already delivered by a prior (reaped) attempt
 
   for (const recipientEmail of recipientEmails) {
+    // Idempotency: claim this recipient before sending. A reaped re-run (or a
+    // racing second worker) that finds the recipient already claimed skips it,
+    // so a re-queued run never double-sends.
+    const claimed = await claimSend(
+      supabase,
+      runId,
+      action.order,
+      "email",
+      recipientEmail,
+    );
+    if (!claimed) {
+      console.log(
+        "Skipping already-sent recipient (idempotent):",
+        recipientEmail,
+      );
+      skippedEmails.push(recipientEmail);
+      continue;
+    }
     try {
       console.log(
         "Sending to:",
@@ -884,6 +1045,8 @@ async function executeSendEmail(
     } catch (sendError) {
       console.error(`Failed to send to ${recipientEmail}:`, sendError);
       failedEmails.push(recipientEmail);
+      // Release the claim so this failed recipient stays retriable on a re-run.
+      await releaseSend(supabase, runId, action.order, "email", recipientEmail);
 
       // Record failed email for tracking
       {
@@ -906,7 +1069,9 @@ async function executeSendEmail(
     }
   }
 
-  if (sentEmails.length === 0) {
+  // Only a genuine total failure throws. If every recipient was SKIPPED (already
+  // delivered by a prior attempt) the action already succeeded — do not throw.
+  if (sentEmails.length === 0 && skippedEmails.length === 0) {
     throw new Error(
       `Failed to send to all recipients: ${failedEmails.join(", ")}`,
     );
@@ -916,8 +1081,10 @@ async function executeSendEmail(
     sent: true,
     templateId,
     sentCount: sentEmails.length,
+    skippedCount: skippedEmails.length + emailAlreadyDone,
     failedCount: failedEmails.length,
     sentTo: sentEmails,
+    skippedTo: skippedEmails.length > 0 ? skippedEmails : undefined,
     failedTo: failedEmails.length > 0 ? failedEmails : undefined,
     provider,
   };
@@ -939,6 +1106,7 @@ async function executeSendSms(
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
   workflow: Record<string, unknown>,
+  runId: string | undefined,
 ): Promise<unknown> {
   const messageTemplate = action.config.message as string;
   if (!messageTemplate) {
@@ -1045,6 +1213,26 @@ async function executeSendSms(
       `No phone numbers found for recipient type: ${recipientType}`,
     );
   }
+  // Idempotency pre-filter: drop numbers a prior attempt already claimed so a
+  // reaped re-run doesn't re-text them or burn the recipient cap on them.
+  let smsAlreadyDone = 0;
+  const smsPrefilter = await filterUnclaimedRecipients(
+    supabase,
+    runId,
+    action.order,
+    "sms",
+    phones,
+  );
+  smsAlreadyDone = smsPrefilter.alreadyDone;
+  if (smsPrefilter.remaining.length === 0) {
+    return {
+      sent: true,
+      sentCount: 0,
+      skippedCount: smsAlreadyDone,
+      note: "all recipients already delivered (idempotent re-run)",
+    };
+  }
+  phones = smsPrefilter.remaining;
   if (phones.length > MAX_SMS_RECIPIENTS) {
     console.warn(
       `[send_sms] capping ${phones.length} recipients to ${MAX_SMS_RECIPIENTS}`,
@@ -1082,6 +1270,17 @@ async function executeSendSms(
   const failed: string[] = [];
 
   for (const to of phones) {
+    // Idempotency: claim this number before sending. A reaped re-run that finds
+    // it already claimed skips it, so a re-queued run never double-texts.
+    const claimed = await claimSend(supabase, runId, action.order, "sms", to);
+    if (!claimed) {
+      console.log(
+        "[send_sms] skipping already-sent recipient (idempotent):",
+        to,
+      );
+      skipped.push(to);
+      continue;
+    }
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
         method: "POST",
@@ -1098,16 +1297,21 @@ async function executeSendSms(
       });
       const data = await resp.json();
       if (data.suppressed) {
-        skipped.push(to); // recipient opted out (STOP) — not a failure
+        // recipient opted out (STOP) — terminal, not a failure. Keep the claim so
+        // a re-run doesn't pointlessly re-hit send-sms for an opted-out number.
+        skipped.push(to);
       } else if (data.success) {
         sent.push(to);
       } else {
         console.error(`[send_sms] failed for ${to}:`, data.error);
         failed.push(to);
+        // Release so this failed number stays retriable on a re-run.
+        await releaseSend(supabase, runId, action.order, "sms", to);
       }
     } catch (err) {
       console.error(`[send_sms] error for ${to}:`, err);
       failed.push(to);
+      await releaseSend(supabase, runId, action.order, "sms", to);
     }
   }
 
@@ -1120,7 +1324,7 @@ async function executeSendSms(
   return {
     sent: true,
     sentCount: sent.length,
-    skippedCount: skipped.length,
+    skippedCount: skipped.length + smsAlreadyDone,
     failedCount: failed.length,
     skippedTo: skipped.length > 0 ? skipped : undefined,
     failedTo: failed.length > 0 ? failed : undefined,
