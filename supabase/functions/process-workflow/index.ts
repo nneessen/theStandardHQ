@@ -7,7 +7,9 @@ import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 import {
   replaceTemplateVariables as sharedReplaceTemplateVariables,
   initEmptyVariables,
+  type TemplateRenderMode,
 } from "../_shared/templateVariables.ts";
+import { assertSafeWebhookUrl } from "../_shared/webhookUrl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -313,7 +315,13 @@ async function executeAction(
       return await executeWebhook(action, context, isTest);
 
     case "update_field":
-      return await executeUpdateField(action, context, isTest, supabase);
+      return await executeUpdateField(
+        action,
+        context,
+        isTest,
+        supabase,
+        _workflow,
+      );
 
     default:
       console.log(`Unknown action type: ${action.type}`);
@@ -407,10 +415,13 @@ async function executeSendEmail(
     case "manager":
     case "direct_upline":
       if (context.recipientId) {
+        // Scope the source user to the workflow owner's IMO so a crafted
+        // cross-IMO recipientId can't pivot to another tenant's upline.
         const { data: userWithUpline } = await supabase
           .from("user_profiles")
           .select("upline_id")
           .eq("id", context.recipientId)
+          .eq("imo_id", ownerProfile.imo_id)
           .single();
 
         if (userWithUpline?.upline_id) {
@@ -418,6 +429,7 @@ async function executeSendEmail(
             .from("user_profiles")
             .select("id, email")
             .eq("id", userWithUpline.upline_id)
+            .eq("imo_id", ownerProfile.imo_id)
             .single();
 
           if (manager?.email) {
@@ -428,10 +440,14 @@ async function executeSendEmail(
       break;
 
     case "all_trainers": {
+      // SECURITY: this runs on the service-role admin client which BYPASSES RLS,
+      // so the IMO filter is mandatory — without it this returns every tenant's
+      // trainers (cross-tenant email blast).
       const { data: trainers } = await supabase
         .from("user_profiles")
         .select("id, email")
         .contains("roles", ["trainer"])
+        .eq("imo_id", ownerProfile.imo_id)
         .eq("is_deleted", false);
 
       if (trainers && trainers.length > 0) {
@@ -441,10 +457,14 @@ async function executeSendEmail(
     }
 
     case "all_agents": {
+      // SECURITY: admin client bypasses RLS — scope to the owner's IMO or this
+      // blasts every tenant's licensed agents.
       const { data: agents, error: agentsError } = await supabase
         .from("user_profiles")
         .select("id, email")
-        .eq("agent_status", "licensed");
+        .eq("agent_status", "licensed")
+        .eq("imo_id", ownerProfile.imo_id)
+        .eq("is_deleted", false);
 
       console.log("Fetching all licensed agents, found:", agents?.length || 0);
       if (agentsError) {
@@ -510,7 +530,11 @@ async function executeSendEmail(
     return {
       action: "send_email",
       template: template.name,
-      subject: replaceTemplateVariables(template.subject, templateVariables),
+      subject: replaceTemplateVariables(
+        template.subject,
+        templateVariables,
+        "subject",
+      ),
       recipientType,
       wouldSendTo: recipientEmails,
       sender: "noreply@updates.thestandardhq.com",
@@ -535,14 +559,17 @@ async function executeSendEmail(
   const processedSubject = replaceTemplateVariables(
     template.subject,
     templateVariables,
+    "subject",
   );
   const processedBodyHtml = replaceTemplateVariables(
     template.body_html,
     templateVariables,
+    "html",
   );
   const processedBodyText = replaceTemplateVariables(
     template.body_text || "",
     templateVariables,
+    "text",
   );
 
   const sentEmails: string[] = [];
@@ -827,6 +854,9 @@ async function executeWebhook(
     throw new Error("No webhook URL specified");
   }
 
+  // SSRF guard (also validates in test mode so authors see the error early).
+  assertSafeWebhookUrl(url);
+
   if (isTest) {
     return {
       action: "webhook",
@@ -839,12 +869,24 @@ async function executeWebhook(
 
   const response = await fetch(url, {
     method,
+    // Do NOT follow redirects: assertSafeWebhookUrl only validates the initial
+    // host, so an allowed public host that 3xx-redirects to an internal address
+    // (e.g. 169.254.169.254) would otherwise be an SSRF bypass. "manual" returns
+    // an opaqueredirect response instead of following it.
+    redirect: "manual",
     headers: {
       "Content-Type": "application/json",
       ...((action.config.webhookHeaders as Record<string, string>) || {}),
     },
     body: method !== "GET" ? JSON.stringify(context) : undefined,
   });
+
+  if (
+    response.type === "opaqueredirect" ||
+    (response.status >= 300 && response.status < 400)
+  ) {
+    throw new Error("Webhook endpoint attempted a redirect (not allowed)");
+  }
 
   if (!response.ok) {
     throw new Error(`Webhook failed: ${response.status}`);
@@ -861,6 +903,7 @@ async function executeUpdateField(
   context: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workflow: Record<string, unknown>,
 ): Promise<unknown> {
   const fieldName = action.config.fieldName as string;
   const fieldValue = action.config.fieldValue;
@@ -878,7 +921,10 @@ async function executeUpdateField(
     };
   }
 
-  // Determine which table to update based on context
+  // targetId/targetTable come from the (client-supplied) event context, and this
+  // runs on the service-role admin client which BYPASSES RLS. Everything below is
+  // the tenant + privilege guard that keeps a crafted context from writing across
+  // IMOs or escalating privilege.
   const targetId = context.targetId as string;
   const targetTable = context.targetTable as string;
 
@@ -886,21 +932,90 @@ async function executeUpdateField(
     throw new Error("No target specified for field update");
   }
 
-  // Security: only allow updates to specific tables
-  const ALLOWED_TABLES = ["user_profiles", "recruits", "policies"];
-  if (!ALLOWED_TABLES.includes(targetTable)) {
+  const workflowImoId = workflow.imo_id as string | null;
+  if (!workflowImoId) {
+    throw new Error("update_field requires a tenant-scoped (imo_id) workflow");
+  }
+
+  // Per-table policy: which column ties a row to a tenant, and which columns may
+  // NEVER be written (identity / privilege / tenant-move / billing). Only tables
+  // with a verified tenant column are permitted; others are rejected (the UI does
+  // not author update_field today, so this regresses nothing).
+  const TABLE_POLICY: Record<
+    string,
+    { tenantColumn: string; denyFields: string[] }
+  > = {
+    user_profiles: {
+      tenantColumn: "imo_id",
+      denyFields: [
+        "id",
+        "imo_id",
+        "agency_id",
+        "auth_id",
+        "user_id",
+        "email",
+        "is_super_admin",
+        "is_admin",
+        "is_deleted",
+        "role",
+        "roles",
+        "contract_level",
+        "upline_id",
+        "recruiter_id",
+        "created_by",
+        "agent_status",
+        "stripe_customer_id",
+      ],
+    },
+  };
+
+  const policy = TABLE_POLICY[targetTable];
+  if (!policy) {
     console.error(
-      `[update_field] Rejected write to disallowed table: ${targetTable}`,
+      `[update_field] Rejected write to unsupported table: ${targetTable}`,
     );
     throw new Error(
       `Table "${targetTable}" is not allowed for update_field actions`,
     );
   }
 
+  // Block privilege/identity/tenant columns outright, plus any obvious admin flag.
+  if (
+    policy.denyFields.includes(fieldName) ||
+    /(^|_)(is_)?(admin|super|imo|agency|role|password|stripe|subscription)/i.test(
+      fieldName,
+    )
+  ) {
+    console.error(`[update_field] Rejected privileged field: ${fieldName}`);
+    throw new Error(
+      `Field "${fieldName}" cannot be set by update_field actions`,
+    );
+  }
+
+  // Tenant pre-check: the target row must belong to the workflow's IMO.
+  const { data: targetRow, error: lookupError } = await supabase
+    .from(targetTable)
+    .select(`id, ${policy.tenantColumn}`)
+    .eq("id", targetId)
+    .eq(policy.tenantColumn, workflowImoId)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw new Error(`Failed to verify target row: ${lookupError.message}`);
+  }
+  if (!targetRow) {
+    console.error(
+      `[update_field] Target ${targetTable}/${targetId} not in workflow IMO ${workflowImoId}`,
+    );
+    throw new Error("Target row not found in this tenant");
+  }
+
+  // Update is doubly guarded: by id AND by the tenant column.
   const { error } = await supabase
     .from(targetTable)
     .update({ [fieldName]: fieldValue })
-    .eq("id", targetId);
+    .eq("id", targetId)
+    .eq(policy.tenantColumn, workflowImoId);
 
   if (error) {
     throw new Error(`Failed to update field: ${error.message}`);
@@ -954,6 +1069,12 @@ async function buildTemplateVariables(
   // First try recipientId, then recipientEmail, then use the workflow owner as fallback
   let recipientProfile = null;
 
+  // recipientId / recipientEmail come from the (client-supplied) event context
+  // and this runs on the service-role admin client (RLS bypassed). Scope the
+  // lookup to the workflow owner's IMO so a crafted id/email cannot leak another
+  // tenant's profile data (name/email/phone/license) into the rendered template.
+  const ownerImoId = ownerProfile.imo_id;
+
   // Skip test IDs, but still try to find by email
   if (
     context.recipientId &&
@@ -964,6 +1085,7 @@ async function buildTemplateVariables(
       .from("user_profiles")
       .select("*")
       .eq("id", context.recipientId)
+      .eq("imo_id", ownerImoId)
       .single();
     recipientProfile = data;
     console.log("Found recipient by ID:", recipientProfile?.email);
@@ -979,6 +1101,7 @@ async function buildTemplateVariables(
       .from("user_profiles")
       .select("*")
       .eq("email", context.recipientEmail as string)
+      .eq("imo_id", ownerImoId)
       .single();
     recipientProfile = data;
     console.log("Found recipient by email:", recipientProfile?.email);
@@ -1038,6 +1161,7 @@ async function buildTemplateVariables(
 function replaceTemplateVariables(
   text: string,
   variables: Record<string, string>,
+  mode: TemplateRenderMode = "text",
 ): string {
-  return sharedReplaceTemplateVariables(text, variables);
+  return sharedReplaceTemplateVariables(text, variables, mode);
 }

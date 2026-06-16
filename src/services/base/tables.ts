@@ -72,14 +72,16 @@ export const TABLES = {
   PROSPECTS: "prospects",
 
   // Workflows
+  // NOTE: actions live in workflows.actions (JSONB) and the trigger in
+  // workflows.config->'trigger'. The old normalized workflow_actions /
+  // workflow_triggers tables were dropped (migration 20260616072537) as
+  // dead/unused — do not reintroduce constants for them.
   WORKFLOWS: "workflows",
-  WORKFLOW_ACTIONS: "workflow_actions",
   WORKFLOW_EMAIL_TRACKING: "workflow_email_tracking",
   WORKFLOW_EVENTS: "workflow_events",
   WORKFLOW_RATE_LIMITS: "workflow_rate_limits",
   WORKFLOW_RUNS: "workflow_runs",
   WORKFLOW_TEMPLATES: "workflow_templates",
-  WORKFLOW_TRIGGERS: "workflow_triggers",
   TRIGGER_EVENT_TYPES: "trigger_event_types",
 
   // Subscriptions & Billing

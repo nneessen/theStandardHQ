@@ -7692,6 +7692,7 @@
         "npm:@radix-ui/react-tabs@^1.1.13",
         "npm:@radix-ui/react-tooltip@^1.2.8",
         "npm:@react-email/components@^1.0.1",
+        "npm:@react-pdf/renderer@^4.5.1",
         "npm:@supabase/supabase-js@^2.86.2",
         "npm:@tanstack/react-form@^1.26.0",
         "npm:@tanstack/react-query-devtools@^5.90.2",
