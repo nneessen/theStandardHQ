@@ -190,24 +190,130 @@ serve(async (req) => {
     // Execute the actions SNAPSHOTTED onto the run at enqueue time (so a run that
     // started months ago is unaffected by later edits to the workflow). Falls
     // back to the live workflow actions for legacy/direct-invocation runs.
-    const actions: WorkflowAction[] =
+    const allActions: WorkflowAction[] = (
       (run.actions_snapshot as WorkflowAction[] | null) ||
       workflow.actions ||
-      [];
-    const actionsExecuted: ActionResult[] = [];
-    let emailsSent = 0;
-    let actionsCompleted = 0;
-    let actionsFailed = 0;
+      []
+    )
+      .slice()
+      .sort((a: WorkflowAction, b: WorkflowAction) => a.order - b.order);
+    // Resume point for runs re-queued after a `wait` step (0 on first run).
+    const startIndex = (run.resume_action_index as number) || 0;
 
-    // Execute actions sequentially
-    for (const action of actions.sort((a, b) => a.order - b.order)) {
-      // Handle delay before action
-      if (action.delayMinutes && action.delayMinutes > 0 && !isTest) {
-        console.log(
-          `Waiting ${action.delayMinutes} minutes before action ${action.order}`,
+    // Cooldown + conditions are evaluated ONCE, on the first invocation of a run
+    // (not on each delayed resume). Matching now happens in enqueue_workflow_event,
+    // so this is where the workflow's cooldown_minutes / conditions are enforced.
+    if (!isTest && startIndex === 0) {
+      if (workflow.cooldown_minutes) {
+        const cutoff = new Date(
+          Date.now() - workflow.cooldown_minutes * 60000,
+        ).toISOString();
+        const { data: recent } = await adminSupabase
+          .from("workflow_runs")
+          .select("id")
+          .eq("workflow_id", workflowId)
+          .eq("status", "completed")
+          .gte("completed_at", cutoff)
+          .neq("id", runId)
+          .limit(1);
+        if (recent && recent.length > 0) {
+          await adminSupabase
+            .from("workflow_runs")
+            .update({
+              status: "skipped",
+              completed_at: new Date().toISOString(),
+              error_message: "Cooldown active",
+            })
+            .eq("id", runId);
+          return new Response(
+            JSON.stringify({ success: true, runId, skipped: "cooldown" }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+      }
+
+      const conditions =
+        (workflow.conditions as Array<{
+          field: string;
+          operator: string;
+          value: unknown;
+        }> | null) || [];
+      if (
+        conditions.length > 0 &&
+        !evaluateConditions(
+          conditions,
+          (run.context as Record<string, unknown>) || {},
+        )
+      ) {
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            status: "skipped",
+            completed_at: new Date().toISOString(),
+            error_message: "Conditions not met",
+          })
+          .eq("id", runId);
+        return new Response(
+          JSON.stringify({ success: true, runId, skipped: "conditions" }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
-        // For actual delays, we would need a different approach (like scheduling)
-        // For now, we skip delays in the direct execution
+      }
+    }
+
+    // Accumulate across delayed resumes.
+    const actionsExecuted: ActionResult[] =
+      (run.actions_executed as ActionResult[] | null) || [];
+    let emailsSent = (run.emails_sent as number) || 0;
+    let actionsCompleted = (run.actions_completed as number) || 0;
+    let actionsFailed = (run.actions_failed as number) || 0;
+
+    for (let i = startIndex; i < allActions.length; i++) {
+      const action = allActions[i];
+
+      // Real delay: a `wait` step re-queues the run to resume at the NEXT action
+      // after scheduled_at (the worker picks it up when due). Works for any
+      // horizon — minutes to years — with zero held resources.
+      const waitMinutes =
+        action.type === "wait"
+          ? Number(action.config?.waitMinutes ?? action.delayMinutes ?? 0)
+          : 0;
+      if (!isTest && waitMinutes > 0) {
+        const resumeAt = new Date(
+          Date.now() + waitMinutes * 60000,
+        ).toISOString();
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            status: "pending",
+            scheduled_at: resumeAt,
+            resume_action_index: i + 1,
+            actions_executed: actionsExecuted,
+            emails_sent: emailsSent,
+            actions_completed: actionsCompleted,
+            actions_failed: actionsFailed,
+          })
+          .eq("id", runId);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            runId,
+            deferredUntil: resumeAt,
+            resumeIndex: i + 1,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (isTest && action.type === "wait") {
+        continue; // delays are a no-op in test runs
       }
 
       try {
@@ -1122,6 +1228,59 @@ async function executeWebhook(
   }
 
   return { status: response.status, url };
+}
+
+/**
+ * Evaluate workflow conditions against the run context (AND logic). Moved here
+ * from trigger-workflow-event: matching now happens in enqueue_workflow_event, so
+ * conditions are enforced at execution time.
+ */
+function evaluateConditions(
+  conditions: Array<{ field: string; operator: string; value: unknown }>,
+  context: Record<string, unknown>,
+): boolean {
+  for (const condition of conditions) {
+    const fieldValue = getNestedValue(context, condition.field);
+    if (!evaluateCondition(fieldValue, condition.operator, condition.value)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getNestedValue(obj: unknown, path: string): unknown {
+  return path
+    .split(".")
+    .reduce((current, key) => (current as Record<string, unknown>)?.[key], obj);
+}
+
+function evaluateCondition(
+  fieldValue: unknown,
+  operator: string,
+  expectedValue: unknown,
+): boolean {
+  switch (operator) {
+    case "equals":
+      return fieldValue === expectedValue;
+    case "not_equals":
+      return fieldValue !== expectedValue;
+    case "contains":
+      return String(fieldValue).includes(String(expectedValue));
+    case "not_contains":
+      return !String(fieldValue).includes(String(expectedValue));
+    case "greater_than":
+      return Number(fieldValue) > Number(expectedValue);
+    case "less_than":
+      return Number(fieldValue) < Number(expectedValue);
+    case "in":
+      return Array.isArray(expectedValue) && expectedValue.includes(fieldValue);
+    case "not_in":
+      return (
+        Array.isArray(expectedValue) && !expectedValue.includes(fieldValue)
+      );
+    default:
+      return true;
+  }
 }
 
 /**
