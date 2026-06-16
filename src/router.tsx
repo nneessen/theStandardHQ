@@ -5,7 +5,9 @@ import {
   createRoute,
   createRouter,
   useNavigate,
+  Navigate,
 } from "@tanstack/react-router";
+import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import App from "./App";
 import { ExpensesPage } from "./features/expenses";
@@ -81,16 +83,8 @@ import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
 
-const CloseKpiPage = lazy(() =>
-  import("./features/close-kpi/CloseKpiPage").then((m) => ({
-    default: m.CloseKpiPage,
-  })),
-);
-const CloseAiBuilderPage = lazy(() =>
-  import("./features/close-ai-builder").then((m) => ({
-    default: m.CloseAiBuilderPage,
-  })),
-);
+// Close KPIs + AI Template Builder RETIRED — their routes now redirect to the
+// dashboard, so the page components are no longer imported here.
 const KpiPage = lazy(() =>
   import("./features/kpi").then((m) => ({
     default: m.KpiPage,
@@ -657,7 +651,11 @@ const chatBotRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "chat-bot",
   component: () => (
-    <RouteGuard noRecruits noStaffRoles>
+    <RouteGuard
+      noRecruits
+      noStaffRoles
+      allowedAgencyId={THE_STANDARD_AGENCY_ID}
+    >
       <ChatBotPage />
     </RouteGuard>
   ),
@@ -668,7 +666,7 @@ const commandCenterRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "command-center",
   component: () => (
-    <RouteGuard noRecruits requireEmailIncludes="epiclife">
+    <RouteGuard noRecruits requiresAiAccess>
       <AssistantPage />
     </RouteGuard>
   ),
@@ -679,7 +677,11 @@ const voiceCloneRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "voice-agent/clone",
   component: () => (
-    <RouteGuard noRecruits noStaffRoles>
+    <RouteGuard
+      noRecruits
+      noStaffRoles
+      allowedAgencyId={THE_STANDARD_AGENCY_ID}
+    >
       <VoiceCloneWizardPage />
     </RouteGuard>
   ),
@@ -690,21 +692,22 @@ const voiceAgentRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "voice-agent",
   component: () => (
-    <RouteGuard noRecruits noStaffRoles>
+    <RouteGuard
+      noRecruits
+      noStaffRoles
+      allowedAgencyId={THE_STANDARD_AGENCY_ID}
+    >
       <VoiceAgentPage />
     </RouteGuard>
   ),
 });
 
-// Close KPI Dashboard - Close CRM analytics, page handles connection gating
+// Close KPIs — RETIRED (Close CRM abandoned). Route kept registered so old links
+// redirect to the dashboard instead of 404'ing.
 const closeKpiRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "close-kpi",
-  component: () => (
-    <RouteGuard noRecruits noStaffRoles>
-      <CloseKpiPage />
-    </RouteGuard>
-  ),
+  component: () => <Navigate to="/dashboard" replace />,
 });
 
 // Call KPIs - inbound-call KPI workspace (Phase 1). Epic-Life-only during
@@ -736,7 +739,7 @@ const callReviewScriptsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "call-reviews/scripts",
   component: () => (
-    <RouteGuard noRecruits>
+    <RouteGuard noRecruits requiresAiAccess>
       <ScriptsLibraryPage />
     </RouteGuard>
   ),
@@ -747,7 +750,7 @@ const callReviewScriptDetailRoute = createRoute({
   component: function CallReviewScriptDetailRouteComponent() {
     const { callTypeId } = callReviewScriptDetailRoute.useParams();
     return (
-      <RouteGuard noRecruits>
+      <RouteGuard noRecruits requiresAiAccess>
         <ScriptDetailPage callTypeId={callTypeId} />
       </RouteGuard>
     );
@@ -766,15 +769,12 @@ const callReviewDetailRoute = createRoute({
   },
 });
 
-// Close AI Builder - AI-generated email/SMS templates + workflows for Close CRM
+// AI Template Builder (Close-AI-Builder) — RETIRED (Close CRM abandoned). Route
+// kept registered so old links redirect to the dashboard instead of 404'ing.
 const closeAiBuilderRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "close-ai-builder",
-  component: () => (
-    <RouteGuard noRecruits noStaffRoles subscriptionFeature="close_ai_builder">
-      <CloseAiBuilderPage />
-    </RouteGuard>
-  ),
+  component: () => <Navigate to="/dashboard" replace />,
 });
 
 // Alternative join route - catches /join-* pattern using catch-all

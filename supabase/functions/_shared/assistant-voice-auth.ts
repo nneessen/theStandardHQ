@@ -2,8 +2,12 @@
 // independently HTTP-callable, so each must gate access on its own — UI gating is
 // not sufficient. Mirrors the orchestrator's Epic-Life boundary.
 
-import { createSupabaseClient } from "./supabase-client.ts";
+import {
+  createSupabaseClient,
+  createSupabaseAdminClient,
+} from "./supabase-client.ts";
 import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
+import { resolveAiAccessFacts } from "./resolve-ai-access.ts";
 
 export interface VoiceCaller {
   userId: string;
@@ -33,16 +37,17 @@ export async function authorizeVoiceCaller(
     return { ok: false, status: 401, error: "Unauthorized" };
   }
 
-  const { data: gateProfile } = await db
-    .from("user_profiles")
-    .select("is_super_admin")
-    .eq("id", userData.user.id)
-    .single();
+  const facts = await resolveAiAccessFacts(
+    createSupabaseAdminClient(),
+    userData.user.id,
+  );
 
   if (
     !canAccessAssistant({
       email: userData.user.email,
-      isSuperAdmin: gateProfile?.is_super_admin === true,
+      isSuperAdmin: facts.isSuperAdmin,
+      imoGrantsAllFeatures: facts.imoGrantsAllFeatures,
+      hasAiAddon: facts.hasAiAddon,
     })
   ) {
     return {

@@ -1,7 +1,6 @@
 // src/components/layout/sidebar/SidebarNavSection.tsx
 // Presentational section renderer for grouped sidebar navigation.
 
-import React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarNavItem } from "./SidebarNavItem";

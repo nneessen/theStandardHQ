@@ -15,8 +15,15 @@ export const OWNER_EMAILS = [
   "epiclife.neessen@gmail.com",
 ];
 
-/** The Standard agency ID — used for gating internal-only tools */
-export const THE_STANDARD_AGENCY_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+/**
+ * The Standard agency ID — used for gating internal-only tools (AI SMS chat bot,
+ * AI voice agent). This is the LIVE "The Standard" agency under the Epic Life IMO
+ * (89514211-…), NOT the stale same-named agency under the dead FFG IMO. Members of
+ * this agency (plus super-admins, who bypass agency gating) can reach the chat-bot
+ * and voice-agent routes; everyone else is blocked. Verified on prod Jun 16 2026:
+ * 12 users sit under this agency.
+ */
+export const THE_STANDARD_AGENCY_ID = "1df3c15a-f48a-4fbd-b1a8-345793bba2c0";
 
 // Lowercase version for case-insensitive comparisons
 const OWNER_EMAILS_LOWER = OWNER_EMAILS.map((e) => e.toLowerCase());
@@ -47,8 +54,8 @@ export const OWNER_DOWNLINE_GRANTED_FEATURES = [
   "downline_reports",
   "team_analytics",
   "training",
-  "close_ai_builder",
-  "close_kpi",
+  // close_ai_builder + close_kpi retired (Close CRM abandoned) — removed from
+  // downline grants so they're not surfaced anywhere.
 ] as const;
 
 export type OwnerDownlineGrantedFeature =

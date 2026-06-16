@@ -42,9 +42,9 @@ export const ANALYTICS_SECTION_NAMES: Record<AnalyticsSectionKey, string> = {
 
 // Map sections to minimum required tier for display purposes (3-tier system)
 export const ANALYTICS_SECTION_TIERS: Record<AnalyticsSectionKey, string> = {
-  pace_metrics: "Free",
-  carriers_products: "Free",
-  product_matrix: "Free",
+  pace_metrics: "Pro",
+  carriers_products: "Pro",
+  product_matrix: "Pro",
   policy_status_breakdown: "Pro",
   geographic: "Pro",
   client_segmentation: "Pro",
@@ -57,15 +57,10 @@ export const ANALYTICS_SECTION_TIERS: Record<AnalyticsSectionKey, string> = {
 };
 
 export interface UseAnalyticsSectionAccessResult {
-  /** Whether the user has access to the section */
   hasAccess: boolean;
-  /** Whether subscription data is still loading */
   isLoading: boolean;
-  /** The user's current plan name */
   currentPlan: string;
-  /** The minimum plan required for this section */
   requiredPlan: string;
-  /** User-friendly section name */
   sectionName: string;
 }
 

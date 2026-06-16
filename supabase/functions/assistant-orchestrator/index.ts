@@ -19,6 +19,7 @@ import { enforceRateLimit, checkRateLimit } from "../_shared/rate-limit.ts";
 import { getAnthropicClient, ORCHESTRATOR_MODEL } from "./anthropic.ts";
 import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
+import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool, effectiveActionClass } from "./core/guard.ts";
 import { requestRateBucket, tokenRateBucket } from "./core/rateBucket.ts";
@@ -167,9 +168,18 @@ serve(async (req) => {
     const isSuperAdmin = profile?.is_super_admin === true;
     const firstName: string | null = profile?.first_name ?? null;
 
-    // GATE 1 — access. Command center is limited to Epic Life (super-admins
-    // bypass). Fail fast, before any Anthropic spend. Mirrors the frontend guard.
-    if (!canAccessAssistant({ email: user.email, isSuperAdmin })) {
+    // GATE 1 — access. The assistant is free for the team (super-admin /
+    // free_all_features / epiclife marker) and SOLD via the ai_assistant add-on.
+    // Fail fast, before any Anthropic spend. Mirrors useAiAccess on the frontend.
+    const aiFacts = await resolveAiAccessFacts(adminClient, user.id);
+    if (
+      !canAccessAssistant({
+        email: user.email,
+        isSuperAdmin,
+        imoGrantsAllFeatures: aiFacts.imoGrantsAllFeatures,
+        hasAiAddon: aiFacts.hasAiAddon,
+      })
+    ) {
       return json(
         { error: "The command center isn't available for your account." },
         403,

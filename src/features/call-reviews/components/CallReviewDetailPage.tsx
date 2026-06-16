@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAiAccess } from "@/hooks/subscription";
 import {
   formatCallDuration,
   CALL_OUTCOME_OPTIONS,
@@ -61,6 +62,10 @@ export function CallReviewDetailPage({
 }: CallReviewDetailPageProps) {
   const { user } = useAuth();
   const isSuperAdmin = user?.is_super_admin === true;
+  // AI analysis/transcription are part of the AI entitlement (team-free or the
+  // ai_assistant add-on). The recording library + player + existing transcripts
+  // stay open to all agents; only the "run AI" actions gate on this.
+  const { hasAiAccess, isLoading: aiAccessLoading } = useAiAccess();
   const { imoId, userId } = useKpiIdentity();
   const { data: recording, isLoading, error } = useCallRecording(recordingId);
   const { data: agentsData } = useImoAgents(imoId ?? undefined);
@@ -132,7 +137,9 @@ export function CallReviewDetailPage({
     updateRoleMap.mutate(clean, {
       onSuccess: () => {
         setShowSpeakerEditor(false);
-        if (recording.analysis_status === "completed") {
+        // Only auto-rerun the AI pass for entitled users; otherwise just persist
+        // the corrected labels (the analyze edge function would 403).
+        if (hasAiAccess && recording.analysis_status === "completed") {
           analyzeMutation.mutate(recordingId);
           toast.success("Speaker labels saved — re-analyzing the call");
         } else {
@@ -142,7 +149,9 @@ export function CallReviewDetailPage({
     });
   };
 
-  if (isLoading) {
+  // Wait for AI-access resolution too, so an entitled user never briefly sees the
+  // AI controls in their denied/upsell state during the cold-cache resolve window.
+  if (isLoading || aiAccessLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
@@ -297,6 +306,7 @@ export function CallReviewDetailPage({
 
       <TranscriptionProgress
         recording={recording}
+        canUseAi={hasAiAccess}
         onRetry={() => retryMutation.mutate(recordingId)}
         retrying={retryMutation.isPending}
         onReanalyze={() => redetectSpeakers.mutate(recordingId)}
@@ -340,6 +350,7 @@ export function CallReviewDetailPage({
                     <SpeakerRoleEditor
                       segments={segments}
                       roleMap={roleMap}
+                      canUseAi={hasAiAccess}
                       onSave={handleSaveRoles}
                       saving={
                         updateRoleMap.isPending || analyzeMutation.isPending
@@ -363,6 +374,7 @@ export function CallReviewDetailPage({
                 recording={recording}
                 detections={detections ?? []}
                 detectionsLoading={detectionsLoading}
+                canUseAi={hasAiAccess}
                 onSeek={seekTo}
                 onAnalyze={() => analyzeMutation.mutate(recordingId)}
                 isAnalyzing={analyzeMutation.isPending}

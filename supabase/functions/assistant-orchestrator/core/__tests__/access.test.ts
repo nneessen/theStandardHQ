@@ -23,7 +23,7 @@ Deno.test("canAccessAssistant: super-admins always pass", () => {
 });
 
 Deno.test(
-  "canAccessAssistant: non-super-admins need an Epic Life email",
+  "canAccessAssistant: Epic Life email passes without other entitlements",
   () => {
     assert(
       canAccessAssistant({
@@ -31,12 +31,49 @@ Deno.test(
         isSuperAdmin: false,
       }),
     );
-    assertFalse(
-      canAccessAssistant({
-        email: "nick@thestandardhq.com",
-        isSuperAdmin: false,
-      }),
-    );
-    assertFalse(canAccessAssistant({ email: null, isSuperAdmin: false }));
   },
 );
+
+Deno.test(
+  "canAccessAssistant: free_all_features IMO passes even without the epiclife marker (latent-bug fix)",
+  () => {
+    assert(
+      canAccessAssistant({
+        email: "agent@thestandardhq.com",
+        isSuperAdmin: false,
+        imoGrantsAllFeatures: true,
+      }),
+    );
+  },
+);
+
+Deno.test(
+  "canAccessAssistant: the ai_assistant add-on unlocks Jarvis for outside users",
+  () => {
+    assert(
+      canAccessAssistant({
+        email: "buyer@somewhere.com",
+        isSuperAdmin: false,
+        hasAiAddon: true,
+      }),
+    );
+  },
+);
+
+Deno.test("canAccessAssistant: no entitlement at all is denied", () => {
+  assertFalse(
+    canAccessAssistant({
+      email: "nick@thestandardhq.com",
+      isSuperAdmin: false,
+    }),
+  );
+  assertFalse(canAccessAssistant({ email: null, isSuperAdmin: false }));
+  assertFalse(
+    canAccessAssistant({
+      email: "buyer@somewhere.com",
+      isSuperAdmin: false,
+      imoGrantsAllFeatures: false,
+      hasAiAddon: false,
+    }),
+  );
+});

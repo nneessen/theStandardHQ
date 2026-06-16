@@ -51,6 +51,10 @@ interface Props {
   retrying: boolean;
   onReanalyze: () => void;
   reanalyzing: boolean;
+  /** Whether the viewer may run the AI transcribe/analyze pipeline. When false,
+   *  the status banners still show but the action buttons are hidden (they would
+   *  403 server-side — AI is team-free or the ai_assistant add-on). */
+  canUseAi?: boolean;
 }
 
 export function TranscriptionProgress({
@@ -59,6 +63,7 @@ export function TranscriptionProgress({
   retrying,
   onReanalyze,
   reanalyzing,
+  canUseAi = true,
 }: Props) {
   const t = recording.transcription_status;
   const a = recording.analysis_status;
@@ -105,18 +110,20 @@ export function TranscriptionProgress({
             )}
           </div>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[11px] shrink-0"
-          onClick={onRetry}
-          disabled={retrying}
-        >
-          <RefreshCw
-            className={`h-3 w-3 mr-1 ${retrying ? "animate-spin" : ""}`}
-          />
-          Retry
-        </Button>
+        {canUseAi && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] shrink-0"
+            onClick={onRetry}
+            disabled={retrying}
+          >
+            <RefreshCw
+              className={`h-3 w-3 mr-1 ${retrying ? "animate-spin" : ""}`}
+            />
+            Retry
+          </Button>
+        )}
       </div>
     );
   }
@@ -131,18 +138,20 @@ export function TranscriptionProgress({
             Transcription hasn’t started yet.
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[11px] shrink-0"
-          onClick={onRetry}
-          disabled={retrying}
-        >
-          <RefreshCw
-            className={`h-3 w-3 mr-1 ${retrying ? "animate-spin" : ""}`}
-          />
-          Start transcription
-        </Button>
+        {canUseAi && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] shrink-0"
+            onClick={onRetry}
+            disabled={retrying}
+          >
+            <RefreshCw
+              className={`h-3 w-3 mr-1 ${retrying ? "animate-spin" : ""}`}
+            />
+            Start transcription
+          </Button>
+        )}
       </div>
     );
   }
@@ -158,18 +167,20 @@ export function TranscriptionProgress({
             word-tracks didn’t run.
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[11px] shrink-0"
-          onClick={onReanalyze}
-          disabled={reanalyzing}
-        >
-          <RefreshCw
-            className={`h-3 w-3 mr-1 ${reanalyzing ? "animate-spin" : ""}`}
-          />
-          Re-analyze
-        </Button>
+        {canUseAi && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] shrink-0"
+            onClick={onReanalyze}
+            disabled={reanalyzing}
+          >
+            <RefreshCw
+              className={`h-3 w-3 mr-1 ${reanalyzing ? "animate-spin" : ""}`}
+            />
+            Re-analyze
+          </Button>
+        )}
       </div>
     );
   }

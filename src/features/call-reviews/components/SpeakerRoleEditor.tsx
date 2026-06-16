@@ -35,6 +35,10 @@ interface Props {
   saving: boolean;
   onRedetect: () => void;
   redetecting: boolean;
+  /** Whether the viewer may run the AI re-detect pass. When false the
+   *  "Auto-detect (AI)" button is hidden (it would 403); manual role assignment +
+   *  Swap stay available. */
+  canUseAi?: boolean;
 }
 
 export function SpeakerRoleEditor({
@@ -44,6 +48,7 @@ export function SpeakerRoleEditor({
   saving,
   onRedetect,
   redetecting,
+  canUseAi = true,
 }: Props) {
   const speakers = useMemo<SpeakerInfo[]>(() => {
     const byId = new Map<number, SpeakerInfo>();
@@ -115,21 +120,23 @@ export function SpeakerRoleEditor({
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-medium text-v2-ink">Who's who?</p>
         <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-[10px] text-v2-ink-muted"
-            onClick={onRedetect}
-            disabled={redetecting || saving}
-            title="Let the AI re-classify who's the agent / client / automated from the transcript content"
-          >
-            {redetecting ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : (
-              <Sparkles className="h-3 w-3 mr-1" />
-            )}
-            Auto-detect (AI)
-          </Button>
+          {canUseAi && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 text-[10px] text-v2-ink-muted"
+              onClick={onRedetect}
+              disabled={redetecting || saving}
+              title="Let the AI re-classify who's the agent / client / automated from the transcript content"
+            >
+              {redetecting ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3 mr-1" />
+              )}
+              Auto-detect (AI)
+            </Button>
+          )}
           {speakers.length === 2 && (
             <Button
               size="sm"

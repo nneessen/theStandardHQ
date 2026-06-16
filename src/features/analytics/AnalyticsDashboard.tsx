@@ -1,11 +1,4 @@
 // src/features/analytics/AnalyticsDashboard.tsx
-//
-// Analytics — "The Board" verdict-first redesign. Leads with the pace verdict
-// (am I on pace?), then the supporting trend/action/detail panels. Re-skins the
-// page into the shipped Board design system (charcoal surfaces, board
-// primitives) used by the Dashboard; reuses every existing analytics
-// hook/service for real data. Panels are lazy so Recharts stays out of the main
-// bundle, and each is wrapped in its subscription gate.
 
 import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
@@ -34,6 +27,7 @@ import { ChunkErrorBoundary } from "@/components/shared/ChunkErrorBoundary";
 import {
   useAccessibleAnalyticsSections,
   useAnalyticsSectionAccess,
+  useAiAccess,
   ANALYTICS_SECTION_NAMES,
   type AnalyticsSectionKey,
 } from "@/hooks/subscription";
@@ -145,6 +139,34 @@ function Cell({
 }) {
   const { hasAccess, isLoading } = useAnalyticsSectionAccess(section);
   if (isLoading || !hasAccess) return null;
+  return (
+    <div
+      className={span === 2 ? "min-w-0 h-full xl:col-span-2" : "min-w-0 h-full"}
+    >
+      <Suspense fallback={<PanelSkeleton minHeight={minHeight} />}>
+        {children}
+      </Suspense>
+    </div>
+  );
+}
+
+/**
+ * AI-gated grid cell. Mirrors `Cell` but gates on the AI entitlement (team-free
+ * via super-admin/free_all_features, or the ai_assistant add-on) instead of the
+ * plan's analytics_sections — used for Predictive Analytics ("AI-powered
+ * earnings forecasts"), which is no longer a base-plan section.
+ */
+function AiCell({
+  span = 1,
+  minHeight,
+  children,
+}: {
+  span?: number;
+  minHeight?: number;
+  children: ReactNode;
+}) {
+  const { hasAiAccess, isLoading } = useAiAccess();
+  if (isLoading || !hasAiAccess) return null;
   return (
     <div
       className={span === 2 ? "min-w-0 h-full xl:col-span-2" : "min-w-0 h-full"}
@@ -353,9 +375,9 @@ function AnalyticsDashboardContent() {
               <Cell section="policy_status_breakdown" minHeight={360}>
                 <TrendChartPanel />
               </Cell>
-              <Cell section="predictive_analytics" minHeight={360}>
+              <AiCell minHeight={360}>
                 <GrowthChartPanel />
-              </Cell>
+              </AiCell>
             </div>
 
             {/* Action feed | Agent table (2-wide) */}
