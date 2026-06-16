@@ -25,6 +25,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseClient,
 } from "../_shared/supabase-client.ts";
+import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
 import { enforceRateLimit } from "../_shared/rate-limit.ts";
 
 // Container/extension set Deepgram handles (superset of the old Whisper list;
@@ -132,15 +133,24 @@ serve(async (req) => {
   // user-client call but immune to function-EXECUTE grant gaps. We pass the
   // recording's imo_id, which the caller proved visibility to via the RLS load.
   const adminClient = createSupabaseAdminClient();
-  const { data: isEpic, error: gateErr } = await adminClient.rpc(
-    "is_epic_life_imo",
-    { p_imo_id: recording.imo_id },
-  );
-  if (gateErr || isEpic !== true) {
-    return json(
-      { error: "Call transcription isn't available for your account." },
-      403,
-    );
+  const { data: isEpic } = await adminClient.rpc("is_epic_life_imo", {
+    p_imo_id: recording.imo_id,
+  });
+  // Team recordings (Epic Life) pass free with no further lookups (the dominant
+  // path); otherwise the caller needs super-admin, a free_all_features IMO, or the
+  // ai_assistant ("AI Suite") add-on. Mirrors useAiAccess. Fail closed.
+  if (isEpic !== true) {
+    const aiFacts = await resolveAiAccessFacts(adminClient, userId);
+    if (
+      !aiFacts.isSuperAdmin &&
+      !aiFacts.imoGrantsAllFeatures &&
+      !aiFacts.hasAiAddon
+    ) {
+      return json(
+        { error: "Call transcription isn't available for your account." },
+        403,
+      );
+    }
   }
 
   // ── 5. Rate limit: ~10/hr/user (request axis only — Deepgram, not Anthropic) ─

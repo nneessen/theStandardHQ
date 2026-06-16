@@ -25,6 +25,9 @@ export interface SidebarNavigationItem {
   requiresUnderwritingManage?: boolean;
   /** Only show for users with an active paid subscription (super-admins bypass). */
   requiresPaidSubscription?: boolean;
+  /** Only show for users with AI access — team-free (super-admin/free_all_features)
+   *  or the ai_assistant add-on. Used for AI surfaces like AI Sales Scripts. */
+  requiresAiAccess?: boolean;
 }
 
 export interface SidebarNavigationGroup {

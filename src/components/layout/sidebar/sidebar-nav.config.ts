@@ -14,23 +14,23 @@ import {
   ClipboardList,
   Mail,
   Workflow,
-  ShieldCheck,
-  Calculator,
+  // ShieldCheck,
+  // Calculator,
   Trophy,
   Wallet,
-  Store,
+  // Store,
   Megaphone,
   GraduationCap,
   Headphones,
-  PhoneCall,
+  // PhoneCall,
   PhoneIncoming,
   Sparkles,
-  IdCard,
+  // IdCard,
   FileCheck,
   ScrollText,
 } from "lucide-react";
-import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
-import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
+// import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
+// import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
 import type { SidebarNavigationGroup, SidebarNavigationItem } from "./types";
 
 export const footerSidebarItems: SidebarNavigationItem[] = [
@@ -54,9 +54,10 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "Command Center",
         href: "/command-center",
         public: true,
-        // Limited to Epic Life during rollout (super-admins bypass). Mirrors the
-        // command-center RouteGuard + the edge-function canAccessAssistant gate.
-        requireEmailIncludes: "epiclife",
+        // Jarvis is free for the team (super-admin / free_all_features IMO) and
+        // SOLD to others via the ai_assistant add-on. Mirrors the command-center
+        // RouteGuard (requiresAiAccess) + the edge-function canAccessAssistant gate.
+        requiresAiAccess: true,
       },
       {
         icon: Home,
@@ -115,16 +116,16 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // uplines manage their downline. (Route guard handles noRecruits.)
         public: true,
       },
-      {
-        icon: IdCard,
-        label: "Licensing",
-        href: "/the-standard-team",
-        // Free for every agent: the hub's SureLC links + My Documents tabs are
-        // always available. The paywall now lives ONLY on the Writing Numbers
-        // tab (gated inside the tab via useLicensingWorkspaceAccess), so the nav
-        // item itself is public and no longer requires workspace access.
-        public: true,
-      },
+      // {
+      //   icon: IdCard,
+      //   label: "Licensing",
+      //   href: "/the-standard-team",
+      //   // Free for every agent: the hub's SureLC links + My Documents tabs are
+      //   // always available. The paywall now lives ONLY on the Writing Numbers
+      //   // tab (gated inside the tab via useLicensingWorkspaceAccess), so the nav
+      //   // item itself is public and no longer requires workspace access.
+      //   public: true,
+      // },
     ],
   },
   {
@@ -154,9 +155,10 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "Sales Scripts",
         href: "/call-reviews/scripts",
         // AI-generated master sales scripts, one per call type, synthesized from
-        // the IMO's winning (sold) calls. All approved agents view; IMO admins /
-        // super-admins generate. IMO-scoped via RLS; recruits excluded at route.
+        // the IMO's winning (sold) calls. AI feature: team-free or the AI add-on
+        // (requiresAiAccess). IMO-scoped via RLS; recruits excluded at route.
         public: true,
+        requiresAiAccess: true,
       },
       {
         icon: FileCheck,
@@ -189,19 +191,19 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // of billing. Leaderboard data is IMO-scoped via RLS.
         public: true,
       },
-      {
-        icon: Store,
-        label: "Lead Vendors",
-        href: "/lead-vendors",
-        public: true,
-        // Restricted to the two IMO-owner accounts only. NOTE: `allowedEmails`
-        // has no super-admin bypass in the resolver, so ONLY these exact
-        // accounts see the nav item (kept in sync with the route guard).
-        allowedEmails: [
-          "nickneessen@thestandardhq.com",
-          "epiclife.neessen@gmail.com",
-        ],
-      },
+      // {
+      //   icon: Store,
+      //   label: "Lead Vendors",
+      //   href: "/lead-vendors",
+      //   public: true,
+      //   // Restricted to the two IMO-owner accounts only. NOTE: `allowedEmails`
+      //   // has no super-admin bypass in the resolver, so ONLY these exact
+      //   // accounts see the nav item (kept in sync with the route guard).
+      //   allowedEmails: [
+      //     "nickneessen@thestandardhq.com",
+      //     "epiclife.neessen@gmail.com",
+      //   ],
+      // },
       {
         icon: Megaphone,
         label: "Marketing",
@@ -230,60 +232,50 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
     label: "Tools",
     separatorAfter: true,
     items: [
-      {
-        icon: ShieldCheck,
-        label: "UW Wizard",
-        href: "/underwriting/wizard",
-        public: true,
-        requiresUnderwritingEnabled: true,
-      },
-      {
-        icon: Calculator,
-        label: "Quick Quote",
-        href: "/underwriting/quick-quote",
-        public: true,
-      },
-      {
-        icon: Shield,
-        label: "UW Admin",
-        href: "/underwriting/admin",
-        public: true,
-        requiresUnderwritingManage: true,
-      },
-      {
-        icon: CloseCrmIcon,
-        label: "Chat Bot",
-        href: "/chat-bot",
-        public: true,
-        allowedAgencyId: THE_STANDARD_AGENCY_ID,
-      },
-      {
-        icon: PhoneCall,
-        label: "AI Voice Agent",
-        href: "/voice-agent",
-        public: true,
-        allowedAgencyId: THE_STANDARD_AGENCY_ID,
-      },
-      {
-        icon: CloseCrmIcon,
-        label: "Close KPIs",
-        href: "/close-kpi",
-        subscriptionFeature: "close_kpi",
-      },
+      // {
+      //   icon: ShieldCheck,
+      //   label: "UW Wizard",
+      //   href: "/underwriting/wizard",
+      //   public: true,
+      //   requiresUnderwritingEnabled: true,
+      // },
+      // {
+      //   icon: Calculator,
+      //   label: "Quick Quote",
+      //   href: "/underwriting/quick-quote",
+      //   public: true,
+      // },
+      // {
+      //   icon: Shield,
+      //   label: "UW Admin",
+      //   href: "/underwriting/admin",
+      //   public: true,
+      //   requiresUnderwritingManage: true,
+      // },
+      // {
+      //   icon: CloseCrmIcon,
+      //   label: "Chat Bot",
+      //   href: "/chat-bot",
+      //   public: true,
+      //   allowedAgencyId: THE_STANDARD_AGENCY_ID,
+      // },
+      // {
+      //   icon: PhoneCall,
+      //   label: "AI Voice Agent",
+      //   href: "/voice-agent",
+      //   public: true,
+      //   allowedAgencyId: THE_STANDARD_AGENCY_ID,
+      // },
+      // Close KPIs + AI Template Builder RETIRED (Close CRM abandoned) — removed.
       {
         icon: PhoneIncoming,
-        label: "Call KPIs",
+        label: "KPIs",
         href: "/kpi",
+        // TODO: this should be merged and built within the Analytics page instead. This is not a tool.
         // Limited to Epic Life during rollout (super-admins bypass). Mirrors the
         // /kpi RouteGuard requireEmailIncludes gate.
         public: true,
         requireEmailIncludes: "epiclife",
-      },
-      {
-        icon: Sparkles,
-        label: "AI Template Builder",
-        href: "/close-ai-builder",
-        subscriptionFeature: "close_ai_builder",
       },
     ],
   },

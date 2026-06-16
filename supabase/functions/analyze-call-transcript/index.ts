@@ -25,6 +25,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseClient,
 } from "../_shared/supabase-client.ts";
+import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
 import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 
 const ANALYSIS_MODEL = "claude-sonnet-4-6";
@@ -177,17 +178,27 @@ serve(async (req) => {
   }
   if (!rec) return json({ error: "Recording not found." }, 404);
 
-  // ── 4. Epic Life feature gate (fail closed) ─────────────────────────────────
+  // ── 4. AI access gate (fail closed) ─────────────────────────────────────────
+  // Team recordings (Epic Life) pass free; otherwise the caller needs super-admin
+  // or the ai_assistant ("AI Suite") add-on. Mirrors useAiAccess.
   const adminClient = createSupabaseAdminClient();
-  const { data: isEpic, error: gateErr } = await adminClient.rpc(
-    "is_epic_life_imo",
-    { p_imo_id: rec.imo_id },
-  );
-  if (gateErr || isEpic !== true) {
-    return json(
-      { error: "Call analysis isn't available for your account." },
-      403,
-    );
+  const { data: isEpic } = await adminClient.rpc("is_epic_life_imo", {
+    p_imo_id: rec.imo_id,
+  });
+  // Team recordings (Epic Life) pass free with no further lookups (the dominant
+  // path); otherwise super-admin / free_all_features IMO / ai_assistant add-on.
+  if (isEpic !== true) {
+    const aiFacts = await resolveAiAccessFacts(adminClient, userId);
+    if (
+      !aiFacts.isSuperAdmin &&
+      !aiFacts.imoGrantsAllFeatures &&
+      !aiFacts.hasAiAddon
+    ) {
+      return json(
+        { error: "Call analysis isn't available for your account." },
+        403,
+      );
+    }
   }
 
   // ── 5. AI rate limits (shared budget) ───────────────────────────────────────

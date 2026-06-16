@@ -8,7 +8,6 @@ import {
   HelpCircle,
   Rocket,
   Brain,
-  PhoneCall,
   Plug2,
   BarChart3,
   Sparkles,
@@ -29,10 +28,6 @@ import { PlanComparisonTable } from "./components/PlanComparisonTable";
 import { AddonUpsellDialog } from "./components/AddonUpsellDialog";
 import { CheckoutSuccessDialog } from "./components/CheckoutSuccessDialog";
 import { AdminBillingPanel } from "./components/admin/AdminBillingPanel";
-import {
-  PREMIUM_VOICE_COMING_SOON_MESSAGE,
-  PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS,
-} from "@/lib/subscription/voice-addon";
 import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { SectionShell } from "@/components/v2";
 import { Cap, T } from "@/components/board";
@@ -114,10 +109,6 @@ export function BillingPage() {
     setUpsellBillingInterval(billingInterval);
     setUpsellDiscountCode(discountCode);
   };
-
-  const premiumVoiceLaunchPrice = `$${(
-    PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS / 100
-  ).toFixed(0)}/mo`;
 
   return (
     <SectionShell className="dashboard-canvas">
@@ -273,59 +264,6 @@ export function BillingPage() {
               </div>
             </div>
 
-            <div className="rounded-v2-md border border-v2-ring shadow-v2-soft bg-v2-card overflow-hidden">
-              <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-v2-ring/60">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white flex-shrink-0">
-                    <PhoneCall className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-sm font-semibold text-v2-ink">
-                        Premium Voice
-                      </h2>
-                      <span className="inline-flex items-center rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-warning dark:border-warning dark:bg-warning/15 dark:text-warning">
-                        Coming Soon
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[11px] text-v2-ink-muted max-w-2xl leading-relaxed">
-                      AI-powered call follow-up for missed appointments,
-                      reschedules, and after-hours inbound coverage for your
-                      standard-chat-bot.
-                    </p>
-                    <p className="mt-2 text-[10px] font-medium text-v2-ink-muted">
-                      Launch plan: Voice Pro at {premiumVoiceLaunchPrice} with
-                      500 included minutes.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="px-4 py-3 space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Missed appointments",
-                    "Reschedules",
-                    "After-hours inbound",
-                    "Minute-based entitlement",
-                  ].map((label) => (
-                    <span
-                      key={label}
-                      className="rounded bg-v2-ring px-1.5 py-0.5 text-[9px] text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-[10px] text-v2-ink-muted">
-                  {PREMIUM_VOICE_COMING_SOON_MESSAGE} Team subscribers will get
-                  first access when rollout opens.
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Add-ons — hidden until UW Wizard Stripe integration is ready */}
-            {/* <PremiumAddonsSection /> */}
-
             {/* Usage Overview */}
             <UsageOverview />
 
@@ -355,20 +293,20 @@ export function BillingPage() {
                 <Collapsible.Content>
                   <div className="px-3 pb-3 space-y-2 border-t border-v2-ring/60 pt-2">
                     <FaqItem
-                      q="What happens when grandfathered period ends?"
-                      a="You'll move to Free tier unless you subscribe. All data is preserved."
+                      q="What's included for $25/month?"
+                      a="Everything: dashboard, analytics, policies, expenses, targets, downline visibility, recruiting pipeline, override tracking, messaging, leaderboard, training, and the underwriting tools — one simple plan."
                     />
                     <FaqItem
                       q="What if I exceed my email limit?"
                       a="You can keep sending. Overages charged at $5/500 emails on your next invoice."
                     />
                     <FaqItem
-                      q="What's in the Team tier?"
-                      a="Full downline visibility, recruiting pipeline, override tracking, and UW Wizard built-in with seat assignment for your agents. $250/mo."
+                      q="What are the AI features?"
+                      a="The Command Center assistant, AI call analysis, AI sales scripts, and predictive analytics are available as a $25/month add-on on top of the base plan."
                     />
                     <FaqItem
                       q="Do my downlines need to pay?"
-                      a="Each person manages their own subscription. If you have Team tier, you see their data regardless of their tier."
+                      a="Each person manages their own subscription. You see your downline's data regardless of their plan."
                     />
                   </div>
                 </Collapsible.Content>

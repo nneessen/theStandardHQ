@@ -21,6 +21,10 @@ interface CallAnalysisPanelProps {
   recording: CallRecordingRow;
   detections: RecordingDetection[];
   detectionsLoading: boolean;
+  /** Whether the viewer may run AI analysis. When false, existing AI results
+   *  still render read-only, but the Run/Re-analyze actions are replaced with an
+   *  add-on prompt (the analyze edge function would 403). */
+  canUseAi?: boolean;
   onSeek: (seconds: number) => void;
   onAnalyze: () => void;
   isAnalyzing: boolean;
@@ -30,6 +34,7 @@ export function CallAnalysisPanel({
   recording,
   detections,
   detectionsLoading,
+  canUseAi = true,
   onSeek,
   onAnalyze,
   isAnalyzing,
@@ -42,6 +47,19 @@ export function CallAnalysisPanel({
   if (status !== "completed") {
     const transcriptReady = recording.transcription_status === "completed";
     const running = status === "processing" || isAnalyzing;
+    // Outside-team viewers without the AI add-on: surface the upsell, not a
+    // button that would fail server-side.
+    if (!canUseAi) {
+      return (
+        <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
+          <Sparkles className="h-6 w-6 text-v2-ink-subtle" />
+          <p className="text-xs text-v2-ink-muted max-w-sm">
+            AI call analysis — objections, word-tracks, demographics, and a
+            summary — is part of the AI add-on.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
         <Sparkles className="h-6 w-6 text-v2-ink-subtle" />
@@ -73,23 +91,25 @@ export function CallAnalysisPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end -mb-2">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-6 text-[10px] text-v2-ink-muted"
-          onClick={onAnalyze}
-          disabled={isAnalyzing}
-          title="Re-run AI analysis (e.g. after correcting speaker labels or editing word tracks)"
-        >
-          {isAnalyzing ? (
-            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          ) : (
-            <Sparkles className="h-3 w-3 mr-1" />
-          )}
-          Re-analyze
-        </Button>
-      </div>
+      {canUseAi && (
+        <div className="flex justify-end -mb-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-[10px] text-v2-ink-muted"
+            onClick={onAnalyze}
+            disabled={isAnalyzing}
+            title="Re-run AI analysis (e.g. after correcting speaker labels or editing word tracks)"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3 mr-1" />
+            )}
+            Re-analyze
+          </Button>
+        </div>
+      )}
 
       {/* Summary */}
       {recording.ai_summary && (

@@ -23,6 +23,7 @@ import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { isEmailSuppressed } from "../_shared/email-compliance.ts";
 import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
 import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
+import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
 import { redact } from "../assistant-orchestrator/core/redaction.ts";
 import type { ActionStatus } from "../assistant-orchestrator/core/types.ts";
 import { getUserCloseKey } from "../_shared/close/key.ts";
@@ -92,18 +93,19 @@ serve(async (req) => {
     const user = userData?.user;
     if (userErr || !user) return json({ error: "Unauthorized" }, 401);
 
-    // Command center is limited to Epic Life (super-admins bypass). Enforced here
-    // too — this endpoint is HTTP-callable independent of the UI. Mirrors the
-    // orchestrator + frontend RouteGuard gate.
-    const { data: gateProfile } = await db
-      .from("user_profiles")
-      .select("is_super_admin")
-      .eq("id", user.id)
-      .single();
+    // AI access gate: team free (super-admin / free_all_features / epiclife
+    // marker) OR the ai_assistant add-on. Enforced here too — this endpoint is
+    // HTTP-callable independent of the UI. Mirrors the orchestrator + useAiAccess.
+    const facts = await resolveAiAccessFacts(
+      createSupabaseAdminClient(),
+      user.id,
+    );
     if (
       !canAccessAssistant({
         email: user.email,
-        isSuperAdmin: gateProfile?.is_super_admin === true,
+        isSuperAdmin: facts.isSuperAdmin,
+        imoGrantsAllFeatures: facts.imoGrantsAllFeatures,
+        hasAiAddon: facts.hasAiAddon,
       })
     ) {
       return json(

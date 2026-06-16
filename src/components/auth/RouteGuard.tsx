@@ -10,6 +10,7 @@ import {
   useAnyFeatureAccess,
   useSubscription,
   useImoAllFeaturesAccess,
+  useAiAccess,
   type FeatureKey,
 } from "@/hooks/subscription";
 import { PendingApproval } from "@/features/auth";
@@ -47,6 +48,9 @@ interface RouteGuardProps {
   allowedEmails?: string[];
   /** Restrict route to users belonging to a specific agency ID */
   allowedAgencyId?: string;
+  /** If true, require AI access (team-free via super-admin/free_all_features, or
+   *  the ai_assistant add-on). Used to gate AI surfaces like AI Sales Scripts. */
+  requiresAiAccess?: boolean;
   /** Required subscription feature to access this route (single) */
   subscriptionFeature?: FeatureKey;
   /** Multiple subscription features - ANY grants access (like Sidebar) */
@@ -102,6 +106,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   requireEmailIncludes,
   allowedEmails,
   allowedAgencyId,
+  requiresAiAccess = false,
   subscriptionFeature,
   subscriptionFeatures,
   requiresPaidSubscription = false,
@@ -144,6 +149,9 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
     isLoading: imoEntitlementLoading,
   } = useImoAllFeaturesAccess();
 
+  // AI entitlement (super-admin / free_all_features / ai_assistant add-on).
+  const { hasAiAccess, isLoading: aiAccessLoading } = useAiAccess();
+
   // Determine which feature check to use
   const hasFeatureRequirement = subscriptionFeature || subscriptionFeatures;
   const checkingFeature =
@@ -156,7 +164,8 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
     permLoading ||
     checkingFeature ||
     (requiresPaidSubscription && subscriptionLoading) ||
-    (!!requireEmailIncludes && imoEntitlementLoading)
+    (!!requireEmailIncludes && imoEntitlementLoading) ||
+    (requiresAiAccess && aiAccessLoading)
   ) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -171,6 +180,12 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   // Super admin bypass - users with is_super_admin flag bypass all checks
   if (isSuperAdmin) {
     return <>{children}</>;
+  }
+
+  // AI-access gate (e.g. AI Sales Scripts). Super-admins already returned above;
+  // team members (free_all_features) and ai_assistant add-on holders pass.
+  if (requiresAiAccess && !hasAiAccess) {
+    return <>{fallback || <PermissionDenied />}</>;
   }
 
   // Paid-subscription-only routes: non-subscribers have nothing to manage here

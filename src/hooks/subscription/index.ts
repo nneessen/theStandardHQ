@@ -41,6 +41,12 @@ export {
 export { useUserActiveAddons, userAddonKeys } from "./useUserActiveAddons";
 
 export {
+  useAiAccess,
+  AI_ASSISTANT_ADDON_NAME,
+  type UseAiAccessResult,
+} from "./useAiAccess";
+
+export {
   useTeamUWWizardSeats,
   useTeamSeatLimit,
   useEligibleDownlines,

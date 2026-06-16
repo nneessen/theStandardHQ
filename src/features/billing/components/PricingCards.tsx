@@ -291,8 +291,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                     </div>
                   ))}
 
-                  {/* Team size note */}
-                  {plan.team_size_limit === null && plan.name === "team" && (
+                  {/* Team size note — shown for any plan with no seat cap */}
+                  {plan.team_size_limit === null && isPaid && (
                     <div className="flex items-start gap-1.5">
                       <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                       <span className="text-[10px] text-v2-ink-muted">

@@ -9,5 +9,9 @@
 //
 // This is a UI-level gate. To re-enable self-serve subscriptions, flip this to
 // `true` — no other code changes are required.
+//
+// ENABLED (Jun 2026): single $25/mo "Standard" plan is self-serve. Outside-team
+// users subscribe via Stripe checkout; the owner's team gets everything free via
+// the Epic Life `free_all_features` entitlement (so they see no upgrade prompts).
 
-export const NEW_SUBSCRIPTIONS_ENABLED = false;
+export const NEW_SUBSCRIPTIONS_ENABLED = true;

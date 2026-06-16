@@ -13,6 +13,7 @@ import {
   useOwnerDownlineAccess,
   isOwnerDownlineGrantedFeature,
   useTemporaryAccessCheck,
+  useAiAccess,
 } from "@/hooks/subscription";
 import {
   useUnderwritingFeatureFlag,
@@ -73,6 +74,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
   } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
+  const { hasAiAccess, isLoading: aiAccessLoading } = useAiAccess();
   const { shouldGrantTemporaryAccess, isLoading: tempAccessLoading } =
     useTemporaryAccessCheck();
   const { isEnabled: isUnderwritingEnabled, isLoading: isUnderwritingLoading } =
@@ -186,6 +188,13 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
         if (subLoading || !hasManageableSubscription) return null;
       }
 
+      // AI-access items (e.g. AI Sales Scripts). hasAiAccess already accounts for
+      // super-admin / free_all_features / the ai_assistant add-on. Hide while
+      // loading to avoid a flash.
+      if (item.requiresAiAccess) {
+        if (aiAccessLoading || !hasAiAccess) return null;
+      }
+
       if (isPending && !item.public) {
         return { ...item, state: "locked" };
       }
@@ -217,9 +226,11 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       return { ...item, state: "visible" };
     },
     [
+      aiAccessLoading,
       can,
       canManageUnderwriting,
       currentUserEmail,
+      hasAiAccess,
       hasManageableSubscription,
       hasFeature,
       imoGrantsAllFeatures,

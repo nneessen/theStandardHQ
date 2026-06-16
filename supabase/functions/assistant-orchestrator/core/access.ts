@@ -1,9 +1,13 @@
-// Access gate for the command center. While the feature is limited to Epic Life,
-// only super-admins (always) or users whose email marks them as Epic Life may use
-// it. Pure + dependency-free so it stays offline-testable via `deno test`.
+// Access gate for the command center (Jarvis). The assistant is free for the
+// owner's personal team and SOLD to everyone else via the single `ai_assistant`
+// ("AI Suite") add-on. A caller may use it if ANY of: super-admin, their IMO
+// grants all features for free (Epic Life `free_all_features`), their email
+// carries the legacy Epic-Life marker, or they hold the AI add-on. Pure +
+// dependency-free so it stays offline-testable via `deno test`; the booleans are
+// resolved by the caller (see _shared/resolve-ai-access.ts).
 //
-// The same rule is mirrored on the frontend (RouteGuard `requireEmailIncludes` +
-// the sidebar resolver). Keep the "epiclife" marker in sync across both layers.
+// Mirrored on the frontend by useAiAccess (src/hooks/subscription/useAiAccess.ts)
+// + the sidebar/route gating. Keep the predicate in sync across both layers.
 
 const EPIC_LIFE_EMAIL_MARKER = "epiclife";
 
@@ -16,14 +20,21 @@ export function isEpicLifeEmail(email: string | null | undefined): boolean {
 }
 
 /**
- * Whether a caller may use the command center during the Epic-Life-only rollout:
- * super-admins always, otherwise only Epic Life users (by email marker). This is
- * the server-side boundary — the deployed edge functions are HTTP-callable, so UI
- * gating alone is not sufficient.
+ * Whether a caller may use the command center. This is the server-side boundary —
+ * the deployed edge functions are HTTP-callable, so UI gating alone is not
+ * sufficient. The `imoGrantsAllFeatures` arm also fixes the latent bug where an
+ * Epic Life agent without "epiclife" in their email was 403'd server-side.
  */
 export function canAccessAssistant(args: {
   email: string | null | undefined;
   isSuperAdmin: boolean;
+  imoGrantsAllFeatures?: boolean;
+  hasAiAddon?: boolean;
 }): boolean {
-  return args.isSuperAdmin === true || isEpicLifeEmail(args.email);
+  return (
+    args.isSuperAdmin === true ||
+    args.imoGrantsAllFeatures === true ||
+    args.hasAiAddon === true ||
+    isEpicLifeEmail(args.email)
+  );
 }

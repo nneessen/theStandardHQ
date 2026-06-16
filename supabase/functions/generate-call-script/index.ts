@@ -29,6 +29,7 @@ import {
   createSupabaseAdminClient,
   createSupabaseClient,
 } from "../_shared/supabase-client.ts";
+import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
 import { enforceAiRateLimits, recordAiTokens } from "../_shared/rate-limit.ts";
 import {
   getAnthropicClient,
@@ -119,14 +120,20 @@ serve(async (req) => {
     return json({ error: "Only IMO admins can generate sales scripts." }, 403);
   }
 
-  const { data: isEpic, error: gateErr } = await admin.rpc("is_epic_life_imo", {
+  const { data: isEpic } = await admin.rpc("is_epic_life_imo", {
     p_imo_id: targetImoId,
   });
-  if (gateErr || isEpic !== true) {
-    return json(
-      { error: "Script generation isn't available for this account." },
-      403,
-    );
+  // Team IMOs (Epic Life) or super-admin generate free with no further lookups;
+  // otherwise the caller's free_all_features IMO or ai_assistant ("AI Suite")
+  // add-on. Mirrors useAiAccess. Fail closed.
+  if (isEpic !== true && !isSuperAdmin) {
+    const aiFacts = await resolveAiAccessFacts(admin, userId);
+    if (!aiFacts.imoGrantsAllFeatures && !aiFacts.hasAiAddon) {
+      return json(
+        { error: "Script generation isn't available for this account." },
+        403,
+      );
+    }
   }
 
   // ── 5. Gather the most-recent sold + analyzed calls of this type ─────────────
