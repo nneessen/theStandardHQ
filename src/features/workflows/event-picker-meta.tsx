@@ -31,6 +31,45 @@ export function variableType(name: string): VarType {
   return "string";
 }
 
+/**
+ * Variables available on (nearly) every event — workflow/user/date context, not
+ * event-specific. Mirrors the COMMON group in eventCatalog.ts. The picker folds
+ * these into a single "+N shared" chip so cards stay compact as the catalog grows
+ * (the full typed list lives in the email/action tag inserter, where tags are
+ * actually inserted). Keep in sync with eventCatalog COMMON.
+ */
+export const GLOBAL_VARS = new Set<string>([
+  "user_name",
+  "user_first_name",
+  "user_last_name",
+  "user_email",
+  "company_name",
+  "agency_name",
+  "imo_name",
+  "current_date",
+  "date_today",
+  "date_tomorrow",
+  "date_current_month",
+  "date_current_year",
+  "app_url",
+  "workflow_name",
+]);
+
+/** Split an event's variables into the event-specific ones (shown as chips) and a
+ *  count of the shared/global ones (folded into a single indicator). */
+export function splitVars(names: string[]): {
+  specific: string[];
+  sharedCount: number;
+} {
+  const specific: string[] = [];
+  let sharedCount = 0;
+  for (const n of names) {
+    if (GLOBAL_VARS.has(n)) sharedCount += 1;
+    else specific.push(n);
+  }
+  return { specific, sharedCount };
+}
+
 /** Accent CSS var per variable type — matches the handoff legend. */
 export const VAR_TYPE_ACCENT: Record<VarType, string> = {
   string: "--blue",

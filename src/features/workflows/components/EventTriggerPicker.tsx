@@ -20,6 +20,7 @@ import {
   categoryMeta,
   categoryOrder,
   variableType,
+  splitVars,
   VAR_TYPE_ACCENT,
   POPULAR_EVENTS,
 } from "../event-picker-meta";
@@ -387,7 +388,9 @@ function EventCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const vars = toVarNames(event.availableVariables);
+  const { specific, sharedCount } = splitVars(
+    toVarNames(event.availableVariables),
+  );
   const popular = POPULAR_EVENTS.has(event.eventName);
   return (
     <button
@@ -451,7 +454,7 @@ function EventCard({
             {event.description}
           </p>
         )}
-        {vars.length > 0 && (
+        {(specific.length > 0 || sharedCount > 0) && (
           <div className="mt-2.5">
             <p
               className="mb-1.5 font-mono text-[9.5px] font-bold uppercase tracking-widest"
@@ -460,7 +463,7 @@ function EventCard({
               Available Variables
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {vars.map((v) => {
+              {specific.map((v) => {
                 const t = variableType(v);
                 const accent = VAR_TYPE_ACCENT[t];
                 return (
@@ -490,6 +493,19 @@ function EventCard({
                   </span>
                 );
               })}
+              {sharedCount > 0 && (
+                <span
+                  title="Shared workflow/user/date variables available on every event — insert them on the email step."
+                  className="inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[10px]"
+                  style={{
+                    background: "var(--surface-3)",
+                    border: "1px dashed var(--line2)",
+                    color: "var(--mut)",
+                  }}
+                >
+                  +{sharedCount} shared
+                </span>
+              )}
             </div>
           </div>
         )}
