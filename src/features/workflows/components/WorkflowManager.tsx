@@ -7,17 +7,16 @@ import {
   Pause,
   Trash2,
   Edit,
-  Settings,
   Clock,
   Zap,
   Mail,
+  Webhook,
   AlertCircle,
   Shield,
   Copy,
   Share2,
+  MoreHorizontal,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -30,14 +29,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,8 +53,32 @@ import { EmailTemplatesTab } from "@/features/training-hub";
 import type { Workflow } from "@/types/workflow.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
-import { cn } from "@/lib/utils";
+import { tint, TRIGGER_ACCENT } from "../board";
 import { useCurrentUserProfile, useAuthorizationStatus } from "@/hooks/admin";
+
+const TRIGGER_ICON: Record<string, React.ElementType> = {
+  manual: Play,
+  schedule: Clock,
+  event: Zap,
+  webhook: Webhook,
+};
+
+function relTime(d?: string | null): string {
+  if (!d) return "Never";
+  const t = new Date(d).getTime();
+  const mins = Math.round((Date.now() - t) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  return new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+const tabCls =
+  "rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 font-sans text-[13px] font-semibold text-[var(--mut)] data-[state=active]:border-[var(--blue)] data-[state=active]:bg-transparent data-[state=active]:text-[var(--cream)] data-[state=active]:shadow-none";
 
 export default function WorkflowManager() {
   const { user } = useAuth();
@@ -107,8 +122,11 @@ export default function WorkflowManager() {
 
   if (!user) {
     return (
-      <div className="rounded-lg border p-8 text-center">
-        <p className="text-sm text-muted-foreground">
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ border: "1px solid var(--line)" }}
+      >
+        <p className="font-sans text-[14px]" style={{ color: "var(--mut)" }}>
           Please log in to view workflows
         </p>
       </div>
@@ -117,18 +135,34 @@ export default function WorkflowManager() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border p-8 text-center">
-        <p className="text-sm text-muted-foreground">Loading workflows...</p>
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ border: "1px solid var(--line)" }}
+      >
+        <p className="font-sans text-[14px]" style={{ color: "var(--mut)" }}>
+          Loading workflows…
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-lg border p-8 text-center">
-        <AlertCircle className="h-6 w-6 mx-auto mb-2 text-destructive" />
-        <p className="text-sm text-destructive">Error loading workflows</p>
-        <p className="text-xs text-muted-foreground mt-1">
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{ border: "1px solid var(--line)" }}
+      >
+        <AlertCircle
+          className="mx-auto mb-2 h-6 w-6"
+          style={{ color: "var(--red)" }}
+        />
+        <p className="font-sans text-[14px]" style={{ color: "var(--red)" }}>
+          Error loading workflows
+        </p>
+        <p
+          className="mt-1 font-sans text-[12px]"
+          style={{ color: "var(--mut)" }}
+        >
           {error instanceof Error ? error.message : "Unknown error"}
         </p>
       </div>
@@ -146,60 +180,64 @@ export default function WorkflowManager() {
     }
   };
 
-  const statusColors = {
-    draft:
-      "bg-v2-card-tinted text-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
-    active: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
-    paused: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
-    archived:
-      "bg-v2-card-tinted text-muted-foreground dark:bg-v2-card-tinted dark:text-muted-foreground",
-  };
+  const activeCount = workflows.filter((w) => w.status === "active").length;
 
-  const triggerIcons = {
-    manual: <Play className="h-3 w-3" />,
-    schedule: <Clock className="h-3 w-3" />,
-    event: <Zap className="h-3 w-3" />,
-    webhook: <Mail className="h-3 w-3" />,
-  };
-
-  const runStatusColors = {
-    completed: "text-success",
-    failed: "text-destructive",
-    running: "text-info",
-    pending: "text-muted-foreground dark:text-muted-foreground",
-    cancelled: "text-warning",
+  const statusPill = (status: string) => {
+    const map: Record<string, { label: string; accent: string }> = {
+      active: { label: "Active", accent: "--green" },
+      paused: { label: "Paused", accent: "--amber" },
+      draft: { label: "Draft", accent: "--mut" },
+      archived: { label: "Archived", accent: "--mut2" },
+    };
+    const s = map[status] || map.draft;
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-sans text-[11px] font-semibold"
+        style={{ background: tint(s.accent, 14), color: `var(${s.accent})` }}
+      >
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{
+            background: `var(${s.accent})`,
+            boxShadow:
+              status === "active" ? `0 0 6px var(${s.accent})` : "none",
+          }}
+        />
+        {s.label}
+      </span>
+    );
   };
 
   return (
-    <div className="h-full flex flex-col p-3">
-      {/* Tabs */}
+    <div className="flex h-full flex-col">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="h-full flex flex-col"
+        className="flex h-full flex-col"
       >
-        <div className="flex items-center justify-between mb-2">
-          <TabsList className="h-7 bg-v2-card-tinted dark:bg-v2-card-tinted">
-            <TabsTrigger
-              value="workflows"
-              className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
-            >
+        {/* ── Tab bar + toolbar ─────────────────────────────────────────── */}
+        <div
+          className="mb-4 flex items-center justify-between"
+          style={{ borderBottom: "1px solid var(--line)" }}
+        >
+          <TabsList className="h-auto gap-1 bg-transparent p-0">
+            <TabsTrigger value="workflows" className={tabCls}>
               Workflows
+              <span
+                className="ml-1.5 font-mono text-[11px]"
+                style={{ color: "var(--mut2)" }}
+              >
+                {workflows.length}
+              </span>
             </TabsTrigger>
             {isAdmin && (
               <>
-                <TabsTrigger
-                  value="templates"
-                  className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
-                >
-                  <Mail className="h-3 w-3 mr-1" />
+                <TabsTrigger value="templates" className={tabCls}>
+                  <Mail className="mr-1.5 h-3.5 w-3.5" />
                   Email Templates
                 </TabsTrigger>
-                <TabsTrigger
-                  value="events"
-                  className="text-[11px] h-6 data-[state=active]:bg-card dark:data-[state=active]:bg-card"
-                >
-                  <Shield className="h-3 w-3 mr-1" />
+                <TabsTrigger value="events" className={tabCls}>
+                  <Shield className="mr-1.5 h-3.5 w-3.5" />
                   Event Types
                 </TabsTrigger>
               </>
@@ -207,94 +245,118 @@ export default function WorkflowManager() {
           </TabsList>
 
           {activeTab === "workflows" && (
-            <Button
-              size="sm"
-              className="h-6 text-[10px]"
+            <button
+              type="button"
               onClick={() => {
                 setEditingWorkflow(null);
                 setShowDialog(true);
               }}
+              className="mb-1.5 flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
+              style={{ background: "var(--blue)", color: "#0c1322" }}
             >
-              <Plus className="h-3 w-3 mr-1" />
+              <Plus className="h-4 w-4" />
               Create Workflow
-            </Button>
+            </button>
           )}
         </div>
 
-        {/* Workflows Tab Content */}
-        <TabsContent value="workflows" className="flex-1 mt-0">
-          <div className="h-full flex flex-col">
-            {/* Workflow Stats Header */}
-            <div className="flex items-center gap-3 mb-2 text-[11px]">
-              <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-muted-foreground" />
-                <span className="font-medium text-foreground dark:text-foreground">
-                  {workflows.length}
-                </span>
-                <span className="text-muted-foreground dark:text-muted-foreground">
-                  workflow{workflows.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              {runs.length > 0 && (
-                <>
-                  <div className="h-3 w-px bg-muted dark:bg-muted" />
-                  <button
-                    onClick={() => setShowRecentRuns(!showRecentRuns)}
-                    className="flex items-center gap-1 text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors cursor-pointer"
+        {/* ── Workflows tab ─────────────────────────────────────────────── */}
+        <TabsContent value="workflows" className="mt-0 flex-1 overflow-y-auto">
+          {/* Stat strip */}
+          <div className="mb-4 flex items-center gap-4 font-sans text-[12.5px]">
+            <span style={{ color: "var(--mut)" }}>
+              <span
+                className="font-mono font-bold"
+                style={{ color: "var(--ink)" }}
+              >
+                {workflows.length}
+              </span>{" "}
+              workflow{workflows.length !== 1 ? "s" : ""}
+            </span>
+            <span
+              className="h-3.5 w-px"
+              style={{ background: "var(--line2)" }}
+            />
+            <span style={{ color: "var(--mut)" }}>
+              <span
+                className="font-mono font-bold"
+                style={{ color: "var(--green)" }}
+              >
+                {activeCount}
+              </span>{" "}
+              active
+            </span>
+            {runs.length > 0 && (
+              <>
+                <span
+                  className="h-3.5 w-px"
+                  style={{ background: "var(--line2)" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRecentRuns(!showRecentRuns)}
+                  className="transition-colors hover:text-[var(--ink)]"
+                  style={{ color: "var(--mut)" }}
+                >
+                  <span
+                    className="font-mono font-bold"
+                    style={{ color: "var(--ink)" }}
                   >
-                    <span className="font-medium text-foreground dark:text-foreground">
-                      {runs.length}
-                    </span>
-                    <span>recent run{runs.length !== 1 ? "s" : ""}</span>
-                    <span className="text-[10px]">
-                      ({showRecentRuns ? "−" : "+"})
-                    </span>
-                  </button>
-                </>
-              )}
-            </div>
+                    {runs.length}
+                  </span>{" "}
+                  recent run{runs.length !== 1 ? "s" : ""}{" "}
+                  <span style={{ color: "var(--mut2)" }}>
+                    ({showRecentRuns ? "−" : "+"})
+                  </span>
+                </button>
+              </>
+            )}
+          </div>
 
-            {/* Recent Runs - Collapsible inline view */}
-            {showRecentRuns && runs.length > 0 && (
-              <div className="mb-2 rounded-lg border border-border dark:border-border px-2.5 py-2 bg-background dark:bg-v2-card-tinted/50">
-                <div className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground uppercase mb-1">
-                  Recent Activity
-                </div>
-                <div className="space-y-0.5">
-                  {runs.map((run) => (
+          {/* Recent runs (collapsible) */}
+          {showRecentRuns && runs.length > 0 && (
+            <div
+              className="mb-4 rounded-xl px-4 py-3"
+              style={{
+                background: "var(--surface-3)",
+                border: "1px solid var(--line)",
+              }}
+            >
+              <p
+                className="mb-2 font-mono text-[10px] font-bold uppercase tracking-widest"
+                style={{ color: "var(--mut2)" }}
+              >
+                Recent Activity
+              </p>
+              <div className="space-y-1">
+                {runs.map((run) => {
+                  const ok = run.status === "completed";
+                  const bad = run.status === "failed";
+                  const accent = ok ? "--green" : bad ? "--red" : "--mut";
+                  return (
                     <div
                       key={run.id}
-                      className="flex items-center justify-between text-[11px] py-0.5"
+                      className="flex items-center justify-between font-sans text-[12px]"
                     >
                       <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "font-medium",
-                            runStatusColors[run.status],
-                          )}
-                        >
-                          {run.status === "completed"
-                            ? "✓"
-                            : run.status === "failed"
-                              ? "✗"
-                              : "○"}
+                        <span style={{ color: `var(${accent})` }}>
+                          {ok ? "✓" : bad ? "✗" : "○"}
                         </span>
-                        <span className="text-muted-foreground dark:text-muted-foreground">
+                        <span style={{ color: "var(--mut)" }}>
                           {run.workflow?.name || "Unknown"}
                         </span>
-                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                          {run.startedAt
-                            ? new Date(run.startedAt).toLocaleString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })
-                            : "Pending"}
+                        <span
+                          className="font-mono text-[11px]"
+                          style={{ color: "var(--mut2)" }}
+                        >
+                          {relTime(run.startedAt)}
                         </span>
                       </div>
                       {run.completedAt && run.startedAt && (
-                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+                        <span
+                          className="font-mono text-[11px]"
+                          style={{ color: "var(--mut2)" }}
+                        >
                           {Math.round(
                             (new Date(run.completedAt).getTime() -
                               new Date(run.startedAt).getTime()) /
@@ -304,245 +366,302 @@ export default function WorkflowManager() {
                         </span>
                       )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Workflows Table - Full width */}
-            <div className="flex-1 rounded-lg border border-border dark:border-border overflow-auto">
-              {workflows.length === 0 ? (
-                <div className="text-center py-8">
-                  <Zap className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-[11px] text-muted-foreground dark:text-muted-foreground mb-2">
-                    No workflows created yet
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-6 text-[10px] border-border dark:border-border"
-                    onClick={() => setShowDialog(true)}
+          {/* Card grid OR empty state */}
+          {workflows.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center gap-3 rounded-2xl py-16 text-center"
+              style={{
+                border: "1px dashed var(--line2)",
+                background: "var(--surface-2)",
+              }}
+            >
+              <span
+                className="flex h-20 w-20 items-center justify-center rounded-2xl"
+                style={{ background: tint("--blue", 12), color: "var(--blue)" }}
+              >
+                <Zap className="h-9 w-9" />
+              </span>
+              <p
+                className="font-display text-[20px] font-extrabold uppercase tracking-wide"
+                style={{ color: "var(--ink)" }}
+              >
+                No Workflows Yet
+              </p>
+              <p
+                className="max-w-sm font-sans text-[13.5px]"
+                style={{ color: "var(--mut)" }}
+              >
+                Automate your agency — send a welcome email when an agent gets
+                licensed, alert on a chargeback, remind on a renewal. Build your
+                first one to get started.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingWorkflow(null);
+                  setShowDialog(true);
+                }}
+                className="mt-1 flex h-10 items-center gap-1.5 rounded-lg px-5 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
+                style={{ background: "var(--blue)", color: "#0c1322" }}
+              >
+                <Plus className="h-4 w-4" />
+                Create Your First Workflow
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {workflows.map((workflow) => {
+                const lastRun = runs.find((r) => r.workflowId === workflow.id);
+                const accent = TRIGGER_ACCENT[workflow.triggerType] || "--blue";
+                const Icon = TRIGGER_ICON[workflow.triggerType] || Zap;
+                const steps = Array.isArray(workflow.actions)
+                  ? workflow.actions.length
+                  : 0;
+                const triggerLabel =
+                  workflow.triggerType === "event" &&
+                  workflow.config?.trigger?.eventName
+                    ? workflow.config.trigger.eventName
+                    : workflow.triggerType;
+                return (
+                  <div
+                    key={workflow.id}
+                    className="group relative overflow-hidden rounded-2xl transition-transform hover:-translate-y-0.5"
+                    style={{
+                      background: "var(--panelgrad)",
+                      border: "1px solid var(--line)",
+                      boxShadow: "var(--panelshadow)",
+                    }}
                   >
-                    Create Your First Workflow
-                  </Button>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="h-7 bg-background dark:bg-v2-card-tinted/50 border-b border-border dark:border-border">
-                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
-                        Name
-                      </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
-                        Description
-                      </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
-                        Type
-                      </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
-                        Status
-                      </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
-                        Last Run
-                      </TableHead>
-                      <TableHead className="text-[10px] py-1 w-8"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {workflows.map((workflow) => {
-                      const lastRun = runs.find(
-                        (r) => r.workflowId === workflow.id,
-                      );
-                      return (
-                        <TableRow
-                          key={workflow.id}
-                          className="h-8 border-b border-border dark:border-border hover:bg-background dark:hover:bg-v2-card-tinted/50"
+                    {/* left accent bar */}
+                    <span
+                      className="absolute left-0 top-0 h-full w-[3px]"
+                      style={{ background: `var(${accent})` }}
+                    />
+                    <div className="p-4 pl-5">
+                      {/* top row */}
+                      <div className="flex items-start gap-3">
+                        <span
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                          style={{
+                            background: tint(accent, 14),
+                            color: `var(${accent})`,
+                          }}
                         >
-                          <TableCell className="py-1">
-                            <div className="flex items-center gap-1.5">
-                              {workflow.isOrgTemplate && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[9px] px-1 py-0 bg-info/10 text-info border-info/30 dark:bg-info/20 dark:text-info dark:border-info"
-                                >
-                                  Template
-                                </Badge>
-                              )}
-                              <span className="text-[11px] font-medium text-foreground dark:text-foreground">
-                                {workflow.name}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-1">
-                            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[300px]">
-                              {workflow.description || "—"}
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-1">
-                            <div className="flex items-center gap-1 text-muted-foreground dark:text-muted-foreground">
-                              {triggerIcons[workflow.triggerType]}
-                              <span className="text-[10px]">
-                                {workflow.triggerType}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-1">
-                            <Badge
-                              variant="secondary"
-                              className={cn(
-                                "text-[10px] py-0 px-1",
-                                statusColors[workflow.status],
-                              )}
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p
+                              className="truncate font-display text-[17px] font-extrabold"
+                              style={{ color: "var(--ink)" }}
                             >
-                              {workflow.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="py-1">
-                            {lastRun ? (
-                              <div className="flex items-center gap-1">
-                                <span
-                                  className={cn(
-                                    "text-[10px]",
-                                    runStatusColors[lastRun.status],
-                                  )}
-                                >
-                                  {lastRun.status}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                                  {lastRun.startedAt
-                                    ? new Date(
-                                        lastRun.startedAt,
-                                      ).toLocaleDateString()
-                                    : "—"}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
-                                Never
+                              {workflow.name}
+                            </p>
+                            {workflow.isOrgTemplate && (
+                              <span
+                                className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase"
+                                style={{
+                                  background: tint("--cyan", 14),
+                                  color: "var(--cyan)",
+                                }}
+                              >
+                                Template
                               </span>
                             )}
-                          </TableCell>
-                          <TableCell className="py-1">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0"
-                                >
-                                  <Settings className="h-3 w-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-32">
-                                {workflow.status === "active" && (
-                                  <DropdownMenuItem
-                                    onClick={() => setTestRunWorkflow(workflow)}
-                                    className="text-xs"
-                                  >
-                                    <Play className="h-3 w-3 mr-1" />
-                                    Run Now
-                                  </DropdownMenuItem>
-                                )}
-                                {workflow.status === "active" && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      updateStatus.mutate({
-                                        id: workflow.id,
-                                        status: "paused",
-                                      })
-                                    }
-                                    className="text-xs"
-                                  >
-                                    <Pause className="h-3 w-3 mr-1" />
-                                    Pause
-                                  </DropdownMenuItem>
-                                )}
-                                {workflow.status === "paused" && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      updateStatus.mutate({
-                                        id: workflow.id,
-                                        status: "active",
-                                      })
-                                    }
-                                    className="text-xs"
-                                  >
-                                    <Play className="h-3 w-3 mr-1" />
-                                    Resume
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setEditingWorkflow(workflow);
-                                    setShowDialog(true);
-                                  }}
-                                  className="text-xs"
-                                >
-                                  <Edit className="h-3 w-3 mr-1" />
-                                  Edit
-                                </DropdownMenuItem>
-                                {isImoAdmin && !workflow.isOrgTemplate && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      saveAsOrgTemplate.mutate(workflow.id)
-                                    }
-                                    className="text-xs"
-                                    disabled={saveAsOrgTemplate.isPending}
-                                  >
-                                    <Share2 className="h-3 w-3 mr-1" />
-                                    Save as Org Template
-                                  </DropdownMenuItem>
-                                )}
-                                {workflow.isOrgTemplate && (
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setCloneTemplateId(workflow.id);
-                                      setCloneName(`${workflow.name} (Copy)`);
-                                    }}
-                                    className="text-xs"
-                                  >
-                                    <Copy className="h-3 w-3 mr-1" />
-                                    Clone
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-xs text-destructive"
-                                  onClick={() =>
-                                    workflow.isOrgTemplate
-                                      ? setDeleteTemplateId(workflow.id)
-                                      : setDeleteWorkflowId(workflow.id)
-                                  }
-                                >
-                                  <Trash2 className="h-3 w-3 mr-1" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
+                          </div>
+                          <p
+                            className="mt-0.5 truncate font-sans text-[13px]"
+                            style={{ color: "var(--mut)" }}
+                          >
+                            {workflow.description || "No description"}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-4)]"
+                              style={{ color: "var(--mut2)" }}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36">
+                            {workflow.status === "active" && (
+                              <DropdownMenuItem
+                                onClick={() => setTestRunWorkflow(workflow)}
+                                className="text-xs"
+                              >
+                                <Play className="mr-1.5 h-3 w-3" />
+                                Run Now
+                              </DropdownMenuItem>
+                            )}
+                            {workflow.status === "active" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  updateStatus.mutate({
+                                    id: workflow.id,
+                                    status: "paused",
+                                  })
+                                }
+                                className="text-xs"
+                              >
+                                <Pause className="mr-1.5 h-3 w-3" />
+                                Pause
+                              </DropdownMenuItem>
+                            )}
+                            {workflow.status === "paused" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  updateStatus.mutate({
+                                    id: workflow.id,
+                                    status: "active",
+                                  })
+                                }
+                                className="text-xs"
+                              >
+                                <Play className="mr-1.5 h-3 w-3" />
+                                Resume
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setEditingWorkflow(workflow);
+                                setShowDialog(true);
+                              }}
+                              className="text-xs"
+                            >
+                              <Edit className="mr-1.5 h-3 w-3" />
+                              Edit
+                            </DropdownMenuItem>
+                            {isImoAdmin && !workflow.isOrgTemplate && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  saveAsOrgTemplate.mutate(workflow.id)
+                                }
+                                className="text-xs"
+                                disabled={saveAsOrgTemplate.isPending}
+                              >
+                                <Share2 className="mr-1.5 h-3 w-3" />
+                                Save as Org Template
+                              </DropdownMenuItem>
+                            )}
+                            {workflow.isOrgTemplate && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setCloneTemplateId(workflow.id);
+                                  setCloneName(`${workflow.name} (Copy)`);
+                                }}
+                                className="text-xs"
+                              >
+                                <Copy className="mr-1.5 h-3 w-3" />
+                                Clone
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-xs text-destructive"
+                              onClick={() =>
+                                workflow.isOrgTemplate
+                                  ? setDeleteTemplateId(workflow.id)
+                                  : setDeleteWorkflowId(workflow.id)
+                              }
+                            >
+                              <Trash2 className="mr-1.5 h-3 w-3" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* meta pills */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {statusPill(workflow.status)}
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-[11px]"
+                          style={{
+                            background: tint(accent, 12),
+                            color: `var(${accent})`,
+                          }}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {triggerLabel}
+                        </span>
+                        <span
+                          className="inline-flex items-center rounded-md px-2 py-0.5 font-sans text-[11px]"
+                          style={{
+                            background: "var(--surface-4)",
+                            color: "var(--mut)",
+                          }}
+                        >
+                          {steps} step{steps !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+
+                      {/* foot */}
+                      <div
+                        className="mt-3 flex items-center justify-between pt-3"
+                        style={{ borderTop: "1px solid var(--line)" }}
+                      >
+                        <span
+                          className="font-sans text-[11.5px]"
+                          style={{ color: "var(--mut2)" }}
+                        >
+                          {lastRun ? (
+                            <>
+                              Last run{" "}
+                              <span
+                                style={{
+                                  color:
+                                    lastRun.status === "completed"
+                                      ? "var(--green)"
+                                      : lastRun.status === "failed"
+                                        ? "var(--red)"
+                                        : "var(--mut)",
+                                }}
+                              >
+                                {lastRun.status}
+                              </span>
+                            </>
+                          ) : (
+                            "Never run"
+                          )}
+                        </span>
+                        <span
+                          className="inline-flex items-center gap-1 font-mono text-[11px]"
+                          style={{ color: "var(--mut2)" }}
+                        >
+                          <Clock className="h-3 w-3" />
+                          {relTime(lastRun?.startedAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          )}
         </TabsContent>
 
-        {/* Email Templates Tab Content (Admin Only) */}
+        {/* Email Templates Tab (Admin Only) */}
         {isAdmin && (
           <TabsContent
             value="templates"
-            className="flex-1 mt-0 h-full overflow-hidden"
+            className="mt-0 h-full flex-1 overflow-hidden"
           >
             <EmailTemplatesTab searchQuery="" />
           </TabsContent>
         )}
 
-        {/* Event Types Tab Content (Admin Only) */}
+        {/* Event Types Tab (Admin Only) */}
         {isAdmin && (
-          <TabsContent value="events" className="flex-1 mt-0">
+          <TabsContent value="events" className="mt-0 flex-1 overflow-y-auto">
             <EventTypeManager />
           </TabsContent>
         )}
@@ -559,7 +678,7 @@ export default function WorkflowManager() {
         />
       )}
 
-      {/* Dialogs */}
+      {/* Create / Edit Wizard */}
       <WorkflowWizard
         open={showDialog}
         onOpenChange={(open) => {
@@ -571,7 +690,7 @@ export default function WorkflowManager() {
         workflow={editingWorkflow}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <AlertDialog
         open={!!deleteWorkflowId}
         onOpenChange={(open) => !open && setDeleteWorkflowId(null)}
@@ -588,12 +707,12 @@ export default function WorkflowManager() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">
+            <AlertDialogCancel className="h-8 text-xs">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="h-7 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="h-8 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>
@@ -601,7 +720,7 @@ export default function WorkflowManager() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Clone Template Dialog */}
+      {/* Clone Template */}
       <AlertDialog
         open={!!cloneTemplateId}
         onOpenChange={(open) => {
@@ -626,11 +745,11 @@ export default function WorkflowManager() {
               value={cloneName}
               onChange={(e) => setCloneName(e.target.value)}
               placeholder="Workflow name"
-              className="h-8 text-xs"
+              className="h-9 text-xs"
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">
+            <AlertDialogCancel className="h-8 text-xs">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -645,15 +764,15 @@ export default function WorkflowManager() {
                 }
               }}
               disabled={!cloneName.trim() || cloneOrgTemplate.isPending}
-              className="h-7 text-xs"
+              className="h-8 text-xs"
             >
-              {cloneOrgTemplate.isPending ? "Cloning..." : "Clone"}
+              {cloneOrgTemplate.isPending ? "Cloning…" : "Clone"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Org Template Confirmation Dialog */}
+      {/* Delete Org Template */}
       <AlertDialog
         open={!!deleteTemplateId}
         onOpenChange={(open) => !open && setDeleteTemplateId(null)}
@@ -670,12 +789,12 @@ export default function WorkflowManager() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">
+            <AlertDialogCancel className="h-8 text-xs">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteTemplateConfirm}
-              className="h-7 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="h-8 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>
