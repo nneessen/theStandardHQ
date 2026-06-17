@@ -38,6 +38,14 @@ export const TEMPLATE_VARIABLE_KEYS: readonly string[] = [
   "user_first_name",
   "user_last_name",
   "user_email",
+  // Agent (affected agent of an agent.* lifecycle event)
+  "agent_name",
+  "agent_first_name",
+  "agent_email",
+  "agent_contract_level",
+  "agent_license_number",
+  "agent_npn",
+  "agent_status",
   // Upline
   "upline_name",
   "upline_first_name",

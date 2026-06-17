@@ -20,7 +20,8 @@ export type WorkflowEventCategory =
   | "recruit"
   | "policy"
   | "commission"
-  | "lead";
+  | "lead"
+  | "agent";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -69,6 +70,19 @@ const RECRUIT = [
 // recruit_* recipient variables today (buildTemplateVariables fills them from the
 // recipient profile). Domain-specific policy_*/commission_* tags are a Phase 3 add.
 const AGENT = ["recruit_name", "recruit_first_name", "recruit_email"];
+
+// Agent LIFECYCLE events carry the affected agent's OWN profile (the emit sets
+// recipientId = the agent's user_profiles.id). buildTemplateVariables populates
+// these agent_* keys from that recipient profile.
+const AGENT_VARS = [
+  "agent_name",
+  "agent_first_name",
+  "agent_email",
+  "agent_contract_level",
+  "agent_license_number",
+  "agent_npn",
+  "agent_status",
+];
 
 export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
   // ---- Recruit (emitted by recruitingService) ----
@@ -163,6 +177,40 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     label: "Lead pack purchased",
     description: "An agent purchases a pack of leads.",
     availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+
+  // ---- Agent lifecycle (emitted by userService) ----
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_APPROVED,
+    category: "agent",
+    label: "Agent approved",
+    description: "An agent's account is approved into the system.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_DENIED,
+    category: "agent",
+    label: "Agent denied",
+    description: "An agent's account request is denied.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_LICENSED,
+    category: "agent",
+    label: "Agent licensed",
+    description: "A recruit graduates and becomes a licensed agent.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_CONTRACT_LEVEL_CHANGED,
+    category: "agent",
+    label: "Agent contract level changed",
+    description: "An agent's commission contract level is changed.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },
 

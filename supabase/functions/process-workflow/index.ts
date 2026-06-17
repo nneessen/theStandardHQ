@@ -1742,6 +1742,19 @@ async function buildTemplateVariables(
     variables["recruit_facebook"] = recipientProfile.facebook_handle || "";
     variables["recruit_instagram"] = recipientProfile.instagram_username || "";
     variables["recruit_website"] = recipientProfile.personal_website || "";
+
+    // Agent lifecycle variables — the affected agent IS the recipient
+    // (agent.* emits set recipientId = the agent's user_profiles.id).
+    variables["agent_name"] =
+      `${recipientProfile.first_name || ""} ${recipientProfile.last_name || ""}`.trim() ||
+      recipientProfile.email;
+    variables["agent_first_name"] = recipientProfile.first_name || "there";
+    variables["agent_email"] = recipientProfile.email;
+    variables["agent_contract_level"] =
+      recipientProfile.contract_level?.toString() || "";
+    variables["agent_license_number"] = recipientProfile.license_number || "";
+    variables["agent_npn"] = recipientProfile.npn || "";
+    variables["agent_status"] = recipientProfile.agent_status || "";
   }
 
   // Add any additional context variables (using underscores)

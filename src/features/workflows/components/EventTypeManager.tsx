@@ -34,7 +34,7 @@ interface EditableEventType extends Partial<TriggerEventType> {
 // trigger_event_types (src/features/workflows/eventCatalog.ts). Dead categories
 // (user/email/system/custom) were removed when their never-emitted events were
 // pruned; re-add a category here only when a real event in it is wired + seeded.
-const EVENT_CATEGORIES = ["recruit", "policy", "commission", "lead"];
+const EVENT_CATEGORIES = ["recruit", "policy", "commission", "lead", "agent"];
 
 export default function EventTypeManager() {
   const { data: eventTypes = [], isLoading } = useEventTypes();

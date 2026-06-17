@@ -9,6 +9,7 @@ import {
   FileText,
   MapPin,
   UserPlus,
+  UserCheck,
   Mail,
   User,
   Zap,
@@ -108,6 +109,7 @@ export const CATEGORY_META: CategoryMeta[] = [
   { key: "policy", label: "Policies", accent: "--blue", icon: FileText },
   { key: "lead", label: "Leads", accent: "--amber", icon: MapPin },
   { key: "recruit", label: "Recruiting", accent: "--violet", icon: UserPlus },
+  { key: "agent", label: "Agents", accent: "--red", icon: UserCheck },
   { key: "email", label: "Emails", accent: "--cyan", icon: Mail },
   { key: "user", label: "Users", accent: "--pink", icon: User },
 ];
