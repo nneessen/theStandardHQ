@@ -42,6 +42,12 @@ export const WORKFLOW_EVENTS = {
   AGENT_LICENSED: "agent.licensed",
   AGENT_CONTRACT_LEVEL_CHANGED: "agent.contract_level_changed",
 
+  // Document events (agent document vault)
+  DOCUMENT_UPLOADED: "document.uploaded",
+  DOCUMENT_APPROVED: "document.approved",
+  DOCUMENT_REJECTED: "document.rejected",
+  DOCUMENT_ALL_REQUIRED_APPROVED: "document.all_required_approved",
+
   // Contracting events (carrier contract requests + carrier status)
   CONTRACTING_REQUEST_CREATED: "contracting.request_created",
   CONTRACTING_REQUEST_WRITING_RECEIVED: "contracting.request_writing_received",

@@ -22,7 +22,8 @@ export type WorkflowEventCategory =
   | "commission"
   | "lead"
   | "agent"
-  | "contracting";
+  | "contracting"
+  | "document";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -351,6 +352,40 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     label: "Held under set",
     description:
       "An agent's carrier contract is set to be held under a sponsor.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Documents (emitted by documentService) ----
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_UPLOADED,
+    category: "document",
+    label: "Document uploaded",
+    description: "A document is uploaded to an agent's vault.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_APPROVED,
+    category: "document",
+    label: "Document approved",
+    description: "A submitted document is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_REJECTED,
+    category: "document",
+    label: "Document rejected",
+    description: "A submitted document is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_ALL_REQUIRED_APPROVED,
+    category: "document",
+    label: "All required documents approved",
+    description: "An agent's last outstanding required document is approved.",
     availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },

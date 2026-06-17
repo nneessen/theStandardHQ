@@ -8,6 +8,7 @@ import {
   DollarSign,
   FileText,
   FileSignature,
+  FileCheck,
   MapPin,
   UserPlus,
   UserCheck,
@@ -117,6 +118,7 @@ export const CATEGORY_META: CategoryMeta[] = [
     accent: "--cyan",
     icon: FileSignature,
   },
+  { key: "document", label: "Documents", accent: "--amber", icon: FileCheck },
   { key: "email", label: "Emails", accent: "--cyan", icon: Mail },
   { key: "user", label: "Users", accent: "--pink", icon: User },
 ];

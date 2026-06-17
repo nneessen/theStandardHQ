@@ -41,6 +41,7 @@ const EVENT_CATEGORIES = [
   "lead",
   "agent",
   "contracting",
+  "document",
 ];
 
 export default function EventTypeManager() {
