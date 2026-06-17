@@ -42,6 +42,16 @@ export const WORKFLOW_EVENTS = {
   AGENT_LICENSED: "agent.licensed",
   AGENT_CONTRACT_LEVEL_CHANGED: "agent.contract_level_changed",
 
+  // Contracting events (carrier contract requests + carrier status)
+  CONTRACTING_REQUEST_CREATED: "contracting.request_created",
+  CONTRACTING_REQUEST_WRITING_RECEIVED: "contracting.request_writing_received",
+  CONTRACTING_REQUEST_COMPLETED: "contracting.request_completed",
+  CONTRACTING_CARRIER_SUBMITTED: "contracting.carrier_submitted",
+  CONTRACTING_CARRIER_APPROVED: "contracting.carrier_approved",
+  CONTRACTING_CARRIER_DENIED: "contracting.carrier_denied",
+  CONTRACTING_CARRIER_TERMINATED: "contracting.carrier_terminated",
+  CONTRACTING_HELD_UNDER_SET: "contracting.held_under_set",
+
   // User events
   USER_LOGIN: "user.login",
   USER_LOGOUT: "user.logout",

@@ -21,7 +21,8 @@ export type WorkflowEventCategory =
   | "policy"
   | "commission"
   | "lead"
-  | "agent";
+  | "agent"
+  | "contracting";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -282,6 +283,74 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     category: "agent",
     label: "Agent contract level changed",
     description: "An agent's commission contract level is changed.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Contracting (emitted by carrierContractRequestService + contractingHubService) ----
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_CREATED,
+    category: "contracting",
+    label: "Contract request created",
+    description: "A carrier contracting request is created for a recruit.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_WRITING_RECEIVED,
+    category: "contracting",
+    label: "Writing number received",
+    description:
+      "A contracting request reaches the writing-number-received stage.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_COMPLETED,
+    category: "contracting",
+    label: "Contract request completed",
+    description: "A carrier contracting request is completed.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_SUBMITTED,
+    category: "contracting",
+    label: "Carrier contract submitted",
+    description: "An agent's carrier contract is submitted.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_APPROVED,
+    category: "contracting",
+    label: "Carrier contract approved",
+    description: "An agent's carrier contract is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_DENIED,
+    category: "contracting",
+    label: "Carrier contract denied",
+    description: "An agent's carrier contract is denied.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_TERMINATED,
+    category: "contracting",
+    label: "Carrier contract terminated",
+    description: "An agent's carrier contract is terminated.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_HELD_UNDER_SET,
+    category: "contracting",
+    label: "Held under set",
+    description:
+      "An agent's carrier contract is set to be held under a sponsor.",
     availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },

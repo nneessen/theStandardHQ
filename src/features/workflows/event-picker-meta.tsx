@@ -7,6 +7,7 @@
 import {
   DollarSign,
   FileText,
+  FileSignature,
   MapPin,
   UserPlus,
   UserCheck,
@@ -110,6 +111,12 @@ export const CATEGORY_META: CategoryMeta[] = [
   { key: "lead", label: "Leads", accent: "--amber", icon: MapPin },
   { key: "recruit", label: "Recruiting", accent: "--violet", icon: UserPlus },
   { key: "agent", label: "Agents", accent: "--red", icon: UserCheck },
+  {
+    key: "contracting",
+    label: "Contracting",
+    accent: "--cyan",
+    icon: FileSignature,
+  },
   { key: "email", label: "Emails", accent: "--cyan", icon: Mail },
   { key: "user", label: "Users", accent: "--pink", icon: User },
 ];

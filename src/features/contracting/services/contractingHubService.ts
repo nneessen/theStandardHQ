@@ -7,6 +7,10 @@
 
 import { supabase } from "@/services/base/supabase";
 import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
+import {
   parseCarrierContractingInstructions,
   type CarrierContractingInstructions,
 } from "@/types/carrier.types";
@@ -301,6 +305,26 @@ export const contractingHubService = {
       p_writing_number: args.writingNumber ?? undefined,
     });
     if (error) throw error;
+
+    // Emit the matching carrier-status workflow event (non-fatal).
+    // recipientId = the agent whose contract status changed.
+    const carrierEvent: Record<string, string> = {
+      submitted: WORKFLOW_EVENTS.CONTRACTING_CARRIER_SUBMITTED,
+      approved: WORKFLOW_EVENTS.CONTRACTING_CARRIER_APPROVED,
+      denied: WORKFLOW_EVENTS.CONTRACTING_CARRIER_DENIED,
+      terminated: WORKFLOW_EVENTS.CONTRACTING_CARRIER_TERMINATED,
+    };
+    const eventName = carrierEvent[args.status];
+    if (eventName) {
+      await workflowEventEmitter.emit(eventName, {
+        recipientId: args.agentId,
+        agentId: args.agentId,
+        carrierId: args.carrierId,
+        writingNumber: args.writingNumber ?? undefined,
+        status: args.status,
+        timestamp: new Date().toISOString(),
+      });
+    }
   },
 
   async getDownlineContracts(): Promise<DownlineContractRow[]> {
@@ -337,6 +361,21 @@ export const contractingHubService = {
       p_held_under_name: args.heldUnderName ?? undefined,
     });
     if (error) throw error;
+
+    // Emit only when a sponsor is actually SET (not when cleared). Non-fatal.
+    if (args.heldUnderId || args.heldUnderName) {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.CONTRACTING_HELD_UNDER_SET,
+        {
+          recipientId: args.agentId,
+          agentId: args.agentId,
+          carrierId: args.carrierId,
+          heldUnderId: args.heldUnderId ?? undefined,
+          heldUnderName: args.heldUnderName ?? undefined,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
   },
 
   async getHeldUnderCandidates(agentId: string): Promise<SponsorOption[]> {
