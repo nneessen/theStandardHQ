@@ -1,0 +1,28 @@
+{
+  "_comment": "Canonical phone-normalization parity vectors. Single source of truth for BOTH src/lib/__tests__/phone.test.ts (TS twin) and scripts/test-phone-parity.mjs (SQL function). Inputs MUST NOT contain single quotes (the parity script inlines them into SQL VALUES; quotes are escaped but kept quote-free for readability). 'expected' is the E.164 result or null. Keep the TS twin (src/lib/phone.ts), the Deno twin (supabase/functions/_shared/phone.ts), and the SQL normalize_phone_e164 all in lockstep with this table.",
+  "vectors": [
+    { "input": "5551234567", "expected": "+15551234567" },
+    { "input": "(555) 123-4567", "expected": "+15551234567" },
+    { "input": "555-123-4567", "expected": "+15551234567" },
+    { "input": "555.123.4567", "expected": "+15551234567" },
+    { "input": "5 5 5 1 2 3 4 5 6 7", "expected": "+15551234567" },
+    { "input": "15551234567", "expected": "+15551234567" },
+    { "input": "1-555-123-4567", "expected": "+15551234567" },
+    { "input": "1 (800) 555 0199", "expected": "+18005550199" },
+    { "input": "+15551234567", "expected": "+15551234567" },
+    { "input": "+1 555 123 4567", "expected": "+15551234567" },
+    { "input": "+1 (555) 123-4567", "expected": "+15551234567" },
+    { "input": "+447911123456", "expected": "+447911123456" },
+    { "input": "+12345678901234", "expected": "+12345678901234" },
+    { "input": "+123456789012345", "expected": null },
+    { "input": "+0123456789", "expected": "+0123456789" },
+    { "input": "++15551234567", "expected": "++15551234567" },
+    { "input": "+1234567890123456", "expected": null },
+    { "input": "+1555", "expected": null },
+    { "input": "5551234", "expected": null },
+    { "input": "555123456", "expected": null },
+    { "input": "25551234567", "expected": null },
+    { "input": "abcdefghij", "expected": null },
+    { "input": "", "expected": null }
+  ]
+}
