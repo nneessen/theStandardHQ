@@ -1,0 +1,5 @@
+# crm-oauth-token is the OAuth2 client-credentials token endpoint for the external
+# inbound-call platform. It authenticates with a client_id + client_secret (NOT a
+# Supabase JWT), so the platform's verify_jwt middleware would always 401 us.
+# Disable it and let the function authenticate the credential itself.
+verify_jwt = false
