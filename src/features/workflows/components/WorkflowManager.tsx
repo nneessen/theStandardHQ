@@ -493,15 +493,30 @@ export default function WorkflowManager() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-36">
-                            {workflow.status === "active" && (
+                            {workflow.status === "draft" && (
                               <DropdownMenuItem
-                                onClick={() => setTestRunWorkflow(workflow)}
+                                onClick={() =>
+                                  updateStatus.mutate({
+                                    id: workflow.id,
+                                    status: "active",
+                                  })
+                                }
                                 className="text-xs"
                               >
                                 <Play className="mr-1.5 h-3 w-3" />
-                                Run Now
+                                Activate
                               </DropdownMenuItem>
                             )}
+                            {workflow.status === "active" &&
+                              workflow.triggerType === "manual" && (
+                                <DropdownMenuItem
+                                  onClick={() => setTestRunWorkflow(workflow)}
+                                  className="text-xs"
+                                >
+                                  <Play className="mr-1.5 h-3 w-3" />
+                                  Run Now
+                                </DropdownMenuItem>
+                              )}
                             {workflow.status === "active" && (
                               <DropdownMenuItem
                                 onClick={() =>

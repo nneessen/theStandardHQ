@@ -60,7 +60,9 @@ export default function WorkflowWizard({
       continueOnError: false,
       priority: 50, // 1-100, 50 is normal priority
     },
-    status: "draft",
+    // New workflows are created Active by default so they actually run; the
+    // header pill toggles this to Draft, and "Test Run" always saves a draft.
+    status: "active",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,7 +122,7 @@ export default function WorkflowWizard({
             continueOnError: false,
             priority: 50,
           },
-          status: "draft",
+          status: "active",
         });
       }
       setCurrentStep(0);
@@ -457,8 +459,18 @@ export default function WorkflowWizard({
               >
                 {workflow ? "Edit" : "Create"} Workflow
               </DialogTitle>
-              <span
-                className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide"
+              <button
+                type="button"
+                onClick={() =>
+                  updateFormData({
+                    status:
+                      formData.status === "active"
+                        ? ("draft" as WorkflowStatus)
+                        : ("active" as WorkflowStatus),
+                  })
+                }
+                title="Click to toggle Active / Draft"
+                className="cursor-pointer rounded px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide transition-colors"
                 style={{
                   background:
                     formData.status === "active"
@@ -471,7 +483,7 @@ export default function WorkflowWizard({
                 }}
               >
                 {formData.status === "active" ? "Active" : "Draft"}
-              </span>
+              </button>
             </div>
             <button
               type="button"
