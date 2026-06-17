@@ -65,7 +65,10 @@ class WorkflowService {
         retryOnFailure: a.retryOnFailure ?? true,
         maxRetries: a.maxRetries || 3,
       })),
-      max_runs_per_day: formData.settings?.maxRunsPerDay || 50,
+      // Blank = unlimited: undefined omits the column (NULL). The engine only
+      // enforces a daily cap when this is a positive number, so workflows aren't
+      // silently throttled by default.
+      max_runs_per_day: formData.settings?.maxRunsPerDay,
       max_runs_per_recipient: formData.settings?.maxRunsPerRecipient ?? null,
       cooldown_minutes: formData.settings?.cooldownMinutes ?? null,
       priority: Number(formData.settings?.priority) || 50,

@@ -316,6 +316,58 @@ export default function WorkflowBasicInfo({
               : "Standard execution order."}
         </div>
       </div>
+
+      {/* ── Daily run limit ───────────────────────────────────────────── */}
+      <div
+        style={{
+          background: tint("--blue", 7),
+          border: `1px solid ${tint("--blue", 22)}`,
+          borderRadius: 14,
+          padding: 16,
+        }}
+      >
+        <div className="mb-1 flex items-center gap-2">
+          <AlertCircle
+            className="h-4 w-4 shrink-0"
+            style={{ color: "var(--blue)" }}
+          />
+          <span
+            className="font-mono text-[11px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--blue)" }}
+          >
+            Max Runs Per Day
+          </span>
+        </div>
+        <p
+          className="mb-3 font-sans text-[13px]"
+          style={{ color: "var(--mut)" }}
+        >
+          Caps how many times this workflow runs automatically per day. Manual
+          “Run Now” runs don’t count. Leave blank for unlimited.
+        </p>
+        <input
+          type="number"
+          min={1}
+          placeholder="Unlimited"
+          value={data.settings?.maxRunsPerDay ?? ""}
+          onChange={(e) =>
+            onChange({
+              settings: {
+                ...data.settings,
+                maxRunsPerDay: e.target.value
+                  ? Math.max(1, Math.floor(Number(e.target.value)))
+                  : undefined,
+              },
+            })
+          }
+          className="h-9 w-32 rounded-lg px-3 font-sans text-[13px] outline-none"
+          style={{
+            background: "var(--surface-1)",
+            border: "1px solid var(--line2)",
+            color: "var(--ink)",
+          }}
+        />
+      </div>
     </div>
   );
 }

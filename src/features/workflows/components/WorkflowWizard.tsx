@@ -56,7 +56,7 @@ export default function WorkflowWizard({
     },
     actions: [],
     settings: {
-      maxRunsPerDay: 10,
+      // maxRunsPerDay omitted = unlimited by default (set it to opt into a cap)
       continueOnError: false,
       priority: 50, // 1-100, 50 is normal priority
     },
@@ -95,7 +95,10 @@ export default function WorkflowWizard({
           },
           actions: (workflow.actions as WorkflowAction[]) || [],
           settings: {
-            maxRunsPerDay: workflow.maxRunsPerDay || 10,
+            // Preserve unlimited (null/undefined) — defaulting to 10 here would
+            // silently re-cap an unlimited workflow on save now that the engine
+            // enforces this value.
+            maxRunsPerDay: workflow.maxRunsPerDay ?? undefined,
             maxRunsPerRecipient: workflow.maxRunsPerRecipient || undefined,
             cooldownMinutes: workflow.cooldownMinutes || undefined,
             continueOnError: workflow.config?.continueOnError || false,
@@ -118,7 +121,7 @@ export default function WorkflowWizard({
           },
           actions: [],
           settings: {
-            maxRunsPerDay: 10,
+            // maxRunsPerDay omitted = unlimited by default
             continueOnError: false,
             priority: 50,
           },

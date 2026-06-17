@@ -239,6 +239,48 @@ serve(async (req) => {
         }
       }
 
+      // Daily-run cap: the "Max runs per day" setting limits how many times this
+      // workflow EXECUTES per calendar day (UTC). Counts today's runs that have
+      // begun executing (excluding this one); if at/over the cap, skip. Manual
+      // "Run Now" runs bypass the cap (an explicit user action), and tests are
+      // already excluded by the enclosing !isTest guard.
+      if (
+        workflow.max_runs_per_day &&
+        workflow.max_runs_per_day > 0 &&
+        run.trigger_source !== "manual"
+      ) {
+        const dayStart = new Date();
+        dayStart.setUTCHours(0, 0, 0, 0);
+        const { count: runsToday } = await adminSupabase
+          .from("workflow_runs")
+          .select("id", { count: "exact", head: true })
+          .eq("workflow_id", workflowId)
+          .in("status", ["completed", "running", "partial"])
+          .gte("created_at", dayStart.toISOString())
+          .neq("id", runId);
+        if (runsToday !== null && runsToday >= workflow.max_runs_per_day) {
+          await adminSupabase
+            .from("workflow_runs")
+            .update({
+              status: "skipped",
+              completed_at: new Date().toISOString(),
+              error_message: "Daily run limit reached",
+            })
+            .eq("id", runId);
+          return new Response(
+            JSON.stringify({
+              success: true,
+              runId,
+              skipped: "max_runs_per_day",
+            }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+      }
+
       const conditions =
         (workflow.conditions as Array<{
           field: string;

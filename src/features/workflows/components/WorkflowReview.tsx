@@ -356,7 +356,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
 
       {/* ── 4. Workflow Settings ──────────────────────────────────────────── */}
       <SectionCard>
-        <CardHeader label="Workflow Settings" stepIndex={3} onEdit={onEdit} />
+        <CardHeader label="Workflow Settings" stepIndex={0} onEdit={onEdit} />
         <div className="space-y-3">
           {/* max runs */}
           <div className="flex items-center gap-2.5">
@@ -370,7 +370,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
             >
               Max runs per day:{" "}
               <strong style={{ color: "var(--ink)" }}>
-                {data.settings?.maxRunsPerDay ?? 50}
+                {data.settings?.maxRunsPerDay ?? "Unlimited"}
               </strong>
             </span>
           </div>
