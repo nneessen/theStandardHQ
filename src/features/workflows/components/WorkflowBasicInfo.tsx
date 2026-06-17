@@ -1,18 +1,8 @@
 // src/features/workflows/components/WorkflowBasicInfo.tsx
 
+import { useState } from "react";
 import { AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
+import { tint } from "../board";
 import type {
   WorkflowFormData,
   WorkflowCategory,
@@ -47,177 +37,283 @@ const WORKFLOW_CATEGORIES = [
   },
 ];
 
+const FIELD_BASE: React.CSSProperties = {
+  background: "var(--surface-1)",
+  border: "1px solid var(--line2)",
+  borderRadius: 12,
+  height: 40,
+  padding: "0 14px",
+  fontSize: 14,
+  color: "var(--ink)",
+  width: "100%",
+  outline: "none",
+  transition: "box-shadow 0.15s, border-color 0.15s",
+};
+
+const FIELD_FOCUS_SHADOW = `0 0 0 3px ${tint("--blue", 35)}`;
+const FIELD_ERROR_BORDER = "var(--red)";
+
+function FieldLabel({
+  children,
+  required,
+  optional,
+}: {
+  children: React.ReactNode;
+  required?: boolean;
+  optional?: boolean;
+}) {
+  return (
+    <label
+      className="mb-1.5 block font-sans text-[13px] font-semibold"
+      style={{ color: "var(--mut)" }}
+    >
+      {children}
+      {required && (
+        <span className="ml-0.5" style={{ color: "var(--red)" }}>
+          *
+        </span>
+      )}
+      {optional && (
+        <span
+          className="ml-1.5 font-mono text-[11px] font-normal"
+          style={{ color: "var(--mut2)" }}
+        >
+          optional
+        </span>
+      )}
+    </label>
+  );
+}
+
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1 font-sans text-[12px]" style={{ color: "var(--red)" }}>
+      {msg}
+    </p>
+  );
+}
+
 export default function WorkflowBasicInfo({
   data,
   onChange,
   errors,
 }: WorkflowBasicInfoProps) {
+  const [nameFocused, setNameFocused] = useState(false);
+  const [descFocused, setDescFocused] = useState(false);
+  const [catFocused, setCatFocused] = useState(false);
+
+  const priority = data.settings?.priority ?? 50;
+  const band = priority < 34 ? "Low" : priority > 66 ? "High" : "Normal";
+
   return (
-    <div className="w-full space-y-3">
-      {/* Workflow Name */}
-      <div className="p-2 rounded-md bg-muted/50">
-        <Label className="text-xs font-medium text-muted-foreground">
-          Workflow Name <span className="text-destructive">*</span>
-        </Label>
-        <Input
+    <div className="w-full space-y-5">
+      {/* ── Workflow Name ─────────────────────────────────────────────── */}
+      <div>
+        <FieldLabel required>Workflow Name</FieldLabel>
+        <input
+          type="text"
           value={data.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="e.g., Welcome Email Series"
-          className={cn(
-            "h-8 text-xs mt-1 bg-background",
-            errors.name && "border-destructive focus-visible:ring-destructive",
-          )}
           maxLength={100}
           autoComplete="off"
           data-bwignore="true"
           data-1p-ignore="true"
           data-lpignore="true"
+          style={{
+            ...FIELD_BASE,
+            borderColor: errors.name
+              ? FIELD_ERROR_BORDER
+              : nameFocused
+                ? "var(--blue)"
+                : "var(--line2)",
+            boxShadow: nameFocused ? FIELD_FOCUS_SHADOW : "none",
+          }}
+          onFocus={() => setNameFocused(true)}
+          onBlur={() => setNameFocused(false)}
         />
-        {errors.name && (
-          <p className="text-xs text-destructive mt-1">{errors.name}</p>
-        )}
+        <FieldError msg={errors.name} />
       </div>
 
-      {/* Description */}
-      <div className="p-2 rounded-md bg-muted/30">
-        <Label className="text-xs font-medium text-muted-foreground">
-          Description{" "}
-          <span className="text-xs text-muted-foreground/70">(optional)</span>
-        </Label>
-        <Textarea
+      {/* ── Description ───────────────────────────────────────────────── */}
+      <div>
+        <FieldLabel optional>Description</FieldLabel>
+        <textarea
           value={data.description || ""}
           onChange={(e) => onChange({ description: e.target.value })}
           placeholder="Briefly describe what this workflow does..."
-          className="h-16 text-xs resize-none mt-1 bg-background"
           rows={3}
           maxLength={500}
           autoComplete="off"
           data-bwignore="true"
           data-1p-ignore="true"
           data-lpignore="true"
+          style={{
+            ...FIELD_BASE,
+            height: "auto",
+            padding: "10px 14px",
+            resize: "none",
+            lineHeight: 1.55,
+            borderColor: errors.description
+              ? FIELD_ERROR_BORDER
+              : descFocused
+                ? "var(--blue)"
+                : "var(--line2)",
+            boxShadow: descFocused ? FIELD_FOCUS_SHADOW : "none",
+          }}
+          onFocus={() => setDescFocused(true)}
+          onBlur={() => setDescFocused(false)}
         />
+        <FieldError msg={errors.description} />
       </div>
 
-      {/* Category */}
-      <div className="p-2 rounded-md bg-muted/50">
-        <Label className="text-xs font-medium text-muted-foreground">
-          Category <span className="text-destructive">*</span>
-        </Label>
-        <Select
+      {/* ── Category ──────────────────────────────────────────────────── */}
+      <div>
+        <FieldLabel required>Category</FieldLabel>
+        <select
           value={data.category}
-          onValueChange={(value) =>
-            onChange({ category: value as WorkflowCategory })
+          onChange={(e) =>
+            onChange({ category: e.target.value as WorkflowCategory })
           }
+          style={{
+            ...FIELD_BASE,
+            cursor: "pointer",
+            appearance: "none",
+            WebkitAppearance: "none",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 14px center",
+            paddingRight: 36,
+            borderColor: catFocused ? "var(--blue)" : "var(--line2)",
+            boxShadow: catFocused ? FIELD_FOCUS_SHADOW : "none",
+          }}
+          onFocus={() => setCatFocused(true)}
+          onBlur={() => setCatFocused(false)}
         >
-          <SelectTrigger className="h-8 text-xs mt-1 bg-background">
-            <SelectValue placeholder="Select a category..." />
-          </SelectTrigger>
-          <SelectContent>
-            {WORKFLOW_CATEGORIES.map((category) => (
-              <SelectItem
-                key={category.value}
-                value={category.value}
-                className="text-xs"
-              >
-                <div>
-                  <div className="font-medium">{category.label}</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {category.description}
-                  </div>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <option value="" disabled>
+            Select a category...
+          </option>
+          {WORKFLOW_CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label} — {cat.description}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Advanced Settings - Priority */}
-      <div className="p-3 rounded-md bg-gradient-to-r from-amber-500/5 to-amber-500/10 border border-warning/20">
-        <div className="flex items-start gap-2 mb-3">
-          <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
-          <div className="flex-1">
-            <Label className="text-xs font-medium text-warning">
-              Execution Priority
-            </Label>
-            <p className="text-[10px] text-warning mt-0.5">
-              Controls the order of execution when multiple workflows are
-              triggered simultaneously
-            </p>
-          </div>
+      {/* ── Execution Priority ────────────────────────────────────────── */}
+      <div
+        style={{
+          background: tint("--amber", 7),
+          border: `1px solid ${tint("--amber", 22)}`,
+          borderRadius: 14,
+          padding: 16,
+        }}
+      >
+        {/* Header */}
+        <div className="mb-1 flex items-center gap-2">
+          <AlertCircle
+            className="h-4 w-4 shrink-0"
+            style={{ color: "var(--amber)" }}
+          />
+          <span
+            className="font-mono text-[11px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--amber)" }}
+          >
+            Execution Priority
+          </span>
+        </div>
+        <p
+          className="mb-4 font-sans text-[13px]"
+          style={{ color: "var(--mut)" }}
+        >
+          Controls which workflows run first when multiple are triggered at the
+          same time.
+        </p>
+
+        {/* Scale labels */}
+        <div className="mb-1.5 flex items-center justify-between">
+          <span
+            className="font-mono text-[11px]"
+            style={{ color: "var(--mut2)" }}
+          >
+            Low
+          </span>
+          <span
+            className="font-mono text-[13px] font-bold"
+            style={{ color: "var(--amber)" }}
+          >
+            {band}
+          </span>
+          <span
+            className="font-mono text-[11px]"
+            style={{ color: "var(--mut2)" }}
+          >
+            High
+          </span>
         </div>
 
-        {/* Priority Slider */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">Low</span>
-            <span className="text-sm font-bold text-warning">
-              {(() => {
-                const priority = data.settings?.priority || 50;
-                if (priority >= 80) return "High Priority";
-                if (priority >= 60) return "Medium-High";
-                if (priority >= 40) return "Normal";
-                if (priority >= 20) return "Low Priority";
-                return "Very Low";
-              })()}
-            </span>
-            <span className="text-[10px] text-muted-foreground">High</span>
-          </div>
+        {/* Slider */}
+        <input
+          type="range"
+          min={1}
+          max={100}
+          step={1}
+          value={priority}
+          onChange={(e) =>
+            onChange({
+              settings: {
+                ...data.settings,
+                priority: Number(e.target.value),
+              },
+            })
+          }
+          style={{
+            accentColor: "var(--amber)",
+            width: "100%",
+            cursor: "pointer",
+          }}
+        />
 
-          <Slider
-            value={[data.settings?.priority || 50]}
-            onValueChange={([value]) =>
-              onChange({
-                settings: {
-                  ...data.settings,
-                  priority: value,
-                },
-              })
-            }
-            min={1}
-            max={100}
-            step={10}
-            className="w-full"
-          />
+        {/* Tick marks */}
+        <div
+          className="mt-1 flex justify-between font-mono text-[10px]"
+          style={{ color: "var(--mut2)" }}
+        >
+          <span>1</span>
+          <span>25</span>
+          <span>50</span>
+          <span>75</span>
+          <span>100</span>
+        </div>
 
-          <div className="flex justify-between text-[9px] text-muted-foreground">
-            <span>1</span>
-            <span>25</span>
-            <span>50</span>
-            <span>75</span>
-            <span>100</span>
-          </div>
-
-          {/* Priority Explanation */}
-          <div
-            className={cn(
-              "p-2 rounded text-[10px] mt-2",
-              "bg-warning/10 border",
-              data.settings?.priority && data.settings.priority >= 80
-                ? "border-warning text-warning"
-                : data.settings?.priority && data.settings.priority <= 20
-                  ? "border-warning/70 text-warning"
-                  : "border-warning/30 text-warning",
-            )}
+        {/* Live note */}
+        <div
+          className="mt-3 rounded-lg px-3 py-2 font-sans text-[12px]"
+          style={{
+            background: "var(--surface-1)",
+            border: "1px solid var(--line)",
+            color: "var(--mut)",
+          }}
+        >
+          Current:{" "}
+          <span
+            className="font-mono font-bold"
+            style={{ color: "var(--amber)" }}
           >
-            <p className="font-medium mb-0.5">
-              Current: {data.settings?.priority || 50}/100
-              {data.settings?.priority === 50 && " (Default)"}
-            </p>
-            <p>
-              {(() => {
-                const priority = data.settings?.priority || 50;
-                if (priority >= 80)
-                  return "🚀 High priority workflows execute first. Use for critical automations like welcome emails or urgent alerts.";
-                if (priority >= 60)
-                  return "⬆️ Slightly elevated priority. Executes before normal workflows but after high priority ones.";
-                if (priority >= 40)
-                  return "➡️ Normal priority (default). Standard execution order with other normal workflows.";
-                if (priority >= 20)
-                  return "⬇️ Low priority. Executes after normal and high priority workflows. Good for non-urgent tasks.";
-                return "🐌 Lowest priority. Only executes after all other workflows complete. Use for background tasks.";
-              })()}
-            </p>
-          </div>
+            {priority}/100
+          </span>{" "}
+          — <span style={{ color: "var(--ink)" }}>{band} priority</span>
+          {priority === 50 && (
+            <span style={{ color: "var(--mut2)" }}> (default)</span>
+          )}
+          {". "}
+          {band === "High"
+            ? "Runs before all other workflows — use for critical automations."
+            : band === "Low"
+              ? "Runs after normal and high-priority workflows — good for background tasks."
+              : "Standard execution order."}
         </div>
       </div>
     </div>

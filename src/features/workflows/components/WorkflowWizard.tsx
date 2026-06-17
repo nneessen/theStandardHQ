@@ -1,10 +1,9 @@
 // src/features/workflows/components/WorkflowWizard.tsx
 
-import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, ArrowRight, Check, Save, TestTube } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useCallback, Fragment } from "react";
+import { ArrowLeft, ArrowRight, Check, Save, TestTube, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { tint } from "../board";
 import type {
   Workflow,
   WorkflowFormData,
@@ -418,139 +417,216 @@ export default function WorkflowWizard({
     }
   };
 
+  const stepHasError = (index: number) =>
+    Object.keys(errors).some((key) => {
+      if (index === 0) return key === "name" || key === "description";
+      if (index === 1) return key === "trigger" || key === "schedule";
+      if (index === 2) return key === "actions" || key.startsWith("action_");
+      return false;
+    });
+  const lastStep = WIZARD_STEPS.length - 1;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg max-h-[90vh] p-3 flex flex-col bg-card border-border dark:border-border"
         hideCloseButton
+        className="block gap-0 border-0 p-0 shadow-none sm:max-w-none"
+        style={{
+          width: 920,
+          maxWidth: "95vw",
+          maxHeight: "92vh",
+          borderRadius: 20,
+          background: "var(--surface-2)",
+          border: "1px solid var(--line2)",
+          boxShadow: "var(--panelshadow)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
-        {/* Header - compact but readable */}
-        <div className="shrink-0 pb-2 border-b border-border dark:border-border bg-background dark:bg-v2-card-tinted/50 -m-3 mb-2 p-3 rounded-t-lg">
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div
+          className="shrink-0 px-6 pt-6 pb-4"
+          style={{ borderBottom: "1px solid var(--line)" }}
+        >
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-sm font-semibold text-foreground dark:text-foreground">
-              {workflow ? "Edit" : "Create"} Workflow
-            </DialogTitle>
+            <div className="flex items-center gap-2.5">
+              <DialogTitle
+                className="font-display text-[20px] font-extrabold uppercase tracking-wide"
+                style={{ color: "var(--ink)" }}
+              >
+                {workflow ? "Edit" : "Create"} Workflow
+              </DialogTitle>
+              <span
+                className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide"
+                style={{
+                  background:
+                    formData.status === "active"
+                      ? tint("--green", 16)
+                      : "var(--surface-4)",
+                  color:
+                    formData.status === "active"
+                      ? "var(--green)"
+                      : "var(--mut)",
+                }}
+              >
+                {formData.status === "active" ? "Active" : "Draft"}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-4)]"
+              style={{ color: "var(--mut2)" }}
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Step Progress - compact */}
-          <div className="flex items-center gap-2 mt-2">
+          {/* Stepper — completed steps are click-to-jump */}
+          <div className="mt-4 flex items-center gap-2">
             {WIZARD_STEPS.map((step, index) => {
               const isActive = index === currentStep;
-              const isCompleted = index < currentStep;
-              const hasError = Object.keys(errors).some((key) => {
-                if (index === 0) return key === "name" || key === "description";
-                if (index === 1) return key === "trigger" || key === "schedule";
-                if (index === 2)
-                  return key === "actions" || key.startsWith("action_");
-                return false;
-              });
-
+              const isDone = index < currentStep;
+              const hasError = stepHasError(index);
+              const clickable = index <= currentStep;
+              const circle = hasError
+                ? { background: tint("--red", 18), color: "var(--red)" }
+                : isActive
+                  ? {
+                      background: "var(--blue)",
+                      color: "#0c1322",
+                      boxShadow: `0 0 0 4px ${tint("--blue", 22)}`,
+                    }
+                  : isDone
+                    ? { background: tint("--green", 18), color: "var(--green)" }
+                    : { background: "var(--surface-4)", color: "var(--mut2)" };
               return (
-                <div
-                  key={step.id}
-                  className={cn(
-                    "flex items-center gap-1",
-                    isActive &&
-                      "font-medium text-foreground dark:text-foreground",
-                    isCompleted &&
-                      !isActive &&
-                      "text-muted-foreground dark:text-muted-foreground",
-                    !isActive &&
-                      !isCompleted &&
-                      "text-muted-foreground dark:text-muted-foreground",
-                    hasError && "text-destructive",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex items-center justify-center w-5 h-5 rounded-full text-[10px]",
-                      isActive &&
-                        "bg-foreground dark:bg-v2-card-tinted text-background dark:text-foreground",
-                      isCompleted &&
-                        !isActive &&
-                        "bg-success/20 dark:bg-success/30 text-success",
-                      !isActive &&
-                        !isCompleted &&
-                        "bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground",
-                      hasError &&
-                        "bg-destructive/20 dark:bg-destructive/30 text-destructive",
-                    )}
+                <Fragment key={step.id}>
+                  <button
+                    type="button"
+                    disabled={!clickable}
+                    onClick={() => clickable && setCurrentStep(index)}
+                    className="flex items-center gap-2 disabled:cursor-default"
                   >
-                    {isCompleted && !isActive ? (
-                      <Check className="h-3 w-3" />
-                    ) : (
-                      index + 1
-                    )}
-                  </span>
-                  <span className="text-[11px]">{step.label}</span>
-                  {index < WIZARD_STEPS.length - 1 && (
-                    <span className="text-muted-foreground dark:text-muted-foreground text-[11px] ml-1">
-                      →
+                    <span
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-full font-mono text-[12px] font-bold transition-shadow"
+                      style={circle}
+                    >
+                      {isDone && !hasError ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        index + 1
+                      )}
                     </span>
+                    <span
+                      className="font-sans text-[13px] font-semibold"
+                      style={{
+                        color: isActive
+                          ? "var(--ink)"
+                          : isDone
+                            ? "var(--mut)"
+                            : "var(--mut2)",
+                      }}
+                    >
+                      {step.label}
+                    </span>
+                  </button>
+                  {index < lastStep && (
+                    <ArrowRight
+                      className="h-3.5 w-3.5"
+                      style={{ color: "var(--mut3)" }}
+                    />
                   )}
-                </div>
+                </Fragment>
               );
             })}
           </div>
 
-          {/* Display submit error if any */}
           {errors.submit && (
-            <div className="mt-2 p-2 rounded-md bg-destructive/10 border border-destructive/30">
-              <p className="text-[11px] text-destructive">{errors.submit}</p>
+            <div
+              className="mt-3 rounded-lg px-3 py-2"
+              style={{
+                background: tint("--red", 12),
+                border: `1px solid ${tint("--red", 30)}`,
+              }}
+            >
+              <p
+                className="font-sans text-[12px]"
+                style={{ color: "var(--red)" }}
+              >
+                {errors.submit}
+              </p>
             </div>
           )}
         </div>
 
-        {/* Content - scrollable, takes remaining space */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="w-full">{renderStepContent()}</div>
+        {/* ── Content ─────────────────────────────────────────────────────── */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          {renderStepContent()}
         </div>
 
-        {/* Footer - fixed at bottom, compact */}
-        <div className="shrink-0 pt-2 mt-2 border-t border-border dark:border-border bg-background dark:bg-v2-card-tinted/30 -m-3 p-3 rounded-b-lg">
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 0 || isSubmitting}
-              size="sm"
-              className="h-6 text-[10px] px-2 border-border dark:border-border"
-            >
-              <ArrowLeft className="h-3 w-3 mr-1" />
-              Back
-            </Button>
-
-            {currentStep < WIZARD_STEPS.length - 1 ? (
-              <Button
-                onClick={handleNext}
-                size="sm"
+        {/* ── Footer ──────────────────────────────────────────────────────── */}
+        <div
+          className="flex shrink-0 items-center justify-between px-6 py-4"
+          style={{ borderTop: "1px solid var(--line)" }}
+        >
+          <div>
+            {currentStep > 0 && (
+              <button
+                type="button"
+                onClick={handleBack}
                 disabled={isSubmitting}
-                className="h-6 text-[10px] px-2"
+                className="flex h-9 items-center gap-1.5 rounded-lg px-3 font-sans text-[13px] font-semibold transition-colors hover:bg-[var(--surface-4)] disabled:opacity-40"
+                style={{ color: "var(--mut)" }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {currentStep < lastStep ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isSubmitting}
+                className="flex h-9 items-center gap-1.5 rounded-lg px-5 font-sans text-[13px] font-semibold transition-opacity disabled:opacity-40"
+                style={{ background: "var(--blue)", color: "#0c1322" }}
               >
                 Next
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             ) : (
               <>
-                <Button
-                  variant="outline"
+                <button
+                  type="button"
                   onClick={handleTestRun}
                   disabled={isSubmitting}
-                  size="sm"
-                  className="h-6 text-[10px] px-2 border-warning/40 hover:border-warning/70 hover:bg-warning/10 dark:hover:bg-warning/15 text-warning"
+                  className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-colors disabled:opacity-40"
+                  style={{
+                    border: `1px solid ${tint("--amber", 45)}`,
+                    color: "var(--amber)",
+                  }}
                 >
-                  <TestTube className="h-3 w-3 mr-1" />
+                  <TestTube className="h-3.5 w-3.5" />
                   Test Run
-                </Button>
-                <Button
+                </button>
+                <button
+                  type="button"
                   onClick={handleSave}
                   disabled={isSubmitting}
-                  size="sm"
-                  className="h-6 text-[10px] px-2 bg-success hover:bg-success text-success-foreground"
+                  className="flex h-9 items-center gap-1.5 rounded-lg px-5 font-sans text-[13px] font-semibold transition-opacity disabled:opacity-40"
+                  style={{ background: "var(--green)", color: "#0a1a0f" }}
                 >
-                  <Save className="h-3 w-3 mr-1" />
-                  {isSubmitting ? "Saving..." : workflow ? "Update" : "Create"}
-                </Button>
+                  <Save className="h-3.5 w-3.5" />
+                  {isSubmitting
+                    ? "Saving…"
+                    : workflow
+                      ? "Update Workflow"
+                      : "Create Workflow"}
+                </button>
               </>
             )}
           </div>
