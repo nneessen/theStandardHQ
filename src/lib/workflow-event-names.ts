@@ -15,6 +15,15 @@ export const WORKFLOW_EVENTS = {
   RECRUIT_PHASE_CHANGED: "recruit.phase_changed",
   RECRUIT_GRADUATED_TO_AGENT: "recruit.graduated_to_agent",
   RECRUIT_DROPPED_OUT: "recruit.dropped_out",
+  RECRUIT_PIPELINE_ENROLLED: "recruit.pipeline_enrolled",
+  RECRUIT_PHASE_COMPLETED: "recruit.phase_completed",
+  RECRUIT_PHASE_BLOCKED: "recruit.phase_blocked",
+  RECRUIT_CHECKLIST_ITEM_COMPLETED: "recruit.checklist_item_completed",
+  RECRUIT_CHECKLIST_ITEM_AWAITING_APPROVAL:
+    "recruit.checklist_item_awaiting_approval",
+  RECRUIT_QUIZ_PASSED: "recruit.quiz_passed",
+  RECRUIT_QUIZ_FAILED: "recruit.quiz_failed",
+  RECRUIT_ONBOARDING_COMPLETED: "recruit.onboarding_completed",
 
   // Policy events
   POLICY_CREATED: "policy.created",

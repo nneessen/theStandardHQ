@@ -12,6 +12,10 @@ import {
 import { PipelinePhaseRepository } from "./repositories/PipelinePhaseRepository";
 import { PhaseChecklistItemRepository } from "./repositories/PhaseChecklistItemRepository";
 import { documentService } from "@/services/documents";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import { pipelineAutomationService } from "./pipelineAutomationService";
 import { createAuthUserWithProfile } from "./authUserService";
 import type {
@@ -209,6 +213,18 @@ export const checklistService = {
         );
       }
 
+      // Emit recruit.pipeline_enrolled (non-fatal). Reached only when newly
+      // initialized (the !result.initialized early-return is above).
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.RECRUIT_PIPELINE_ENROLLED,
+        {
+          recipientId: userId,
+          templateId,
+          firstPhaseId: result.first_phase_id,
+          timestamp: new Date().toISOString(),
+        },
+      );
+
       // Return the newly created progress
       const newProgress =
         await phaseProgressRepository.findByUserIdWithPhase(userId);
@@ -293,6 +309,14 @@ export const checklistService = {
         ),
       );
 
+      // Emit recruit.phase_completed (non-fatal). recipientId = the recruit.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.RECRUIT_PHASE_COMPLETED, {
+        recipientId: userId,
+        completedPhaseId: currentPhaseId,
+        nextPhaseId: result.next_phase_id ?? undefined,
+        timestamp: new Date().toISOString(),
+      });
+
       if (result.next_phase_id) {
         // Check if next phase requires login access (phase 2+)
         if (result.next_phase_order && result.next_phase_order >= 2) {
@@ -327,6 +351,15 @@ export const checklistService = {
       }
 
       if (result.completed) {
+        // Final phase done — emit recruit.onboarding_completed (non-fatal).
+        await workflowEventEmitter.emit(
+          WORKFLOW_EVENTS.RECRUIT_ONBOARDING_COMPLETED,
+          {
+            recipientId: userId,
+            completedPhaseId: currentPhaseId,
+            timestamp: new Date().toISOString(),
+          },
+        );
         return null;
       }
 
@@ -337,13 +370,21 @@ export const checklistService = {
   },
 
   async blockPhase(userId: string, phaseId: string, reason: string) {
-    return this.updatePhaseStatus(
+    const result = await this.updatePhaseStatus(
       userId,
       phaseId,
       "blocked",
       undefined,
       reason,
     );
+    // Emit recruit.phase_blocked (non-fatal). blockPhase is the only 'blocked' caller.
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.RECRUIT_PHASE_BLOCKED, {
+      recipientId: userId,
+      phaseId,
+      reason,
+      timestamp: new Date().toISOString(),
+    });
+    return result;
   },
 
   async revertPhase(userId: string, phaseId: string) {
@@ -521,6 +562,30 @@ export const checklistService = {
       }
     }
 
+    // Emit recruit checklist workflow events (non-fatal). recipientId = the recruit.
+    // Gate strictly on 'completed' (NOT 'approved' — document approvals fire
+    // document.approved instead, avoiding a double event).
+    if (status === "completed") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.RECRUIT_CHECKLIST_ITEM_COMPLETED,
+        {
+          recipientId: userId,
+          checklistItemId: itemId,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    } else if (status === "in_progress" && statusData.document_id) {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.RECRUIT_CHECKLIST_ITEM_AWAITING_APPROVAL,
+        {
+          recipientId: userId,
+          checklistItemId: itemId,
+          documentId: statusData.document_id,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
+
     // Check if all required items in this phase are approved
     await this.checkPhaseAutoAdvancement(userId, itemId);
 
@@ -560,6 +625,27 @@ export const checklistService = {
           userId,
         ),
       );
+
+      // Emit recruit.phase_completed for the AUTO-advance path (non-fatal).
+      // Disjoint from advanceToNextPhase (different RPC) → no double-emit.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.RECRUIT_PHASE_COMPLETED, {
+        recipientId: userId,
+        completedPhaseId: result.phase_id,
+        nextPhaseId: result.advance_result?.next_phase_id ?? undefined,
+        timestamp: new Date().toISOString(),
+      });
+
+      // If the auto-advance finished the pipeline, emit onboarding_completed too.
+      if (result.advance_result?.completed) {
+        await workflowEventEmitter.emit(
+          WORKFLOW_EVENTS.RECRUIT_ONBOARDING_COMPLETED,
+          {
+            recipientId: userId,
+            completedPhaseId: result.phase_id,
+            timestamp: new Date().toISOString(),
+          },
+        );
+      }
 
       if (result.advance_result?.next_phase_id) {
         // Trigger phase_enter automation (fire-and-forget)
