@@ -24,7 +24,9 @@ export type WorkflowEventCategory =
   | "agent"
   | "contracting"
   | "document"
-  | "hierarchy";
+  | "hierarchy"
+  | "client"
+  | "underwriting";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -574,6 +576,44 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     category: "hierarchy",
     label: "Agency ownership transferred",
     description: "An agency's ownership is transferred to a new owner.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Client (emitted by ClientService) ----
+  {
+    eventName: WORKFLOW_EVENTS.CLIENT_CREATED,
+    category: "client",
+    label: "Client created",
+    description: "An agent adds a new client.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Underwriting (emitted by ruleService) ----
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_SUBMITTED,
+    category: "underwriting",
+    label: "Rule set submitted",
+    description: "An underwriting rule set is submitted for review.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_APPROVED,
+    category: "underwriting",
+    label: "Rule set approved",
+    description:
+      "An underwriting rule set is approved (notifies the submitter).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_REJECTED,
+    category: "underwriting",
+    label: "Rule set rejected",
+    description:
+      "An underwriting rule set is rejected (notifies the submitter).",
     availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },

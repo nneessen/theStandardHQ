@@ -62,6 +62,14 @@ export const WORKFLOW_EVENTS = {
   AGENCY_CREATED: "agency.created",
   AGENCY_OWNERSHIP_TRANSFERRED: "agency.ownership_transferred",
 
+  // Client events
+  CLIENT_CREATED: "client.created",
+
+  // Underwriting rule-set events
+  UNDERWRITING_RULE_SET_SUBMITTED: "underwriting.rule_set_submitted",
+  UNDERWRITING_RULE_SET_APPROVED: "underwriting.rule_set_approved",
+  UNDERWRITING_RULE_SET_REJECTED: "underwriting.rule_set_rejected",
+
   // Document events (agent document vault)
   DOCUMENT_UPLOADED: "document.uploaded",
   DOCUMENT_APPROVED: "document.approved",
