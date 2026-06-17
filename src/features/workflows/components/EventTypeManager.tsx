@@ -1,32 +1,16 @@
 // src/features/workflows/components/EventTypeManager.tsx
+// Board (.theme-v2) restyled — header, search, category filter chips, and event rows.
 
 import { useState, useCallback } from "react";
 import {
   Plus,
   Edit2,
   Trash2,
-  Save,
-  X,
-  Power,
-  PowerOff,
   Zap,
   Search,
+  Power,
+  PowerOff,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import EventTypeFormDialog from "./EventTypeFormDialog";
 import {
   useEventTypes,
@@ -35,6 +19,12 @@ import {
   useDeleteEventType,
 } from "@/hooks/workflows";
 import type { TriggerEventType } from "@/types/workflow.types";
+import { tint } from "../board";
+import {
+  categoryMeta,
+  categoryOrder,
+  CATEGORY_META,
+} from "../event-picker-meta";
 
 interface EditableEventType extends Partial<TriggerEventType> {
   isNew?: boolean;
@@ -46,23 +36,13 @@ interface EditableEventType extends Partial<TriggerEventType> {
 // pruned; re-add a category here only when a real event in it is wired + seeded.
 const EVENT_CATEGORIES = ["recruit", "policy", "commission", "lead"];
 
-// Keys must match EVENT_CATEGORIES (the canonical active categories).
-const CATEGORY_COLORS: Record<string, string> = {
-  recruit: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
-  policy:
-    "bg-success/20 text-success dark:bg-success/30 dark:text-success border-0",
-  commission:
-    "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning border-0",
-  lead: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning border-0",
-};
-
 export default function EventTypeManager() {
   const { data: eventTypes = [], isLoading } = useEventTypes();
   const createEvent = useCreateEventType();
   const updateEvent = useUpdateEventType();
   const deleteEvent = useDeleteEventType();
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [_editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<EditableEventType | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -236,7 +216,7 @@ export default function EventTypeManager() {
     return matchesSearch && matchesCategory;
   });
 
-  // Group filtered events by category
+  // Group filtered events by category, sorted by canonical order
   const groupedEvents = filteredEvents.reduce(
     (acc, event) => {
       const category = event.category || "custom";
@@ -247,288 +227,396 @@ export default function EventTypeManager() {
     {} as Record<string, typeof filteredEvents>,
   );
 
+  const sortedGroups = Object.entries(groupedEvents).sort(
+    ([a], [b]) => categoryOrder(a) - categoryOrder(b),
+  );
+
   // Count active filters
   const filterCount =
     (searchQuery ? 1 : 0) + (selectedCategory !== null ? 1 : 0);
 
   if (isLoading) {
     return (
-      <div className="p-3 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-        Loading event types...
+      <div
+        className="px-6 py-10 text-center font-sans text-[14px]"
+        style={{ color: "var(--mut2)" }}
+      >
+        Loading event types…
       </div>
     );
   }
 
   return (
-    <div className="space-y-2.5">
-      {/* Header */}
-      <div className="flex items-center justify-between p-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg border border-v2-ring dark:border-v2-ring-strong">
-        <div>
-          <h3 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
-            Event Type Management
-          </h3>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Define events that can trigger workflows
-          </p>
-        </div>
-        <Button size="sm" onClick={handleCreate} className="h-6 text-[10px]">
-          <Plus className="h-3 w-3 mr-1" />
-          Add Event
-        </Button>
-      </div>
-
-      {/* Search and Filter Bar */}
-      <div className="space-y-2">
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
-          <Input
-            type="text"
-            placeholder="Search events by name, description, or category..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 text-xs border-v2-ring dark:border-v2-ring-strong"
-          />
-        </div>
-
-        {/* Category Filter Buttons & Event Count */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-wrap gap-1.5">
-            <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="h-6 px-2 text-xs"
-            >
-              All Categories
-            </Button>
-            {EVENT_CATEGORIES.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className="h-6 px-2 text-xs"
-              >
-                {category}
-              </Button>
-            ))}
+    <div className="space-y-5">
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-xl"
+            style={{ background: tint("--violet", 14), color: "var(--violet)" }}
+          >
+            <Zap className="h-5 w-5" />
           </div>
-          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
-            Showing {filteredEvents.length} of {eventTypes.length} events
-            {filterCount > 0 &&
-              ` • ${filterCount} filter${filterCount > 1 ? "s" : ""} active`}
-          </span>
+          <div>
+            <div className="flex items-baseline gap-2.5">
+              <h2
+                className="font-display text-[20px] font-extrabold uppercase tracking-wide"
+                style={{ color: "var(--ink)" }}
+              >
+                Event Types
+              </h2>
+              <span
+                className="font-mono text-[13px]"
+                style={{ color: "var(--mut2)" }}
+              >
+                {eventTypes.length}
+              </span>
+            </div>
+            <p
+              className="font-sans text-[13.5px]"
+              style={{ color: "var(--mut)" }}
+            >
+              Define the events that trigger workflows
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={handleCreate}
+          className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-85"
+          style={{ background: "var(--blue)", color: "#0c1322" }}
+        >
+          <Plus className="h-4 w-4" />
+          Add Event
+        </button>
       </div>
 
-      {/* Event Categories - Wrapped in ScrollArea */}
-      {Object.keys(groupedEvents).length === 0 ? (
-        <div className="py-12 text-center">
-          <Zap className="h-10 w-10 mx-auto mb-3 text-v2-ink-subtle dark:text-v2-ink-muted" />
-          <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle font-medium">
+      {/* ── Search ────────────────────────────────────────────────────────── */}
+      <div className="relative">
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2"
+          style={{ color: "var(--mut2)" }}
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search events by name, description, or category…"
+          className="h-[46px] w-full rounded-xl pl-11 pr-4 font-sans text-[14px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+          style={{
+            background: "var(--surface-1)",
+            border: "1px solid var(--line2)",
+            color: "var(--ink)",
+          }}
+          onFocus={(e) =>
+            (e.currentTarget.style.boxShadow =
+              "0 0 0 3px " + tint("--violet", 30))
+          }
+          onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
+        />
+      </div>
+
+      {/* ── Category filter chips ──────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* All */}
+        <button
+          type="button"
+          onClick={() => setSelectedCategory(null)}
+          className="flex h-8 items-center gap-1.5 rounded-lg px-3 font-sans text-[13px] font-semibold transition-colors"
+          style={{
+            background:
+              selectedCategory === null
+                ? tint("--violet", 14)
+                : "var(--surface-3)",
+            color: selectedCategory === null ? "var(--violet)" : "var(--mut)",
+            boxShadow:
+              selectedCategory === null
+                ? `inset 0 0 0 1px ${tint("--violet", 40)}`
+                : "none",
+          }}
+          onMouseEnter={(e) => {
+            if (selectedCategory !== null)
+              e.currentTarget.style.background = "var(--surface-4)";
+          }}
+          onMouseLeave={(e) => {
+            if (selectedCategory !== null)
+              e.currentTarget.style.background = "var(--surface-3)";
+          }}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          All
+          <span
+            className="font-mono text-[11px]"
+            style={{ color: "var(--mut2)" }}
+          >
+            {eventTypes.length}
+          </span>
+        </button>
+
+        {EVENT_CATEGORIES.map((cat) => {
+          const meta = categoryMeta(cat);
+          const matched = CATEGORY_META.find((m) => m.key === cat);
+          const Icon = matched?.icon ?? Zap;
+          const count = eventTypes.filter((e) => e.category === cat).length;
+          const active = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className="flex h-8 items-center gap-1.5 rounded-lg px-3 font-sans text-[13px] font-semibold transition-colors"
+              style={{
+                background: active ? tint(meta.accent, 14) : "var(--surface-3)",
+                color: active ? `var(${meta.accent})` : "var(--mut)",
+                boxShadow: active
+                  ? `inset 0 0 0 1px ${tint(meta.accent, 40)}`
+                  : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!active)
+                  e.currentTarget.style.background = "var(--surface-4)";
+              }}
+              onMouseLeave={(e) => {
+                if (!active)
+                  e.currentTarget.style.background = "var(--surface-3)";
+              }}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {meta.label}
+              <span
+                className="font-mono text-[11px]"
+                style={{ color: "var(--mut2)" }}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Filter count indicator */}
+        {filterCount > 0 && (
+          <span
+            className="ml-auto font-sans text-[12.5px]"
+            style={{ color: "var(--mut2)" }}
+          >
+            Showing {filteredEvents.length} of {eventTypes.length}
+            {filterCount > 1 && ` · ${filterCount} filters`}
+          </span>
+        )}
+      </div>
+
+      {/* ── Event list ────────────────────────────────────────────────────── */}
+      {sortedGroups.length === 0 ? (
+        <div
+          className="flex flex-col items-center justify-center gap-3 py-16 text-center"
+          style={{ color: "var(--mut2)" }}
+        >
+          <Zap className="h-8 w-8 opacity-40" />
+          <p
+            className="font-sans text-[14px] font-semibold"
+            style={{ color: "var(--mut)" }}
+          >
             No events found
           </p>
-          <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
+          <p className="font-sans text-[13px]">
             {searchQuery || selectedCategory
               ? "Try adjusting your search or filters"
               : "Create your first event type to get started"}
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-20rem)] pr-2">
-          <div className="space-y-2">
-            {/* Event Categories */}
-            {Object.entries(groupedEvents).map(([category, events]) => (
-              <div key={category} className="space-y-2">
-                <div className="flex items-center gap-2 px-2">
-                  <Badge
-                    className={cn(
-                      "text-[10px] px-2 py-0",
-                      CATEGORY_COLORS[category],
-                    )}
+        <div className="space-y-6">
+          {sortedGroups.map(([category, events]) => {
+            const meta = categoryMeta(category);
+            const matched = CATEGORY_META.find((m) => m.key === category);
+            const CatIcon = matched?.icon ?? Zap;
+            return (
+              <div key={category}>
+                {/* Category heading */}
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className="flex h-[26px] w-[26px] items-center justify-center rounded-lg"
+                    style={{
+                      background: tint(meta.accent, 14),
+                      color: `var(${meta.accent})`,
+                    }}
                   >
-                    {category}
-                  </Badge>
-                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                    {events.length} event{events.length !== 1 ? "s" : ""}
+                    <CatIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <span
+                    className="font-mono text-[11.5px] font-bold uppercase tracking-widest"
+                    style={{ color: `var(${meta.accent})` }}
+                  >
+                    {meta.label}
+                  </span>
+                  <span
+                    className="font-mono text-[11px]"
+                    style={{ color: "var(--mut2)" }}
+                  >
+                    {events.length}
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="h-6 bg-v2-canvas dark:bg-v2-card-tinted/50">
-                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
-                          Event Name
-                        </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
-                          Description
-                        </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
-                          Variables
-                        </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-center">
-                          Status
-                        </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-right">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {events.map((event) => (
-                        <TableRow
-                          key={event.id}
-                          className="h-8 border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
+                {/* Rows */}
+                <div
+                  className="overflow-hidden rounded-xl"
+                  style={{
+                    border: "1px solid var(--line2)",
+                    background: "var(--surface-1)",
+                  }}
+                >
+                  {/* Table header */}
+                  <div
+                    className="grid items-center px-4 py-2"
+                    style={{
+                      gridTemplateColumns: "2fr 3fr 80px 64px 72px",
+                      borderBottom: "1px solid var(--line)",
+                      background: "var(--surface-2)",
+                    }}
+                  >
+                    {["Event Name", "Description", "Vars", "Status", ""].map(
+                      (h) => (
+                        <span
+                          key={h}
+                          className="font-mono text-[10.5px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--mut2)" }}
                         >
-                          {editingId === event.id && editData ? (
-                            <>
-                              <TableCell className="py-1">
-                                <Input
-                                  className="h-5 text-[11px] border-v2-ring dark:border-v2-ring-strong"
-                                  value={editData.eventName}
-                                  onChange={(e) =>
-                                    updateEditField("eventName", e.target.value)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="py-1">
-                                <Input
-                                  className="h-5 text-[11px] border-v2-ring dark:border-v2-ring-strong"
-                                  value={editData.description}
-                                  onChange={(e) =>
-                                    updateEditField(
-                                      "description",
-                                      e.target.value,
-                                    )
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="py-1">
-                                <Textarea
-                                  className="h-5 text-[10px] font-mono p-1 border-v2-ring dark:border-v2-ring-strong"
-                                  value={JSON.stringify(
-                                    editData.availableVariables,
-                                    null,
-                                    0,
-                                  )}
-                                  onChange={(e) => {
-                                    try {
-                                      updateEditField(
-                                        "availableVariables",
-                                        JSON.parse(e.target.value),
-                                      );
-                                    } catch {
-                                      updateEditField(
-                                        "availableVariables",
-                                        e.target.value,
-                                      );
-                                    }
-                                  }}
-                                />
-                              </TableCell>
-                              <TableCell className="text-center py-1">
-                                <Switch
-                                  checked={editData.isActive ?? false}
-                                  onCheckedChange={(checked) =>
-                                    updateEditField("isActive", checked)
-                                  }
-                                />
-                              </TableCell>
-                              <TableCell className="text-right py-1">
-                                <div className="flex justify-end gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={handleSave}
-                                    className="h-5 px-1"
-                                    disabled={updateEvent.isPending}
-                                  >
-                                    <Save className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={handleCancel}
-                                    className="h-5 px-1"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </>
-                          ) : (
-                            <>
-                              <TableCell className="text-[11px] font-mono">
-                                <div className="flex items-center gap-1 text-v2-ink dark:text-v2-ink">
-                                  <Zap className="h-3 w-3 text-warning" />
-                                  {event.eventName}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                                {event.description}
-                              </TableCell>
-                              <TableCell className="text-[10px] font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
-                                {event.availableVariables
-                                  ? Object.keys(
-                                      event.availableVariables as object,
-                                    ).length + " vars"
-                                  : "None"}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleToggleActive(event)}
-                                  className={cn(
-                                    "h-5 px-1",
-                                    event.isActive
-                                      ? "text-success"
-                                      : "text-v2-ink-subtle dark:text-v2-ink-muted",
-                                  )}
-                                >
-                                  {event.isActive ? (
-                                    <Power className="h-3 w-3" />
-                                  ) : (
-                                    <PowerOff className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleEdit(event)}
-                                    className="h-5 px-1 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
-                                  >
-                                    <Edit2 className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDelete(event.id)}
-                                    className="h-5 px-1 text-destructive hover:text-destructive dark:hover:text-destructive"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </>
+                          {h}
+                        </span>
+                      ),
+                    )}
+                  </div>
+
+                  {/* Rows */}
+                  {events.map((event, idx) => {
+                    const varCount = event.availableVariables
+                      ? Object.keys(event.availableVariables as object).length
+                      : 0;
+                    return (
+                      <div
+                        key={event.id}
+                        className="group grid items-center px-4 py-3 transition-colors"
+                        style={{
+                          gridTemplateColumns: "2fr 3fr 80px 64px 72px",
+                          borderTop:
+                            idx === 0 ? "none" : "1px solid var(--line)",
+                          cursor: "default",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            "var(--surface-2)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
+                      >
+                        {/* Event name — always mono */}
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="truncate font-mono text-[13.5px] font-semibold"
+                            style={{ color: "var(--cream)" }}
+                          >
+                            {event.eventName}
+                          </span>
+                        </div>
+
+                        {/* Description */}
+                        <span
+                          className="truncate font-sans text-[13px]"
+                          style={{ color: "var(--mut)" }}
+                        >
+                          {event.description || (
+                            <span style={{ color: "var(--mut3)" }}>
+                              No description
+                            </span>
                           )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                        </span>
+
+                        {/* Vars count */}
+                        <span
+                          className="font-mono text-[12px]"
+                          style={{ color: "var(--mut2)" }}
+                        >
+                          {varCount > 0
+                            ? `${varCount} var${varCount !== 1 ? "s" : ""}`
+                            : "—"}
+                        </span>
+
+                        {/* Status toggle */}
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActive(event)}
+                            className="flex h-[26px] items-center gap-1 rounded-md px-2 font-mono text-[10.5px] font-bold uppercase tracking-wide transition-colors"
+                            style={
+                              event.isActive
+                                ? {
+                                    background: tint("--green", 14),
+                                    color: "var(--green)",
+                                  }
+                                : {
+                                    background: "var(--surface-3)",
+                                    color: "var(--mut2)",
+                                  }
+                            }
+                            title={
+                              event.isActive
+                                ? "Active — click to deactivate"
+                                : "Inactive — click to activate"
+                            }
+                          >
+                            {event.isActive ? (
+                              <Power className="h-3 w-3" />
+                            ) : (
+                              <PowerOff className="h-3 w-3" />
+                            )}
+                            {event.isActive ? "On" : "Off"}
+                          </button>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(event)}
+                            className="flex h-[30px] w-[30px] items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-3)]"
+                            style={{ color: "var(--mut2)" }}
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(event.id)}
+                            className="flex h-[30px] w-[30px] items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-3)]"
+                            style={{ color: "var(--mut2)" }}
+                            title="Delete"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "var(--red)";
+                              e.currentTarget.style.background = tint(
+                                "--red",
+                                12,
+                              );
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "var(--mut2)";
+                              e.currentTarget.style.background = "transparent";
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        </ScrollArea>
+            );
+          })}
+        </div>
       )}
 
-      {/* Event Type Form Dialog */}
+      {/* ── Event Type Form Dialog ─────────────────────────────────────────── */}
       <EventTypeFormDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
