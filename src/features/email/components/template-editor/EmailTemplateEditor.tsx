@@ -67,8 +67,11 @@ export function EmailTemplateEditor({
   const isViewOnly = mode === "view";
 
   const shouldFetch = !!templateId && !isNew;
-  const { data: existingTemplate, isLoading: loadingTemplate } =
-    useEmailTemplate(shouldFetch ? templateId : null);
+  const {
+    data: existingTemplate,
+    isLoading: loadingTemplate,
+    isError: templateError,
+  } = useEmailTemplate(shouldFetch ? templateId : null);
 
   const createTemplate = useCreateEmailTemplate();
   const updateTemplate = useUpdateEmailTemplate();
@@ -80,7 +83,7 @@ export function EmailTemplateEditor({
   const [isGlobal, setIsGlobal] = useState(defaultGlobal);
   const [isActive, setIsActive] = useState(true);
   const [blocks, setBlocks] = useState<EmailBlock[]>([]);
-  const [showAi, setShowAi] = useState(autoOpenAi && !isViewOnly);
+  const [showAi, setShowAi] = useState(autoOpenAi && mode === "create");
 
   // Hydrate the form from the existing template (edit/view).
   useEffect(() => {
@@ -125,7 +128,7 @@ export function EmailTemplateEditor({
           blocks,
           is_block_template: true,
         });
-        onSaved?.((created as { id?: string })?.id ?? "");
+        onSaved?.(created.id);
       } else if (templateId) {
         await updateTemplate.mutateAsync({
           id: templateId,
@@ -162,7 +165,9 @@ export function EmailTemplateEditor({
         style={{ color: "var(--mut)" }}
       >
         <p className="font-sans text-[13px]">
-          Template not found or unavailable.
+          {templateError
+            ? "Couldn't load this template — check your connection and try again."
+            : "Template not found or unavailable."}
         </p>
         <button
           type="button"
@@ -272,22 +277,24 @@ export function EmailTemplateEditor({
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              className="font-sans text-[12px] font-semibold"
-              style={{ color: "var(--mut)" }}
-            >
-              Subject Line
-            </label>
-            <input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g., Welcome to the Team!"
-              disabled={isViewOnly}
-              className="h-9 w-full rounded-lg px-3 font-sans text-[13px] outline-none placeholder:text-[var(--mut2)] disabled:opacity-60"
-              style={fieldStyle}
-            />
-          </div>
+          {/* Subject is edited in the builder's subject bar (with variable preview)
+              for create/edit; shown read-only in the sidebar for view mode. */}
+          {isViewOnly && (
+            <div className="space-y-1.5">
+              <label
+                className="font-sans text-[12px] font-semibold"
+                style={{ color: "var(--mut)" }}
+              >
+                Subject Line
+              </label>
+              <input
+                value={subject}
+                disabled
+                className="h-9 w-full rounded-lg px-3 font-sans text-[13px] outline-none disabled:opacity-60"
+                style={fieldStyle}
+              />
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label
@@ -360,6 +367,8 @@ export function EmailTemplateEditor({
           <EmailBlockBuilder
             blocks={blocks}
             onChange={isViewOnly ? () => {} : setBlocks}
+            subject={subject}
+            onSubjectChange={isViewOnly ? undefined : setSubject}
             previewVariables={previewVariables}
           />
         </div>

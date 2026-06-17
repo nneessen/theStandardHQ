@@ -17,6 +17,7 @@ export function TemplateEditorPage({ templateId }: TemplateEditorPageProps) {
 
   return (
     <EmailTemplateEditor
+      key={templateId ?? "new"}
       templateId={templateId ?? null}
       mode={templateId ? "edit" : "create"}
       defaultGlobal

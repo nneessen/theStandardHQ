@@ -316,6 +316,7 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
   if (editorState.mode !== "list") {
     return (
       <EmailTemplateEditor
+        key={editorState.templateId ?? "new"}
         templateId={editorState.templateId}
         mode={editorState.mode}
         allowGlobalToggle={canManageGlobal}
