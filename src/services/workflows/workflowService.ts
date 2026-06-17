@@ -279,7 +279,9 @@ class WorkflowService {
       conditions: workflowConfig.conditions || [],
       actions: workflowConfig.actions || [],
       settings: {
-        maxRunsPerDay: workflowConfig.maxRunsPerDay || 10,
+        // No cap unless the template defines one (enforcement is now live, so a
+        // hard-coded default would silently throttle template-created workflows).
+        maxRunsPerDay: workflowConfig.maxRunsPerDay || undefined,
         maxRunsPerRecipient: workflowConfig.maxRunsPerRecipient,
         cooldownMinutes: workflowConfig.cooldownMinutes,
         continueOnError: false,

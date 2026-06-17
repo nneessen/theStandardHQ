@@ -251,13 +251,21 @@ serve(async (req) => {
       ) {
         const dayStart = new Date();
         dayStart.setUTCHours(0, 0, 0, 0);
-        const { count: runsToday } = await adminSupabase
+        const { count: runsToday, error: countErr } = await adminSupabase
           .from("workflow_runs")
           .select("id", { count: "exact", head: true })
           .eq("workflow_id", workflowId)
           .in("status", ["completed", "running", "partial"])
           .gte("created_at", dayStart.toISOString())
           .neq("id", runId);
+        if (countErr) {
+          // Fail OPEN (run rather than wrongly skip) but never silently — a
+          // bypassed cap must be visible in the logs.
+          console.error(
+            `[process-workflow] daily-cap count failed for workflow ${workflowId}; running uncapped:`,
+            countErr.message,
+          );
+        }
         if (runsToday !== null && runsToday >= workflow.max_runs_per_day) {
           await adminSupabase
             .from("workflow_runs")

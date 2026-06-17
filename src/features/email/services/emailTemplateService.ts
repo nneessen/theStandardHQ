@@ -62,7 +62,7 @@ export async function generateAiEmailTemplateDraft(
     throw new Error(msg);
   }
   const draft = (data as { draft?: AiEmailDraft })?.draft;
-  if (!draft?.subject || !draft?.body_html) {
+  if (!draft?.subject || !draft?.body_html || !draft?.name) {
     throw new Error("AI did not return a template");
   }
   return draft;
