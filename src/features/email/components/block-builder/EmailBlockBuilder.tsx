@@ -24,7 +24,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Eye, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { EmailBlock, EmailBlockType } from "@/types/email.types";
 import { BlockPalette } from "./BlockPalette";
 import { BlockCanvas } from "./BlockCanvas";
@@ -250,10 +249,19 @@ export function EmailBlockBuilder({
         textEditorRef,
       }}
     >
-      <div className="flex h-full flex-col bg-background">
+      <div
+        className="flex h-full flex-col"
+        style={{ background: "var(--surface-1)" }}
+      >
         {/* Subject Line */}
         {onSubjectChange && (
-          <div className="border-b px-3 py-2">
+          <div
+            className="px-3 py-2"
+            style={{
+              background: "var(--surface-2)",
+              borderBottom: "1px solid var(--line)",
+            }}
+          >
             <SubjectEditor
               value={subject}
               onChange={onSubjectChange}
@@ -263,26 +271,46 @@ export function EmailBlockBuilder({
         )}
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b px-3 py-2">
-          <div className="flex items-center gap-1 rounded-md bg-muted p-0.5">
-            <Button
-              variant={activeTab === "edit" ? "secondary" : "ghost"}
-              size="sm"
+        <div
+          className="flex items-center justify-between px-3 py-2"
+          style={{
+            background: "var(--surface-2)",
+            borderBottom: "1px solid var(--line)",
+          }}
+        >
+          <div
+            className="flex items-center gap-0.5 rounded-lg p-0.5"
+            style={{
+              background: "var(--surface-3)",
+              border: "1px solid var(--line)",
+            }}
+          >
+            <button
+              type="button"
               onClick={() => setActiveTab("edit")}
-              className="h-7 gap-1.5 px-2.5"
+              className="flex h-7 items-center gap-1.5 rounded-md px-2.5 font-sans text-[12px] font-semibold transition-colors"
+              style={
+                activeTab === "edit"
+                  ? { background: "var(--blue)", color: "#0c1322" }
+                  : { color: "var(--mut)" }
+              }
             >
               <Pencil className="h-3.5 w-3.5" />
-              <span className="text-xs">Edit</span>
-            </Button>
-            <Button
-              variant={activeTab === "preview" ? "secondary" : "ghost"}
-              size="sm"
+              Edit
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab("preview")}
-              className="h-7 gap-1.5 px-2.5"
+              className="flex h-7 items-center gap-1.5 rounded-md px-2.5 font-sans text-[12px] font-semibold transition-colors"
+              style={
+                activeTab === "preview"
+                  ? { background: "var(--blue)", color: "#0c1322" }
+                  : { color: "var(--mut)" }
+              }
             >
               <Eye className="h-3.5 w-3.5" />
-              <span className="text-xs">Preview</span>
-            </Button>
+              Preview
+            </button>
           </div>
           <VariableDropdown
             onInsert={handleInsertVariable}
@@ -321,8 +349,17 @@ export function EmailBlockBuilder({
             </div>
             <DragOverlay>
               {(activeBlock || activePaletteType) && (
-                <div className="rounded-md border bg-background px-3 py-2 shadow-lg">
-                  <span className="text-xs font-medium capitalize">
+                <div
+                  className="rounded-lg px-3 py-2 shadow-lg"
+                  style={{
+                    background: "var(--surface-3)",
+                    border: "1px solid var(--line)",
+                  }}
+                >
+                  <span
+                    className="font-sans text-[12px] font-semibold capitalize"
+                    style={{ color: "var(--ink)" }}
+                  >
                     {activeBlock?.type || activePaletteType} block
                   </span>
                 </div>

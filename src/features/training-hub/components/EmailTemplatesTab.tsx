@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { useAiAccess } from "@/hooks/subscription";
+import AiEmailTemplateDialog from "./AiEmailTemplateDialog";
 import {
   Table,
   TableBody,
@@ -11,16 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TINT } from "@/components/ui/StatusBadge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +51,7 @@ import {
   Eye,
   ArrowLeft,
   Save,
+  Sparkles,
 } from "lucide-react";
 import {
   useGroupedEmailTemplates,
@@ -346,20 +339,35 @@ function InlineTemplateEditor({
     );
   }
 
+  const fieldStyle = {
+    background: "var(--surface-1)",
+    border: "1px solid var(--line2)",
+    color: "var(--ink)",
+  } as const;
+
   return (
-    <div className="flex h-full flex-col">
+    <div
+      className="flex h-full flex-col"
+      style={{ background: "var(--surface-2)" }}
+    >
       {/* Header */}
-      <div className="flex h-9 shrink-0 items-center justify-between border-b px-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
+      <div
+        className="flex h-12 shrink-0 items-center justify-between px-4"
+        style={{ borderBottom: "1px solid var(--line)" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
             onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-4)]"
+            style={{ color: "var(--mut)" }}
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-          </Button>
-          <h2 className="text-xs font-semibold">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <h2
+            className="font-display text-[15px] font-extrabold uppercase tracking-wide"
+            style={{ color: "var(--ink)" }}
+          >
             {isViewOnly
               ? "View Template"
               : isNew
@@ -368,102 +376,130 @@ function InlineTemplateEditor({
           </h2>
         </div>
         {!isViewOnly && (
-          <Button
+          <button
+            type="button"
             onClick={handleSave}
             disabled={!isValid || isSaving}
-            size="sm"
-            className="h-6 gap-1 text-xs px-2"
+            className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity disabled:opacity-40"
+            style={{ background: "var(--green)", color: "#0a1a0f" }}
           >
-            {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
-            <Save className="h-3 w-3" />
+            {isSaving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
             {isNew ? "Create" : "Save"}
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Settings sidebar */}
-        <div className="w-44 shrink-0 space-y-2.5 overflow-y-auto border-r bg-muted/20 p-2.5">
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Template Name</Label>
-            <Input
+        <div
+          className="w-56 shrink-0 space-y-4 overflow-y-auto p-4"
+          style={{ borderRight: "1px solid var(--line)" }}
+        >
+          <div className="space-y-1.5">
+            <label
+              className="font-sans text-[12px] font-semibold"
+              style={{ color: "var(--mut)" }}
+            >
+              Template Name
+            </label>
+            <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Welcome Email"
-              className="h-6 text-[10px]"
               disabled={isViewOnly}
+              className="h-9 w-full rounded-lg px-3 font-sans text-[13px] outline-none placeholder:text-[var(--mut2)] disabled:opacity-60"
+              style={fieldStyle}
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Subject Line</Label>
-            <Input
+          <div className="space-y-1.5">
+            <label
+              className="font-sans text-[12px] font-semibold"
+              style={{ color: "var(--mut)" }}
+            >
+              Subject Line
+            </label>
+            <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g., Welcome to the Team!"
-              className="h-6 text-[10px]"
               disabled={isViewOnly}
+              className="h-9 w-full rounded-lg px-3 font-sans text-[13px] outline-none placeholder:text-[var(--mut2)] disabled:opacity-60"
+              style={fieldStyle}
             />
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Category</Label>
-            <Select
-              value={category}
-              onValueChange={(v) => setCategory(v as EmailTemplateCategory)}
-              disabled={isViewOnly}
+          <div className="space-y-1.5">
+            <label
+              className="font-sans text-[12px] font-semibold"
+              style={{ color: "var(--mut)" }}
             >
-              <SelectTrigger className="h-6 text-[10px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {EMAIL_TEMPLATE_CATEGORIES.map((cat) => (
-                  <SelectItem
-                    key={cat.value}
-                    value={cat.value}
-                    className="text-xs"
-                  >
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              Category
+            </label>
+            <select
+              value={category}
+              onChange={(e) =>
+                setCategory(e.target.value as EmailTemplateCategory)
+              }
+              disabled={isViewOnly}
+              className="h-9 w-full rounded-lg px-3 font-sans text-[13px] outline-none disabled:opacity-60"
+              style={fieldStyle}
+            >
+              {EMAIL_TEMPLATE_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {!isViewOnly && (
-            <>
-              <div className="flex items-center gap-1.5">
-                <Switch
-                  id="global"
+            <div className="space-y-2.5 pt-1">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
                   checked={isGlobal}
-                  onCheckedChange={setIsGlobal}
-                  className="h-3.5 w-6"
+                  onChange={(e) => setIsGlobal(e.target.checked)}
+                  style={{ accentColor: "var(--blue)" }}
                 />
-                <Label htmlFor="global" className="text-[10px]">
+                <span
+                  className="font-sans text-[12.5px]"
+                  style={{ color: "var(--mut)" }}
+                >
                   Global
-                </Label>
-              </div>
+                </span>
+              </label>
 
               {!isNew && (
-                <div className="flex items-center gap-1.5">
-                  <Switch
-                    id="active"
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
                     checked={isActive}
-                    onCheckedChange={setIsActive}
-                    className="h-3.5 w-6"
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    style={{ accentColor: "var(--green)" }}
                   />
-                  <Label htmlFor="active" className="text-[10px]">
+                  <span
+                    className="font-sans text-[12.5px]"
+                    style={{ color: "var(--mut)" }}
+                  >
                     Active
-                  </Label>
-                </div>
+                  </span>
+                </label>
               )}
-            </>
+            </div>
           )}
         </div>
 
         {/* Email builder */}
-        <div className="flex-1 overflow-hidden">
+        <div
+          className="flex-1 overflow-hidden"
+          style={{ background: "var(--surface-1)" }}
+        >
           <EmailBlockBuilder
             blocks={blocks}
             onChange={isViewOnly ? () => {} : setBlocks}
@@ -484,6 +520,8 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [globalOpen, setGlobalOpen] = useState(true);
   const [personalOpen, setPersonalOpen] = useState(true);
+  const [showAiDialog, setShowAiDialog] = useState(false);
+  const { hasAiAccess } = useAiAccess();
 
   const { data, isLoading } = useGroupedEmailTemplates();
   const deleteTemplate = useDeleteEmailTemplate();
@@ -575,16 +613,38 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
             </span>
           </div>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setEditorState({ mode: "create", templateId: null })}
-          disabled={!canCreateNew}
-          className="h-6 gap-1 text-[10px] px-2"
-        >
-          <Plus className="h-3 w-3" />
-          New Template
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasAiAccess && (
+            <button
+              type="button"
+              onClick={() => setShowAiDialog(true)}
+              className="flex h-7 items-center gap-1.5 rounded-lg px-3 font-sans text-[12px] font-semibold transition-colors hover:bg-[var(--surface-4)]"
+              style={{
+                border:
+                  "1px solid color-mix(in srgb, var(--violet) 45%, transparent)",
+                color: "var(--violet)",
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Generate with AI
+            </button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => setEditorState({ mode: "create", templateId: null })}
+            disabled={!canCreateNew}
+            className="h-7 gap-1 text-[12px] px-3"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Template
+          </Button>
+        </div>
       </div>
+
+      <AiEmailTemplateDialog
+        open={showAiDialog}
+        onOpenChange={setShowAiDialog}
+      />
 
       {isLoading ? (
         <div className="flex h-40 items-center justify-center">

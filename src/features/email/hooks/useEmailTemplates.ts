@@ -11,6 +11,7 @@ import {
   toggleTemplateActive,
   getUserTemplateStatus,
   getGroupedEmailTemplates,
+  generateAiEmailTemplate,
   type EmailTemplateFilters,
 } from "../services/emailTemplateService";
 import type { CreateEmailTemplateRequest } from "@/types/email.types";
@@ -51,6 +52,32 @@ export function useCreateEmailTemplate() {
     onError: (error: Error) => {
       console.error("Failed to create template:", error);
       toast.error(error.message || "Failed to create template");
+    },
+  });
+}
+
+/**
+ * Generate a ready-to-send email template with AI. Persists server-side (the edge
+ * fn), then refreshes the list so the new template appears.
+ */
+export function useGenerateAiEmailTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      prompt,
+      options,
+    }: {
+      prompt: string;
+      options?: { tone?: string; length?: string };
+    }) => generateAiEmailTemplate(prompt, options),
+    onSuccess: (tpl) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success(`AI created "${tpl.name}"`);
+    },
+    onError: (error: Error) => {
+      console.error("AI template generation failed:", error);
+      toast.error(error.message || "AI generation failed");
     },
   });
 }

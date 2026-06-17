@@ -58,6 +58,7 @@ export {
   useToggleTemplateActive,
   useUserTemplateStatus,
   useGroupedEmailTemplates,
+  useGenerateAiEmailTemplate,
 } from "./hooks/useEmailTemplates";
 
 // Template Picker
