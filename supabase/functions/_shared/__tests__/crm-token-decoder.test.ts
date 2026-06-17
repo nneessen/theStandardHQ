@@ -41,6 +41,19 @@ Deno.test("round-trips a valid 24h token", async () => {
   assertEquals(v!.exp - v!.iat, CRM_TOKEN_TTL_SECONDS);
 });
 
+Deno.test(
+  "UTF-8-safe: round-trips a non-ASCII scope without throwing at btoa",
+  async () => {
+    Deno.env.set("CRM_CALL_PLATFORM_SIGNING_KEY", KEY);
+    const token = await signCrmToken(
+      basePayload({ scopes: ["crm:leads", "résumé™"] }),
+    );
+    const v = await verifyCrmToken(token);
+    assert(v !== null);
+    assertEquals(v!.scopes, ["crm:leads", "résumé™"]);
+  },
+);
+
 Deno.test("rejects a tampered payload (keeps the old signature)", async () => {
   Deno.env.set("CRM_CALL_PLATFORM_SIGNING_KEY", KEY);
   const token = await signCrmToken(basePayload());

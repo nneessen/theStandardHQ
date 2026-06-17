@@ -22,6 +22,10 @@ SELECT credential_id AS cred_id, client_id AS cred_client, client_secret AS cred
 FROM crm_issue_credential(:'imo_id'::uuid, 'smoke', ARRAY['crm:leads']) \gset
 RESET ROLE;
 
+-- The issued secret must be base64URL (no '+' '/' '=') so it survives form-urlencoded transport
+-- (URLSearchParams decodes a literal '+' to a space).
+SELECT 'secret is base64url'   AS chk, 1/(CASE WHEN :'cred_secret' ~ '^[A-Za-z0-9_-]+$' THEN 1 ELSE 0 END) ok;
+
 -- Authenticate (service-role context): correct secret -> 1 row; wrong -> 0; identity correct.
 SELECT 'auth correct secret'  AS chk, 1/(CASE WHEN (SELECT count(*) FROM crm_authenticate_credential(:'cred_client', :'cred_secret'))=1 THEN 1 ELSE 0 END) ok;
 SELECT 'auth wrong secret'    AS chk, 1/(CASE WHEN (SELECT count(*) FROM crm_authenticate_credential(:'cred_client', 'definitely-wrong'))=0 THEN 1 ELSE 0 END) ok;
@@ -40,6 +44,21 @@ SET LOCAL ROLE authenticated;
 SELECT 'revoke returns true'  AS chk, 1/(CASE WHEN crm_revoke_credential(:'cred_id'::uuid) THEN 1 ELSE 0 END) ok;
 RESET ROLE;
 SELECT 'revoked denies auth'  AS chk, 1/(CASE WHEN (SELECT count(*) FROM crm_authenticate_credential(:'cred_client', :'cred_secret2'))=0 THEN 1 ELSE 0 END) ok;
+
+-- A revoked credential must NOT be rotatable (no silent un-revoke) — re-issue instead.
+SET LOCAL ROLE authenticated;
+DO $rot$
+DECLARE v_cred uuid;
+BEGIN
+  SELECT id INTO v_cred FROM imo_call_platform_credentials WHERE label = 'smoke' ORDER BY created_at DESC LIMIT 1;
+  BEGIN
+    PERFORM crm_rotate_credential(v_cred);
+    RAISE EXCEPTION 'NEG FAIL: rotating a revoked credential was allowed';
+  EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'OK  rotating a revoked credential refused (42501)';
+  END;
+END $rot$;
+RESET ROLE;
 
 -- Register a PLATFORM-issued pcId for an agent (super-admin), then verify the mapping.
 SET LOCAL ROLE authenticated;

@@ -49,14 +49,24 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
+// UTF-8-safe base64url (encode bytes, not the raw string) so a non-ASCII scope/label
+// in the payload can never throw at btoa() and 500 the mint.
 function base64UrlEncode(input: string): string {
-  return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const bytes = new TextEncoder().encode(input);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 function base64UrlDecode(input: string): string {
   const b64 = input.replace(/-/g, "+").replace(/_/g, "/");
   const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
-  return atob(b64 + pad);
+  const binary = atob(b64 + pad);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 async function hmacHex(data: string): Promise<string> {

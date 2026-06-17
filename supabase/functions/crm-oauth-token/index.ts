@@ -39,9 +39,7 @@ function oauthError(
 }
 
 /** Extract client_id/secret from the form body or an HTTP Basic auth header. */
-async function readCredentials(
-  req: Request,
-): Promise<{
+async function readCredentials(req: Request): Promise<{
   grantType: string | null;
   clientId: string | null;
   clientSecret: string | null;
@@ -131,6 +129,15 @@ serve(async (req: Request): Promise<Response> => {
     return oauthError("invalid_client", "Invalid client credentials.", 401);
   }
 
+  // instance_url is load-bearing — the platform prepends it to the /api/v1/leads paths — so a
+  // missing CRM_INSTANCE_URL must FAIL CLOSED (consistent with the signing key), never issue a
+  // token the platform can't actually use.
+  const instanceUrl = Deno.env.get("CRM_INSTANCE_URL") ?? "";
+  if (!instanceUrl) {
+    console.error("crm-oauth-token: CRM_INSTANCE_URL is not set");
+    return oauthError("server_error", "Could not issue token.", 500);
+  }
+
   let minted;
   try {
     minted = await mintCrmToken({
@@ -146,7 +153,6 @@ serve(async (req: Request): Promise<Response> => {
     return oauthError("server_error", "Could not issue token.", 500);
   }
 
-  const instanceUrl = Deno.env.get("CRM_INSTANCE_URL") ?? "";
   const scope = (row.scopes ?? []).join(" ");
 
   return jsonResponse(

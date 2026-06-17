@@ -41,9 +41,11 @@ BEGIN
     RAISE EXCEPTION 'not authorized to issue credentials for this IMO' USING ERRCODE = '42501';
   END IF;
 
-  -- client_id: stable non-secret identifier. client_secret: 32 random bytes (<72 for bcrypt).
+  -- client_id: stable non-secret identifier. client_secret: 32 random bytes (<72 for bcrypt),
+  -- encoded base64URL (no '+' or '/') so it survives form-urlencoded transport intact —
+  -- URLSearchParams decodes a literal '+' to a space, which would silently break form-body auth.
   v_client_id := 'crm_' || encode(extensions.gen_random_bytes(12), 'hex');
-  v_secret    := encode(extensions.gen_random_bytes(32), 'base64');
+  v_secret    := rtrim(translate(encode(extensions.gen_random_bytes(32), 'base64'), '+/', '-_'), '=');
 
   INSERT INTO public.imo_call_platform_credentials (imo_id, client_id, client_secret_hash, label, scopes)
   VALUES (p_imo_id, v_client_id, extensions.crypt(v_secret, extensions.gen_salt('bf', 12)), p_label, p_scopes)
@@ -99,19 +101,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_imo    uuid;
-  v_secret text;
+  v_imo     uuid;
+  v_active  boolean;
+  v_revoked timestamptz;
+  v_secret  text;
 BEGIN
-  SELECT c.imo_id INTO v_imo FROM public.imo_call_platform_credentials c WHERE c.id = p_credential_id;
+  SELECT c.imo_id, c.is_active, c.revoked_at
+    INTO v_imo, v_active, v_revoked
+  FROM public.imo_call_platform_credentials c WHERE c.id = p_credential_id;
   IF v_imo IS NULL THEN RAISE EXCEPTION 'credential not found' USING ERRCODE = 'no_data_found'; END IF;
   IF NOT public.super_admin_in_scope(v_imo) THEN
     RAISE EXCEPTION 'not authorized to rotate this credential' USING ERRCODE = '42501';
   END IF;
+  -- Rotating must NOT silently un-revoke a credential — re-issue instead.
+  IF v_revoked IS NOT NULL OR NOT v_active THEN
+    RAISE EXCEPTION 'credential is revoked; re-issue instead of rotating' USING ERRCODE = '42501';
+  END IF;
 
-  v_secret := encode(extensions.gen_random_bytes(32), 'base64');
+  v_secret := rtrim(translate(encode(extensions.gen_random_bytes(32), 'base64'), '+/', '-_'), '=');
   UPDATE public.imo_call_platform_credentials
-    SET client_secret_hash = extensions.crypt(v_secret, extensions.gen_salt('bf', 12)),
-        is_active = true, revoked_at = NULL
+    SET client_secret_hash = extensions.crypt(v_secret, extensions.gen_salt('bf', 12))
   WHERE id = p_credential_id;
 
   RETURN QUERY SELECT v_secret;
