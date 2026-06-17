@@ -655,8 +655,13 @@ async function executeSendEmail(
       break;
 
     case "current_user":
+      // "Current user" = the workflow owner. enqueue_workflow_event injects
+      // triggeredBy (the owner id) but not their email, so fall back to the owner
+      // profile loaded above when triggeredByEmail isn't supplied (the event path).
       if (context.triggeredByEmail) {
         recipientEmails = [context.triggeredByEmail as string];
+      } else if (ownerProfile.email) {
+        recipientEmails = [ownerProfile.email as string];
       }
       break;
 
