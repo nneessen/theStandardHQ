@@ -1,6 +1,9 @@
 // supabase/functions/trigger-workflow-event/index.ts
-// Server-side workflow event matching and execution dispatch.
-// Replaces client-side event matching to bypass RLS and ensure reliable execution.
+// Server-side workflow event INGEST. Authenticates the caller, derives the tenant
+// (never from the body), then hands off to enqueue_workflow_event which matches
+// active event-workflows and inserts pending runs (insert-only — NO synchronous
+// fan-out). A fire-and-forget kick wakes the worker for low latency; pg_cron also
+// drains the queue.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
@@ -16,19 +19,10 @@ interface TriggerEventRequest {
   context: Record<string, unknown>;
 }
 
-interface WorkflowMatch {
-  workflowId: string;
-  workflowName: string;
-  runId?: string;
-  status: "triggered" | "skipped_cooldown" | "skipped_conditions" | "failed";
-  error?: string;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
@@ -44,11 +38,8 @@ serve(async (req) => {
     // (a) Internal edge-to-edge callers pass the service-role key → trusted,
     //     no tenant scoping (system-wide event matching).
     // (b) Otherwise require a valid user JWT. The tenant is derived from the
-    //     authenticated caller's profile (NEVER from the request body) and we
-    //     only fire workflows whose imo_id matches the caller's imo_id.
-    // The only known caller is the browser (workflowEventEmitter.emit) on the
-    // user-JWT path; the service-role branch is defensive parity for future
-    // internal callers.
+    //     authenticated caller's profile (NEVER from the request body); only
+    //     workflows in that imo_id are matched.
     // =====================================================================
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
       "SUPABASE_SERVICE_ROLE_KEY",
@@ -72,7 +63,6 @@ serve(async (req) => {
     if (!isServiceRole) {
       const { data: authData, error: authErr } =
         await adminSupabase.auth.getUser(bearer);
-
       if (authErr || !authData?.user) {
         return new Response(
           JSON.stringify({ error: "Invalid or expired token" }),
@@ -99,12 +89,9 @@ serve(async (req) => {
         );
       }
 
-      // Default to the caller's home IMO. For SUPER-ADMINS ONLY, honor the acting
-      // IMO from their auth metadata (set by the app's IMO switcher) so a super-admin
-      // acting as a tenant fires/stamps that tenant's workflows — mirroring the DB's
-      // get_effective_imo_id(). The is_super_admin gate is on the trusted profile,
-      // never the user-settable metadata, so a non-super-admin cannot self-scope.
-      // "__all_imos__" => no scoping (null), like the service-role path.
+      // Default to the caller's home IMO. Super-admins ONLY may act as another
+      // IMO via their (trusted-profile-gated) auth metadata, mirroring the DB's
+      // get_effective_imo_id(); "__all_imos__" => no scoping (null).
       callerImoId = callerProfile.imo_id;
       if (callerProfile.is_super_admin) {
         const actingImoId = (
@@ -120,7 +107,6 @@ serve(async (req) => {
 
     const body: TriggerEventRequest = await req.json();
     const { eventName, context } = body;
-
     if (!eventName) {
       return new Response(JSON.stringify({ error: "Missing eventName" }), {
         status: 400,
@@ -128,46 +114,36 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[trigger-workflow-event] Processing event: ${eventName}`);
+    // Best-effort idempotency key: a unique entity id + the emission timestamp
+    // (if the caller provided one) so a retried emission can't double-create runs,
+    // while a legitimately-repeated event (different timestamp) still fires.
+    const ctx = (context ?? {}) as Record<string, unknown>;
+    const entityId =
+      ctx.policyId ||
+      ctx.commissionId ||
+      ctx.recruitId ||
+      ctx.recipientId ||
+      ctx.leadId ||
+      ctx.id;
+    const dedupeKey = entityId
+      ? [eventName, entityId, ctx.timestamp].filter(Boolean).join(":")
+      : null;
 
-    // 1. Record the event in workflow_events (admin client bypasses RLS)
-    let eventRecordId: string | null = null;
-    try {
-      const { data: eventRecord } = await adminSupabase
-        .from("workflow_events")
-        .insert({
-          event_name: eventName,
-          context,
-          fired_at: new Date().toISOString(),
-          workflows_triggered: 0,
-          // Stamp the tenant on the event log. Set on the user-JWT path (the caller's
-          // IMO); null for service-role/system emits that carry no IMO context.
-          imo_id: callerImoId,
-        })
-        .select("id")
-        .single();
+    // Insert-only match + enqueue (SECURITY DEFINER; service-role only).
+    const { data: enqueued, error: enqErr } = await adminSupabase.rpc(
+      "enqueue_workflow_event",
+      {
+        p_event_name: eventName,
+        p_imo_id: callerImoId,
+        p_context: ctx,
+        p_dedupe_key: dedupeKey,
+      },
+    );
 
-      eventRecordId = eventRecord?.id ?? null;
-    } catch (err) {
-      console.warn("[trigger-workflow-event] Failed to record event:", err);
-    }
-
-    // 2. Find ALL active workflows matching this event (admin bypasses RLS)
-    const { data: workflows, error: queryError } = await adminSupabase
-      .from("workflows")
-      .select("*")
-      .eq("status", "active")
-      .eq("trigger_type", "event")
-      .contains("config", { trigger: { eventName } });
-
-    if (queryError) {
-      console.error("[trigger-workflow-event] Query error:", queryError);
+    if (enqErr) {
+      console.error("[trigger-workflow-event] enqueue failed:", enqErr);
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Failed to query workflows: ${queryError.message}`,
-          workflowsTriggered: 0,
-        }),
+        JSON.stringify({ success: false, error: enqErr.message }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -175,185 +151,30 @@ serve(async (req) => {
       );
     }
 
-    // Additional filter to confirm event name match. On the user-JWT path also
-    // scope strictly to the caller's tenant so a user can never fire (or probe)
-    // another IMO's workflows.
-    const matchingWorkflows = (workflows || []).filter((w) => {
-      const trigger = w.config?.trigger;
-      if (trigger?.eventName !== eventName) return false;
-      if (callerImoId !== null && w.imo_id !== callerImoId) return false;
-      return true;
-    });
-
-    console.log(
-      `[trigger-workflow-event] Found ${matchingWorkflows.length} matching workflows for: ${eventName}`,
-    );
-
-    if (matchingWorkflows.length === 0) {
-      // Update event record with 0 workflows triggered
-      return new Response(
-        JSON.stringify({
-          success: true,
-          workflowsTriggered: 0,
-          matches: [],
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Low-latency kick: wake the worker now (don't await; pg_cron also drains).
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      void fetch(`${supabaseUrl}/functions/v1/process-pending-workflows`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         },
-      );
-    }
-
-    // 3. For each matching workflow: check cooldown, evaluate conditions, create run, invoke processor
-    const matches: WorkflowMatch[] = [];
-
-    for (const workflow of matchingWorkflows) {
-      const match: WorkflowMatch = {
-        workflowId: workflow.id,
-        workflowName: workflow.name,
-        status: "triggered",
-      };
-
-      try {
-        // Check cooldown
-        if (workflow.cooldown_minutes) {
-          const cooldownTime = new Date();
-          cooldownTime.setMinutes(
-            cooldownTime.getMinutes() - workflow.cooldown_minutes,
-          );
-
-          const { data: recentRuns } = await adminSupabase
-            .from("workflow_runs")
-            .select("id")
-            .eq("workflow_id", workflow.id)
-            .gte("started_at", cooldownTime.toISOString())
-            .limit(1);
-
-          if (recentRuns && recentRuns.length > 0) {
-            match.status = "skipped_cooldown";
-            matches.push(match);
-            console.log(
-              `[trigger-workflow-event] Skipping ${workflow.name}: cooldown active`,
-            );
-            continue;
-          }
-        }
-
-        // Evaluate conditions
-        const conditions = workflow.conditions || [];
-        if (conditions.length > 0 && !evaluateConditions(conditions, context)) {
-          match.status = "skipped_conditions";
-          matches.push(match);
-          console.log(
-            `[trigger-workflow-event] Skipping ${workflow.name}: conditions not met`,
-          );
-          continue;
-        }
-
-        // Create workflow run (admin client ensures no RLS issues)
-        const { data: run, error: runError } = await adminSupabase
-          .from("workflow_runs")
-          .insert({
-            workflow_id: workflow.id,
-            trigger_source: `event:${eventName}`,
-            status: "running",
-            context: {
-              ...context,
-              eventName,
-              workflowId: workflow.id,
-              triggeredBy: context.userId || "system",
-              triggeredAt: new Date().toISOString(),
-            },
-          })
-          .select("id")
-          .single();
-
-        if (runError) {
-          console.error(
-            `[trigger-workflow-event] Failed to create run for ${workflow.name}:`,
-            runError,
-          );
-          match.status = "failed";
-          match.error = runError.message;
-          matches.push(match);
-          continue;
-        }
-
-        match.runId = run.id;
-
-        // Invoke process-workflow edge function
-        // Use fetch to call the function directly (edge-to-edge invocation)
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-        const processResponse = await fetch(
-          `${supabaseUrl}/functions/v1/process-workflow`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${serviceRoleKey}`,
-            },
-            body: JSON.stringify({
-              runId: run.id,
-              workflowId: workflow.id,
-              isEventTriggered: true,
-            }),
-          },
-        );
-
-        if (!processResponse.ok) {
-          const errorBody = await processResponse.text();
-          console.error(
-            `[trigger-workflow-event] process-workflow failed for ${workflow.name}:`,
-            errorBody,
-          );
-          match.error = `Processor returned ${processResponse.status}`;
-        }
-
-        matches.push(match);
-        console.log(
-          `[trigger-workflow-event] Triggered workflow: ${workflow.name} (run: ${run.id})`,
-        );
-      } catch (err) {
-        match.status = "failed";
-        match.error = err instanceof Error ? err.message : "Unknown error";
-        matches.push(match);
-        console.error(
-          `[trigger-workflow-event] Error processing ${workflow.name}:`,
-          err,
-        );
-      }
-    }
-
-    const triggeredCount = matches.filter(
-      (m) => m.status === "triggered",
-    ).length;
-
-    // Update event record with actual triggered count
-    if (eventRecordId) {
-      const { error: updateErr } = await adminSupabase
-        .from("workflow_events")
-        .update({ workflows_triggered: triggeredCount })
-        .eq("id", eventRecordId);
-      if (updateErr) {
-        console.log("workflow_events update failed (non-critical):", updateErr);
-      }
+        body: JSON.stringify({}),
+      }).catch(() => {});
+    } catch {
+      /* ignore kick failures — the cron heartbeat will pick the runs up */
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        workflowsTriggered: triggeredCount,
-        matches,
-      }),
+      JSON.stringify({ success: true, workflowsTriggered: enqueued ?? 0 }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
   } catch (err) {
-    console.error("[trigger-workflow-event] Error:", err);
+    console.error("[trigger-workflow-event] error:", err);
     return new Response(
       JSON.stringify({
         success: false,
@@ -367,58 +188,3 @@ serve(async (req) => {
     );
   }
 });
-
-/**
- * Evaluate workflow conditions against the event context (AND logic)
- */
-function evaluateConditions(
-  conditions: Array<{
-    field: string;
-    operator: string;
-    value: unknown;
-  }>,
-  context: Record<string, unknown>,
-): boolean {
-  for (const condition of conditions) {
-    const fieldValue = getNestedValue(context, condition.field);
-    if (!evaluateCondition(fieldValue, condition.operator, condition.value)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function getNestedValue(obj: unknown, path: string): unknown {
-  return path
-    .split(".")
-    .reduce((current, key) => (current as Record<string, unknown>)?.[key], obj);
-}
-
-function evaluateCondition(
-  fieldValue: unknown,
-  operator: string,
-  expectedValue: unknown,
-): boolean {
-  switch (operator) {
-    case "equals":
-      return fieldValue === expectedValue;
-    case "not_equals":
-      return fieldValue !== expectedValue;
-    case "contains":
-      return String(fieldValue).includes(String(expectedValue));
-    case "not_contains":
-      return !String(fieldValue).includes(String(expectedValue));
-    case "greater_than":
-      return Number(fieldValue) > Number(expectedValue);
-    case "less_than":
-      return Number(fieldValue) < Number(expectedValue);
-    case "in":
-      return Array.isArray(expectedValue) && expectedValue.includes(fieldValue);
-    case "not_in":
-      return (
-        Array.isArray(expectedValue) && !expectedValue.includes(fieldValue)
-      );
-    default:
-      return true;
-  }
-}

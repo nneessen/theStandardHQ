@@ -2,24 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Play, Calendar, Zap, Webhook } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import type {
   WorkflowFormData,
   TriggerType,
   WorkflowTrigger,
 } from "@/types/workflow.types";
 import { useTriggerEventTypes } from "@/hooks/workflows";
-import EventSelectionDialog from "./EventSelectionDialog";
+import EventTriggerPicker from "./EventTriggerPicker";
+import { tint, TRIGGER_ACCENT } from "../board";
 
 interface WorkflowTriggerSetupProps {
   data: WorkflowFormData;
@@ -27,11 +17,36 @@ interface WorkflowTriggerSetupProps {
   errors: Record<string, string>;
 }
 
-const TRIGGER_TYPES = [
-  { value: "manual" as TriggerType, label: "Manual", icon: Play },
-  { value: "schedule" as TriggerType, label: "Schedule", icon: Calendar },
-  { value: "event" as TriggerType, label: "Event", icon: Zap },
-  { value: "webhook" as TriggerType, label: "Webhook", icon: Webhook },
+const TRIGGER_TYPES: {
+  value: TriggerType;
+  label: string;
+  icon: React.ElementType;
+  description: string;
+}[] = [
+  {
+    value: "manual",
+    label: "Manual",
+    icon: Play,
+    description: "Run on demand from the workflows list",
+  },
+  {
+    value: "schedule",
+    label: "Schedule",
+    icon: Calendar,
+    description: "Run automatically at a recurring time",
+  },
+  {
+    value: "event",
+    label: "Event",
+    icon: Zap,
+    description: "Fire when something happens in the system",
+  },
+  {
+    value: "webhook",
+    label: "Webhook",
+    icon: Webhook,
+    description: "Triggered by an incoming HTTP request",
+  },
 ];
 
 export default function WorkflowTriggerSetup({
@@ -127,221 +142,348 @@ export default function WorkflowTriggerSetup({
     });
   };
 
+  const selectedEventType = eventTypes.find(
+    (e) => e.eventName === data.trigger?.eventName,
+  );
+
+  const typeLabel = data.triggerType
+    ? data.triggerType.charAt(0).toUpperCase() + data.triggerType.slice(1)
+    : "";
+
   return (
-    <div className="w-full space-y-3">
-      {/* Trigger type selection - compact but visible */}
-      <div className="p-2 rounded-md bg-muted/50">
-        <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+    <div className="w-full space-y-5">
+      {/* ── Eyebrow + 2×2 trigger-type grid ─────────────────────────────── */}
+      <div>
+        <p
+          className="mb-3 font-mono text-[10px] font-bold uppercase tracking-widest"
+          style={{ color: "var(--mut2)" }}
+        >
           Select Trigger Type
-        </Label>
-        <div className="grid grid-cols-2 gap-2">
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
           {TRIGGER_TYPES.map((trigger) => {
             const Icon = trigger.icon;
             const isSelected = data.triggerType === trigger.value;
-
-            // Define color themes for each trigger type
-            const colorTheme = {
-              manual: isSelected
-                ? "bg-info/10 text-info border-info/50 dark:text-info"
-                : "bg-background border-input hover:border-info/70 hover:bg-info/10 dark:hover:bg-info/10",
-              schedule: isSelected
-                ? "bg-success/10 text-success border-success/50 dark:text-success"
-                : "bg-background border-input hover:border-success/70 hover:bg-success/10 dark:hover:bg-success/10",
-              event: isSelected
-                ? "bg-warning/10 text-warning border-warning/50 dark:text-warning"
-                : "bg-background border-input hover:border-warning/70 hover:bg-warning/10 dark:hover:bg-warning/10",
-              webhook: isSelected
-                ? "bg-info/10 text-info border-info/50 dark:text-info"
-                : "bg-background border-input hover:border-info hover:bg-info/10 dark:hover:bg-info/10",
-            }[trigger.value];
+            const accent = TRIGGER_ACCENT[trigger.value];
 
             return (
               <button
                 key={trigger.value}
                 type="button"
                 onClick={() => handleTriggerTypeChange(trigger.value)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md border transition-all text-xs",
-                  colorTheme,
-                  isSelected && "shadow-sm",
-                )}
+                className="relative flex items-start gap-3 rounded-xl p-4 text-left transition-all"
+                style={{
+                  background: isSelected ? tint(accent, 8) : "var(--surface-2)",
+                  border: isSelected
+                    ? `1px solid var(${accent})`
+                    : "1px solid var(--line)",
+                  boxShadow: isSelected
+                    ? `0 0 0 3px ${tint(accent, 16)}`
+                    : "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected)
+                    e.currentTarget.style.background = "var(--surface-3)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected)
+                    e.currentTarget.style.background = "var(--surface-2)";
+                }}
               >
-                <Icon className="h-4 w-4" />
-                <span className="font-medium">{trigger.label}</span>
+                {/* Radio dot — top right */}
+                <span
+                  className="absolute right-3 top-3 flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-all"
+                  style={{
+                    border: isSelected
+                      ? `1px solid var(${accent})`
+                      : "1px solid var(--line3)",
+                    background: isSelected ? `var(${accent})` : "transparent",
+                  }}
+                >
+                  {isSelected && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: "#0c1322" }}
+                    />
+                  )}
+                </span>
+
+                {/* 48px accent-tinted icon tile */}
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                  style={{
+                    background: tint(accent, 14),
+                    color: `var(${accent})`,
+                  }}
+                >
+                  <Icon className="h-6 w-6" />
+                </span>
+
+                {/* Label + description */}
+                <div className="min-w-0 pt-0.5">
+                  <p
+                    className="font-sans text-[15px] font-bold leading-tight"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    {trigger.label}
+                  </p>
+                  <p
+                    className="mt-0.5 font-sans text-[13px] leading-snug"
+                    style={{ color: "var(--mut)" }}
+                  >
+                    {trigger.description}
+                  </p>
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Trigger Configuration */}
+      {/* ── Per-type configuration ─────────────────────────────────────── */}
       {data.triggerType && (
-        <div className="p-2 rounded-md bg-muted/30">
-          <Label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Configure{" "}
-            {data.triggerType.charAt(0).toUpperCase() +
-              data.triggerType.slice(1)}{" "}
-            Trigger
-          </Label>
+        <div>
+          <p
+            className="mb-3 font-mono text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: "var(--mut2)" }}
+          >
+            Configure {typeLabel} Trigger
+          </p>
 
+          {/* Manual */}
           {data.triggerType === "manual" && (
-            <div className="p-2 rounded bg-info/10 border border-info/20">
-              <p className="text-xs text-info">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: tint("--blue", 8),
+                border: `1px solid ${tint("--blue", 24)}`,
+              }}
+            >
+              <p
+                className="font-sans text-[14px]"
+                style={{ color: "var(--blue)" }}
+              >
                 This workflow will only run when you manually trigger it from
                 the workflows list.
               </p>
             </div>
           )}
 
+          {/* Webhook */}
+          {data.triggerType === "webhook" && (
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: tint("--cyan", 8),
+                border: `1px solid ${tint("--cyan", 24)}`,
+              }}
+            >
+              <p
+                className="font-sans text-[14px]"
+                style={{ color: "var(--cyan)" }}
+              >
+                A unique webhook URL will be generated after you create this
+                workflow.
+              </p>
+            </div>
+          )}
+
+          {/* Schedule */}
           {data.triggerType === "schedule" && (
-            <div className="space-y-2">
-              <div className="p-2 rounded bg-success/10 border border-success/20">
-                <p className="text-xs text-success mb-2">
+            <div className="space-y-3">
+              <div
+                className="rounded-xl p-4"
+                style={{
+                  background: tint("--amber", 8),
+                  border: `1px solid ${tint("--amber", 24)}`,
+                }}
+              >
+                <p
+                  className="font-sans text-[14px]"
+                  style={{ color: "var(--amber)" }}
+                >
                   Schedule this workflow to run automatically at a specific
                   time.
                 </p>
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-3">
+                {/* Time */}
                 <div className="flex-1">
-                  <Label className="text-[10px] text-muted-foreground">
+                  <p
+                    className="mb-1.5 font-mono text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "var(--mut2)" }}
+                  >
                     Time
-                  </Label>
-                  <Input
+                  </p>
+                  <input
                     type="time"
                     value={scheduleTime}
                     onChange={(e) => setScheduleTime(e.target.value)}
-                    className="h-8 text-xs bg-background border-success/30 focus:border-success"
+                    className="h-10 w-full rounded-lg px-3 font-sans text-[14px] outline-none transition-shadow"
+                    style={{
+                      background: "var(--surface-1)",
+                      border: "1px solid var(--line2)",
+                      color: "var(--ink)",
+                    }}
+                    onFocus={(e) =>
+                      (e.currentTarget.style.boxShadow =
+                        "0 0 0 3px " + tint("--amber", 30))
+                    }
+                    onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
                   />
                 </div>
+
+                {/* Frequency */}
                 <div className="flex-1">
-                  <Label className="text-[10px] text-muted-foreground">
-                    Frequency
-                  </Label>
-                  <Select
-                    value={scheduleDayOfWeek}
-                    onValueChange={(v) => setScheduleDayOfWeek(v)}
+                  <p
+                    className="mb-1.5 font-mono text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "var(--mut2)" }}
                   >
-                    <SelectTrigger className="h-8 text-xs bg-background border-success/30 focus:border-success">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily" className="text-xs">
-                        Daily
-                      </SelectItem>
-                      <SelectItem value="weekday" className="text-xs">
-                        Weekdays
-                      </SelectItem>
-                      <SelectItem value="monday" className="text-xs">
-                        Monday
-                      </SelectItem>
-                      <SelectItem value="tuesday" className="text-xs">
-                        Tuesday
-                      </SelectItem>
-                      <SelectItem value="wednesday" className="text-xs">
-                        Wednesday
-                      </SelectItem>
-                      <SelectItem value="thursday" className="text-xs">
-                        Thursday
-                      </SelectItem>
-                      <SelectItem value="friday" className="text-xs">
-                        Friday
-                      </SelectItem>
-                      <SelectItem value="saturday" className="text-xs">
-                        Saturday
-                      </SelectItem>
-                      <SelectItem value="sunday" className="text-xs">
-                        Sunday
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    Frequency
+                  </p>
+                  <select
+                    value={scheduleDayOfWeek}
+                    onChange={(e) => setScheduleDayOfWeek(e.target.value)}
+                    className="h-10 w-full rounded-lg px-3 font-sans text-[14px] outline-none transition-shadow appearance-none"
+                    style={{
+                      background: "var(--surface-1)",
+                      border: "1px solid var(--line2)",
+                      color: "var(--ink)",
+                    }}
+                    onFocus={(e) =>
+                      (e.currentTarget.style.boxShadow =
+                        "0 0 0 3px " + tint("--amber", 30))
+                    }
+                    onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekday">Weekdays</option>
+                    <option value="monday">Monday</option>
+                    <option value="tuesday">Tuesday</option>
+                    <option value="wednesday">Wednesday</option>
+                    <option value="thursday">Thursday</option>
+                    <option value="friday">Friday</option>
+                    <option value="saturday">Saturday</option>
+                    <option value="sunday">Sunday</option>
+                  </select>
                 </div>
               </div>
+
               {errors.schedule && (
-                <p className="text-xs text-destructive">{errors.schedule}</p>
+                <p
+                  className="font-sans text-[13px]"
+                  style={{ color: "var(--red)" }}
+                >
+                  {errors.schedule}
+                </p>
               )}
             </div>
           )}
 
+          {/* Event */}
           {data.triggerType === "event" && (
-            <div className="space-y-2">
-              <div className="p-2 rounded bg-warning/10 border border-warning/20">
-                <p className="text-xs text-warning">
-                  Trigger this workflow when specific events occur in your
-                  system.
-                </p>
-              </div>
-              <div>
-                <Label className="text-[10px] text-muted-foreground">
-                  Select Event
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEventDialogOpen(true)}
-                  className={cn(
-                    "w-full h-8 justify-between text-xs bg-background border-warning/30 hover:border-warning",
-                    errors.trigger && "border-destructive",
-                    !data.trigger?.eventName && "text-muted-foreground",
-                  )}
+            <div className="space-y-3">
+              {/* Selected event card or dashed "Choose" button */}
+              {data.trigger?.eventName ? (
+                <div
+                  className="flex items-start gap-3 rounded-xl p-4"
+                  style={{
+                    background: tint("--violet", 8),
+                    border: `1px solid ${tint("--violet", 28)}`,
+                  }}
                 >
-                  {data.trigger?.eventName ? (
-                    <span className="flex items-center gap-2">
-                      <Zap className="h-3 w-3 text-warning" />
-                      <span className="font-medium">
-                        {data.trigger.eventName}
-                      </span>
-                    </span>
-                  ) : (
-                    <span>Choose an event to listen for...</span>
-                  )}
-                  <Zap className="h-3 w-3 ml-2" />
-                </Button>
-                {errors.trigger && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.trigger}
-                  </p>
-                )}
+                  {/* Violet Zap tile */}
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: tint("--violet", 16),
+                      color: "var(--violet)",
+                    }}
+                  >
+                    <Zap className="h-5 w-5" />
+                  </span>
 
-                {/* Show selected event details */}
-                {data.trigger?.eventName && (
-                  <div className="mt-2 p-2 rounded bg-muted/50 border border-warning/20">
-                    <p className="text-[10px] text-warning font-medium mb-1">
-                      Event: {data.trigger.eventName}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="font-mono text-[14px] font-bold leading-tight"
+                      style={{ color: "var(--cream)" }}
+                    >
+                      {data.trigger.eventName}
                     </p>
-                    {(() => {
-                      const selectedEventType = eventTypes.find(
-                        (e) => e.eventName === data.trigger?.eventName,
-                      );
-                      if (selectedEventType?.description) {
-                        return (
-                          <p className="text-[10px] text-muted-foreground">
-                            {selectedEventType.description}
-                          </p>
-                        );
-                      }
-                      return null;
-                    })()}
+                    {selectedEventType?.description && (
+                      <p
+                        className="mt-0.5 font-sans text-[13px] leading-snug"
+                        style={{ color: "var(--mut)" }}
+                      >
+                        {selectedEventType.description}
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Event Selection Dialog */}
-              <EventSelectionDialog
+                  <button
+                    type="button"
+                    onClick={() => setEventDialogOpen(true)}
+                    className="shrink-0 rounded-lg px-3 py-1.5 font-sans text-[12px] font-semibold transition-colors"
+                    style={{
+                      background: tint("--violet", 14),
+                      color: "var(--violet)",
+                      border: `1px solid ${tint("--violet", 36)}`,
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = tint("--violet", 22))
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = tint("--violet", 14))
+                    }
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setEventDialogOpen(true)}
+                  className="flex h-14 w-full items-center justify-center gap-2 rounded-xl font-sans text-[14px] font-semibold transition-colors"
+                  style={{
+                    background: "transparent",
+                    border: "1.5px dashed var(--line2)",
+                    color: "var(--mut)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = tint("--violet", 6);
+                    e.currentTarget.style.borderColor = `var(--violet)`;
+                    e.currentTarget.style.color = "var(--violet)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.borderColor = "var(--line2)";
+                    e.currentTarget.style.color = "var(--mut)";
+                  }}
+                >
+                  <Zap className="h-4 w-4" />
+                  Choose an event…
+                </button>
+              )}
+
+              {errors.trigger && (
+                <p
+                  className="font-sans text-[13px]"
+                  style={{ color: "var(--red)" }}
+                >
+                  {errors.trigger}
+                </p>
+              )}
+
+              {/* Event picker dialog — preserved exactly */}
+              <EventTriggerPicker
                 open={eventDialogOpen}
                 onOpenChange={setEventDialogOpen}
                 eventTypes={eventTypes}
                 selectedEvent={data.trigger?.eventName}
                 onSelectEvent={handleEventChange}
               />
-            </div>
-          )}
-
-          {data.triggerType === "webhook" && (
-            <div className="p-2 rounded bg-info/10 border border-info/20">
-              <p className="text-xs text-info">
-                A unique webhook URL will be generated after you create this
-                workflow.
-              </p>
             </div>
           )}
         </div>

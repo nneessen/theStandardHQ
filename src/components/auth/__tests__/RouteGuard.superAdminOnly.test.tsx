@@ -29,6 +29,9 @@ vi.mock("@/hooks/subscription", () => ({
   useAnyFeatureAccess: vi.fn(),
   useSubscription: vi.fn(),
   useImoAllFeaturesAccess: vi.fn(),
+  // RouteGuard calls useAiAccess() unconditionally (added by billing #18); it must
+  // return a valid shape so the `{ hasAiAccess, isLoading }` destructure can't crash.
+  useAiAccess: vi.fn(() => ({ hasAiAccess: false, isLoading: false })),
 }));
 
 describe("RouteGuard superAdminOnly", () => {

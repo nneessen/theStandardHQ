@@ -7,7 +7,9 @@ import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 import {
   replaceTemplateVariables as sharedReplaceTemplateVariables,
   initEmptyVariables,
+  type TemplateRenderMode,
 } from "../_shared/templateVariables.ts";
+import { assertSafeWebhookUrl } from "../_shared/webhookUrl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -169,22 +171,203 @@ serve(async (req) => {
       throw new Error(`Workflow run not found: ${runId}`);
     }
 
-    // Parse actions from workflow
-    const actions: WorkflowAction[] = workflow.actions || [];
-    const actionsExecuted: ActionResult[] = [];
-    let emailsSent = 0;
-    let actionsCompleted = 0;
-    let actionsFailed = 0;
+    // Cancellation: a run can be cancelled before/between steps (e.g. a nurture
+    // sequence stopped when the policy lapses). Honor it and stop.
+    if (run.cancelled) {
+      await adminSupabase
+        .from("workflow_runs")
+        .update({ status: "cancelled", completed_at: new Date().toISOString() })
+        .eq("id", runId);
+      return new Response(
+        JSON.stringify({ success: true, runId, cancelled: true }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
-    // Execute actions sequentially
-    for (const action of actions.sort((a, b) => a.order - b.order)) {
-      // Handle delay before action
-      if (action.delayMinutes && action.delayMinutes > 0 && !isTest) {
-        console.log(
-          `Waiting ${action.delayMinutes} minutes before action ${action.order}`,
+    // Execute the actions SNAPSHOTTED onto the run at enqueue time (so a run that
+    // started months ago is unaffected by later edits to the workflow). Falls
+    // back to the live workflow actions for legacy/direct-invocation runs.
+    const allActions: WorkflowAction[] = (
+      (run.actions_snapshot as WorkflowAction[] | null) ||
+      workflow.actions ||
+      []
+    )
+      .slice()
+      .sort((a: WorkflowAction, b: WorkflowAction) => a.order - b.order);
+    // Resume point for runs re-queued after a `wait` step (0 on first run).
+    const startIndex = (run.resume_action_index as number) || 0;
+
+    // Cooldown + conditions are evaluated ONCE, on the genuine FIRST attempt of a
+    // run — never on a delayed resume (startIndex > 0) NOR on a reaper-requeued
+    // retry (attempts > 1). Gating only on startIndex===0 would let a run that was
+    // reaped mid-send (so it never advanced past action 0) re-enter this gate; if a
+    // sibling run completed in the death window, cooldown would wrongly mark the
+    // half-sent run 'skipped' and abandon its unsent recipients. dequeue increments
+    // attempts on each claim, so attempts<=1 == first real execution.
+    if (!isTest && startIndex === 0 && ((run.attempts as number) ?? 0) <= 1) {
+      if (workflow.cooldown_minutes) {
+        const cutoff = new Date(
+          Date.now() - workflow.cooldown_minutes * 60000,
+        ).toISOString();
+        const { data: recent } = await adminSupabase
+          .from("workflow_runs")
+          .select("id")
+          .eq("workflow_id", workflowId)
+          .eq("status", "completed")
+          .gte("completed_at", cutoff)
+          .neq("id", runId)
+          .limit(1);
+        if (recent && recent.length > 0) {
+          await adminSupabase
+            .from("workflow_runs")
+            .update({
+              status: "skipped",
+              completed_at: new Date().toISOString(),
+              error_message: "Cooldown active",
+            })
+            .eq("id", runId);
+          return new Response(
+            JSON.stringify({ success: true, runId, skipped: "cooldown" }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+      }
+
+      // Daily-run cap: the "Max runs per day" setting limits how many times this
+      // workflow EXECUTES per calendar day (UTC). Counts today's runs that have
+      // begun executing (excluding this one); if at/over the cap, skip. Manual
+      // "Run Now" runs bypass the cap (an explicit user action), and tests are
+      // already excluded by the enclosing !isTest guard.
+      if (
+        workflow.max_runs_per_day &&
+        workflow.max_runs_per_day > 0 &&
+        run.trigger_source !== "manual"
+      ) {
+        const dayStart = new Date();
+        dayStart.setUTCHours(0, 0, 0, 0);
+        const { count: runsToday, error: countErr } = await adminSupabase
+          .from("workflow_runs")
+          .select("id", { count: "exact", head: true })
+          .eq("workflow_id", workflowId)
+          .in("status", ["completed", "running", "partial"])
+          .gte("created_at", dayStart.toISOString())
+          .neq("id", runId);
+        if (countErr) {
+          // Fail OPEN (run rather than wrongly skip) but never silently — a
+          // bypassed cap must be visible in the logs.
+          console.error(
+            `[process-workflow] daily-cap count failed for workflow ${workflowId}; running uncapped:`,
+            countErr.message,
+          );
+        }
+        if (runsToday !== null && runsToday >= workflow.max_runs_per_day) {
+          await adminSupabase
+            .from("workflow_runs")
+            .update({
+              status: "skipped",
+              completed_at: new Date().toISOString(),
+              error_message: "Daily run limit reached",
+            })
+            .eq("id", runId);
+          return new Response(
+            JSON.stringify({
+              success: true,
+              runId,
+              skipped: "max_runs_per_day",
+            }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+      }
+
+      const conditions =
+        (workflow.conditions as Array<{
+          field: string;
+          operator: string;
+          value: unknown;
+        }> | null) || [];
+      if (
+        conditions.length > 0 &&
+        !evaluateConditions(
+          conditions,
+          (run.context as Record<string, unknown>) || {},
+        )
+      ) {
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            status: "skipped",
+            completed_at: new Date().toISOString(),
+            error_message: "Conditions not met",
+          })
+          .eq("id", runId);
+        return new Response(
+          JSON.stringify({ success: true, runId, skipped: "conditions" }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
-        // For actual delays, we would need a different approach (like scheduling)
-        // For now, we skip delays in the direct execution
+      }
+    }
+
+    // Accumulate across delayed resumes.
+    const actionsExecuted: ActionResult[] =
+      (run.actions_executed as ActionResult[] | null) || [];
+    let emailsSent = (run.emails_sent as number) || 0;
+    let actionsCompleted = (run.actions_completed as number) || 0;
+    let actionsFailed = (run.actions_failed as number) || 0;
+
+    for (let i = startIndex; i < allActions.length; i++) {
+      const action = allActions[i];
+
+      // Real delay: a `wait` step re-queues the run to resume at the NEXT action
+      // after scheduled_at (the worker picks it up when due). Works for any
+      // horizon — minutes to years — with zero held resources.
+      const waitMinutes =
+        action.type === "wait"
+          ? Number(action.config?.waitMinutes ?? action.delayMinutes ?? 0)
+          : 0;
+      if (!isTest && waitMinutes > 0) {
+        const resumeAt = new Date(
+          Date.now() + waitMinutes * 60000,
+        ).toISOString();
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            status: "pending",
+            scheduled_at: resumeAt,
+            resume_action_index: i + 1,
+            actions_executed: actionsExecuted,
+            emails_sent: emailsSent,
+            actions_completed: actionsCompleted,
+            actions_failed: actionsFailed,
+          })
+          .eq("id", runId);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            runId,
+            deferredUntil: resumeAt,
+            resumeIndex: i + 1,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (isTest && action.type === "wait") {
+        continue; // delays are a no-op in test runs
       }
 
       try {
@@ -194,6 +377,7 @@ serve(async (req) => {
           workflow,
           isTest ?? false,
           adminSupabase,
+          runId,
         );
         actionsExecuted.push({
           actionId: `action-${action.order}`,
@@ -220,6 +404,26 @@ serve(async (req) => {
         actionsFailed++;
 
         // Continue with other actions unless it's a critical failure
+      }
+
+      // Persist forward progress after EACH action so a reaper-requeued resume
+      // restarts at the NEXT action (resume_action_index = i+1) instead of index 0
+      // — without this, a reaped run re-fires every prior action's side effect
+      // (a second webhook POST, a duplicate notification). Reset attempts: a run
+      // that is making progress is not a poison pill, so it shouldn't accumulate
+      // toward the dead-letter cap; only an action that never completes does.
+      if (!isTest) {
+        await adminSupabase
+          .from("workflow_runs")
+          .update({
+            resume_action_index: i + 1,
+            actions_executed: actionsExecuted,
+            emails_sent: emailsSent,
+            actions_completed: actionsCompleted,
+            actions_failed: actionsFailed,
+            attempts: 0,
+          })
+          .eq("id", runId);
       }
     }
 
@@ -285,6 +489,89 @@ serve(async (req) => {
 });
 
 /**
+ * Idempotency ledger helpers (migration 20260616152822). A run that stays
+ * 'running' past the reaper TTL is re-queued, which re-runs the per-recipient
+ * send loop from the top. claimSend records a claim row for
+ * (run, action, channel, recipient) and returns true ONLY if THIS call created
+ * it — a reaped retry (or a racing second worker) gets false and MUST skip, so a
+ * re-queued run never double-sends. releaseSend frees a claim after a FAILED send
+ * so that recipient stays retriable. Both fail-open to delivery on infra error: a
+ * missed dedupe is far rarer and less harmful than dropping a legitimate send.
+ */
+async function claimSend(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipient: string,
+): Promise<boolean> {
+  if (!runId) return true; // no run context (legacy direct invoke) — can't dedupe
+  const { data, error } = await supabase.rpc("claim_workflow_send", {
+    p_run_id: runId,
+    p_action_order: actionOrder,
+    p_channel: channel,
+    p_recipient: recipient,
+  });
+  if (error) {
+    console.error("[claimSend] error (failing open to send):", error.message);
+    return true;
+  }
+  return data === true;
+}
+
+async function releaseSend(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipient: string,
+): Promise<void> {
+  if (!runId) return;
+  await supabase
+    .from("workflow_send_log")
+    .delete()
+    .eq("run_id", runId)
+    .eq("action_order", actionOrder)
+    .eq("channel", channel)
+    .eq("recipient", recipient);
+}
+
+/**
+ * Pre-filter recipients a prior attempt of THIS run+action already claimed, BEFORE
+ * the rate-limit check + send loop. Critical on a reaper re-run: without it the
+ * rate-limit check re-counts already-delivered recipients (recorded in
+ * workflow_email_tracking) against the limit and can throw, which would drop the
+ * genuinely-unsent recipients and fail the run. Returns the still-unclaimed set +
+ * how many were already handled. Fails OPEN (treats all as unclaimed) on error —
+ * the in-loop claimSend is the per-recipient backstop.
+ */
+async function filterUnclaimedRecipients(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
+  actionOrder: number,
+  channel: "email" | "sms",
+  recipients: string[],
+): Promise<{ remaining: string[]; alreadyDone: number }> {
+  if (!runId) return { remaining: recipients, alreadyDone: 0 };
+  const { data, error } = await supabase
+    .from("workflow_send_log")
+    .select("recipient")
+    .eq("run_id", runId)
+    .eq("action_order", actionOrder)
+    .eq("channel", channel);
+  if (error || !data) {
+    console.error(
+      "[filterUnclaimedRecipients] error (failing open):",
+      error?.message,
+    );
+    return { remaining: recipients, alreadyDone: 0 };
+  }
+  const done = new Set(data.map((r) => r.recipient as string));
+  const remaining = recipients.filter((r) => !done.has(r));
+  return { remaining, alreadyDone: recipients.length - remaining.length };
+}
+
+/**
  * Execute a single workflow action
  */
 async function executeAction(
@@ -293,12 +580,23 @@ async function executeAction(
   _workflow: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
 ): Promise<unknown> {
   console.log(`Executing action: ${action.type}`, action.config);
 
   switch (action.type) {
     case "send_email":
-      return await executeSendEmail(action, context, isTest, supabase);
+      return await executeSendEmail(action, context, isTest, supabase, runId);
+
+    case "send_sms":
+      return await executeSendSms(
+        action,
+        context,
+        isTest,
+        supabase,
+        _workflow,
+        runId,
+      );
 
     case "create_notification":
       return await executeCreateNotification(action, context, isTest, supabase);
@@ -313,11 +611,18 @@ async function executeAction(
       return await executeWebhook(action, context, isTest);
 
     case "update_field":
-      return await executeUpdateField(action, context, isTest, supabase);
+      return await executeUpdateField(
+        action,
+        context,
+        isTest,
+        supabase,
+        _workflow,
+      );
 
     default:
-      console.log(`Unknown action type: ${action.type}`);
-      return { skipped: true, reason: `Unknown action type: ${action.type}` };
+      // Throw (not silent-skip) so an unimplemented/typo'd action type fails the
+      // run loudly instead of reporting success without doing anything.
+      throw new Error(`Unsupported action type: ${action.type}`);
   }
 }
 
@@ -329,6 +634,7 @@ async function executeSendEmail(
   context: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
 ): Promise<unknown> {
   console.log(
     "executeSendEmail called with action config:",
@@ -399,18 +705,26 @@ async function executeSendEmail(
       break;
 
     case "current_user":
+      // "Current user" = the workflow owner. enqueue_workflow_event injects
+      // triggeredBy (the owner id) but not their email, so fall back to the owner
+      // profile loaded above when triggeredByEmail isn't supplied (the event path).
       if (context.triggeredByEmail) {
         recipientEmails = [context.triggeredByEmail as string];
+      } else if (ownerProfile.email) {
+        recipientEmails = [ownerProfile.email as string];
       }
       break;
 
     case "manager":
     case "direct_upline":
       if (context.recipientId) {
+        // Scope the source user to the workflow owner's IMO so a crafted
+        // cross-IMO recipientId can't pivot to another tenant's upline.
         const { data: userWithUpline } = await supabase
           .from("user_profiles")
           .select("upline_id")
           .eq("id", context.recipientId)
+          .eq("imo_id", ownerProfile.imo_id)
           .single();
 
         if (userWithUpline?.upline_id) {
@@ -418,6 +732,7 @@ async function executeSendEmail(
             .from("user_profiles")
             .select("id, email")
             .eq("id", userWithUpline.upline_id)
+            .eq("imo_id", ownerProfile.imo_id)
             .single();
 
           if (manager?.email) {
@@ -428,11 +743,15 @@ async function executeSendEmail(
       break;
 
     case "all_trainers": {
+      // SECURITY: this runs on the service-role admin client which BYPASSES RLS,
+      // so the IMO filter is mandatory — without it this returns every tenant's
+      // trainers (cross-tenant email blast).
       const { data: trainers } = await supabase
         .from("user_profiles")
         .select("id, email")
         .contains("roles", ["trainer"])
-        .eq("is_deleted", false);
+        .eq("imo_id", ownerProfile.imo_id)
+        .is("archived_at", null);
 
       if (trainers && trainers.length > 0) {
         recipientEmails = trainers.map((t) => t.email);
@@ -441,10 +760,14 @@ async function executeSendEmail(
     }
 
     case "all_agents": {
+      // SECURITY: admin client bypasses RLS — scope to the owner's IMO or this
+      // blasts every tenant's licensed agents.
       const { data: agents, error: agentsError } = await supabase
         .from("user_profiles")
         .select("id, email")
-        .eq("agent_status", "licensed");
+        .eq("agent_status", "licensed")
+        .eq("imo_id", ownerProfile.imo_id)
+        .is("archived_at", null);
 
       console.log("Fetching all licensed agents, found:", agents?.length || 0);
       if (agentsError) {
@@ -461,6 +784,31 @@ async function executeSendEmail(
   if (recipientEmails.length === 0) {
     throw new Error(`No recipients found for type: ${recipientType}`);
   }
+
+  // Idempotency pre-filter (BEFORE the rate-limit check): drop recipients a prior
+  // attempt of this run+action already claimed. On a reaper re-run this prevents
+  // the rate-limit check from re-counting already-delivered recipients (which
+  // would throw and drop the still-unsent ones). If none remain, the action
+  // already delivered — return success without re-sending.
+  let emailAlreadyDone = 0;
+  const emailPrefilter = await filterUnclaimedRecipients(
+    supabase,
+    runId,
+    action.order,
+    "email",
+    recipientEmails,
+  );
+  emailAlreadyDone = emailPrefilter.alreadyDone;
+  if (emailPrefilter.remaining.length === 0) {
+    return {
+      sent: true,
+      templateId,
+      sentCount: 0,
+      skippedCount: emailAlreadyDone,
+      note: "all recipients already delivered (idempotent re-run)",
+    };
+  }
+  recipientEmails = emailPrefilter.remaining;
 
   // Rate limit check - prevent runaway email costs
   const workflowId = (context.workflowId as string) || "";
@@ -510,7 +858,11 @@ async function executeSendEmail(
     return {
       action: "send_email",
       template: template.name,
-      subject: replaceTemplateVariables(template.subject, templateVariables),
+      subject: replaceTemplateVariables(
+        template.subject,
+        templateVariables,
+        "subject",
+      ),
       recipientType,
       wouldSendTo: recipientEmails,
       sender: "noreply@updates.thestandardhq.com",
@@ -535,20 +887,42 @@ async function executeSendEmail(
   const processedSubject = replaceTemplateVariables(
     template.subject,
     templateVariables,
+    "subject",
   );
   const processedBodyHtml = replaceTemplateVariables(
     template.body_html,
     templateVariables,
+    "html",
   );
   const processedBodyText = replaceTemplateVariables(
     template.body_text || "",
     templateVariables,
+    "text",
   );
 
   const sentEmails: string[] = [];
   const failedEmails: string[] = [];
+  const skippedEmails: string[] = []; // already delivered by a prior (reaped) attempt
 
   for (const recipientEmail of recipientEmails) {
+    // Idempotency: claim this recipient before sending. A reaped re-run (or a
+    // racing second worker) that finds the recipient already claimed skips it,
+    // so a re-queued run never double-sends.
+    const claimed = await claimSend(
+      supabase,
+      runId,
+      action.order,
+      "email",
+      recipientEmail,
+    );
+    if (!claimed) {
+      console.log(
+        "Skipping already-sent recipient (idempotent):",
+        recipientEmail,
+      );
+      skippedEmails.push(recipientEmail);
+      continue;
+    }
     try {
       console.log(
         "Sending to:",
@@ -726,6 +1100,8 @@ async function executeSendEmail(
     } catch (sendError) {
       console.error(`Failed to send to ${recipientEmail}:`, sendError);
       failedEmails.push(recipientEmail);
+      // Release the claim so this failed recipient stays retriable on a re-run.
+      await releaseSend(supabase, runId, action.order, "email", recipientEmail);
 
       // Record failed email for tracking
       {
@@ -748,7 +1124,9 @@ async function executeSendEmail(
     }
   }
 
-  if (sentEmails.length === 0) {
+  // Only a genuine total failure throws. If every recipient was SKIPPED (already
+  // delivered by a prior attempt) the action already succeeded — do not throw.
+  if (sentEmails.length === 0 && skippedEmails.length === 0) {
     throw new Error(
       `Failed to send to all recipients: ${failedEmails.join(", ")}`,
     );
@@ -758,10 +1136,253 @@ async function executeSendEmail(
     sent: true,
     templateId,
     sentCount: sentEmails.length,
+    skippedCount: skippedEmails.length + emailAlreadyDone,
     failedCount: failedEmails.length,
     sentTo: sentEmails,
+    skippedTo: skippedEmails.length > 0 ? skippedEmails : undefined,
     failedTo: failedEmails.length > 0 ? failedEmails : undefined,
     provider,
+  };
+}
+
+// Hard cap on recipients per SMS action — a safety rail against runaway Twilio
+// spend from a mis-scoped all_agents send. (A per-IMO daily SMS budget is a
+// follow-up; send-sms itself enforces TCPA opt-out via is_suppressed.)
+const MAX_SMS_RECIPIENTS = 100;
+
+/**
+ * Send SMS action — renders action.config.message and delivers via the send-sms
+ * edge function (which normalizes to E.164 and enforces is_suppressed opt-out).
+ * Recipient PHONES are resolved tenant-scoped to the workflow owner's IMO.
+ */
+async function executeSendSms(
+  action: WorkflowAction,
+  context: Record<string, unknown>,
+  isTest: boolean,
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workflow: Record<string, unknown>,
+  runId: string | undefined,
+): Promise<unknown> {
+  const messageTemplate = action.config.message as string;
+  if (!messageTemplate) {
+    throw new Error("No message specified for send_sms action");
+  }
+
+  const workflowOwnerId = context.triggeredBy as string;
+  if (!workflowOwnerId) {
+    throw new Error("No workflow owner ID in context — cannot send SMS");
+  }
+
+  const { data: ownerProfile, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("id", workflowOwnerId)
+    .single();
+  if (profileError || !ownerProfile) {
+    throw new Error("Workflow owner profile not found");
+  }
+  const ownerImoId = ownerProfile.imo_id;
+
+  // Resolve recipient phone numbers (tenant-scoped). Mirrors the email path but
+  // selects `phone` and drops rows without one.
+  let phones: string[] = [];
+  const recipientType =
+    (action.config.recipientType as string) || "trigger_user";
+
+  switch (recipientType) {
+    case "trigger_user":
+      if (context.recipientPhone) {
+        phones = [context.recipientPhone as string];
+      } else if (context.recipientId) {
+        const { data } = await supabase
+          .from("user_profiles")
+          .select("phone")
+          .eq("id", context.recipientId)
+          .eq("imo_id", ownerImoId)
+          .single();
+        if (data?.phone) phones = [data.phone];
+      }
+      break;
+
+    case "specific_phone":
+      if (action.config.recipientPhone) {
+        phones = [action.config.recipientPhone as string];
+      }
+      break;
+
+    case "current_user":
+      if (ownerProfile.phone) phones = [ownerProfile.phone];
+      break;
+
+    case "manager":
+    case "direct_upline":
+      if (context.recipientId) {
+        const { data: userWithUpline } = await supabase
+          .from("user_profiles")
+          .select("upline_id")
+          .eq("id", context.recipientId)
+          .eq("imo_id", ownerImoId)
+          .single();
+        if (userWithUpline?.upline_id) {
+          const { data: manager } = await supabase
+            .from("user_profiles")
+            .select("phone")
+            .eq("id", userWithUpline.upline_id)
+            .eq("imo_id", ownerImoId)
+            .single();
+          if (manager?.phone) phones = [manager.phone];
+        }
+      }
+      break;
+
+    case "all_agents": {
+      // SECURITY: admin client bypasses RLS — scope to the owner's IMO.
+      const { data: agents } = await supabase
+        .from("user_profiles")
+        .select("phone")
+        .eq("agent_status", "licensed")
+        .eq("imo_id", ownerImoId)
+        .is("archived_at", null)
+        .not("phone", "is", null);
+      if (agents) phones = agents.map((a) => a.phone).filter(Boolean);
+      break;
+    }
+
+    case "all_trainers": {
+      const { data: trainers } = await supabase
+        .from("user_profiles")
+        .select("phone")
+        .contains("roles", ["trainer"])
+        .eq("imo_id", ownerImoId)
+        .is("archived_at", null)
+        .not("phone", "is", null);
+      if (trainers) phones = trainers.map((t) => t.phone).filter(Boolean);
+      break;
+    }
+  }
+
+  // De-dupe + drop empties, then cap.
+  phones = [...new Set(phones.filter((p) => p && p.trim().length > 0))];
+  if (phones.length === 0) {
+    throw new Error(
+      `No phone numbers found for recipient type: ${recipientType}`,
+    );
+  }
+  // Idempotency pre-filter: drop numbers a prior attempt already claimed so a
+  // reaped re-run doesn't re-text them or burn the recipient cap on them.
+  let smsAlreadyDone = 0;
+  const smsPrefilter = await filterUnclaimedRecipients(
+    supabase,
+    runId,
+    action.order,
+    "sms",
+    phones,
+  );
+  smsAlreadyDone = smsPrefilter.alreadyDone;
+  if (smsPrefilter.remaining.length === 0) {
+    return {
+      sent: true,
+      sentCount: 0,
+      skippedCount: smsAlreadyDone,
+      note: "all recipients already delivered (idempotent re-run)",
+    };
+  }
+  phones = smsPrefilter.remaining;
+  if (phones.length > MAX_SMS_RECIPIENTS) {
+    console.warn(
+      `[send_sms] capping ${phones.length} recipients to ${MAX_SMS_RECIPIENTS}`,
+    );
+    phones = phones.slice(0, MAX_SMS_RECIPIENTS);
+  }
+
+  // Render the message (plain text — strip nothing, no HTML).
+  const variables = await buildTemplateVariables(
+    context,
+    ownerProfile,
+    supabase,
+  );
+  const message = replaceTemplateVariables(messageTemplate, variables, "text");
+
+  if (isTest) {
+    return {
+      action: "send_sms",
+      message,
+      recipientType,
+      wouldSendTo: phones,
+      isTest: true,
+    };
+  }
+
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Missing SUPABASE_URL/SERVICE_ROLE_KEY for send_sms");
+  }
+  const workflowId = (context.workflowId as string) || (workflow.id as string);
+
+  const sent: string[] = [];
+  const skipped: string[] = [];
+  const failed: string[] = [];
+
+  for (const to of phones) {
+    // Idempotency: claim this number before sending. A reaped re-run that finds
+    // it already claimed skips it, so a re-queued run never double-texts.
+    const claimed = await claimSend(supabase, runId, action.order, "sms", to);
+    if (!claimed) {
+      console.log(
+        "[send_sms] skipping already-sent recipient (idempotent):",
+        to,
+      );
+      skipped.push(to);
+      continue;
+    }
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-sms`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to,
+          message,
+          trigger: "workflow",
+          automationId: workflowId,
+        }),
+      });
+      const data = await resp.json();
+      if (data.suppressed) {
+        // recipient opted out (STOP) — terminal, not a failure. Keep the claim so
+        // a re-run doesn't pointlessly re-hit send-sms for an opted-out number.
+        skipped.push(to);
+      } else if (data.success) {
+        sent.push(to);
+      } else {
+        console.error(`[send_sms] failed for ${to}:`, data.error);
+        failed.push(to);
+        // Release so this failed number stays retriable on a re-run.
+        await releaseSend(supabase, runId, action.order, "sms", to);
+      }
+    } catch (err) {
+      console.error(`[send_sms] error for ${to}:`, err);
+      failed.push(to);
+      await releaseSend(supabase, runId, action.order, "sms", to);
+    }
+  }
+
+  if (sent.length === 0 && skipped.length === 0) {
+    throw new Error(
+      `Failed to send SMS to all recipients: ${failed.join(", ")}`,
+    );
+  }
+
+  return {
+    sent: true,
+    sentCount: sent.length,
+    skippedCount: skipped.length + smsAlreadyDone,
+    failedCount: failed.length,
+    skippedTo: skipped.length > 0 ? skipped : undefined,
+    failedTo: failed.length > 0 ? failed : undefined,
   };
 }
 
@@ -796,13 +1417,15 @@ async function executeCreateNotification(
     throw new Error("No recipient ID in context");
   }
 
-  // Create notification
+  // Create notification. NB: the column is `read` (boolean), not `is_read` —
+  // an `is_read` insert fails PostgREST schema-cache validation and the action
+  // errors out (verified against the live schema + database.types.ts).
   const { error: notifError } = await supabase.from("notifications").insert({
     user_id: recipientId,
     type: "workflow",
     title,
     message,
-    is_read: false,
+    read: false,
   });
 
   if (notifError) {
@@ -827,6 +1450,9 @@ async function executeWebhook(
     throw new Error("No webhook URL specified");
   }
 
+  // SSRF guard (also validates in test mode so authors see the error early).
+  assertSafeWebhookUrl(url);
+
   if (isTest) {
     return {
       action: "webhook",
@@ -839,6 +1465,11 @@ async function executeWebhook(
 
   const response = await fetch(url, {
     method,
+    // Do NOT follow redirects: assertSafeWebhookUrl only validates the initial
+    // host, so an allowed public host that 3xx-redirects to an internal address
+    // (e.g. 169.254.169.254) would otherwise be an SSRF bypass. "manual" returns
+    // an opaqueredirect response instead of following it.
+    redirect: "manual",
     headers: {
       "Content-Type": "application/json",
       ...((action.config.webhookHeaders as Record<string, string>) || {}),
@@ -846,11 +1477,71 @@ async function executeWebhook(
     body: method !== "GET" ? JSON.stringify(context) : undefined,
   });
 
+  if (
+    response.type === "opaqueredirect" ||
+    (response.status >= 300 && response.status < 400)
+  ) {
+    throw new Error("Webhook endpoint attempted a redirect (not allowed)");
+  }
+
   if (!response.ok) {
     throw new Error(`Webhook failed: ${response.status}`);
   }
 
   return { status: response.status, url };
+}
+
+/**
+ * Evaluate workflow conditions against the run context (AND logic). Moved here
+ * from trigger-workflow-event: matching now happens in enqueue_workflow_event, so
+ * conditions are enforced at execution time.
+ */
+function evaluateConditions(
+  conditions: Array<{ field: string; operator: string; value: unknown }>,
+  context: Record<string, unknown>,
+): boolean {
+  for (const condition of conditions) {
+    const fieldValue = getNestedValue(context, condition.field);
+    if (!evaluateCondition(fieldValue, condition.operator, condition.value)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getNestedValue(obj: unknown, path: string): unknown {
+  return path
+    .split(".")
+    .reduce((current, key) => (current as Record<string, unknown>)?.[key], obj);
+}
+
+function evaluateCondition(
+  fieldValue: unknown,
+  operator: string,
+  expectedValue: unknown,
+): boolean {
+  switch (operator) {
+    case "equals":
+      return fieldValue === expectedValue;
+    case "not_equals":
+      return fieldValue !== expectedValue;
+    case "contains":
+      return String(fieldValue).includes(String(expectedValue));
+    case "not_contains":
+      return !String(fieldValue).includes(String(expectedValue));
+    case "greater_than":
+      return Number(fieldValue) > Number(expectedValue);
+    case "less_than":
+      return Number(fieldValue) < Number(expectedValue);
+    case "in":
+      return Array.isArray(expectedValue) && expectedValue.includes(fieldValue);
+    case "not_in":
+      return (
+        Array.isArray(expectedValue) && !expectedValue.includes(fieldValue)
+      );
+    default:
+      return true;
+  }
 }
 
 /**
@@ -861,6 +1552,7 @@ async function executeUpdateField(
   context: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  workflow: Record<string, unknown>,
 ): Promise<unknown> {
   const fieldName = action.config.fieldName as string;
   const fieldValue = action.config.fieldValue;
@@ -878,7 +1570,10 @@ async function executeUpdateField(
     };
   }
 
-  // Determine which table to update based on context
+  // targetId/targetTable come from the (client-supplied) event context, and this
+  // runs on the service-role admin client which BYPASSES RLS. Everything below is
+  // the tenant + privilege guard that keeps a crafted context from writing across
+  // IMOs or escalating privilege.
   const targetId = context.targetId as string;
   const targetTable = context.targetTable as string;
 
@@ -886,21 +1581,90 @@ async function executeUpdateField(
     throw new Error("No target specified for field update");
   }
 
-  // Security: only allow updates to specific tables
-  const ALLOWED_TABLES = ["user_profiles", "recruits", "policies"];
-  if (!ALLOWED_TABLES.includes(targetTable)) {
+  const workflowImoId = workflow.imo_id as string | null;
+  if (!workflowImoId) {
+    throw new Error("update_field requires a tenant-scoped (imo_id) workflow");
+  }
+
+  // Per-table policy: which column ties a row to a tenant, and which columns may
+  // NEVER be written (identity / privilege / tenant-move / billing). Only tables
+  // with a verified tenant column are permitted; others are rejected (the UI does
+  // not author update_field today, so this regresses nothing).
+  const TABLE_POLICY: Record<
+    string,
+    { tenantColumn: string; denyFields: string[] }
+  > = {
+    user_profiles: {
+      tenantColumn: "imo_id",
+      denyFields: [
+        "id",
+        "imo_id",
+        "agency_id",
+        "auth_id",
+        "user_id",
+        "email",
+        "is_super_admin",
+        "is_admin",
+        "archived_at",
+        "role",
+        "roles",
+        "contract_level",
+        "upline_id",
+        "recruiter_id",
+        "created_by",
+        "agent_status",
+        "stripe_customer_id",
+      ],
+    },
+  };
+
+  const policy = TABLE_POLICY[targetTable];
+  if (!policy) {
     console.error(
-      `[update_field] Rejected write to disallowed table: ${targetTable}`,
+      `[update_field] Rejected write to unsupported table: ${targetTable}`,
     );
     throw new Error(
       `Table "${targetTable}" is not allowed for update_field actions`,
     );
   }
 
+  // Block privilege/identity/tenant columns outright, plus any obvious admin flag.
+  if (
+    policy.denyFields.includes(fieldName) ||
+    /(^|_)(is_)?(admin|super|imo|agency|role|password|stripe|subscription)/i.test(
+      fieldName,
+    )
+  ) {
+    console.error(`[update_field] Rejected privileged field: ${fieldName}`);
+    throw new Error(
+      `Field "${fieldName}" cannot be set by update_field actions`,
+    );
+  }
+
+  // Tenant pre-check: the target row must belong to the workflow's IMO.
+  const { data: targetRow, error: lookupError } = await supabase
+    .from(targetTable)
+    .select(`id, ${policy.tenantColumn}`)
+    .eq("id", targetId)
+    .eq(policy.tenantColumn, workflowImoId)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw new Error(`Failed to verify target row: ${lookupError.message}`);
+  }
+  if (!targetRow) {
+    console.error(
+      `[update_field] Target ${targetTable}/${targetId} not in workflow IMO ${workflowImoId}`,
+    );
+    throw new Error("Target row not found in this tenant");
+  }
+
+  // Update is doubly guarded: by id AND by the tenant column.
   const { error } = await supabase
     .from(targetTable)
     .update({ [fieldName]: fieldValue })
-    .eq("id", targetId);
+    .eq("id", targetId)
+    .eq(policy.tenantColumn, workflowImoId);
 
   if (error) {
     throw new Error(`Failed to update field: ${error.message}`);
@@ -954,6 +1718,12 @@ async function buildTemplateVariables(
   // First try recipientId, then recipientEmail, then use the workflow owner as fallback
   let recipientProfile = null;
 
+  // recipientId / recipientEmail come from the (client-supplied) event context
+  // and this runs on the service-role admin client (RLS bypassed). Scope the
+  // lookup to the workflow owner's IMO so a crafted id/email cannot leak another
+  // tenant's profile data (name/email/phone/license) into the rendered template.
+  const ownerImoId = ownerProfile.imo_id;
+
   // Skip test IDs, but still try to find by email
   if (
     context.recipientId &&
@@ -964,6 +1734,7 @@ async function buildTemplateVariables(
       .from("user_profiles")
       .select("*")
       .eq("id", context.recipientId)
+      .eq("imo_id", ownerImoId)
       .single();
     recipientProfile = data;
     console.log("Found recipient by ID:", recipientProfile?.email);
@@ -979,6 +1750,7 @@ async function buildTemplateVariables(
       .from("user_profiles")
       .select("*")
       .eq("email", context.recipientEmail as string)
+      .eq("imo_id", ownerImoId)
       .single();
     recipientProfile = data;
     console.log("Found recipient by email:", recipientProfile?.email);
@@ -1020,6 +1792,19 @@ async function buildTemplateVariables(
     variables["recruit_facebook"] = recipientProfile.facebook_handle || "";
     variables["recruit_instagram"] = recipientProfile.instagram_username || "";
     variables["recruit_website"] = recipientProfile.personal_website || "";
+
+    // Agent lifecycle variables — the affected agent IS the recipient
+    // (agent.* emits set recipientId = the agent's user_profiles.id).
+    variables["agent_name"] =
+      `${recipientProfile.first_name || ""} ${recipientProfile.last_name || ""}`.trim() ||
+      recipientProfile.email;
+    variables["agent_first_name"] = recipientProfile.first_name || "there";
+    variables["agent_email"] = recipientProfile.email;
+    variables["agent_contract_level"] =
+      recipientProfile.contract_level?.toString() || "";
+    variables["agent_license_number"] = recipientProfile.license_number || "";
+    variables["agent_npn"] = recipientProfile.npn || "";
+    variables["agent_status"] = recipientProfile.agent_status || "";
   }
 
   // Add any additional context variables (using underscores)
@@ -1038,6 +1823,7 @@ async function buildTemplateVariables(
 function replaceTemplateVariables(
   text: string,
   variables: Record<string, string>,
+  mode: TemplateRenderMode = "text",
 ): string {
-  return sharedReplaceTemplateVariables(text, variables);
+  return sharedReplaceTemplateVariables(text, variables, mode);
 }

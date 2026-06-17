@@ -3,6 +3,10 @@
 
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import { AgencyRepository } from "./AgencyRepository";
 import type {
   Agency,
@@ -227,6 +231,17 @@ class AgencyService {
       const agency = await this.repo.create({
         ...data,
         is_active: true,
+      });
+
+      // Emit agency.created (non-fatal). recipientId = the designated owner (if any).
+      // Request-driven creation flows through approve_agency_request instead, so this
+      // covers direct/manual creation only (see agency_request.approved for the other).
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.AGENCY_CREATED, {
+        recipientId:
+          (data as { owner_id?: string | null }).owner_id ?? undefined,
+        agencyId: agency.id,
+        agencyName: agency.name,
+        timestamp: new Date().toISOString(),
       });
 
       logger.info(
@@ -603,6 +618,18 @@ class AgencyService {
       );
 
       const updatedAgency = await this.repo.updateOwner(agencyId, newOwnerId);
+
+      // Emit agency.ownership_transferred (non-fatal). recipientId = the NEW owner.
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.AGENCY_OWNERSHIP_TRANSFERRED,
+        {
+          recipientId: newOwnerId,
+          previousOwnerId: agency.owner_id ?? undefined,
+          agencyId,
+          agencyName: updatedAgency.name,
+          timestamp: new Date().toISOString(),
+        },
+      );
 
       logger.info(
         "Agency ownership transferred",

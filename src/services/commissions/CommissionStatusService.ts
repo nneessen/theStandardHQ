@@ -13,6 +13,10 @@
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
 import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
+import {
   DatabaseError,
   NotFoundError,
   ValidationError,
@@ -323,10 +327,10 @@ class CommissionStatusService {
         ]);
       }
 
-      // Check if commission exists
+      // Check if commission exists (user_id needed for the workflow recipient)
       const { data: commission, error: fetchError } = await supabase
         .from("commissions")
-        .select("id, status")
+        .select("id, status, user_id")
         .eq("id", commissionId)
         .single();
 
@@ -352,6 +356,15 @@ class CommissionStatusService {
       if (updateError) {
         throw new DatabaseError("markAsCancelled", updateError);
       }
+
+      // Emit commission cancelled event (non-fatal). recipientId = the agent.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.COMMISSION_CANCELLED, {
+        recipientId: commission.user_id ?? undefined,
+        commissionId,
+        cancelReason: reason,
+        cancelledAt: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
+      });
 
       logger.info(
         "Commission marked as cancelled",
@@ -458,7 +471,7 @@ class CommissionStatusService {
       // Note: Remote DB uses 'amount' column, not 'commission_amount'
       const { data: commission, error: fetchError } = await supabase
         .from("commissions")
-        .select("id, status, chargeback_amount, amount")
+        .select("id, status, chargeback_amount, amount, user_id")
         .eq("id", commissionId)
         .single();
 
@@ -500,6 +513,18 @@ class CommissionStatusService {
       if (updateError) {
         throw new DatabaseError("reverseChargeback", updateError);
       }
+
+      // Emit chargeback-reversed event (non-fatal). recipientId = the agent.
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.COMMISSION_CHARGEBACK_REVERSED,
+        {
+          recipientId: commission.user_id ?? undefined,
+          commissionId,
+          previousStatus: commission.status,
+          originalChargebackAmount: commission.chargeback_amount,
+          timestamp: new Date().toISOString(),
+        },
+      );
 
       logger.info(
         "Commission restored to earned status",

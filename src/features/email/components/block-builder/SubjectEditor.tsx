@@ -2,13 +2,11 @@ import { useState, useRef, useMemo } from "react";
 import { ChevronDown, AlertCircle, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { getVariablesByCategory } from "@/lib/templateVariables";
 
 interface SubjectEditorProps {
@@ -75,61 +73,108 @@ export function SubjectEditor({
   };
 
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={cn("space-y-1.5", className)}>
+      {/* Label row */}
       <div className="flex items-center justify-between">
-        <Label className="text-xs font-medium">Subject Line</Label>
+        <p
+          className="font-mono text-[10px] font-bold uppercase tracking-widest"
+          style={{ color: "var(--mut2)" }}
+        >
+          Subject Line
+        </p>
         <span
-          className={cn(
-            "text-[10px]",
-            isRecommended && "text-success",
-            !isRecommended && isAcceptable && "text-warning",
-            isTooLong && "text-destructive",
-          )}
+          className="font-mono text-[10px]"
+          style={{
+            color: isRecommended
+              ? "var(--green)"
+              : !isAcceptable
+                ? "var(--red)"
+                : "var(--amber)",
+          }}
         >
           {charCount}/50{" "}
-          {isRecommended ? "✓" : charCount <= 100 ? "⚠️" : "⚠️ Too long"}
+          {isRecommended ? "✓" : charCount <= 100 ? "⚠" : "⚠ Too long"}
         </span>
       </div>
 
-      <div className="flex gap-1">
+      <div className="flex gap-1.5">
+        {/* Subject input */}
         <div className="relative flex-1">
           <Input
             ref={inputRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter email subject..."
-            className="h-8 pr-8 text-sm"
+            className="h-8 pr-8 font-sans text-[13px]"
+            style={{
+              background: "var(--surface-1)",
+              border: "1px solid var(--line2)",
+              color: "var(--ink)",
+            }}
           />
           {value && (
             <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
               {isRecommended ? (
-                <CheckCircle className="h-3.5 w-3.5 text-success" />
+                <CheckCircle
+                  className="h-3.5 w-3.5"
+                  style={{ color: "var(--green)" }}
+                />
               ) : isTooLong ? (
-                <AlertCircle className="h-3.5 w-3.5 text-destructive" />
+                <AlertCircle
+                  className="h-3.5 w-3.5"
+                  style={{ color: "var(--red)" }}
+                />
               ) : null}
             </span>
           )}
         </div>
 
+        {/* Variable inserter */}
         <Popover open={variableOpen} onOpenChange={setVariableOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1 px-2">
-              <span className="text-[10px]">{"{{}}"}</span>
+            <button
+              type="button"
+              className="flex h-8 items-center gap-1 rounded-lg px-2.5 font-mono text-[11px] font-semibold transition-colors hover:bg-[var(--surface-4)]"
+              style={{
+                background: "var(--surface-3)",
+                border: "1px solid var(--line)",
+                color: "var(--mut)",
+              }}
+            >
+              {"{{}}"}
               <ChevronDown className="h-3 w-3" />
-            </Button>
+            </button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-1" align="end">
-            <div className="text-[10px] font-medium text-muted-foreground px-2 py-1">
+          <PopoverContent
+            className="w-[220px] p-1"
+            align="end"
+            style={{
+              background: "var(--surface-3)",
+              border: "1px solid var(--line2)",
+            }}
+          >
+            <p
+              className="px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: "var(--mut2)" }}
+            >
               Insert Variable
-            </div>
+            </p>
             {SUBJECT_VARIABLES.map((v) => (
               <button
                 key={v.key}
                 onClick={() => insertVariable(v.key)}
-                className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-xs hover:bg-accent"
+                className="flex w-full items-center justify-between rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--surface-4)]"
               >
-                <span>{v.label}</span>
-                <code className="text-[10px] text-muted-foreground">
+                <span
+                  className="font-sans text-[12px]"
+                  style={{ color: "var(--ink)" }}
+                >
+                  {v.label}
+                </span>
+                <code
+                  className="font-mono text-[10px]"
+                  style={{ color: "var(--mut2)" }}
+                >
                   {`{{${v.key}}}`}
                 </code>
               </button>
@@ -138,19 +183,41 @@ export function SubjectEditor({
         </Popover>
       </div>
 
-      {/* Preview */}
+      {/* Live preview */}
       {value && (
-        <div className="rounded border bg-muted/50 px-2 py-1">
-          <span className="text-[10px] text-muted-foreground">Preview: </span>
-          <span className="text-xs">{previewText}</span>
+        <div
+          className="rounded-lg px-2.5 py-1.5"
+          style={{
+            background: "var(--surface-3)",
+            border: "1px solid var(--line)",
+          }}
+        >
+          <span
+            className="font-mono text-[10px]"
+            style={{ color: "var(--mut2)" }}
+          >
+            Preview:{" "}
+          </span>
+          <span
+            className="font-sans text-[12px]"
+            style={{ color: "var(--ink)" }}
+          >
+            {previewText}
+          </span>
         </div>
       )}
 
-      {/* Tips */}
+      {/* Tip when empty */}
       {!value && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="font-sans text-[11px]" style={{ color: "var(--mut2)" }}>
           Keep under 50 characters for best open rates. Use variables like{" "}
-          <code className="rounded bg-muted px-1">
+          <code
+            className="rounded px-1 font-mono text-[10px]"
+            style={{
+              background: "var(--surface-3)",
+              color: "var(--mut)",
+            }}
+          >
             {"{{recruit_first_name}}"}
           </code>
         </p>

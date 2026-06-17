@@ -1,5 +1,9 @@
 // src/services/recruiting/carrierContractRequestService.ts
 import { supabase } from "../base/supabase";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type { Database, Json } from "@/types/database.types";
 
 type CarrierContractRequest =
@@ -255,6 +259,17 @@ export const carrierContractRequestService = {
       throw new Error("Contract request created but no data returned");
     }
 
+    // Emit contracting.request_created (non-fatal). recipientId = the recruit.
+    await workflowEventEmitter.emit(
+      WORKFLOW_EVENTS.CONTRACTING_REQUEST_CREATED,
+      {
+        recipientId: newRequest.recruit_id ?? undefined,
+        requestId: newRequest.id,
+        carrierId: newRequest.carrier_id ?? undefined,
+        timestamp: new Date().toISOString(),
+      },
+    );
+
     return newRequest;
   },
 
@@ -287,6 +302,22 @@ export const carrierContractRequestService = {
       enrichedUpdates.completed_date = currentDate;
     }
 
+    // Capture the prior status so transition events fire only on a real change
+    // (avoids double-emit when the same status is re-saved). Only fetch when a
+    // transition we care about is requested.
+    let priorStatus: string | null = null;
+    if (
+      updates.status === "writing_received" ||
+      updates.status === "completed"
+    ) {
+      const { data: prev } = await supabase
+        .from("carrier_contract_requests")
+        .select("status")
+        .eq("id", id)
+        .maybeSingle();
+      priorStatus = prev?.status ?? null;
+    }
+
     const { data, error } = await supabase
       .from("carrier_contract_requests")
       .update(enrichedUpdates)
@@ -301,6 +332,33 @@ export const carrierContractRequestService = {
 
     if (!data) {
       throw new Error("Contract request updated but no data returned");
+    }
+
+    // Emit contracting transition events (non-fatal). recipientId = the recruit.
+    if (
+      data.status === "writing_received" &&
+      priorStatus !== "writing_received"
+    ) {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.CONTRACTING_REQUEST_WRITING_RECEIVED,
+        {
+          recipientId: data.recruit_id ?? undefined,
+          requestId: id,
+          carrierId: data.carrier_id ?? undefined,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
+    if (data.status === "completed" && priorStatus !== "completed") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.CONTRACTING_REQUEST_COMPLETED,
+        {
+          recipientId: data.recruit_id ?? undefined,
+          requestId: id,
+          carrierId: data.carrier_id ?? undefined,
+          timestamp: new Date().toISOString(),
+        },
+      );
     }
 
     return data;

@@ -1,5 +1,9 @@
 // src/features/training-modules/services/trainingQuizService.ts
 import { supabase } from "@/services/base";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import type {
   TrainingQuiz,
   TrainingQuizWithQuestions,
@@ -56,7 +60,25 @@ export const trainingQuizService = {
       p_time_taken_seconds: timeTakenSeconds,
     });
     if (error) throw error;
-    return data as SubmitQuizAttemptResult;
+    const result = data as SubmitQuizAttemptResult;
+    // Emit training.quiz_passed / quiz_failed (non-fatal, mutually exclusive).
+    // recipientId = the current agent.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await workflowEventEmitter.emit(
+      result.passed
+        ? WORKFLOW_EVENTS.TRAINING_QUIZ_PASSED
+        : WORKFLOW_EVENTS.TRAINING_QUIZ_FAILED,
+      {
+        recipientId: user?.id,
+        quizId,
+        scorePercentage: result.score_percentage,
+        attemptNumber: result.attempt_number,
+        timestamp: new Date().toISOString(),
+      },
+    );
+    return result;
   },
 
   // ── Quiz CRUD ──────────────────────────────────────────────────────

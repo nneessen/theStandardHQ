@@ -1,0 +1,771 @@
+// src/features/workflows/eventCatalog.ts
+//
+// CANONICAL catalog of workflow trigger events — the single source of truth that
+// reconciles three things that used to drift apart:
+//   1. WORKFLOW_EVENTS constants (what the app emits)        — workflowEventEmitter.ts
+//   2. trigger_event_types rows (what the picker offers)     — seeded by migration
+//   3. the per-event dynamic template-tag list               — availableVariables
+//
+// RULE: an event is `active` (selectable in the wizard + shown in the manager tab)
+// ONLY if app/server code actually emits it. Events that are declared but not yet
+// wired stay `active: false` so they can't become "dead triggers" a user can pick
+// but that never fire. When emission is added for one, flip it to `active: true`
+// AND add it to the seed migration in the same change. The drift test
+// (eventCatalog.test.ts) fails CI if the catalog and WORKFLOW_EVENTS diverge or if
+// an availableVariables key is not a real template variable.
+
+import { WORKFLOW_EVENTS } from "@/lib/workflow-event-names";
+
+export type WorkflowEventCategory =
+  | "recruit"
+  | "policy"
+  | "commission"
+  | "lead"
+  | "agent"
+  | "contracting"
+  | "document"
+  | "hierarchy"
+  | "client"
+  | "underwriting"
+  | "training";
+
+export interface WorkflowEventDef {
+  /** Dot-namespaced event key, e.g. "recruit.created". */
+  eventName: string;
+  category: WorkflowEventCategory | "user" | "email" | "system";
+  label: string;
+  description: string;
+  /** Template-variable keys relevant to this event (drives event-aware tags). */
+  availableVariables: string[];
+  /** True only if the event is actually emitted today (selectable in the UI). */
+  active: boolean;
+}
+
+// Shared variable groups. Every key MUST (a) exist in TEMPLATE_VARIABLE_KEYS AND
+// (b) actually be populated by buildTemplateVariables() in process-workflow — we
+// do not advertise tags that render empty. (portal_link / phase_* are NOT filled
+// yet; they'll be re-added when their population lands in Phase 3.)
+const COMMON = [
+  "user_name",
+  "user_first_name",
+  "user_last_name",
+  "user_email",
+  "company_name",
+  "current_date",
+  "date_today",
+  "date_tomorrow",
+  "date_current_month",
+  "date_current_year",
+  "app_url",
+  "workflow_name",
+];
+
+const RECRUIT = [
+  "recruit_name",
+  "recruit_first_name",
+  "recruit_last_name",
+  "recruit_email",
+  "recruit_phone",
+  "recruit_status",
+  "recruit_city",
+  "recruit_state",
+  "recruit_contract_level",
+];
+
+// The "affected agent" of a policy/commission/lead event is rendered through the
+// recruit_* recipient variables today (buildTemplateVariables fills them from the
+// recipient profile). Domain-specific policy_*/commission_* tags are a Phase 3 add.
+const AGENT = ["recruit_name", "recruit_first_name", "recruit_email"];
+
+// Agent LIFECYCLE events carry the affected agent's OWN profile (the emit sets
+// recipientId = the agent's user_profiles.id). buildTemplateVariables populates
+// these agent_* keys from that recipient profile.
+const AGENT_VARS = [
+  "agent_name",
+  "agent_first_name",
+  "agent_email",
+  "agent_contract_level",
+  "agent_license_number",
+  "agent_npn",
+  "agent_status",
+];
+
+export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
+  // ---- Recruit (emitted by recruitingService) ----
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_CREATED,
+    category: "recruit",
+    label: "Recruit created",
+    description: "A new recruit is added to a pipeline.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_PHASE_CHANGED,
+    category: "recruit",
+    label: "Recruit phase changed",
+    description: "A recruit advances to a new onboarding phase.",
+    // phase_name/phase_description/days_in_phase are not populated by the engine
+    // yet (Phase 3) — omitted so we don't advertise empty tags.
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_GRADUATED_TO_AGENT,
+    category: "recruit",
+    label: "Recruit graduated to agent",
+    description: "A recruit completes onboarding and becomes a licensed agent.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_DROPPED_OUT,
+    category: "recruit",
+    label: "Recruit dropped out",
+    description: "A recruit is marked as dropped from the pipeline.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_PIPELINE_ENROLLED,
+    category: "recruit",
+    label: "Recruit enrolled in pipeline",
+    description: "A recruit is enrolled into an onboarding pipeline.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_PHASE_COMPLETED,
+    category: "recruit",
+    label: "Recruit phase completed",
+    description: "A recruit completes an onboarding phase.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_PHASE_BLOCKED,
+    category: "recruit",
+    label: "Recruit phase blocked",
+    description: "A recruit's onboarding phase is marked blocked.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_CHECKLIST_ITEM_COMPLETED,
+    category: "recruit",
+    label: "Checklist item completed",
+    description: "A recruit completes an onboarding checklist item.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_CHECKLIST_ITEM_AWAITING_APPROVAL,
+    category: "recruit",
+    label: "Checklist item awaiting approval",
+    description: "A recruit submits a checklist item document for review.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_QUIZ_PASSED,
+    category: "recruit",
+    label: "Quiz passed",
+    description: "A recruit passes an onboarding quiz.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_QUIZ_FAILED,
+    category: "recruit",
+    label: "Quiz failed",
+    description: "A recruit fails an onboarding quiz attempt.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.RECRUIT_ONBOARDING_COMPLETED,
+    category: "recruit",
+    label: "Onboarding completed",
+    description: "A recruit completes the final onboarding phase.",
+    availableVariables: [...RECRUIT, ...COMMON],
+    active: true,
+  },
+  // ---- Policy (emitted by policyService) ----
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_CREATED,
+    category: "policy",
+    label: "Policy created",
+    description: "A new policy is written.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_APPROVED,
+    category: "policy",
+    label: "Policy approved",
+    description: "A policy application is approved by the carrier.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_ACTIVE,
+    category: "policy",
+    label: "Policy active",
+    description: "A policy becomes active (in force).",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_DENIED,
+    category: "policy",
+    label: "Policy denied",
+    description: "A policy application is denied.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_WITHDRAWN,
+    category: "policy",
+    label: "Policy withdrawn",
+    description: "A policy application is withdrawn.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_CANCELLED,
+    category: "policy",
+    label: "Policy cancelled",
+    description: "A policy is cancelled.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_LAPSED,
+    category: "policy",
+    label: "Policy lapsed",
+    description: "A policy lapses (e.g. non-payment).",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_RENEWED,
+    category: "policy",
+    label: "Policy renewed",
+    description: "A policy renews for another term.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  // ---- Commission (emitted by CommissionCRUDService / chargebackService) ----
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_EARNED,
+    category: "commission",
+    label: "Commission earned",
+    description: "A commission is recorded as earned.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_PAID,
+    category: "commission",
+    label: "Commission paid",
+    description: "A commission is marked paid out.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_CHARGEBACK,
+    category: "commission",
+    label: "Commission chargeback",
+    description: "A previously paid commission is charged back.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_CANCELLED,
+    category: "commission",
+    label: "Commission cancelled",
+    description: "A commission is cancelled.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_CHARGEBACK_REVERSED,
+    category: "commission",
+    label: "Commission chargeback reversed",
+    description: "A charged-back commission is restored to earned.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CHARGEBACK_RESOLVED,
+    category: "commission",
+    label: "Chargeback resolved",
+    description: "A chargeback is marked resolved.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.OVERRIDE_PAID,
+    category: "commission",
+    label: "Override paid",
+    description: "An override commission is paid out to an upline agent.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  // ---- Lead (emitted by LeadPurchaseService) ----
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_PACK_PURCHASED,
+    category: "lead",
+    label: "Lead pack purchased",
+    description: "An agent purchases a pack of leads.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_ACCEPTED,
+    category: "lead",
+    label: "Lead accepted",
+    description: "A recruiter accepts an inbound recruiting lead.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_REJECTED,
+    category: "lead",
+    label: "Lead rejected",
+    description: "A recruiter rejects an inbound recruiting lead.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_PACK_ROI_UPDATED,
+    category: "lead",
+    label: "Lead pack ROI updated",
+    description:
+      "An agent updates the ROI (policies/commission) on a lead pack.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.PROSPECT_CONVERTED,
+    category: "lead",
+    label: "Prospect converted",
+    description: "A prospect is marked converted.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.PROSPECT_STATUS_CHANGED,
+    category: "lead",
+    label: "Prospect status changed",
+    description: "A prospect's follow-up status changes.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.INSTAGRAM_LEAD_CREATED,
+    category: "lead",
+    label: "Instagram lead created",
+    description: "A recruiting lead is created from an Instagram conversation.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+
+  // ---- Agent lifecycle (emitted by userService) ----
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_APPROVED,
+    category: "agent",
+    label: "Agent approved",
+    description: "An agent's account is approved into the system.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_DENIED,
+    category: "agent",
+    label: "Agent denied",
+    description: "An agent's account request is denied.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_LICENSED,
+    category: "agent",
+    label: "Agent licensed",
+    description: "A recruit graduates and becomes a licensed agent.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENT_CONTRACT_LEVEL_CHANGED,
+    category: "agent",
+    label: "Agent contract level changed",
+    description: "An agent's commission contract level is changed.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Contracting (emitted by carrierContractRequestService + contractingHubService) ----
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_CREATED,
+    category: "contracting",
+    label: "Contract request created",
+    description: "A carrier contracting request is created for a recruit.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_WRITING_RECEIVED,
+    category: "contracting",
+    label: "Writing number received",
+    description:
+      "A contracting request reaches the writing-number-received stage.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_REQUEST_COMPLETED,
+    category: "contracting",
+    label: "Contract request completed",
+    description: "A carrier contracting request is completed.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_SUBMITTED,
+    category: "contracting",
+    label: "Carrier contract submitted",
+    description: "An agent's carrier contract is submitted.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_APPROVED,
+    category: "contracting",
+    label: "Carrier contract approved",
+    description: "An agent's carrier contract is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_DENIED,
+    category: "contracting",
+    label: "Carrier contract denied",
+    description: "An agent's carrier contract is denied.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_CARRIER_TERMINATED,
+    category: "contracting",
+    label: "Carrier contract terminated",
+    description: "An agent's carrier contract is terminated.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CONTRACTING_HELD_UNDER_SET,
+    category: "contracting",
+    label: "Held under set",
+    description:
+      "An agent's carrier contract is set to be held under a sponsor.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Documents (emitted by documentService) ----
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_UPLOADED,
+    category: "document",
+    label: "Document uploaded",
+    description: "A document is uploaded to an agent's vault.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_APPROVED,
+    category: "document",
+    label: "Document approved",
+    description: "A submitted document is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_REJECTED,
+    category: "document",
+    label: "Document rejected",
+    description: "A submitted document is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.DOCUMENT_ALL_REQUIRED_APPROVED,
+    category: "document",
+    label: "All required documents approved",
+    description: "An agent's last outstanding required document is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Hierarchy / team / access (emitted by invitation/join-request/agency services) ----
+  {
+    eventName: WORKFLOW_EVENTS.INVITATION_ACCEPTED,
+    category: "hierarchy",
+    label: "Invitation accepted",
+    description: "An invited agent accepts and registers.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_CREATED,
+    category: "hierarchy",
+    label: "Join request created",
+    description: "An agent requests to join a team (notifies the approver).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_APPROVED,
+    category: "hierarchy",
+    label: "Join request approved",
+    description: "A join request is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_REJECTED,
+    category: "hierarchy",
+    label: "Join request rejected",
+    description: "A join request is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_CREATED,
+    category: "hierarchy",
+    label: "Agency request created",
+    description: "An agent requests agency status (notifies the approver).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_APPROVED,
+    category: "hierarchy",
+    label: "Agency request approved",
+    description: "An agency request is approved and the agency is created.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_REJECTED,
+    category: "hierarchy",
+    label: "Agency request rejected",
+    description: "An agency request is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_CREATED,
+    category: "hierarchy",
+    label: "Agency created",
+    description: "A new agency is created (direct/manual creation).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_OWNERSHIP_TRANSFERRED,
+    category: "hierarchy",
+    label: "Agency ownership transferred",
+    description: "An agency's ownership is transferred to a new owner.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Client (emitted by ClientService) ----
+  {
+    eventName: WORKFLOW_EVENTS.CLIENT_CREATED,
+    category: "client",
+    label: "Client created",
+    description: "An agent adds a new client.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Underwriting (emitted by ruleService) ----
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_SUBMITTED,
+    category: "underwriting",
+    label: "Rule set submitted",
+    description: "An underwriting rule set is submitted for review.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_APPROVED,
+    category: "underwriting",
+    label: "Rule set approved",
+    description:
+      "An underwriting rule set is approved (notifies the submitter).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_REJECTED,
+    category: "underwriting",
+    label: "Rule set rejected",
+    description:
+      "An underwriting rule set is rejected (notifies the submitter).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Training (emitted by the training-modules + agent-roadmap services) ----
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_ASSIGNMENT_CREATED,
+    category: "training",
+    label: "Training assigned",
+    description: "A training module is assigned to an agent.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_LESSON_COMPLETED,
+    category: "training",
+    label: "Lesson completed",
+    description: "An agent completes a training lesson.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_QUIZ_PASSED,
+    category: "training",
+    label: "Training quiz passed",
+    description: "An agent passes a training-module quiz.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_QUIZ_FAILED,
+    category: "training",
+    label: "Training quiz failed",
+    description: "An agent fails a training-module quiz attempt.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_PRESENTATION_SUBMITTED,
+    category: "training",
+    label: "Presentation submitted",
+    description: "An agent submits a weekly presentation recording.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_PRESENTATION_APPROVED,
+    category: "training",
+    label: "Presentation approved",
+    description: "A submitted presentation is approved by a manager.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_ROADMAP_ITEM_COMPLETED,
+    category: "training",
+    label: "Roadmap item completed",
+    description: "An agent marks an agent-roadmap item complete.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Declared but NOT yet emitted (kept out of the picker until wired) ----
+  {
+    eventName: WORKFLOW_EVENTS.POLICY_OVER_30_DAYS_NOT_ISSUED,
+    category: "policy",
+    label: "Policy not issued in 30 days",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.USER_LOGIN,
+    category: "user",
+    label: "User login",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.USER_LOGOUT,
+    category: "user",
+    label: "User logout",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.USER_ROLE_CHANGED,
+    category: "user",
+    label: "User role changed",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.EMAIL_SENT,
+    category: "email",
+    label: "Email sent",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.EMAIL_FAILED,
+    category: "email",
+    label: "Email failed",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.EMAIL_BOUNCED,
+    category: "email",
+    label: "Email bounced",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_CONVERSION_THRESHOLD,
+    category: "lead",
+    label: "Lead conversion threshold",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CUSTOM_TRIGGER,
+    category: "system",
+    label: "Custom trigger",
+    description: "Reserved — not yet emitted.",
+    availableVariables: [],
+    active: false,
+  },
+];
+
+/** Events that are actually emitted and therefore selectable in the UI. */
+export const ACTIVE_WORKFLOW_EVENTS: WorkflowEventDef[] =
+  WORKFLOW_EVENT_CATALOG.filter((e) => e.active);
+
+/** Distinct categories used by active events (drives the picker/tab category list). */
+export const ACTIVE_EVENT_CATEGORIES: string[] = [
+  ...new Set(ACTIVE_WORKFLOW_EVENTS.map((e) => e.category)),
+];
+
+export function getEventDef(eventName: string): WorkflowEventDef | undefined {
+  return WORKFLOW_EVENT_CATALOG.find((e) => e.eventName === eventName);
+}
+
+/** Template-variable keys for an event (falls back to none for unknown events). */
+export function getEventVariables(eventName: string): string[] {
+  return getEventDef(eventName)?.availableVariables ?? [];
+}

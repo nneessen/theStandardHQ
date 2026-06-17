@@ -24,7 +24,7 @@ export interface TemplateVariableDefinition {
 
 /**
  * All template variables available across workflows, pipelines, and email templates.
- * 47 variables across 13 categories.
+ * 54 variables across 14 categories.
  */
 export const TEMPLATE_VARIABLES: readonly TemplateVariableDefinition[] = [
   // ── Recruit Basic ──────────────────────────────────────────────────
@@ -227,6 +227,59 @@ export const TEMPLATE_VARIABLES: readonly TemplateVariableDefinition[] = [
     category: "User/Owner",
     preview: "jane.doe@example.com",
     contexts: ["workflow"],
+  },
+
+  // ── Agent ──────────────────────────────────────────────────────────
+  // The "affected agent" of an agent.* lifecycle event (approved/denied/
+  // licensed/contract level changed). Populated from the agent's own profile.
+  {
+    key: "agent_name",
+    description: "Full name of the agent",
+    category: "Agent",
+    preview: "John Smith",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_first_name",
+    description: "First name of the agent",
+    category: "Agent",
+    preview: "John",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_email",
+    description: "Email address of the agent",
+    category: "Agent",
+    preview: "john.smith@example.com",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_contract_level",
+    description: "Agent contract level percentage",
+    category: "Agent",
+    preview: "75",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_license_number",
+    description: "Agent insurance license number",
+    category: "Agent",
+    preview: "1234567",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_npn",
+    description: "Agent National Producer Number",
+    category: "Agent",
+    preview: "9876543",
+    contexts: ["workflow", "email"],
+  },
+  {
+    key: "agent_status",
+    description: "Current agent status",
+    category: "Agent",
+    preview: "active",
+    contexts: ["workflow", "email"],
   },
 
   // ── Upline ─────────────────────────────────────────────────────────

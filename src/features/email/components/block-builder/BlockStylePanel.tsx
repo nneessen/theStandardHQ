@@ -1,85 +1,146 @@
-import {Input} from '@/components/ui/input'
-import {Label} from '@/components/ui/label'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select'
-import {Slider} from '@/components/ui/slider'
-import {FontPicker} from './FontPicker'
-import {EmailFontWeight} from '@/types/email.types'
-import type { EmailBlock, EmailBlockStyles } from '@/types/email.types';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { FontPicker } from "./FontPicker";
+import { EmailFontWeight } from "@/types/email.types";
+import type { EmailBlock, EmailBlockStyles } from "@/types/email.types";
 
 interface BlockStylePanelProps {
-  block: EmailBlock | null
-  onChange: (block: EmailBlock) => void
+  block: EmailBlock | null;
+  onChange: (block: EmailBlock) => void;
+}
+
+/** Compact eyebrow label used throughout the panel */
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="font-mono text-[10px] font-bold uppercase tracking-widest"
+      style={{ color: "var(--mut2)" }}
+    >
+      {children}
+    </p>
+  );
 }
 
 export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
   if (!block) {
     return (
-      <div className="flex h-full w-[160px] flex-col border-l bg-muted/30">
-        <div className="border-b px-2 py-1.5">
-          <h3 className="text-[11px] font-medium text-muted-foreground">Styles</h3>
+      <div
+        className="flex h-full w-[168px] shrink-0 flex-col"
+        style={{
+          background: "var(--surface-2)",
+          borderLeft: "1px solid var(--line)",
+        }}
+      >
+        <div
+          className="px-2.5 py-2"
+          style={{ borderBottom: "1px solid var(--line)" }}
+        >
+          <p
+            className="font-display text-[13px] font-extrabold uppercase tracking-wide"
+            style={{ color: "var(--ink)" }}
+          >
+            Styles
+          </p>
         </div>
         <div className="flex flex-1 items-center justify-center p-2">
-          <p className="text-center text-[10px] text-muted-foreground">
+          <p
+            className="text-center font-sans text-[11px]"
+            style={{ color: "var(--mut2)" }}
+          >
             Select a block to edit
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   const updateStyles = (updates: Partial<EmailBlockStyles>) => {
     onChange({
       ...block,
       styles: { ...block.styles, ...updates },
-    })
-  }
+    });
+  };
 
-  const hasTextContent = ['header', 'text', 'footer', 'quote'].includes(block.type)
-  const hasAlignment = ['header', 'text', 'button', 'footer', 'image', 'social'].includes(block.type)
+  const hasTextContent = ["header", "text", "footer", "quote"].includes(
+    block.type,
+  );
+  const hasAlignment = [
+    "header",
+    "text",
+    "button",
+    "footer",
+    "image",
+    "social",
+  ].includes(block.type);
 
   return (
-    <div className="flex h-full w-[160px] flex-col border-l bg-muted/30">
-      <div className="border-b px-2 py-1.5">
-        <h3 className="text-[11px] font-medium text-muted-foreground">
+    <div
+      className="flex h-full w-[168px] shrink-0 flex-col"
+      style={{
+        background: "var(--surface-2)",
+        borderLeft: "1px solid var(--line)",
+      }}
+    >
+      {/* Panel header */}
+      <div
+        className="px-2.5 py-2"
+        style={{ borderBottom: "1px solid var(--line)" }}
+      >
+        <p
+          className="font-display text-[13px] font-extrabold uppercase tracking-wide"
+          style={{ color: "var(--ink)" }}
+        >
           {block.type.charAt(0).toUpperCase() + block.type.slice(1)} Styles
-        </h3>
+        </p>
       </div>
-      <div className="flex-1 space-y-2.5 overflow-y-auto p-2">
+
+      <div className="flex-1 space-y-3 overflow-y-auto p-2.5">
         {/* Background Color */}
-        <div className="space-y-0.5">
-          <Label className="text-[10px]">Background</Label>
+        <div className="space-y-1">
+          <FieldLabel>Background</FieldLabel>
           <div className="flex gap-1">
             <Input
               type="color"
-              value={block.styles.backgroundColor || '#ffffff'}
-              onChange={(e) => updateStyles({ backgroundColor: e.target.value })}
+              value={block.styles.backgroundColor || "#ffffff"}
+              onChange={(e) =>
+                updateStyles({ backgroundColor: e.target.value })
+              }
               className="h-6 w-8 p-0.5"
             />
             <Input
-              value={block.styles.backgroundColor || ''}
-              onChange={(e) => updateStyles({ backgroundColor: e.target.value })}
+              value={block.styles.backgroundColor || ""}
+              onChange={(e) =>
+                updateStyles({ backgroundColor: e.target.value })
+              }
               placeholder="transparent"
-              className="h-6 flex-1 text-[10px]"
+              className="h-6 flex-1 font-mono text-[10px]"
             />
           </div>
         </div>
 
         {/* Text Color (for text-containing blocks) */}
         {hasTextContent && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Text Color</Label>
+          <div className="space-y-1">
+            <FieldLabel>Text Color</FieldLabel>
             <div className="flex gap-1">
               <Input
                 type="color"
-                value={block.styles.textColor || '#374151'}
+                value={block.styles.textColor || "#374151"}
                 onChange={(e) => updateStyles({ textColor: e.target.value })}
                 className="h-6 w-8 p-0.5"
               />
               <Input
-                value={block.styles.textColor || ''}
+                value={block.styles.textColor || ""}
                 onChange={(e) => updateStyles({ textColor: e.target.value })}
                 placeholder="#374151"
-                className="h-6 flex-1 text-[10px]"
+                className="h-6 flex-1 font-mono text-[10px]"
               />
             </div>
           </div>
@@ -87,23 +148,29 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
 
         {/* Font Family with Visual Preview */}
         {hasTextContent && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Font</Label>
+          <div className="space-y-1">
+            <FieldLabel>Font</FieldLabel>
             <FontPicker
               value={block.styles.fontFamily}
               onChange={(font) => updateStyles({ fontFamily: font })}
-              weight={block.styles.fontWeight ? parseInt(block.styles.fontWeight) as EmailFontWeight : undefined}
-              onWeightChange={(weight) => updateStyles({ fontWeight: String(weight) })}
+              weight={
+                block.styles.fontWeight
+                  ? (parseInt(block.styles.fontWeight) as EmailFontWeight)
+                  : undefined
+              }
+              onWeightChange={(weight) =>
+                updateStyles({ fontWeight: String(weight) })
+              }
             />
           </div>
         )}
 
         {/* Line Height */}
         {hasTextContent && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Line Height</Label>
+          <div className="space-y-1">
+            <FieldLabel>Line Height</FieldLabel>
             <Select
-              value={block.styles.lineHeight || '1.5'}
+              value={block.styles.lineHeight || "1.5"}
               onValueChange={(value) => updateStyles({ lineHeight: value })}
             >
               <SelectTrigger className="h-6 text-[10px]">
@@ -122,11 +189,15 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
 
         {/* Alignment */}
         {hasAlignment && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Alignment</Label>
+          <div className="space-y-1">
+            <FieldLabel>Alignment</FieldLabel>
             <Select
-              value={block.styles.alignment || 'left'}
-              onValueChange={(value) => updateStyles({ alignment: value as 'left' | 'center' | 'right' })}
+              value={block.styles.alignment || "left"}
+              onValueChange={(value) =>
+                updateStyles({
+                  alignment: value as "left" | "center" | "right",
+                })
+              }
             >
               <SelectTrigger className="h-6 text-[10px]">
                 <SelectValue />
@@ -141,15 +212,18 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
         )}
 
         {/* Padding */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label className="text-[10px]">Padding</Label>
-            <span className="text-[9px] text-muted-foreground">
-              {parseInt(block.styles.padding || '16') || 16}px
+            <FieldLabel>Padding</FieldLabel>
+            <span
+              className="font-mono text-[9px]"
+              style={{ color: "var(--mut2)" }}
+            >
+              {parseInt(block.styles.padding || "16") || 16}px
             </span>
           </div>
           <Slider
-            value={[parseInt(block.styles.padding || '16') || 16]}
+            value={[parseInt(block.styles.padding || "16") || 16]}
             onValueChange={([value]) => updateStyles({ padding: `${value}px` })}
             min={0}
             max={48}
@@ -158,11 +232,11 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
         </div>
 
         {/* Font Size (for header) */}
-        {block.type === 'header' && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Font Size</Label>
+        {block.type === "header" && (
+          <div className="space-y-1">
+            <FieldLabel>Font Size</FieldLabel>
             <Select
-              value={block.styles.fontSize || '20px'}
+              value={block.styles.fontSize || "20px"}
               onValueChange={(value) => updateStyles({ fontSize: value })}
             >
               <SelectTrigger className="h-6 text-[10px]">
@@ -179,11 +253,11 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
         )}
 
         {/* Border Radius */}
-        {['button', 'image', 'quote'].includes(block.type) && (
-          <div className="space-y-0.5">
-            <Label className="text-[10px]">Corner Radius</Label>
+        {["button", "image", "quote"].includes(block.type) && (
+          <div className="space-y-1">
+            <FieldLabel>Corner Radius</FieldLabel>
             <Select
-              value={block.styles.borderRadius || '6px'}
+              value={block.styles.borderRadius || "6px"}
               onValueChange={(value) => updateStyles({ borderRadius: value })}
             >
               <SelectTrigger className="h-6 text-[10px]">
@@ -201,12 +275,19 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
         )}
 
         {/* Border Controls */}
-        <div className="space-y-1 border-t pt-2">
-          <Label className="text-[10px] font-medium">Border</Label>
+        <div
+          className="space-y-1.5 pt-2"
+          style={{ borderTop: "1px solid var(--line)" }}
+        >
+          <FieldLabel>Border</FieldLabel>
           <div className="space-y-1">
             <Select
-              value={block.styles.borderStyle || 'none'}
-              onValueChange={(value) => updateStyles({ borderStyle: value as 'none' | 'solid' | 'dashed' | 'dotted' })}
+              value={block.styles.borderStyle || "none"}
+              onValueChange={(value) =>
+                updateStyles({
+                  borderStyle: value as "none" | "solid" | "dashed" | "dotted",
+                })
+              }
             >
               <SelectTrigger className="h-6 text-[10px]">
                 <SelectValue placeholder="Style" />
@@ -218,18 +299,22 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
                 <SelectItem value="dotted">Dotted</SelectItem>
               </SelectContent>
             </Select>
-            {block.styles.borderStyle && block.styles.borderStyle !== 'none' && (
-              <>
+            {block.styles.borderStyle &&
+              block.styles.borderStyle !== "none" && (
                 <div className="flex gap-1">
                   <Input
                     type="color"
-                    value={block.styles.borderColor || '#e5e7eb'}
-                    onChange={(e) => updateStyles({ borderColor: e.target.value })}
+                    value={block.styles.borderColor || "#e5e7eb"}
+                    onChange={(e) =>
+                      updateStyles({ borderColor: e.target.value })
+                    }
                     className="h-6 w-8 p-0.5"
                   />
                   <Select
-                    value={block.styles.borderWidth || '1px'}
-                    onValueChange={(value) => updateStyles({ borderWidth: value })}
+                    value={block.styles.borderWidth || "1px"}
+                    onValueChange={(value) =>
+                      updateStyles({ borderWidth: value })
+                    }
                   >
                     <SelectTrigger className="h-6 flex-1 text-[10px]">
                       <SelectValue />
@@ -242,22 +327,24 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
                     </SelectContent>
                   </Select>
                 </div>
-              </>
-            )}
+              )}
           </div>
         </div>
 
         {/* Image width */}
-        {block.type === 'image' && (
-          <div className="space-y-0.5">
+        {block.type === "image" && (
+          <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label className="text-[10px]">Width</Label>
-              <span className="text-[9px] text-muted-foreground">
-                {block.styles.width || '100%'}
+              <FieldLabel>Width</FieldLabel>
+              <span
+                className="font-mono text-[9px]"
+                style={{ color: "var(--mut2)" }}
+              >
+                {block.styles.width || "100%"}
               </span>
             </div>
             <Select
-              value={block.styles.width || '100%'}
+              value={block.styles.width || "100%"}
               onValueChange={(value) => updateStyles({ width: value })}
             >
               <SelectTrigger className="h-6 text-[10px]">
@@ -274,5 +361,5 @@ export function BlockStylePanel({ block, onChange }: BlockStylePanelProps) {
         )}
       </div>
     </div>
-  )
+  );
 }

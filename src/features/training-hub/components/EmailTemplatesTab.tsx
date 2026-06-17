@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
+import { useAiAccess } from "@/hooks/subscription";
 import {
   Table,
   TableBody,
@@ -11,16 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TINT } from "@/components/ui/StatusBadge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,28 +48,18 @@ import {
   Globe,
   User,
   Eye,
-  ArrowLeft,
-  Save,
+  Sparkles,
 } from "lucide-react";
 import {
   useGroupedEmailTemplates,
-  useEmailTemplate,
-  useCreateEmailTemplate,
-  useUpdateEmailTemplate,
   useDeleteEmailTemplate,
   useDuplicateEmailTemplate,
   useToggleTemplateActive,
-  EmailBlockBuilder,
-  EMAIL_TEMPLATE_CATEGORIES,
-  TEMPLATE_PREVIEW_VARIABLES,
+  EmailTemplateEditor,
 } from "@/features/email";
 import { usePermissionCheck } from "@/hooks/permissions";
 import { useAuthorizationStatus } from "@/hooks/admin";
-import type {
-  EmailTemplate,
-  EmailBlock,
-  EmailTemplateCategory,
-} from "@/types/email.types";
+import type { EmailTemplate } from "@/types/email.types";
 
 interface EmailTemplatesTabProps {
   searchQuery?: string;
@@ -267,223 +248,17 @@ function TemplateTable({
   );
 }
 
-// Inline template editor component
-function InlineTemplateEditor({
-  templateId,
-  isNew,
-  isViewOnly,
-  onClose,
-}: {
-  templateId: string | null;
-  isNew: boolean;
-  isViewOnly: boolean;
-  onClose: () => void;
-}) {
-  // Only fetch if we have a templateId and we're not creating new
-  const shouldFetch = !!templateId && !isNew;
-  const { data: existingTemplate, isLoading: loadingTemplate } =
-    useEmailTemplate(shouldFetch ? templateId : "");
-
-  const createTemplate = useCreateEmailTemplate();
-  const updateTemplate = useUpdateEmailTemplate();
-
-  const [name, setName] = useState("");
-  const [subject, setSubject] = useState("");
-  const [category, setCategory] = useState<EmailTemplateCategory>("general");
-  const [isGlobal, setIsGlobal] = useState(false);
-  const [isActive, setIsActive] = useState(true);
-  const [blocks, setBlocks] = useState<EmailBlock[]>([]);
-
-  // Initialize form with existing template data (properly in useEffect)
-  useEffect(() => {
-    if (existingTemplate && !isNew) {
-      setName(existingTemplate.name);
-      setSubject(existingTemplate.subject);
-      setCategory(existingTemplate.category);
-      setIsGlobal(existingTemplate.is_global);
-      setIsActive(existingTemplate.is_active);
-      setBlocks(existingTemplate.blocks || []);
-    }
-  }, [existingTemplate, isNew]);
-
-  const handleSave = async () => {
-    if (!name.trim() || !subject.trim()) return;
-
-    if (isNew) {
-      await createTemplate.mutateAsync({
-        name: name.trim(),
-        subject: subject.trim(),
-        body_html: "",
-        category,
-        is_global: isGlobal,
-        blocks,
-        is_block_template: true,
-      });
-    } else if (templateId) {
-      await updateTemplate.mutateAsync({
-        id: templateId,
-        updates: {
-          name: name.trim(),
-          subject: subject.trim(),
-          category,
-          is_global: isGlobal,
-          is_active: isActive,
-          blocks,
-        },
-      });
-    }
-    onClose();
-  };
-
-  const isValid = name.trim() && subject.trim();
-  const isSaving = createTemplate.isPending || updateTemplate.isPending;
-
-  if (!isNew && loadingTemplate) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex h-9 shrink-0 items-center justify-between border-b px-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={onClose}
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-          </Button>
-          <h2 className="text-xs font-semibold">
-            {isViewOnly
-              ? "View Template"
-              : isNew
-                ? "Create Template"
-                : "Edit Template"}
-          </h2>
-        </div>
-        {!isViewOnly && (
-          <Button
-            onClick={handleSave}
-            disabled={!isValid || isSaving}
-            size="sm"
-            className="h-6 gap-1 text-xs px-2"
-          >
-            {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
-            <Save className="h-3 w-3" />
-            {isNew ? "Create" : "Save"}
-          </Button>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Settings sidebar */}
-        <div className="w-44 shrink-0 space-y-2.5 overflow-y-auto border-r bg-muted/20 p-2.5">
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Template Name</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Welcome Email"
-              className="h-6 text-[10px]"
-              disabled={isViewOnly}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Subject Line</Label>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g., Welcome to the Team!"
-              className="h-6 text-[10px]"
-              disabled={isViewOnly}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-[10px] font-medium">Category</Label>
-            <Select
-              value={category}
-              onValueChange={(v) => setCategory(v as EmailTemplateCategory)}
-              disabled={isViewOnly}
-            >
-              <SelectTrigger className="h-6 text-[10px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {EMAIL_TEMPLATE_CATEGORIES.map((cat) => (
-                  <SelectItem
-                    key={cat.value}
-                    value={cat.value}
-                    className="text-xs"
-                  >
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {!isViewOnly && (
-            <>
-              <div className="flex items-center gap-1.5">
-                <Switch
-                  id="global"
-                  checked={isGlobal}
-                  onCheckedChange={setIsGlobal}
-                  className="h-3.5 w-6"
-                />
-                <Label htmlFor="global" className="text-[10px]">
-                  Global
-                </Label>
-              </div>
-
-              {!isNew && (
-                <div className="flex items-center gap-1.5">
-                  <Switch
-                    id="active"
-                    checked={isActive}
-                    onCheckedChange={setIsActive}
-                    className="h-3.5 w-6"
-                  />
-                  <Label htmlFor="active" className="text-[10px]">
-                    Active
-                  </Label>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Email builder */}
-        <div className="flex-1 overflow-hidden">
-          <EmailBlockBuilder
-            blocks={blocks}
-            onChange={isViewOnly ? () => {} : setBlocks}
-            previewVariables={TEMPLATE_PREVIEW_VARIABLES}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Main component
 export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
   const [editorState, setEditorState] = useState<{
     mode: "list" | "create" | "edit" | "view";
     templateId: string | null;
+    autoOpenAi?: boolean;
   }>({ mode: "list", templateId: null });
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [globalOpen, setGlobalOpen] = useState(true);
   const [personalOpen, setPersonalOpen] = useState(true);
+  const { hasAiAccess } = useAiAccess();
 
   const { data, isLoading } = useGroupedEmailTemplates();
   const deleteTemplate = useDeleteEmailTemplate();
@@ -537,13 +312,15 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
 
   const canCreateNew = status?.canCreate ?? true;
 
-  // Show editor if in create/edit/view mode
+  // The ONE shared editor handles create/edit/view (AI generation is folded in).
   if (editorState.mode !== "list") {
     return (
-      <InlineTemplateEditor
+      <EmailTemplateEditor
+        key={editorState.templateId ?? "new"}
         templateId={editorState.templateId}
-        isNew={editorState.mode === "create"}
-        isViewOnly={editorState.mode === "view"}
+        mode={editorState.mode}
+        allowGlobalToggle={canManageGlobal}
+        autoOpenAi={editorState.autoOpenAi}
         onClose={() => setEditorState({ mode: "list", templateId: null })}
       />
     );
@@ -575,15 +352,39 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
             </span>
           </div>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setEditorState({ mode: "create", templateId: null })}
-          disabled={!canCreateNew}
-          className="h-6 gap-1 text-[10px] px-2"
-        >
-          <Plus className="h-3 w-3" />
-          New Template
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasAiAccess && (
+            <button
+              type="button"
+              onClick={() =>
+                setEditorState({
+                  mode: "create",
+                  templateId: null,
+                  autoOpenAi: true,
+                })
+              }
+              disabled={!canCreateNew}
+              className="flex h-7 items-center gap-1.5 rounded-lg px-3 font-sans text-[12px] font-semibold transition-colors hover:bg-[var(--surface-4)] disabled:opacity-50"
+              style={{
+                border:
+                  "1px solid color-mix(in srgb, var(--violet) 45%, transparent)",
+                color: "var(--violet)",
+              }}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Generate with AI
+            </button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => setEditorState({ mode: "create", templateId: null })}
+            disabled={!canCreateNew}
+            className="h-7 gap-1 text-[12px] px-3"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Template
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

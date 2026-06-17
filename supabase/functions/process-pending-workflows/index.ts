@@ -1,176 +1,140 @@
-// Process Pending Workflows Edge Function
-// This function runs periodically (via cron) to check for pending workflow runs
-// and invoke the process-workflow function for each one
+// Process Pending Workflows — the async workflow worker.
+// Invoked frequently by pg_cron (via pg_net) and on-demand after an enqueue.
+// Claims a batch of DUE pending runs via dequeue_workflow_runs (FOR UPDATE SKIP
+// LOCKED — many concurrent workers are safe), invokes process-workflow for each,
+// and reaps stale/stuck runs back into the queue.
 
-import {serve} from 'https://deno.land/std@0.168.0/http/server.ts'
-import {createSupabaseAdminClient} from '../_shared/supabase-client.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface ProcessResult {
-  runId: string
-  workflowId: string
-  status: 'queued' | 'failed'
-  error?: string
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
-  const startTime = Date.now()
-  const adminSupabase = createSupabaseAdminClient()
-  const results: ProcessResult[] = []
+  const adminSupabase = createSupabaseAdminClient();
+
+  // AUTH: service-role only. The worker is invoked by pg_cron (pg_net) and the
+  // enqueue kick, both with the service-role key. No user/anon access.
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const bearer = req.headers.get("Authorization")?.startsWith("Bearer ")
+    ? req.headers.get("Authorization")!.slice(7)
+    : null;
+  if (!bearer || bearer !== SERVICE_KEY) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const startTime = Date.now();
+  let batch = 25;
+  try {
+    const body = await req.json().catch(() => ({}));
+    if (body?.batch) batch = Math.min(Math.max(1, Number(body.batch)), 100);
+  } catch {
+    /* no body */
+  }
 
   try {
-    console.log('Starting pending workflow runs processor...')
+    // 1. Reap stale runs (worker died / timed out) back into the queue, and
+    //    dead-letter ones that exhausted their attempts.
+    const { data: requeued } = await adminSupabase.rpc(
+      "requeue_stale_workflow_runs",
+      {},
+    );
 
-    // Find pending runs that haven't been processed yet
-    // Only process runs created in the last hour to avoid stale runs
-    const { data: pendingRuns, error: fetchError } = await adminSupabase
-      .from('workflow_runs')
-      .select(`
-        id,
-        workflow_id,
-        context,
-        started_at,
-        workflows:workflow_id (
-          name,
-          status
-        )
-      `)
-      .eq('status', 'pending')
-      .gte('started_at', new Date(Date.now() - 3600000).toISOString()) // Last hour
-      .order('started_at', { ascending: true })
-      .limit(10) // Process in batches of 10
-
-    if (fetchError) {
-      throw new Error(`Failed to fetch pending runs: ${fetchError.message}`)
+    // 2. Claim a batch of due pending runs (atomic, SKIP LOCKED).
+    const { data: claimed, error: claimErr } = await adminSupabase.rpc(
+      "dequeue_workflow_runs",
+      { p_batch: batch },
+    );
+    if (claimErr) {
+      throw new Error(`dequeue_workflow_runs failed: ${claimErr.message}`);
     }
 
-    if (!pendingRuns || pendingRuns.length === 0) {
-      console.log('No pending workflow runs to process')
+    const runs =
+      (claimed as Array<{ run_id: string; workflow_id: string }>) || [];
+    if (runs.length === 0) {
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'No pending runs to process',
           processed: 0,
+          requeued: requeued ?? 0,
           durationMs: Date.now() - startTime,
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      )
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
-    console.log(`Found ${pendingRuns.length} pending runs to process`)
-
-    // Process each run by invoking the process-workflow function
-    for (const run of pendingRuns) {
+    // 3. Process each claimed run. A failed INVOKE leaves the run 'running' (it
+    //    was claimed) so the reaper re-queues it after the visibility timeout —
+    //    at-least-once with bounded retries (dead-letter on max attempts).
+    let ok = 0;
+    let failed = 0;
+    for (const run of runs) {
       try {
-        // Update status to 'running' to prevent duplicate processing
-        const { error: updateError } = await adminSupabase
-          .from('workflow_runs')
-          .update({ status: 'running' })
-          .eq('id', run.id)
-          .eq('status', 'pending') // Only update if still pending (prevent race conditions)
-
-        if (updateError) {
-          console.error(`Failed to update run ${run.id} to running:`, updateError)
-          results.push({
-            runId: run.id,
-            workflowId: run.workflow_id,
-            status: 'failed',
-            error: 'Failed to update status',
-          })
-          continue
-        }
-
-        // Invoke the process-workflow function
-        const { _data, error: invokeError } = await adminSupabase.functions.invoke(
-          'process-workflow',
+        const { error: invokeError } = await adminSupabase.functions.invoke(
+          "process-workflow",
           {
             body: {
-              runId: run.id,
+              runId: run.run_id,
               workflowId: run.workflow_id,
               isTest: false,
             },
-          }
-        )
-
-        if (invokeError) {
-          throw invokeError
-        }
-
-        console.log(`Queued workflow run ${run.id} for processing`)
-        results.push({
-          runId: run.id,
-          workflowId: run.workflow_id,
-          status: 'queued',
-        })
+          },
+        );
+        if (invokeError) throw invokeError;
+        ok++;
       } catch (runError) {
-        const errorMessage = runError instanceof Error ? runError.message : 'Unknown error'
-        console.error(`Failed to process run ${run.id}:`, errorMessage)
-
-        // Update run as failed
-        await adminSupabase
-          .from('workflow_runs')
-          .update({
-            status: 'failed',
-            completed_at: new Date().toISOString(),
-            error_message: errorMessage,
-            duration_ms: Date.now() - new Date(run.started_at).getTime(),
-          })
-          .eq('id', run.id)
-
-        results.push({
-          runId: run.id,
-          workflowId: run.workflow_id,
-          status: 'failed',
-          error: errorMessage,
-        })
+        failed++;
+        console.error(
+          `[worker] invoke failed for run ${run.run_id}:`,
+          runError instanceof Error ? runError.message : runError,
+        );
       }
     }
-
-    const successCount = results.filter((r) => r.status === 'queued').length
-    const failedCount = results.filter((r) => r.status === 'failed').length
-
-    console.log(`Processed ${successCount} runs successfully, ${failedCount} failed`)
 
     return new Response(
       JSON.stringify({
         success: true,
-        processed: pendingRuns.length,
-        successCount,
-        failedCount,
-        results,
+        processed: runs.length,
+        ok,
+        failed,
+        requeued: requeued ?? 0,
         durationMs: Date.now() - startTime,
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
-    console.error('Process pending workflows error:', err)
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-
-    return new Response(JSON.stringify({ success: false, error: errorMessage, results }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error("[worker] error:", err);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
-})
+});

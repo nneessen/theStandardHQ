@@ -5,6 +5,7 @@ import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import {
   Plus,
   Mail,
+  MessageSquare,
   Bell,
   Clock,
   Webhook,
@@ -12,24 +13,7 @@ import {
   ChevronUp,
   ChevronDown,
   Eye,
-  Users,
-  Building2,
-  UserCog,
-  GitBranch,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -49,8 +33,8 @@ import { usePipelinePhaseOptions } from "@/features/training-hub";
 import {
   getRecommendedRecipients,
   isRecommendedRecipient,
-  getRecipientContextDescription,
 } from "@/lib/workflow-recipient-helpers";
+import { tint, ACTION_ACCENT } from "../board";
 
 interface WorkflowActionsBuilderProps {
   actions: WorkflowAction[];
@@ -64,36 +48,28 @@ const ACTION_TYPES = [
     type: "send_email",
     label: "Send Email",
     icon: Mail,
-    color: "bg-info/10 border-info/20 text-info",
+  },
+  {
+    type: "send_sms",
+    label: "Send SMS",
+    icon: MessageSquare,
   },
   {
     type: "create_notification",
     label: "Notification",
     icon: Bell,
-    color: "bg-warning/10 border-warning/20 text-warning",
   },
   {
     type: "wait",
     label: "Wait/Delay",
     icon: Clock,
-    color: "bg-muted/10 border-input/20 text-muted-foreground",
   },
   {
     type: "webhook",
     label: "Webhook",
     icon: Webhook,
-    color: "bg-info/10 border-info/20 text-info",
   },
 ] as const;
-
-// Category icons for recipient selector
-const CATEGORY_ICONS = {
-  hierarchy: Building2,
-  role: UserCog,
-  context: GitBranch,
-  pipeline: Users,
-  custom: Mail,
-} as const;
 
 export default function WorkflowActionsBuilder({
   actions,
@@ -188,629 +164,883 @@ export default function WorkflowActionsBuilder({
   const needsEmailListInput = (type: RecipientType) => type === "email_list";
 
   return (
-    <div className="w-full space-y-3">
-      {/* Header */}
-      <div className="p-2 rounded-md bg-muted/50">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-medium text-muted-foreground">
-            Workflow Actions ({actions.length})
-          </Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs px-2"
-            onClick={addAction}
+    <div className="w-full space-y-4">
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span
+            className="font-display text-[13px] font-extrabold uppercase tracking-widest"
+            style={{ color: "var(--ink)" }}
           >
-            <Plus className="h-3 w-3 mr-1" />
-            Add Action
-          </Button>
+            Workflow Actions
+          </span>
+          <span
+            className="font-mono text-[11px] font-bold"
+            style={{ color: "var(--mut2)" }}
+          >
+            {actions.length}
+          </span>
         </div>
+        <button
+          type="button"
+          onClick={addAction}
+          className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
+          style={{ background: "var(--blue)", color: "#0c1322" }}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add Action
+        </button>
       </div>
 
-      {/* Actions List */}
+      {/* ── Actions List ─────────────────────────────────────────────── */}
       {actions.length === 0 ? (
-        <div className="p-4 rounded-md bg-muted/30 text-center">
-          <p className="text-xs text-muted-foreground mb-2">
+        <div
+          className="flex flex-col items-center justify-center gap-3 rounded-xl py-10 text-center"
+          style={{
+            background: "var(--surface-3)",
+            border: "1px dashed var(--line2)",
+          }}
+        >
+          <p className="font-sans text-[13px]" style={{ color: "var(--mut)" }}>
             No actions configured yet
           </p>
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
             onClick={addAction}
+            className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
+            style={{ background: "var(--blue)", color: "#0c1322" }}
           >
+            <Plus className="h-3.5 w-3.5" />
             Add Your First Action
-          </Button>
+          </button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {actions.map((action, index) => {
             const actionType = ACTION_TYPES.find((t) => t.type === action.type);
             const Icon = actionType?.icon || Mail;
             const errorKey = `action_${index}`;
             const hasError = !!errors[errorKey];
             const currentRecipientType = getRecipientType(action);
+            const accent =
+              ACTION_ACCENT[action.type as keyof typeof ACTION_ACCENT] ||
+              "--mut";
 
             return (
               <div
                 key={index}
-                className={cn(
-                  "p-2 rounded-md border",
-                  actionType?.color || "bg-muted/30",
-                  hasError && "border-destructive",
-                )}
+                className="relative rounded-xl overflow-hidden"
+                style={{
+                  background: "var(--surface-3)",
+                  border: hasError
+                    ? `1px solid var(--red)`
+                    : "1px solid var(--line)",
+                }}
               >
-                {/* Action Header */}
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Step {index + 1}
-                  </span>
-                  <Select
-                    value={action.type}
-                    onValueChange={(v) =>
-                      updateAction(index, {
-                        type: v as WorkflowAction["type"],
-                        config: {},
-                      })
-                    }
-                  >
-                    <SelectTrigger className="h-7 text-xs w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
+                {/* Left accent bar */}
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-[3px]"
+                  style={{ background: `var(${accent})` }}
+                />
+
+                <div className="pl-4 pr-3 pt-3 pb-3">
+                  {/* ── Card Header ──────────────────────────────────── */}
+                  <div className="flex items-center gap-2.5 mb-3">
+                    {/* Step tile */}
+                    <span
+                      className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg font-mono text-[11px] font-bold"
+                      style={{
+                        background: tint(accent, 14),
+                        color: `var(${accent})`,
+                      }}
+                    >
+                      {index + 1}
+                    </span>
+
+                    {/* Action icon */}
+                    <Icon
+                      className="h-4 w-4 shrink-0"
+                      style={{ color: `var(${accent})` }}
+                    />
+
+                    {/* Type select */}
+                    <select
+                      value={action.type}
+                      onChange={(e) =>
+                        updateAction(index, {
+                          type: e.target.value as WorkflowAction["type"],
+                          config: {},
+                        })
+                      }
+                      className="h-8 rounded-lg px-2 font-sans text-[13px] font-semibold outline-none cursor-pointer transition-shadow"
+                      style={{
+                        background: "var(--surface-1)",
+                        border: "1px solid var(--line2)",
+                        color: "var(--ink)",
+                        minWidth: 140,
+                      }}
+                      onFocus={(e) =>
+                        (e.currentTarget.style.boxShadow =
+                          "0 0 0 3px " + tint(accent, 30))
+                      }
+                      onBlur={(e) => (e.currentTarget.style.boxShadow = "none")}
+                    >
                       {ACTION_TYPES.map((type) => (
-                        <SelectItem
-                          key={type.type}
-                          value={type.type}
-                          className="text-xs"
-                        >
+                        <option key={type.type} value={type.type}>
                           {type.label}
-                        </SelectItem>
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
 
-                  <div className="ml-auto flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => moveAction(index, "up")}
-                      disabled={index === 0}
-                    >
-                      <ChevronUp className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => moveAction(index, "down")}
-                      disabled={index === actions.length - 1}
-                    >
-                      <ChevronDown className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-destructive hover:text-destructive"
-                      onClick={() => deleteAction(index)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {/* Reorder + delete controls */}
+                    <div className="ml-auto flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => moveAction(index, "up")}
+                        disabled={index === 0}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-5)] disabled:opacity-30 disabled:cursor-not-allowed"
+                        style={{ color: "var(--mut2)" }}
+                        aria-label="Move up"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveAction(index, "down")}
+                        disabled={index === actions.length - 1}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-5)] disabled:opacity-30 disabled:cursor-not-allowed"
+                        style={{ color: "var(--mut2)" }}
+                        aria-label="Move down"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteAction(index)}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-5)]"
+                        style={{ color: "var(--red)" }}
+                        aria-label="Delete action"
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = tint("--red", 12))
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Action Configuration */}
-                <div className="space-y-2 pl-6">
-                  {action.type === "send_email" && (
-                    <>
-                      {/* Template Selection */}
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Email Template
-                          </Label>
-                          <div className="flex gap-1">
-                            <Select
-                              value={action.config.templateId || ""}
-                              onValueChange={(v) =>
-                                updateActionConfig(index, { templateId: v })
-                              }
+                  {/* ── Card Body: type-specific config ──────────────── */}
+                  <div className="space-y-2.5 pl-[34px]">
+                    {action.type === "send_email" && (
+                      <>
+                        {/* Template Selection */}
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label
+                              className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                              style={{ color: "var(--mut2)" }}
                             >
-                              <SelectTrigger className="h-7 text-xs bg-background border-info/30 focus:border-info">
-                                <SelectValue placeholder="Select template..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {emailTemplates.map((t) => (
-                                  <SelectItem
-                                    key={t.id}
-                                    value={t.id}
-                                    className="text-xs"
-                                  >
-                                    {t.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {action.config.templateId && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-7 w-7 border-info/30 hover:border-info hover:bg-info/10"
-                                onClick={() =>
-                                  setPreviewTemplate(
-                                    action.config.templateId || null,
-                                  )
+                              Email Template
+                            </label>
+                            <div className="flex gap-1.5">
+                              <select
+                                value={action.config.templateId || ""}
+                                onChange={(e) =>
+                                  updateActionConfig(index, {
+                                    templateId: e.target.value,
+                                  })
+                                }
+                                className="h-9 flex-1 rounded-[10px] px-3 font-sans text-[13px] outline-none cursor-pointer transition-shadow"
+                                style={{
+                                  background: "var(--surface-1)",
+                                  border: "1px solid var(--line2)",
+                                  color: action.config.templateId
+                                    ? "var(--ink)"
+                                    : "var(--mut2)",
+                                }}
+                                onFocus={(e) =>
+                                  (e.currentTarget.style.boxShadow =
+                                    "0 0 0 3px " + tint("--blue", 30))
+                                }
+                                onBlur={(e) =>
+                                  (e.currentTarget.style.boxShadow = "none")
                                 }
                               >
-                                <Eye className="h-3 w-3 text-info" />
-                              </Button>
-                            )}
+                                <option value="" disabled>
+                                  Select template…
+                                </option>
+                                {emailTemplates.map((t) => (
+                                  <option key={t.id} value={t.id}>
+                                    {t.name}
+                                  </option>
+                                ))}
+                              </select>
+                              {action.config.templateId && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setPreviewTemplate(
+                                      action.config.templateId || null,
+                                    )
+                                  }
+                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-colors"
+                                  style={{
+                                    background: tint("--blue", 10),
+                                    border: `1px solid ${tint("--blue", 30)}`,
+                                    color: "var(--blue)",
+                                  }}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background = tint(
+                                      "--blue",
+                                      20,
+                                    ))
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background = tint(
+                                      "--blue",
+                                      10,
+                                    ))
+                                  }
+                                  aria-label="Preview template"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Recipient Selection - Category-Based */}
-                      <div>
-                        <Label className="text-[10px] text-muted-foreground">
-                          Send To
-                          {selectedEvent && (
-                            <span className="ml-1 text-warning">
-                              (⭐ = recommended for {selectedEvent})
-                            </span>
-                          )}
-                        </Label>
-                        <Select
-                          value={currentRecipientType}
-                          onValueChange={(v) =>
-                            updateRecipientType(index, v as RecipientType)
-                          }
-                        >
-                          <SelectTrigger className="h-7 text-xs bg-background border-info/30 focus:border-info">
-                            <SelectValue>
-                              {isRecommendedRecipient(
-                                selectedEvent,
-                                currentRecipientType,
-                              ) && "⭐ "}
-                              {RECIPIENT_TYPE_LABELS[currentRecipientType] ||
-                                currentRecipientType}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-80">
-                            {/* Show recommended recipients first if event is selected */}
+                        {/* Recipient Selection */}
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--mut2)" }}
+                          >
+                            Send To
+                            {selectedEvent && (
+                              <span
+                                className="ml-1 font-mono text-[10px] normal-case"
+                                style={{ color: "var(--amber)" }}
+                              >
+                                (⭐ = recommended for {selectedEvent})
+                              </span>
+                            )}
+                          </label>
+                          <select
+                            value={currentRecipientType}
+                            onChange={(e) =>
+                              updateRecipientType(
+                                index,
+                                e.target.value as RecipientType,
+                              )
+                            }
+                            className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none cursor-pointer transition-shadow"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                            onFocus={(e) =>
+                              (e.currentTarget.style.boxShadow =
+                                "0 0 0 3px " + tint("--blue", 30))
+                            }
+                            onBlur={(e) =>
+                              (e.currentTarget.style.boxShadow = "none")
+                            }
+                          >
+                            {/* Recommended group */}
                             {selectedEvent &&
                               getRecommendedRecipients(selectedEvent).length >
                                 0 && (
-                                <SelectGroup>
-                                  <SelectLabel className="flex items-center gap-1.5 text-[10px] text-warning font-semibold">
-                                    <span>
-                                      ⭐ Recommended for {selectedEvent}
-                                    </span>
-                                  </SelectLabel>
+                                <optgroup
+                                  label={`⭐ Recommended for ${selectedEvent}`}
+                                >
                                   {getRecommendedRecipients(selectedEvent).map(
-                                    (type) => {
-                                      const contextDesc =
-                                        getRecipientContextDescription(
-                                          selectedEvent,
-                                          type,
-                                        );
-                                      return (
-                                        <SelectItem
-                                          key={`recommended-${type}`}
-                                          value={type}
-                                          className="text-xs pl-6"
-                                        >
-                                          <div>
-                                            <span className="font-medium">
-                                              ⭐ {RECIPIENT_TYPE_LABELS[type]}
-                                            </span>
-                                            {contextDesc && (
-                                              <span className="block text-[10px] text-muted-foreground">
-                                                {contextDesc}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </SelectItem>
-                                      );
-                                    },
+                                    (type) => (
+                                      <option
+                                        key={`recommended-${type}`}
+                                        value={type}
+                                      >
+                                        ⭐ {RECIPIENT_TYPE_LABELS[type] || type}
+                                      </option>
+                                    ),
                                   )}
-                                </SelectGroup>
+                                </optgroup>
                               )}
-
                             {/* Regular categories */}
                             {Object.entries(RECIPIENT_CATEGORIES).map(
-                              ([key, category]) => {
-                                const CategoryIcon =
-                                  CATEGORY_ICONS[
-                                    key as keyof typeof CATEGORY_ICONS
-                                  ];
-                                return (
-                                  <SelectGroup key={key}>
-                                    <SelectLabel className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                      <CategoryIcon className="h-3 w-3" />
-                                      {category.label}
-                                    </SelectLabel>
-                                    {category.types.map((type) => {
-                                      const isRecommended =
-                                        isRecommendedRecipient(
-                                          selectedEvent,
-                                          type,
-                                        );
-                                      const contextDesc =
-                                        getRecipientContextDescription(
-                                          selectedEvent,
-                                          type,
-                                        );
-                                      return (
-                                        <SelectItem
-                                          key={type}
-                                          value={type}
-                                          className={cn(
-                                            "text-xs pl-6",
-                                            isRecommended && "font-medium",
-                                          )}
-                                        >
-                                          <div>
-                                            <span>
-                                              {isRecommended && "⭐ "}
-                                              {RECIPIENT_TYPE_LABELS[type]}
-                                            </span>
-                                            {contextDesc && (
-                                              <span className="block text-[10px] text-muted-foreground">
-                                                {contextDesc}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </SelectItem>
-                                      );
-                                    })}
-                                  </SelectGroup>
-                                );
-                              },
+                              ([key, category]) => (
+                                <optgroup key={key} label={category.label}>
+                                  {category.types.map((type) => (
+                                    <option key={type} value={type}>
+                                      {isRecommendedRecipient(
+                                        selectedEvent,
+                                        type,
+                                      )
+                                        ? "⭐ "
+                                        : ""}
+                                      {RECIPIENT_TYPE_LABELS[type] || type}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ),
                             )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Role Selection (for 'role' type) */}
-                      {needsRoleSelector(currentRecipientType) && (
-                        <div>
-                          <Label className="text-[10px] text-muted-foreground">
-                            Select Roles
-                          </Label>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {AVAILABLE_ROLES.map((role) => {
-                              const isChecked =
-                                action.config.recipientConfig?.roles?.includes(
-                                  role.value,
-                                ) ?? false;
-                              return (
-                                <label
-                                  key={role.value}
-                                  className={cn(
-                                    "flex items-center gap-1.5 px-2 py-1 rounded border text-xs cursor-pointer transition-colors",
-                                    isChecked
-                                      ? "bg-info/15 border-info/40"
-                                      : "bg-background border-input hover:bg-muted/50",
-                                  )}
-                                >
-                                  <Checkbox
-                                    checked={isChecked}
-                                    onCheckedChange={(checked) => {
-                                      const currentRoles =
-                                        action.config.recipientConfig?.roles ||
-                                        [];
-                                      const newRoles = checked
-                                        ? [...currentRoles, role.value]
-                                        : currentRoles.filter(
-                                            (r) => r !== role.value,
-                                          );
-                                      updateActionConfig(index, {
-                                        recipientConfig: {
-                                          ...action.config.recipientConfig,
-                                          type: "role",
-                                          roles: newRoles,
-                                        },
-                                      });
-                                    }}
-                                    className="h-3 w-3"
-                                  />
-                                  {role.label}
-                                </label>
-                              );
-                            })}
-                          </div>
+                          </select>
                         </div>
-                      )}
 
-                      {/* Pipeline Phase Selection (for 'pipeline_phase' type) */}
-                      {needsPhaseSelector(currentRecipientType) && (
-                        <div>
-                          <Label className="text-[10px] text-muted-foreground">
-                            Select Pipeline Phases
-                          </Label>
-                          <div className="flex flex-wrap gap-2 mt-1 max-h-32 overflow-y-auto">
-                            {pipelinePhaseOptions.map((phase) => {
-                              const isChecked =
-                                action.config.recipientConfig?.phaseIds?.includes(
-                                  phase.value,
-                                ) ?? false;
-                              return (
-                                <label
-                                  key={phase.value}
-                                  className={cn(
-                                    "flex items-center gap-1.5 px-2 py-1 rounded border text-xs cursor-pointer transition-colors",
-                                    isChecked
-                                      ? "bg-info/15 border-info/40"
-                                      : "bg-background border-input hover:bg-muted/50",
-                                  )}
-                                >
-                                  <Checkbox
-                                    checked={isChecked}
-                                    onCheckedChange={(checked) => {
-                                      const currentPhases =
-                                        action.config.recipientConfig
-                                          ?.phaseIds || [];
-                                      const newPhases = checked
-                                        ? [...currentPhases, phase.value]
-                                        : currentPhases.filter(
-                                            (p) => p !== phase.value,
-                                          );
-                                      updateActionConfig(index, {
-                                        recipientConfig: {
-                                          ...action.config.recipientConfig,
-                                          type: "pipeline_phase",
-                                          phaseIds: newPhases,
-                                        },
-                                      });
+                        {/* Role Selection (for 'role' type) */}
+                        {needsRoleSelector(currentRecipientType) && (
+                          <div>
+                            <label
+                              className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                              style={{ color: "var(--mut2)" }}
+                            >
+                              Select Roles
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {AVAILABLE_ROLES.map((role) => {
+                                const isChecked =
+                                  action.config.recipientConfig?.roles?.includes(
+                                    role.value,
+                                  ) ?? false;
+                                return (
+                                  <label
+                                    key={role.value}
+                                    className={cn(
+                                      "flex items-center gap-1.5 cursor-pointer rounded-lg px-2.5 py-1.5 font-sans text-[13px] transition-colors select-none",
+                                    )}
+                                    style={{
+                                      background: isChecked
+                                        ? tint("--blue", 14)
+                                        : "var(--surface-1)",
+                                      border: isChecked
+                                        ? `1px solid ${tint("--blue", 40)}`
+                                        : "1px solid var(--line2)",
+                                      color: isChecked
+                                        ? "var(--blue)"
+                                        : "var(--mut)",
                                     }}
-                                    className="h-3 w-3"
-                                  />
-                                  <span
-                                    className="truncate max-w-[150px]"
-                                    title={phase.label}
                                   >
-                                    {phase.phaseName}
-                                  </span>
-                                </label>
-                              );
-                            })}
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        const currentRoles =
+                                          action.config.recipientConfig
+                                            ?.roles || [];
+                                        const newRoles = e.target.checked
+                                          ? [...currentRoles, role.value]
+                                          : currentRoles.filter(
+                                              (r) => r !== role.value,
+                                            );
+                                        updateActionConfig(index, {
+                                          recipientConfig: {
+                                            ...action.config.recipientConfig,
+                                            type: "role",
+                                            roles: newRoles,
+                                          },
+                                        });
+                                      }}
+                                      className="h-3 w-3 accent-[var(--blue)]"
+                                    />
+                                    {role.label}
+                                  </label>
+                                );
+                              })}
+                            </div>
                           </div>
-                          {pipelinePhaseOptions.length === 0 && (
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              No pipeline phases available
-                            </p>
-                          )}
-                        </div>
-                      )}
+                        )}
 
-                      {/* Specific Email Input */}
-                      {needsEmailInput(currentRecipientType) && (
-                        <Input
-                          type="email"
-                          value={
-                            action.config.recipientConfig?.emails?.[0] ||
-                            action.config.recipientEmail ||
-                            ""
-                          }
-                          onChange={(e) =>
-                            updateActionConfig(index, {
-                              recipientConfig: {
-                                ...action.config.recipientConfig,
-                                type: "specific_email",
-                                emails: [e.target.value],
-                              },
-                              recipientEmail: e.target.value,
-                            })
-                          }
-                          placeholder="email@example.com"
-                          className="h-7 text-xs bg-background border-info/30 focus:border-info"
-                        />
-                      )}
+                        {/* Pipeline Phase Selection (for 'pipeline_phase' type) */}
+                        {needsPhaseSelector(currentRecipientType) && (
+                          <div>
+                            <label
+                              className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                              style={{ color: "var(--mut2)" }}
+                            >
+                              Select Pipeline Phases
+                            </label>
+                            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                              {pipelinePhaseOptions.map((phase) => {
+                                const isChecked =
+                                  action.config.recipientConfig?.phaseIds?.includes(
+                                    phase.value,
+                                  ) ?? false;
+                                return (
+                                  <label
+                                    key={phase.value}
+                                    className="flex items-center gap-1.5 cursor-pointer rounded-lg px-2.5 py-1.5 font-sans text-[13px] transition-colors select-none"
+                                    style={{
+                                      background: isChecked
+                                        ? tint("--blue", 14)
+                                        : "var(--surface-1)",
+                                      border: isChecked
+                                        ? `1px solid ${tint("--blue", 40)}`
+                                        : "1px solid var(--line2)",
+                                      color: isChecked
+                                        ? "var(--blue)"
+                                        : "var(--mut)",
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        const currentPhases =
+                                          action.config.recipientConfig
+                                            ?.phaseIds || [];
+                                        const newPhases = e.target.checked
+                                          ? [...currentPhases, phase.value]
+                                          : currentPhases.filter(
+                                              (p) => p !== phase.value,
+                                            );
+                                        updateActionConfig(index, {
+                                          recipientConfig: {
+                                            ...action.config.recipientConfig,
+                                            type: "pipeline_phase",
+                                            phaseIds: newPhases,
+                                          },
+                                        });
+                                      }}
+                                      className="h-3 w-3 accent-[var(--blue)]"
+                                    />
+                                    <span
+                                      className="truncate max-w-[150px]"
+                                      title={phase.label}
+                                    >
+                                      {phase.phaseName}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            {pipelinePhaseOptions.length === 0 && (
+                              <p
+                                className="mt-1 font-sans text-[12px]"
+                                style={{ color: "var(--mut2)" }}
+                              >
+                                No pipeline phases available
+                              </p>
+                            )}
+                          </div>
+                        )}
 
-                      {/* Email List Input */}
-                      {needsEmailListInput(currentRecipientType) && (
-                        <div>
-                          <Input
-                            value={(
-                              action.config.recipientConfig?.emails || []
-                            ).join(", ")}
-                            onChange={(e) => {
-                              const emails = e.target.value
-                                .split(",")
-                                .map((email) => email.trim())
-                                .filter(Boolean);
+                        {/* Specific Email Input */}
+                        {needsEmailInput(currentRecipientType) && (
+                          <input
+                            type="email"
+                            value={
+                              action.config.recipientConfig?.emails?.[0] ||
+                              action.config.recipientEmail ||
+                              ""
+                            }
+                            onChange={(e) =>
                               updateActionConfig(index, {
                                 recipientConfig: {
                                   ...action.config.recipientConfig,
-                                  type: "email_list",
-                                  emails,
+                                  type: "specific_email",
+                                  emails: [e.target.value],
                                 },
-                              });
+                                recipientEmail: e.target.value,
+                              })
+                            }
+                            placeholder="email@example.com"
+                            className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
                             }}
-                            placeholder="email1@example.com, email2@example.com"
-                            className="h-7 text-xs bg-background border-info/30 focus:border-info"
+                            onFocus={(e) =>
+                              (e.currentTarget.style.boxShadow =
+                                "0 0 0 3px " + tint("--blue", 30))
+                            }
+                            onBlur={(e) =>
+                              (e.currentTarget.style.boxShadow = "none")
+                            }
                           />
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            Separate multiple emails with commas (max 50)
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                        )}
 
-                  {action.type === "wait" && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-24">
-                        <Label className="text-[10px] text-muted-foreground">
-                          Wait Duration
-                        </Label>
-                        <Input
-                          type="number"
-                          value={action.config.waitMinutes || 0}
+                        {/* Email List Input */}
+                        {needsEmailListInput(currentRecipientType) && (
+                          <div>
+                            <input
+                              value={(
+                                action.config.recipientConfig?.emails || []
+                              ).join(", ")}
+                              onChange={(e) => {
+                                const emails = e.target.value
+                                  .split(",")
+                                  .map((email) => email.trim())
+                                  .filter(Boolean);
+                                updateActionConfig(index, {
+                                  recipientConfig: {
+                                    ...action.config.recipientConfig,
+                                    type: "email_list",
+                                    emails,
+                                  },
+                                });
+                              }}
+                              placeholder="email1@example.com, email2@example.com"
+                              className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                              style={{
+                                background: "var(--surface-1)",
+                                border: "1px solid var(--line2)",
+                                color: "var(--ink)",
+                              }}
+                              onFocus={(e) =>
+                                (e.currentTarget.style.boxShadow =
+                                  "0 0 0 3px " + tint("--blue", 30))
+                              }
+                              onBlur={(e) =>
+                                (e.currentTarget.style.boxShadow = "none")
+                              }
+                            />
+                            <p
+                              className="mt-1 font-sans text-[12px]"
+                              style={{ color: "var(--mut2)" }}
+                            >
+                              Separate multiple emails with commas (max 50)
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {action.type === "wait" && (
+                      <div className="flex items-center gap-2.5">
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--mut2)" }}
+                          >
+                            Wait Duration
+                          </label>
+                          <input
+                            type="number"
+                            value={action.config.waitMinutes || 0}
+                            onChange={(e) =>
+                              updateActionConfig(index, {
+                                waitMinutes: parseInt(e.target.value) || 0,
+                              })
+                            }
+                            placeholder="0"
+                            min={0}
+                            className="h-9 w-24 rounded-[10px] px-3 font-mono text-[13px] outline-none transition-shadow"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                            onFocus={(e) =>
+                              (e.currentTarget.style.boxShadow =
+                                "0 0 0 3px " + tint("--mut", 30))
+                            }
+                            onBlur={(e) =>
+                              (e.currentTarget.style.boxShadow = "none")
+                            }
+                          />
+                        </div>
+                        <span
+                          className="mt-5 font-sans text-[13px]"
+                          style={{ color: "var(--mut)" }}
+                        >
+                          minutes
+                        </span>
+                      </div>
+                    )}
+
+                    {action.type === "webhook" && (
+                      <div>
+                        <label
+                          className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--cyan)" }}
+                        >
+                          Webhook URL
+                        </label>
+                        <input
+                          value={action.config.webhookUrl || ""}
                           onChange={(e) =>
                             updateActionConfig(index, {
-                              waitMinutes: parseInt(e.target.value) || 0,
+                              webhookUrl: e.target.value,
                             })
                           }
-                          className="h-7 text-xs bg-background border-input/30 focus:border-input"
-                          placeholder="0"
-                          min={0}
+                          placeholder="https://api.example.com/webhook"
+                          className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                          style={{
+                            background: "var(--surface-1)",
+                            border: "1px solid var(--line2)",
+                            color: "var(--ink)",
+                          }}
+                          onFocus={(e) =>
+                            (e.currentTarget.style.boxShadow =
+                              "0 0 0 3px " + tint("--cyan", 30))
+                          }
+                          onBlur={(e) =>
+                            (e.currentTarget.style.boxShadow = "none")
+                          }
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground mt-4">
+                    )}
+
+                    {action.type === "create_notification" && (
+                      <div className="space-y-2">
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--amber)" }}
+                          >
+                            Notification Title
+                          </label>
+                          <input
+                            value={action.config.title || ""}
+                            onChange={(e) =>
+                              updateActionConfig(index, {
+                                title: e.target.value,
+                              })
+                            }
+                            placeholder="Notification title…"
+                            className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                            onFocus={(e) =>
+                              (e.currentTarget.style.boxShadow =
+                                "0 0 0 3px " + tint("--amber", 30))
+                            }
+                            onBlur={(e) =>
+                              (e.currentTarget.style.boxShadow = "none")
+                            }
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--amber)" }}
+                          >
+                            Message
+                          </label>
+                          <input
+                            value={action.config.message || ""}
+                            onChange={(e) =>
+                              updateActionConfig(index, {
+                                message: e.target.value,
+                              })
+                            }
+                            placeholder="Notification message…"
+                            className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                            onFocus={(e) =>
+                              (e.currentTarget.style.boxShadow =
+                                "0 0 0 3px " + tint("--amber", 30))
+                            }
+                            onBlur={(e) =>
+                              (e.currentTarget.style.boxShadow = "none")
+                            }
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Card Footer: delay before next action ──────── */}
+                    <div
+                      className="flex items-center gap-2.5 pt-2.5"
+                      style={{ borderTop: "1px solid var(--line)" }}
+                    >
+                      <label
+                        className="font-sans text-[12px] shrink-0"
+                        style={{ color: "var(--mut2)" }}
+                      >
+                        Delay before next action:
+                      </label>
+                      <input
+                        type="number"
+                        value={action.delayMinutes || 0}
+                        onChange={(e) =>
+                          updateAction(index, {
+                            delayMinutes: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="0"
+                        min={0}
+                        className="h-8 w-16 rounded-lg px-2 font-mono text-[13px] outline-none transition-shadow"
+                        style={{
+                          background: "var(--surface-1)",
+                          border: "1px solid var(--line2)",
+                          color: "var(--ink)",
+                        }}
+                        onFocus={(e) =>
+                          (e.currentTarget.style.boxShadow =
+                            "0 0 0 3px " + tint("--mut", 25))
+                        }
+                        onBlur={(e) =>
+                          (e.currentTarget.style.boxShadow = "none")
+                        }
+                      />
+                      <span
+                        className="font-sans text-[12px]"
+                        style={{ color: "var(--mut2)" }}
+                      >
                         minutes
                       </span>
                     </div>
-                  )}
-
-                  {action.type === "webhook" && (
-                    <div>
-                      <Label className="text-[10px] text-info">
-                        Webhook URL
-                      </Label>
-                      <Input
-                        value={action.config.webhookUrl || ""}
-                        onChange={(e) =>
-                          updateActionConfig(index, {
-                            webhookUrl: e.target.value,
-                          })
-                        }
-                        className="h-7 text-xs bg-background border-info/30 focus:border-info"
-                        placeholder="https://api.example.com/webhook"
-                      />
-                    </div>
-                  )}
-
-                  {action.type === "create_notification" && (
-                    <div className="space-y-2">
-                      <div>
-                        <Label className="text-[10px] text-warning">
-                          Notification Title
-                        </Label>
-                        <Input
-                          value={action.config.title || ""}
-                          onChange={(e) =>
-                            updateActionConfig(index, { title: e.target.value })
-                          }
-                          className="h-7 text-xs bg-background border-warning/30 focus:border-warning"
-                          placeholder="Notification title..."
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-[10px] text-warning">
-                          Message
-                        </Label>
-                        <Input
-                          value={action.config.message || ""}
-                          onChange={(e) =>
-                            updateActionConfig(index, {
-                              message: e.target.value,
-                            })
-                          }
-                          className="h-7 text-xs bg-background border-warning/30 focus:border-warning"
-                          placeholder="Notification message..."
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Delay Before Next Action */}
-                  <div className="flex items-center gap-2 pt-1 border-t">
-                    <Label className="text-[10px] text-muted-foreground">
-                      Delay before next action:
-                    </Label>
-                    <Input
-                      type="number"
-                      value={action.delayMinutes || 0}
-                      onChange={(e) =>
-                        updateAction(index, {
-                          delayMinutes: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="h-6 text-xs w-16 bg-background"
-                      placeholder="0"
-                      min={0}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      minutes
-                    </span>
                   </div>
-                </div>
 
-                {/* Error Display */}
-                {hasError && (
-                  <p className="text-xs text-destructive mt-2 pl-6">
-                    {errors[errorKey]}
-                  </p>
-                )}
+                  {/* ── Per-action error ──────────────────────────────── */}
+                  {hasError && (
+                    <p
+                      className="mt-2 pl-[34px] font-sans text-[12px]"
+                      style={{ color: "var(--red)" }}
+                    >
+                      {errors[errorKey]}
+                    </p>
+                  )}
+                </div>
               </div>
             );
           })}
+
+          {/* Dashed "add another" row at the bottom */}
+          <button
+            type="button"
+            onClick={addAction}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3 font-sans text-[13px] font-semibold transition-colors hover:bg-[var(--surface-4)]"
+            style={{
+              border: "1px dashed var(--line2)",
+              color: "var(--mut)",
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add another action
+          </button>
         </div>
       )}
 
-      {/* Error message */}
+      {/* ── Global actions error ─────────────────────────────────────── */}
       {errors.actions && (
-        <div className="p-2 rounded bg-destructive/10 border border-destructive/20">
-          <p className="text-xs text-destructive">{errors.actions}</p>
+        <div
+          className="rounded-lg px-3 py-2"
+          style={{
+            background: tint("--red", 10),
+            border: `1px solid ${tint("--red", 28)}`,
+          }}
+        >
+          <p className="font-sans text-[12px]" style={{ color: "var(--red)" }}>
+            {errors.actions}
+          </p>
         </div>
       )}
 
-      {/* Email Template Preview Modal */}
+      {/* ── Email Template Preview Modal ─────────────────────────────── */}
       <Dialog
         open={!!previewTemplate}
         onOpenChange={() => setPreviewTemplate(null)}
       >
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">
+        <DialogContent
+          className="block gap-0 border-0 p-0 shadow-none sm:max-w-none"
+          style={{
+            width: 680,
+            maxWidth: "95vw",
+            maxHeight: "82vh",
+            borderRadius: 20,
+            background: "var(--surface-2)",
+            border: "1px solid var(--line2)",
+            boxShadow: "var(--panelshadow)",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <DialogHeader
+            className="shrink-0 px-6 pt-6 pb-4"
+            style={{ borderBottom: "1px solid var(--line)" }}
+          >
+            <DialogTitle
+              className="font-display text-[17px] font-extrabold uppercase tracking-wide"
+              style={{ color: "var(--ink)" }}
+            >
               Email Template Preview
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {(() => {
               const template = emailTemplates.find(
                 (t) => t.id === previewTemplate,
               );
               if (!template)
                 return (
-                  <p className="text-sm text-muted-foreground">
+                  <p
+                    className="font-sans text-[13px]"
+                    style={{ color: "var(--mut)" }}
+                  >
                     Template not found
                   </p>
                 );
 
               return (
                 <div className="space-y-4">
-                  <div className="p-3 rounded-lg bg-info/10 border border-info/30">
+                  <div
+                    className="rounded-xl p-4"
+                    style={{
+                      background: tint("--blue", 8),
+                      border: `1px solid ${tint("--blue", 25)}`,
+                    }}
+                  >
                     <div className="space-y-2">
                       <div>
-                        <Label className="text-xs font-semibold text-info">
+                        <p
+                          className="font-mono text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--blue)" }}
+                        >
                           Template Name
-                        </Label>
-                        <p className="text-sm text-info">{template.name}</p>
+                        </p>
+                        <p
+                          className="font-sans text-[14px]"
+                          style={{ color: "var(--ink)" }}
+                        >
+                          {template.name}
+                        </p>
                       </div>
                       <div>
-                        <Label className="text-xs font-semibold text-info">
+                        <p
+                          className="font-mono text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--blue)" }}
+                        >
                           Subject
-                        </Label>
-                        <p className="text-sm text-info">{template.subject}</p>
+                        </p>
+                        <p
+                          className="font-sans text-[14px]"
+                          style={{ color: "var(--ink)" }}
+                        >
+                          {template.subject}
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground">
+                    <p
+                      className="font-mono text-[10px] font-bold uppercase tracking-widest"
+                      style={{ color: "var(--mut2)" }}
+                    >
                       Preview
-                    </Label>
-                    <div className="p-4 rounded-lg border bg-muted">
+                    </p>
+                    <div
+                      className="rounded-xl p-4"
+                      style={{
+                        background: "var(--surface-3)",
+                        border: "1px solid var(--line)",
+                      }}
+                    >
                       <div className="prose prose-sm dark:prose-invert max-w-none">
                         <div
                           dangerouslySetInnerHTML={{
@@ -827,15 +1057,28 @@ export default function WorkflowActionsBuilder({
                   </div>
 
                   {template.variables && template.variables.length > 0 && (
-                    <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
-                      <Label className="text-xs font-semibold text-warning mb-2 block">
+                    <div
+                      className="rounded-xl p-4"
+                      style={{
+                        background: tint("--amber", 8),
+                        border: `1px solid ${tint("--amber", 25)}`,
+                      }}
+                    >
+                      <p
+                        className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: "var(--amber)" }}
+                      >
                         Dynamic Variables
-                      </Label>
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {template.variables.map((v: string, i: number) => (
                           <code
                             key={i}
-                            className="text-xs px-2 py-1 bg-warning/20 text-warning rounded"
+                            className="rounded px-2 py-0.5 font-mono text-[12px]"
+                            style={{
+                              background: tint("--amber", 16),
+                              color: "var(--amber)",
+                            }}
                           >
                             {`{{${v}}}`}
                           </code>

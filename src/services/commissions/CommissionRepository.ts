@@ -51,17 +51,20 @@ export interface CommissionWithPolicy {
   status: string | null;
   type: string | null;
   created_at: string | null;
-  policy: {
-    policy_number: string;
-    effective_date: string | null;
-    lifecycle_status: string | null;
-    cancellation_date: string | null;
-  } | Array<{
-    policy_number: string;
-    effective_date: string | null;
-    lifecycle_status: string | null;
-    cancellation_date: string | null;
-  }> | null;
+  policy:
+    | {
+        policy_number: string;
+        effective_date: string | null;
+        lifecycle_status: string | null;
+        cancellation_date: string | null;
+      }
+    | Array<{
+        policy_number: string;
+        effective_date: string | null;
+        lifecycle_status: string | null;
+        cancellation_date: string | null;
+      }>
+    | null;
 }
 
 export class CommissionRepository extends BaseRepository<
@@ -133,7 +136,9 @@ export class CommissionRepository extends BaseRepository<
     return policy;
   }
 
-  private transformFromDBWithPolicy(dbRecord: CommissionWithPolicy): Commission {
+  private transformFromDBWithPolicy(
+    dbRecord: CommissionWithPolicy,
+  ): Commission {
     const commission = this.transformFromDB(
       dbRecord as unknown as Record<string, unknown>,
     );

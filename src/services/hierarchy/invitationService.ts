@@ -3,6 +3,10 @@
 
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import { emailService } from "../email";
 import { InvitationRepository, InviterProfile } from "./InvitationRepository";
 import type {
@@ -182,6 +186,15 @@ class InvitationService {
         request.invitation_id,
         "accepted",
       );
+
+      // Emit invitation.accepted (non-fatal). recipientId = the inviter, who is
+      // notified their invite was accepted.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.INVITATION_ACCEPTED, {
+        recipientId: invitation.inviter_id ?? undefined,
+        inviteeId: user.id,
+        invitationId: invitation.id,
+        timestamp: new Date().toISOString(),
+      });
 
       logger.info(
         "Invitation accepted",

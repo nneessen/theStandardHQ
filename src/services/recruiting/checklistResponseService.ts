@@ -1,6 +1,10 @@
 // src/services/recruiting/checklistResponseService.ts
 
 import { supabase } from "../base/supabase";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type {
   BooleanQuestionResponse,
   AcknowledgmentResponse,
@@ -347,10 +351,10 @@ export async function submitQuizAttempt(
   answers: Record<string, string[]>,
   metadata: QuizMetadata,
 ): Promise<SubmitResponseResult> {
-  // Get existing response to track attempts
+  // Get existing response to track attempts (user_id for the workflow recipient)
   const { data: existing } = await supabase
     .from("recruit_checklist_progress")
-    .select("response_data")
+    .select("response_data, user_id")
     .eq("id", progressId)
     .single();
 
@@ -433,6 +437,21 @@ export async function submitQuizAttempt(
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Emit recruit.quiz_passed / recruit.quiz_failed (non-fatal, mutually exclusive).
+  // recipientId = the recruit (user_id on the progress row).
+  await workflowEventEmitter.emit(
+    passed
+      ? WORKFLOW_EVENTS.RECRUIT_QUIZ_PASSED
+      : WORKFLOW_EVENTS.RECRUIT_QUIZ_FAILED,
+    {
+      recipientId: existing?.user_id ?? undefined,
+      checklistProgressId: progressId,
+      scorePercent,
+      attemptNumber,
+      timestamp: new Date().toISOString(),
+    },
+  );
 
   return {
     success: true,

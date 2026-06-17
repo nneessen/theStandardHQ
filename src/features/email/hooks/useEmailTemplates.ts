@@ -11,6 +11,7 @@ import {
   toggleTemplateActive,
   getUserTemplateStatus,
   getGroupedEmailTemplates,
+  generateAiEmailTemplateDraft,
   type EmailTemplateFilters,
 } from "../services/emailTemplateService";
 import type { CreateEmailTemplateRequest } from "@/types/email.types";
@@ -51,6 +52,27 @@ export function useCreateEmailTemplate() {
     onError: (error: Error) => {
       console.error("Failed to create template:", error);
       toast.error(error.message || "Failed to create template");
+    },
+  });
+}
+
+/**
+ * Generate an email DRAFT with AI. Does NOT persist — the shared editor opens the
+ * returned draft for review/edit and saves it via useCreateEmailTemplate, so there
+ * is one build+save path. Errors are surfaced; success is handled by the caller.
+ */
+export function useGenerateAiEmailTemplateDraft() {
+  return useMutation({
+    mutationFn: ({
+      prompt,
+      options,
+    }: {
+      prompt: string;
+      options?: { tone?: string; length?: string };
+    }) => generateAiEmailTemplateDraft(prompt, options),
+    onError: (error: Error) => {
+      console.error("AI template generation failed:", error);
+      toast.error(error.message || "AI generation failed");
     },
   });
 }

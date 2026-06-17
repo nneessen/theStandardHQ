@@ -6,6 +6,10 @@
  */
 
 import { supabase } from "@/services/base/supabase";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import type { Database } from "@/types/database.types";
 import {
   type RuleSetScope,
@@ -551,6 +555,30 @@ export async function reorderRules(
 // =============================================================================
 
 /**
+ * Emit an underwriting rule-set workflow event to the rule set's AUTHOR
+ * (created_by — the submitter, not the reviewer). Non-fatal — never throws.
+ */
+async function emitRuleSetEvent(
+  eventName: string,
+  ruleSetId: string,
+): Promise<void> {
+  try {
+    const { data: rs } = await supabase
+      .from("underwriting_rule_sets")
+      .select("created_by")
+      .eq("id", ruleSetId)
+      .maybeSingle();
+    await workflowEventEmitter.emit(eventName, {
+      recipientId: rs?.created_by ?? undefined,
+      ruleSetId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/**
  * Submit a rule set for review
  */
 export async function submitForReview(
@@ -565,7 +593,14 @@ export async function submitForReview(
     return { success: false, error: error.message };
   }
 
-  return data as { success: boolean; error?: string };
+  const result = data as { success: boolean; error?: string };
+  if (result?.success) {
+    await emitRuleSetEvent(
+      WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_SUBMITTED,
+      ruleSetId,
+    );
+  }
+  return result;
 }
 
 /**
@@ -585,7 +620,14 @@ export async function approveRuleSet(
     return { success: false, error: error.message };
   }
 
-  return data as { success: boolean; error?: string };
+  const result = data as { success: boolean; error?: string };
+  if (result?.success) {
+    await emitRuleSetEvent(
+      WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_APPROVED,
+      ruleSetId,
+    );
+  }
+  return result;
 }
 
 /**
@@ -605,7 +647,14 @@ export async function rejectRuleSet(
     return { success: false, error: error.message };
   }
 
-  return data as { success: boolean; error?: string };
+  const result = data as { success: boolean; error?: string };
+  if (result?.success) {
+    await emitRuleSetEvent(
+      WORKFLOW_EVENTS.UNDERWRITING_RULE_SET_REJECTED,
+      ruleSetId,
+    );
+  }
+  return result;
 }
 
 /**

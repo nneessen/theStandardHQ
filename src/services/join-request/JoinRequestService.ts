@@ -1,5 +1,9 @@
-import { supabase } from '../base/supabase';
-import { JoinRequestRepository } from './JoinRequestRepository';
+import { supabase } from "../base/supabase";
+import { JoinRequestRepository } from "./JoinRequestRepository";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type {
   JoinRequest,
   JoinRequestRow,
@@ -9,7 +13,7 @@ import type {
   ImoOption,
   AgencyOption,
   JoinRequestEligibility,
-} from '../../types/join-request.types';
+} from "../../types/join-request.types";
 
 /**
  * Service layer for join request operations
@@ -31,7 +35,7 @@ class JoinRequestService {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { canSubmit: false, reason: 'Not authenticated' };
+      return { canSubmit: false, reason: "Not authenticated" };
     }
 
     // Check via database function
@@ -41,10 +45,16 @@ class JoinRequestService {
       // Determine the specific reason
       const hasPending = await this.repo.hasPendingRequest(user.id);
       if (hasPending) {
-        return { canSubmit: false, reason: 'You already have a pending request' };
+        return {
+          canSubmit: false,
+          reason: "You already have a pending request",
+        };
       }
 
-      return { canSubmit: false, reason: 'You are already approved with an IMO' };
+      return {
+        canSubmit: false,
+        reason: "You are already approved with an IMO",
+      };
     }
 
     return { canSubmit: true };
@@ -73,13 +83,13 @@ class JoinRequestService {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     // Validate eligibility
     const eligibility = await this.checkEligibility();
     if (!eligibility.canSubmit) {
-      throw new Error(eligibility.reason || 'Cannot submit request');
+      throw new Error(eligibility.reason || "Cannot submit request");
     }
 
     // Create the request (approver_id set by database trigger)
@@ -89,7 +99,17 @@ class JoinRequestService {
       agency_id: input.agency_id ?? null,
       requested_upline_id: input.requested_upline_id ?? null,
       message: input.message ?? null,
-      status: 'pending',
+      status: "pending",
+    });
+
+    // Notify the approver (approver_id is set by a DB trigger, not returned by
+    // create) — refetch to obtain it. Non-fatal.
+    const full = await this.repo.findWithRelations(request.id);
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.JOIN_REQUEST_CREATED, {
+      recipientId: full?.approver_id ?? undefined,
+      requesterId: user.id,
+      requestId: request.id,
+      timestamp: new Date().toISOString(),
     });
 
     return request;
@@ -104,7 +124,7 @@ class JoinRequestService {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     return this.repo.findByRequester(user.id);
@@ -115,7 +135,7 @@ class JoinRequestService {
    */
   async getMyPendingRequest(): Promise<JoinRequest | null> {
     const requests = await this.getMyRequests();
-    return requests.find((r) => r.status === 'pending') ?? null;
+    return requests.find((r) => r.status === "pending") ?? null;
   }
 
   /**
@@ -127,21 +147,21 @@ class JoinRequestService {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     // Verify ownership
     const request = await this.repo.findWithRelations(requestId);
     if (!request) {
-      throw new Error('Request not found');
+      throw new Error("Request not found");
     }
 
     if (request.requester_id !== user.id) {
-      throw new Error('Not authorized to cancel this request');
+      throw new Error("Not authorized to cancel this request");
     }
 
-    if (request.status !== 'pending') {
-      throw new Error('Can only cancel pending requests');
+    if (request.status !== "pending") {
+      throw new Error("Can only cancel pending requests");
     }
 
     await this.repo.cancel(requestId);
@@ -156,7 +176,7 @@ class JoinRequestService {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     return this.repo.findPendingForApprover(user.id);
@@ -181,18 +201,28 @@ class JoinRequestService {
    * Approve a join request
    */
   async approveRequest(input: ApproveJoinRequestInput): Promise<void> {
-    await this.repo.approve(
-      input.request_id,
-      input.agency_id,
-      input.upline_id
-    );
+    // Capture the requester (not in the input) so we can notify them.
+    const request = await this.repo.findWithRelations(input.request_id);
+    await this.repo.approve(input.request_id, input.agency_id, input.upline_id);
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.JOIN_REQUEST_APPROVED, {
+      recipientId: request?.requester_id ?? undefined,
+      requestId: input.request_id,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   /**
    * Reject a join request
    */
   async rejectRequest(input: RejectJoinRequestInput): Promise<void> {
+    const request = await this.repo.findWithRelations(input.request_id);
     await this.repo.reject(input.request_id, input.reason ?? null);
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.JOIN_REQUEST_REJECTED, {
+      recipientId: request?.requester_id ?? undefined,
+      requestId: input.request_id,
+      reason: input.reason ?? undefined,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   /**

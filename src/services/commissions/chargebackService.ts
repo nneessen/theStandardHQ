@@ -155,6 +155,27 @@ class ChargebackService {
       throw new Error(`Failed to resolve chargeback: ${error.message}`);
     }
 
+    // Resolve the owning agent (workflow recipient) via the linked commission,
+    // then emit chargeback.resolved (non-fatal — the emitter never throws).
+    let recipientId: string | undefined;
+    if (data.commission_id) {
+      const { data: comm } = await supabase
+        .from("commissions")
+        .select("user_id")
+        .eq("id", data.commission_id)
+        .maybeSingle();
+      recipientId = comm?.user_id ?? undefined;
+    }
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.CHARGEBACK_RESOLVED, {
+      recipientId,
+      chargebackId: id,
+      commissionId: data.commission_id ?? undefined,
+      chargebackAmount: data.chargeback_amount,
+      resolutionNotes: resolutionNotes || undefined,
+      resolvedAt: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
+    });
+
     return this.transformFromDB(data);
   }
 

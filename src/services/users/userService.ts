@@ -18,6 +18,8 @@ import {
   isValidContractLevel,
 } from "../../lib/constants";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
+import { workflowEventEmitter } from "@/services/events/workflowEventEmitter";
+import { WORKFLOW_EVENTS } from "@/lib/workflow-event-names";
 export { VALID_CONTRACT_LEVELS };
 
 type RoleName = string;
@@ -506,6 +508,40 @@ class UserService {
   }
 
   /**
+   * Emit an agent lifecycle workflow event (non-fatal — must never break the
+   * calling user operation). The affected agent IS the recipient, so the engine
+   * fills the agent_* template variables from their profile (recipientId).
+   */
+  private async emitWorkflowEvent(
+    eventName: string,
+    userId: string,
+    extra: Record<string, unknown> = {},
+  ): Promise<void> {
+    try {
+      const profile = await this.getUserProfile(userId);
+      if (!profile) return;
+      const agentName =
+        `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+        profile.email;
+      await workflowEventEmitter.emit(eventName, {
+        recipientId: userId,
+        recipientEmail: profile.email,
+        agentId: userId,
+        agent_name: agentName,
+        agent_email: profile.email,
+        timestamp: new Date().toISOString(),
+        ...extra,
+      });
+    } catch (error) {
+      logger.error(
+        `Failed to emit workflow event ${eventName}`,
+        error as Error,
+        "UserService",
+      );
+    }
+  }
+
+  /**
    * Update contract level
    */
   async updateContractLevel(
@@ -540,6 +576,12 @@ class UserService {
       logger.info(
         `User ${userId} contract level set to ${contractLevel}`,
         "UserService",
+      );
+
+      await this.emitWorkflowEvent(
+        WORKFLOW_EVENTS.AGENT_CONTRACT_LEVEL_CHANGED,
+        userId,
+        { agent_contract_level: contractLevel },
       );
       return { success: true };
     } catch (error) {
@@ -588,6 +630,7 @@ class UserService {
         await this.update(userId, { roles: [role] });
       }
 
+      await this.emitWorkflowEvent(WORKFLOW_EVENTS.AGENT_APPROVED, userId);
       return { success: true };
     } catch (error) {
       logger.error("Error in approve", error as Error, "UserService");
@@ -623,6 +666,10 @@ class UserService {
       );
 
       logger.info(`User ${userId} denied by ${user.id}`, "UserService");
+
+      await this.emitWorkflowEvent(WORKFLOW_EVENTS.AGENT_DENIED, userId, {
+        denial_reason: reason || "No reason provided",
+      });
       return { success: true };
     } catch (error) {
       logger.error("Error in deny", error as Error, "UserService");
@@ -707,6 +754,9 @@ class UserService {
         };
       }
 
+      await this.emitWorkflowEvent(WORKFLOW_EVENTS.AGENT_LICENSED, recruit.id, {
+        agent_contract_level: contractLevel,
+      });
       return { success: true };
     } catch (error) {
       console.error("[userService.graduateRecruit] Exception:", error);

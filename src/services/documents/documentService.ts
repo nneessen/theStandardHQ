@@ -1,6 +1,10 @@
 // src/services/documents/documentService.ts
 import { DocumentRepository } from "./DocumentRepository";
 import { documentStorageService } from "./documentStorageService";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type {
   UserDocumentEntity,
   CreateDocumentData,
@@ -109,7 +113,16 @@ class DocumentService {
     };
 
     try {
-      return await this.repository.create(createData);
+      const created = await this.repository.create(createData);
+      // Emit document.uploaded (non-fatal). recipientId = the document owner.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.DOCUMENT_UPLOADED, {
+        recipientId: created.userId,
+        documentId: created.id,
+        documentName: created.documentName,
+        documentType: created.documentType,
+        timestamp: new Date().toISOString(),
+      });
+      return created;
     } catch (error) {
       // Rollback: delete the uploaded file if record creation fails
       await documentStorageService.delete(storagePath).catch(() => {
@@ -186,7 +199,28 @@ class DocumentService {
     documentId: string,
     _approverId: string,
   ): Promise<UserDocumentEntity> {
-    return this.repository.updateStatus(documentId, "approved");
+    const doc = await this.repository.updateStatus(documentId, "approved");
+    // Emit document.approved (non-fatal). recipientId = the document OWNER
+    // (not the approver). Domain values ride in context_*.
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.DOCUMENT_APPROVED, {
+      recipientId: doc.userId,
+      documentId: doc.id,
+      documentName: doc.documentName,
+      documentType: doc.documentType,
+      timestamp: new Date().toISOString(),
+    });
+    // If this approval cleared the owner's last outstanding required document,
+    // also fire all_required_approved (co-fires with document.approved by design).
+    if (await this.areAllRequiredApproved(doc.userId)) {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.DOCUMENT_ALL_REQUIRED_APPROVED,
+        {
+          recipientId: doc.userId,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
+    return doc;
   }
 
   /**
@@ -197,7 +231,21 @@ class DocumentService {
     _approverId: string,
     reason: string,
   ): Promise<UserDocumentEntity> {
-    return this.repository.updateStatus(documentId, "rejected", reason);
+    const doc = await this.repository.updateStatus(
+      documentId,
+      "rejected",
+      reason,
+    );
+    // Emit document.rejected (non-fatal). recipientId = the document OWNER.
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.DOCUMENT_REJECTED, {
+      recipientId: doc.userId,
+      documentId: doc.id,
+      documentName: doc.documentName,
+      documentType: doc.documentType,
+      reason,
+      timestamp: new Date().toISOString(),
+    });
+    return doc;
   }
 
   /**

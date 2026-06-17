@@ -2,6 +2,10 @@
 import { ServiceResponse } from "../../base/BaseService";
 import { ClientRepository } from "./ClientRepository";
 import { supabase, TABLES } from "../../base/supabase";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../../events/workflowEventEmitter";
 import type {
   Client,
   CreateClientData,
@@ -154,7 +158,8 @@ class ClientServiceClass {
         total: policyList.length,
         active: policyList.filter((p) => p.lifecycleStatus === "active").length,
         lapsed: policyList.filter((p) => p.lifecycleStatus === "lapsed").length,
-        cancelled: policyList.filter((p) => p.lifecycleStatus === "cancelled").length,
+        cancelled: policyList.filter((p) => p.lifecycleStatus === "cancelled")
+          .length,
         totalPremium: policyList.reduce(
           (sum, p) => sum + (p.annualPremium || 0),
           0,
@@ -219,7 +224,15 @@ class ClientServiceClass {
         return { success: false, error: new Error(error.message) };
       }
 
-      return { success: true, data: result as Client };
+      const client = result as Client;
+      // Emit client.created (non-fatal). recipientId = the owning agent.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.CLIENT_CREATED, {
+        recipientId: user.id,
+        clientId: client.id,
+        clientName: client.name,
+        timestamp: new Date().toISOString(),
+      });
+      return { success: true, data: client };
     } catch (error) {
       return {
         success: false,
@@ -418,7 +431,16 @@ class ClientServiceClass {
         return { success: false, error: new Error(error.message) };
       }
 
-      return { success: true, data: newClient as Client };
+      const created = newClient as Client;
+      // Emit client.created ONLY on the new-insert branch (not the existing/update
+      // branch above). recipientId = the owning agent.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.CLIENT_CREATED, {
+        recipientId: userId,
+        clientId: created.id,
+        clientName: created.name,
+        timestamp: new Date().toISOString(),
+      });
+      return { success: true, data: created };
     } catch (error) {
       return {
         success: false,
