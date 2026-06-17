@@ -42,7 +42,7 @@ export interface WorkflowInsertData {
   config: Record<string, unknown>;
   conditions: unknown[];
   actions: unknown[];
-  max_runs_per_day?: number;
+  max_runs_per_day?: number | null;
   max_runs_per_recipient?: number | null;
   cooldown_minutes?: number | null;
   priority?: number;
@@ -59,7 +59,7 @@ export interface WorkflowUpdateData {
   config?: Record<string, unknown>;
   conditions?: unknown[];
   actions?: unknown[];
-  max_runs_per_day?: number;
+  max_runs_per_day?: number | null;
   max_runs_per_recipient?: number | null;
   cooldown_minutes?: number | null;
   priority?: number;
@@ -717,7 +717,8 @@ export class WorkflowRepository extends BaseRepository<
           p_config: data.config,
           p_conditions: data.conditions || [],
           p_actions: data.actions,
-          p_max_runs_per_day: data.max_runs_per_day || 50,
+          // null = unlimited (engine enforcement is live; don't force a cap)
+          p_max_runs_per_day: data.max_runs_per_day ?? null,
           p_max_runs_per_recipient: data.max_runs_per_recipient || null,
           p_cooldown_minutes: data.cooldown_minutes || null,
           p_priority: data.priority || 50,
