@@ -151,7 +151,7 @@ export interface Workflow {
   actions: WorkflowAction[];
 
   // Execution settings
-  maxRunsPerDay?: number;
+  maxRunsPerDay?: number | null;
   maxRunsPerRecipient?: number;
   cooldownMinutes?: number;
   priority?: number;
@@ -245,7 +245,7 @@ export interface WorkflowFormData {
   conditions?: WorkflowCondition[];
   actions: WorkflowAction[];
   settings: {
-    maxRunsPerDay?: number;
+    maxRunsPerDay?: number | null;
     maxRunsPerRecipient?: number;
     cooldownMinutes?: number;
     continueOnError?: boolean;

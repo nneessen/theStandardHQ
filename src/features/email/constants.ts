@@ -11,6 +11,7 @@ export const EMAIL_TEMPLATE_CATEGORIES: {
   { value: "documents", label: "Documents" },
   { value: "follow_up", label: "Follow Up" },
   { value: "general", label: "General" },
+  { value: "automation", label: "Automation" },
 ];
 
 import { TEMPLATE_PREVIEW_VALUES } from "@/lib/templateVariables";

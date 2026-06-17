@@ -354,9 +354,12 @@ export default function WorkflowBasicInfo({
             onChange({
               settings: {
                 ...data.settings,
+                // null (not undefined) so clearing the field persists as
+                // "unlimited" on edit — undefined would be skipped by the
+                // update guard and leave the old cap in place.
                 maxRunsPerDay: e.target.value
                   ? Math.max(1, Math.floor(Number(e.target.value)))
-                  : undefined,
+                  : null,
               },
             })
           }

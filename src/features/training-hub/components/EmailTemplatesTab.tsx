@@ -70,6 +70,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   documents: "Documents",
   follow_up: "Follow Up",
   general: "General",
+  automation: "Automation",
 };
 
 // Template list row component
