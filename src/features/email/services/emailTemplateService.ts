@@ -23,16 +23,25 @@ export interface UserTemplateStatus {
 
 const DEFAULT_TEMPLATE_LIMIT = 10;
 
+/** A reviewable AI-generated email draft (NOT yet persisted). */
+export interface AiEmailDraft {
+  name: string;
+  subject: string;
+  body_html: string;
+  body_text: string | null;
+}
+
 /**
- * Generate an email template via AI (the `generate-workflow-email-template` edge
- * function). The edge fn gates on AI access + rate limits server-side, asks the
- * model for a {subject, body_html, body_text}, and persists it directly to
- * email_templates (category 'automation'). Returns the new template's id + name.
+ * Generate an email DRAFT via AI (the `generate-workflow-email-template` edge
+ * function). The edge fn gates on AI access + rate limits server-side and asks
+ * the model for a {name, subject, body_html, body_text}. It does NOT persist —
+ * the caller opens the draft in the shared email-template editor to review/edit
+ * and saves it there, so there is exactly one build+save path.
  */
-export async function generateAiEmailTemplate(
+export async function generateAiEmailTemplateDraft(
   prompt: string,
   options?: { tone?: string; length?: string },
-): Promise<{ id: string; name: string }> {
+): Promise<AiEmailDraft> {
   const { data, error } = await supabase.functions.invoke(
     "generate-workflow-email-template",
     { body: { prompt, options } },
@@ -52,9 +61,11 @@ export async function generateAiEmailTemplate(
     }
     throw new Error(msg);
   }
-  const tpl = (data as { template?: { id: string; name: string } })?.template;
-  if (!tpl?.id) throw new Error("AI did not return a template");
-  return { id: tpl.id, name: tpl.name };
+  const draft = (data as { draft?: AiEmailDraft })?.draft;
+  if (!draft?.subject || !draft?.body_html) {
+    throw new Error("AI did not return a template");
+  }
+  return draft;
 }
 
 export async function getEmailTemplates(

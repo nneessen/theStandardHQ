@@ -58,8 +58,13 @@ export {
   useToggleTemplateActive,
   useUserTemplateStatus,
   useGroupedEmailTemplates,
-  useGenerateAiEmailTemplate,
+  useGenerateAiEmailTemplateDraft,
 } from "./hooks/useEmailTemplates";
+export type { AiEmailDraft } from "./services/emailTemplateService";
+
+// The ONE shared email-template editor — reused by every surface that builds a
+// template (Workflows / Training Hub email-templates tab, Marketing templates).
+export { EmailTemplateEditor } from "./components/template-editor/EmailTemplateEditor";
 
 // Template Picker
 export { TemplatePicker } from "./components/TemplatePicker";

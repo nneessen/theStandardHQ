@@ -1,9 +1,10 @@
-// src/features/training-hub/components/AiEmailTemplateDialog.tsx
+// src/features/email/components/template-editor/EmailTemplateAiDialog.tsx
 //
-// AI email-template generator dialog. Starter-prompt chips + a prompt box →
-// the generate-workflow-email-template edge fn (which gates AI access + rate
-// limits server-side and persists a ready-to-send template). On success the
-// list refreshes and the new template appears. Board (.theme-v2) styled.
+// AI email-draft generator, opened from INSIDE the one shared email-template
+// editor. Starter-prompt chips + a prompt box → the generate-workflow-email-template
+// edge fn (which gates AI access + rate limits server-side and returns a DRAFT).
+// The draft is handed back to the editor via onGenerated for review/edit/save —
+// it is NOT persisted here, so there is a single build+save path. Board styled.
 
 import { useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
@@ -13,32 +14,37 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useGenerateAiEmailTemplate } from "@/features/email";
 import { WORKFLOW_EMAIL_STARTER_PROMPTS } from "@/lib/workflow-email-starter-prompts";
+import { useGenerateAiEmailTemplateDraft } from "../../hooks/useEmailTemplates";
+import type { AiEmailDraft } from "../../services/emailTemplateService";
 
 /** Board accent tint (color-mix alpha fill). */
 const tint = (v: string, pct: number) =>
   `color-mix(in srgb, var(${v}) ${pct}%, transparent)`;
 
-interface AiEmailTemplateDialogProps {
+interface EmailTemplateAiDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Called with the generated draft so the editor can load it for review/edit. */
+  onGenerated: (draft: AiEmailDraft) => void;
 }
 
-export default function AiEmailTemplateDialog({
+export function EmailTemplateAiDialog({
   open,
   onOpenChange,
-}: AiEmailTemplateDialogProps) {
+  onGenerated,
+}: EmailTemplateAiDialogProps) {
   const [prompt, setPrompt] = useState("");
-  const generate = useGenerateAiEmailTemplate();
+  const generate = useGenerateAiEmailTemplateDraft();
 
   const submit = () => {
     if (!prompt.trim() || generate.isPending) return;
     generate.mutate(
       { prompt: prompt.trim() },
       {
-        onSuccess: () => {
+        onSuccess: (draft) => {
           setPrompt("");
+          onGenerated(draft);
           onOpenChange(false);
         },
       },
@@ -85,7 +91,8 @@ export default function AiEmailTemplateDialog({
                 className="font-sans text-[13.5px]"
                 style={{ color: "var(--mut)" }}
               >
-                Describe the email — AI drafts a ready-to-send template.
+                Describe the email — AI drafts it, then you review and edit it
+                here before saving.
               </DialogDescription>
             </div>
           </div>

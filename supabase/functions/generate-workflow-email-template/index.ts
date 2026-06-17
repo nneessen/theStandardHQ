@@ -9,8 +9,9 @@
 //      the same gate the client's useAiAccess hook enforces.
 //   3. shared AI rate-limit (30 req/hr + 200k tok/day),
 //   4. ask the fast model for ONE email as strict JSON { name, subject, body_html, body_text },
-//   5. record token spend, validate, then PERSIST to email_templates so the existing
-//      workflow send path (which loads a template by id) can use it unchanged.
+//   5. record token spend, validate, and return the DRAFT { name, subject, body_html,
+//      body_text }. The client opens the draft in the ONE shared email-template editor to
+//      review/edit and persists it on save — no premature row, a single build+save path.
 //
 // The model is told to personalize ONLY with the workflow renderer's {{snake_case}}
 // variables; process-workflow's replaceTemplateVariables substitutes/sanitizes them
@@ -209,29 +210,17 @@ serve(async (req) => {
       ? parsed.name.trim().slice(0, 80)
       : `AI: ${prompt.trim().slice(0, 50)}`);
 
-  // ── 8. Persist to email_templates (the workflow send path loads by id) ───────
-  const { data: template, error: insertErr } = await admin
-    .from("email_templates")
-    .insert({
-      name,
-      subject,
-      body_html: bodyHtml,
-      body_text: bodyText || null,
-      category: "automation",
-      is_global: false,
-      created_by: userId,
-      variables: [],
-    })
-    .select("id, name, subject, body_html, body_text, category, created_by")
-    .single();
-
-  if (insertErr || !template) {
-    console.error(
-      `[${FN_NAME}] failed to persist template:`,
-      insertErr?.message,
-    );
-    return json({ error: "Could not save the generated template." }, 500);
-  }
-
-  return json({ template, tokensUsed: totalTokens }, 200);
+  // ── 8. Return the DRAFT — the editor persists it on save (one build+save path) ─
+  return json(
+    {
+      draft: {
+        name,
+        subject,
+        body_html: bodyHtml,
+        body_text: bodyText || null,
+      },
+      tokensUsed: totalTokens,
+    },
+    200,
+  );
 });

@@ -11,7 +11,7 @@ import {
   toggleTemplateActive,
   getUserTemplateStatus,
   getGroupedEmailTemplates,
-  generateAiEmailTemplate,
+  generateAiEmailTemplateDraft,
   type EmailTemplateFilters,
 } from "../services/emailTemplateService";
 import type { CreateEmailTemplateRequest } from "@/types/email.types";
@@ -57,12 +57,11 @@ export function useCreateEmailTemplate() {
 }
 
 /**
- * Generate a ready-to-send email template with AI. Persists server-side (the edge
- * fn), then refreshes the list so the new template appears.
+ * Generate an email DRAFT with AI. Does NOT persist — the shared editor opens the
+ * returned draft for review/edit and saves it via useCreateEmailTemplate, so there
+ * is one build+save path. Errors are surfaced; success is handled by the caller.
  */
-export function useGenerateAiEmailTemplate() {
-  const queryClient = useQueryClient();
-
+export function useGenerateAiEmailTemplateDraft() {
   return useMutation({
     mutationFn: ({
       prompt,
@@ -70,11 +69,7 @@ export function useGenerateAiEmailTemplate() {
     }: {
       prompt: string;
       options?: { tone?: string; length?: string };
-    }) => generateAiEmailTemplate(prompt, options),
-    onSuccess: (tpl) => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      toast.success(`AI created "${tpl.name}"`);
-    },
+    }) => generateAiEmailTemplateDraft(prompt, options),
     onError: (error: Error) => {
       console.error("AI template generation failed:", error);
       toast.error(error.message || "AI generation failed");
