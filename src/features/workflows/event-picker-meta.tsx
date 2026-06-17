@@ -12,6 +12,7 @@ import {
   MapPin,
   UserPlus,
   UserCheck,
+  Network,
   Mail,
   User,
   Zap,
@@ -119,6 +120,7 @@ export const CATEGORY_META: CategoryMeta[] = [
     icon: FileSignature,
   },
   { key: "document", label: "Documents", accent: "--amber", icon: FileCheck },
+  { key: "hierarchy", label: "Team & Access", accent: "--pink", icon: Network },
   { key: "email", label: "Emails", accent: "--cyan", icon: Mail },
   { key: "user", label: "Users", accent: "--pink", icon: User },
 ];

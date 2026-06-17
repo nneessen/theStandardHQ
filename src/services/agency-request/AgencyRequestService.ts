@@ -1,5 +1,9 @@
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import { AgencyRequestRepository } from "./AgencyRequestRepository";
 import type {
   AgencyRequest,
@@ -174,6 +178,14 @@ class AgencyRequestService {
         proposed_code: data.proposed_code,
         proposed_description: data.proposed_description ?? null,
         status: "pending",
+      });
+
+      // Notify the approver (the requester's upline). Non-fatal.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.AGENCY_REQUEST_CREATED, {
+        recipientId: profile.upline_id ?? undefined,
+        requesterId: user.id,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
       });
 
       logger.info(
@@ -362,6 +374,15 @@ class AgencyRequestService {
         throw new Error("Agency created but failed to fetch details");
       }
 
+      // Notify the requester (now the agency owner). Non-fatal.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.AGENCY_REQUEST_APPROVED, {
+        recipientId:
+          (agency as { owner_id?: string | null }).owner_id ?? undefined,
+        requestId,
+        agencyId: newAgencyId,
+        timestamp: new Date().toISOString(),
+      });
+
       logger.info(
         "Agency request approved",
         { requestId, newAgencyId },
@@ -390,8 +411,18 @@ class AgencyRequestService {
         "AgencyRequestService",
       );
 
+      // Capture the requester before the RPC so we can notify them.
+      const existing = await this.repo.findWithRelations(requestId);
+
       // The RPC function handles authorization checks
       await this.repo.reject(requestId, reason ?? null);
+
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.AGENCY_REQUEST_REJECTED, {
+        recipientId: existing?.requester_id ?? undefined,
+        requestId,
+        reason: reason ?? undefined,
+        timestamp: new Date().toISOString(),
+      });
 
       logger.info(
         "Agency request rejected",

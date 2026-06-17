@@ -23,7 +23,8 @@ export type WorkflowEventCategory =
   | "lead"
   | "agent"
   | "contracting"
-  | "document";
+  | "document"
+  | "hierarchy";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -386,6 +387,80 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     category: "document",
     label: "All required documents approved",
     description: "An agent's last outstanding required document is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Hierarchy / team / access (emitted by invitation/join-request/agency services) ----
+  {
+    eventName: WORKFLOW_EVENTS.INVITATION_ACCEPTED,
+    category: "hierarchy",
+    label: "Invitation accepted",
+    description: "An invited agent accepts and registers.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_CREATED,
+    category: "hierarchy",
+    label: "Join request created",
+    description: "An agent requests to join a team (notifies the approver).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_APPROVED,
+    category: "hierarchy",
+    label: "Join request approved",
+    description: "A join request is approved.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.JOIN_REQUEST_REJECTED,
+    category: "hierarchy",
+    label: "Join request rejected",
+    description: "A join request is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_CREATED,
+    category: "hierarchy",
+    label: "Agency request created",
+    description: "An agent requests agency status (notifies the approver).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_APPROVED,
+    category: "hierarchy",
+    label: "Agency request approved",
+    description: "An agency request is approved and the agency is created.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_REQUEST_REJECTED,
+    category: "hierarchy",
+    label: "Agency request rejected",
+    description: "An agency request is rejected.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_CREATED,
+    category: "hierarchy",
+    label: "Agency created",
+    description: "A new agency is created (direct/manual creation).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.AGENCY_OWNERSHIP_TRANSFERRED,
+    category: "hierarchy",
+    label: "Agency ownership transferred",
+    description: "An agency's ownership is transferred to a new owner.",
     availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },

@@ -42,6 +42,17 @@ export const WORKFLOW_EVENTS = {
   AGENT_LICENSED: "agent.licensed",
   AGENT_CONTRACT_LEVEL_CHANGED: "agent.contract_level_changed",
 
+  // Hierarchy / team / access events
+  INVITATION_ACCEPTED: "invitation.accepted",
+  JOIN_REQUEST_CREATED: "join_request.created",
+  JOIN_REQUEST_APPROVED: "join_request.approved",
+  JOIN_REQUEST_REJECTED: "join_request.rejected",
+  AGENCY_REQUEST_CREATED: "agency_request.created",
+  AGENCY_REQUEST_APPROVED: "agency_request.approved",
+  AGENCY_REQUEST_REJECTED: "agency_request.rejected",
+  AGENCY_CREATED: "agency.created",
+  AGENCY_OWNERSHIP_TRANSFERRED: "agency.ownership_transferred",
+
   // Document events (agent document vault)
   DOCUMENT_UPLOADED: "document.uploaded",
   DOCUMENT_APPROVED: "document.approved",
