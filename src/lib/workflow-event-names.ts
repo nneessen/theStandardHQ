@@ -19,7 +19,11 @@ export const WORKFLOW_EVENTS = {
   // Policy events
   POLICY_CREATED: "policy.created",
   POLICY_APPROVED: "policy.approved",
+  POLICY_ACTIVE: "policy.active",
+  POLICY_DENIED: "policy.denied",
+  POLICY_WITHDRAWN: "policy.withdrawn",
   POLICY_CANCELLED: "policy.cancelled",
+  POLICY_LAPSED: "policy.lapsed",
   POLICY_RENEWED: "policy.renewed",
   POLICY_OVER_30_DAYS_NOT_ISSUED: "policy.over_30_days_not_issued",
 

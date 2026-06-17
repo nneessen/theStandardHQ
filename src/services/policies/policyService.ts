@@ -261,7 +261,48 @@ class PolicyService {
       updates.leadSourceType = null;
     }
 
-    return this.repository.update(id, updates);
+    const policy = await this.repository.update(id, updates);
+
+    // Emit policy lifecycle workflow events (non-fatal — the emitter never throws).
+    // recipientId = the writing agent, so the engine fills recipient tags + delivers
+    // to them; domain values ride in context. Approving also sets lifecycleStatus
+    // 'active', so POLICY_APPROVED + POLICY_ACTIVE co-fire — intentional, distinct events.
+    const lifecycleCtx = {
+      recipientId: policy.userId,
+      agentId: policy.userId,
+      policyId: policy.id,
+      policyNumber: policy.policyNumber,
+      carrierId: policy.carrierId,
+      annualPremium: policy.annualPremium,
+      effectiveDate: policy.effectiveDate,
+      timestamp: new Date().toISOString(),
+    };
+    if (updates.status === "approved") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.POLICY_APPROVED,
+        lifecycleCtx,
+      );
+    }
+    if (updates.status === "denied") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.POLICY_DENIED,
+        lifecycleCtx,
+      );
+    }
+    if (updates.status === "withdrawn") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.POLICY_WITHDRAWN,
+        lifecycleCtx,
+      );
+    }
+    if (updates.lifecycleStatus === "active") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.POLICY_ACTIVE,
+        lifecycleCtx,
+      );
+    }
+
+    return policy;
   }
 
   /**
@@ -805,6 +846,19 @@ class PolicyService {
 
       // Transform and return
       const updatedPolicy = this.repository["transformFromDB"](updated);
+
+      // Emit policy lapsed event (non-fatal). recipientId = the writing agent.
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.POLICY_LAPSED, {
+        recipientId: updatedPolicy.userId,
+        agentId: updatedPolicy.userId,
+        policyId: updatedPolicy.id,
+        policyNumber: updatedPolicy.policyNumber,
+        lapseDate: lapseDate.toISOString(),
+        reason: reason || "Policy lapsed",
+        chargebackAmount: parseFloat(commission?.chargeback_amount || "0"),
+        annualPremium: updatedPolicy.annualPremium,
+        timestamp: new Date().toISOString(),
+      });
 
       return {
         policy: updatedPolicy,
