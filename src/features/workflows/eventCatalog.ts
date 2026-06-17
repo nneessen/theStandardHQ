@@ -318,6 +318,55 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     availableVariables: [...AGENT, ...COMMON],
     active: true,
   },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_ACCEPTED,
+    category: "lead",
+    label: "Lead accepted",
+    description: "A recruiter accepts an inbound recruiting lead.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_REJECTED,
+    category: "lead",
+    label: "Lead rejected",
+    description: "A recruiter rejects an inbound recruiting lead.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.LEAD_PACK_ROI_UPDATED,
+    category: "lead",
+    label: "Lead pack ROI updated",
+    description:
+      "An agent updates the ROI (policies/commission) on a lead pack.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.PROSPECT_CONVERTED,
+    category: "lead",
+    label: "Prospect converted",
+    description: "A prospect is marked converted.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.PROSPECT_STATUS_CHANGED,
+    category: "lead",
+    label: "Prospect status changed",
+    description: "A prospect's follow-up status changes.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.INSTAGRAM_LEAD_CREATED,
+    category: "lead",
+    label: "Instagram lead created",
+    description: "A recruiting lead is created from an Instagram conversation.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
 
   // ---- Agent lifecycle (emitted by userService) ----
   {

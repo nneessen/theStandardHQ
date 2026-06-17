@@ -3,6 +3,10 @@
 
 import { supabase } from "@/services/base/supabase";
 import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
+import {
   InstagramIntegrationRepository,
   InstagramConversationRepository,
   InstagramMessageRepository,
@@ -283,7 +287,7 @@ class InstagramServiceClass {
     input: CreateLeadFromIGInput,
     userId: string,
   ): Promise<string> {
-    return this.conversationRepo.createLeadFromConversation(
+    const leadId = await this.conversationRepo.createLeadFromConversation(
       input.conversationId,
       userId,
       {
@@ -298,6 +302,16 @@ class InstagramServiceClass {
         whyInterested: input.whyInterested,
       },
     );
+
+    // Emit instagram.lead_created (non-fatal). recipientId = the owning agent.
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.INSTAGRAM_LEAD_CREATED, {
+      recipientId: userId,
+      leadId,
+      conversationId: input.conversationId,
+      timestamp: new Date().toISOString(),
+    });
+
+    return leadId;
   }
 
   // ============================================================================

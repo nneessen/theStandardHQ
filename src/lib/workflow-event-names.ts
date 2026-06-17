@@ -91,6 +91,12 @@ export const WORKFLOW_EVENTS = {
   // Lead events
   LEAD_PACK_PURCHASED: "lead.pack_purchased",
   LEAD_CONVERSION_THRESHOLD: "lead.conversion_threshold",
+  LEAD_ACCEPTED: "lead.accepted",
+  LEAD_REJECTED: "lead.rejected",
+  LEAD_PACK_ROI_UPDATED: "lead_pack.roi_updated",
+  PROSPECT_CONVERTED: "prospect.converted",
+  PROSPECT_STATUS_CHANGED: "prospect.status_changed",
+  INSTAGRAM_LEAD_CREATED: "instagram.lead_created",
 
   // Custom events
   CUSTOM_TRIGGER: "custom.trigger",

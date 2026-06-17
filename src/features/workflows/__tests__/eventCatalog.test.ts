@@ -50,7 +50,7 @@ describe("workflow event catalog drift guard", () => {
     }
   });
 
-  it("active events are the 53 currently-emitted ones", () => {
+  it("active events are the 59 currently-emitted ones", () => {
     // If this changes, the seed migration AND emission wiring must change together.
     expect(ACTIVE_WORKFLOW_EVENTS.map((e) => e.eventName).sort()).toEqual(
       [
@@ -68,6 +68,7 @@ describe("workflow event catalog drift guard", () => {
         "document.approved",
         "document.rejected",
         "document.uploaded",
+        "instagram.lead_created",
         "invitation.accepted",
         "join_request.approved",
         "join_request.created",
@@ -85,8 +86,13 @@ describe("workflow event catalog drift guard", () => {
         "contracting.request_completed",
         "contracting.request_created",
         "contracting.request_writing_received",
+        "lead.accepted",
         "lead.pack_purchased",
+        "lead.rejected",
+        "lead_pack.roi_updated",
         "override.paid",
+        "prospect.converted",
+        "prospect.status_changed",
         "recruit.checklist_item_awaiting_approval",
         "recruit.checklist_item_completed",
         "recruit.onboarding_completed",

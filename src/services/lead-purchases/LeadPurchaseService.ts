@@ -316,10 +316,21 @@ export class LeadPurchaseService extends BaseService<
     policiesSold: number,
     commissionEarned: number,
   ): Promise<ServiceResponse<LeadPurchase>> {
-    return this.update(id, {
+    const result = await this.update(id, {
       policiesSold,
       commissionEarned,
     });
+    // Emit lead_pack.roi_updated (non-fatal). recipientId = the owning agent.
+    if (result.success && result.data) {
+      await workflowEventEmitter.emit(WORKFLOW_EVENTS.LEAD_PACK_ROI_UPDATED, {
+        recipientId: result.data.userId,
+        leadPurchaseId: id,
+        policiesSold,
+        commissionEarned,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    return result;
   }
 
   /**

@@ -4,6 +4,10 @@
 
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type {
   RecruitingLead,
   SubmitLeadInput,
@@ -446,7 +450,20 @@ export const leadsService = {
         return { success: false, error: error.message };
       }
 
-      return data as LeadActionResponse;
+      const result = data as LeadActionResponse;
+      if (result?.success) {
+        // Emit lead.accepted (non-fatal). recipientId = the accepting recruiter.
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        await workflowEventEmitter.emit(WORKFLOW_EVENTS.LEAD_ACCEPTED, {
+          recipientId: user?.id,
+          leadId,
+          pipelineTemplateId: pipelineTemplateId ?? undefined,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      return result;
     } catch (error) {
       logger.error(
         "Error accepting lead",
@@ -478,7 +495,20 @@ export const leadsService = {
         return { success: false, error: error.message };
       }
 
-      return data as LeadActionResponse;
+      const result = data as LeadActionResponse;
+      if (result?.success) {
+        // Emit lead.rejected (non-fatal). recipientId = the rejecting recruiter.
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        await workflowEventEmitter.emit(WORKFLOW_EVENTS.LEAD_REJECTED, {
+          recipientId: user?.id,
+          leadId,
+          reason: reason ?? undefined,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      return result;
     } catch (error) {
       logger.error(
         "Error rejecting lead",

@@ -6,6 +6,10 @@
 
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import { getCurrentTenantContext } from "../base/TenantContext";
 import type {
   Prospect,
@@ -129,7 +133,30 @@ export const prospectService = {
         logger.error("Failed to update prospect", error, "prospectService");
         throw error;
       }
-      return data as Prospect;
+
+      const prospect = data as Prospect;
+      // Emit prospect workflow events (mutually exclusive, non-fatal). recipientId
+      // = the prospect owner. Only fires when the status field was part of the patch.
+      const ownerId =
+        (prospect as { owner_id?: string | null }).owner_id ?? undefined;
+      if (patch.status === "converted") {
+        await workflowEventEmitter.emit(WORKFLOW_EVENTS.PROSPECT_CONVERTED, {
+          recipientId: ownerId,
+          prospectId: id,
+          timestamp: new Date().toISOString(),
+        });
+      } else if (patch.status) {
+        await workflowEventEmitter.emit(
+          WORKFLOW_EVENTS.PROSPECT_STATUS_CHANGED,
+          {
+            recipientId: ownerId,
+            prospectId: id,
+            status: patch.status,
+            timestamp: new Date().toISOString(),
+          },
+        );
+      }
+      return prospect;
     } catch (error) {
       logger.error(
         "Error updating prospect",
