@@ -26,7 +26,8 @@ export type WorkflowEventCategory =
   | "document"
   | "hierarchy"
   | "client"
-  | "underwriting";
+  | "underwriting"
+  | "training";
 
 export interface WorkflowEventDef {
   /** Dot-namespaced event key, e.g. "recruit.created". */
@@ -614,6 +615,64 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     label: "Rule set rejected",
     description:
       "An underwriting rule set is rejected (notifies the submitter).",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+
+  // ---- Training (emitted by the training-modules + agent-roadmap services) ----
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_ASSIGNMENT_CREATED,
+    category: "training",
+    label: "Training assigned",
+    description: "A training module is assigned to an agent.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_LESSON_COMPLETED,
+    category: "training",
+    label: "Lesson completed",
+    description: "An agent completes a training lesson.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_QUIZ_PASSED,
+    category: "training",
+    label: "Training quiz passed",
+    description: "An agent passes a training-module quiz.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_QUIZ_FAILED,
+    category: "training",
+    label: "Training quiz failed",
+    description: "An agent fails a training-module quiz attempt.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_PRESENTATION_SUBMITTED,
+    category: "training",
+    label: "Presentation submitted",
+    description: "An agent submits a weekly presentation recording.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_PRESENTATION_APPROVED,
+    category: "training",
+    label: "Presentation approved",
+    description: "A submitted presentation is approved by a manager.",
+    availableVariables: [...AGENT_VARS, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.TRAINING_ROADMAP_ITEM_COMPLETED,
+    category: "training",
+    label: "Roadmap item completed",
+    description: "An agent marks an agent-roadmap item complete.",
     availableVariables: [...AGENT_VARS, ...COMMON],
     active: true,
   },

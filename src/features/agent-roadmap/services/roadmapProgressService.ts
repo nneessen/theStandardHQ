@@ -5,6 +5,10 @@
 // so we preserve an audit trail.
 
 import { supabase } from "@/services/base";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import type {
   RoadmapItemProgressRow,
   RoadmapProgressMap,
@@ -53,6 +57,18 @@ export const roadmapProgressService = {
   async upsertProgress(
     input: UpsertProgressInput,
   ): Promise<RoadmapItemProgressRow> {
+    // Capture the prior status so training.roadmap_item_completed fires only on a
+    // real transition INTO 'completed' (not on completed -> note edits -> completed).
+    let priorStatus: string | null = null;
+    if (input.status === "completed") {
+      const { data: prev } = await supabase
+        .from("roadmap_item_progress")
+        .select("status")
+        .eq("item_id", input.item_id)
+        .maybeSingle();
+      priorStatus = prev?.status ?? null;
+    }
+
     const { data, error } = await supabase.rpc("roadmap_upsert_progress", {
       p_item_id: input.item_id,
       p_status: input.status,
@@ -61,7 +77,20 @@ export const roadmapProgressService = {
 
     if (error) throw new Error(`upsertProgress failed: ${error.message}`);
     if (!data) throw new Error("upsertProgress returned no row");
-    return data as RoadmapItemProgressRow;
+    const row = data as RoadmapItemProgressRow;
+
+    // Emit training.roadmap_item_completed (non-fatal). recipientId = the agent.
+    if (input.status === "completed" && priorStatus !== "completed") {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.TRAINING_ROADMAP_ITEM_COMPLETED,
+        {
+          recipientId: row.user_id ?? undefined,
+          itemId: input.item_id,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
+    return row;
   },
 
   /**

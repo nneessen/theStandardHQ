@@ -62,6 +62,15 @@ export const WORKFLOW_EVENTS = {
   AGENCY_CREATED: "agency.created",
   AGENCY_OWNERSHIP_TRANSFERRED: "agency.ownership_transferred",
 
+  // Training events
+  TRAINING_ASSIGNMENT_CREATED: "training.assignment_created",
+  TRAINING_LESSON_COMPLETED: "training.lesson_completed",
+  TRAINING_QUIZ_PASSED: "training.quiz_passed",
+  TRAINING_QUIZ_FAILED: "training.quiz_failed",
+  TRAINING_PRESENTATION_SUBMITTED: "training.presentation_submitted",
+  TRAINING_PRESENTATION_APPROVED: "training.presentation_approved",
+  TRAINING_ROADMAP_ITEM_COMPLETED: "training.roadmap_item_completed",
+
   // Client events
   CLIENT_CREATED: "client.created",
 

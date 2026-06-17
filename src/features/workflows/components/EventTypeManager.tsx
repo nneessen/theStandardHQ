@@ -45,6 +45,7 @@ const EVENT_CATEGORIES = [
   "hierarchy",
   "client",
   "underwriting",
+  "training",
 ];
 
 export default function EventTypeManager() {

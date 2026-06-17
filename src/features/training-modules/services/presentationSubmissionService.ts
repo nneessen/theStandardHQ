@@ -1,6 +1,13 @@
 // src/features/training-modules/services/presentationSubmissionService.ts
 import { supabase } from "@/services/base";
-import type { PresentationSubmission, PresentationSubmissionFilters } from "../types/training-module.types";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
+import type {
+  PresentationSubmission,
+  PresentationSubmissionFilters,
+} from "../types/training-module.types";
 
 const STORAGE_BUCKET = "presentation-recordings";
 const SIGNED_URL_EXPIRY = 3600; // 1 hour
@@ -21,7 +28,11 @@ const SUBMISSION_SELECT = `
  * Build storage path for a presentation recording.
  * Convention: {user_id}/{week_start_YYYYMMDD}_{timestamp}.{ext}
  */
-function buildStoragePath(userId: string, weekStart: string, fileName: string): string {
+function buildStoragePath(
+  userId: string,
+  weekStart: string,
+  fileName: string,
+): string {
   const weekFormatted = weekStart.replace(/-/g, "");
   const timestamp = Date.now();
   const ext = fileName.split(".").pop()?.toLowerCase() || "webm";
@@ -104,7 +115,11 @@ export const presentationSubmissionService = {
     recordingType: "browser_recording" | "upload";
     durationSeconds?: number;
   }): Promise<PresentationSubmission> {
-    const storagePath = buildStoragePath(params.userId, params.weekStart, params.fileName);
+    const storagePath = buildStoragePath(
+      params.userId,
+      params.weekStart,
+      params.fileName,
+    );
 
     // Upload file to storage
     const { error: uploadError } = await supabase.storage
@@ -127,7 +142,8 @@ export const presentationSubmissionService = {
         week_start: params.weekStart,
         storage_path: storagePath,
         file_name: params.fileName,
-        file_size: params.file instanceof File ? params.file.size : params.file.size,
+        file_size:
+          params.file instanceof File ? params.file.size : params.file.size,
         mime_type: params.mimeType,
         duration_seconds: params.durationSeconds || null,
         recording_type: params.recordingType,
@@ -141,7 +157,10 @@ export const presentationSubmissionService = {
         .from(STORAGE_BUCKET)
         .remove([storagePath]);
       if (cleanupError) {
-        console.error(`ORPHANED FILE: Failed to clean up ${storagePath}:`, cleanupError);
+        console.error(
+          `ORPHANED FILE: Failed to clean up ${storagePath}:`,
+          cleanupError,
+        );
       }
       // Parse unique violation for friendly error
       if (dbError.code === "23505") {
@@ -151,14 +170,28 @@ export const presentationSubmissionService = {
     }
 
     // Cast: Supabase join select shape doesn't match generated Row type
-    return data as unknown as PresentationSubmission;
+    const submission = data as unknown as PresentationSubmission;
+    // Emit training.presentation_submitted (non-fatal). recipientId = the submitter.
+    await workflowEventEmitter.emit(
+      WORKFLOW_EVENTS.TRAINING_PRESENTATION_SUBMITTED,
+      {
+        recipientId: params.userId,
+        submissionId: submission.id,
+        weekStart: params.weekStart,
+        timestamp: new Date().toISOString(),
+      },
+    );
+    return submission;
   },
 
   /**
    * Update submission metadata (title/description) while still pending.
    * Uses RPC to prevent agents from tampering with other columns via direct REST PATCH.
    */
-  async update(id: string, params: { title?: string; description?: string }): Promise<void> {
+  async update(
+    id: string,
+    params: { title?: string; description?: string },
+  ): Promise<void> {
     const { error } = await supabase.rpc("update_own_presentation", {
       p_id: id,
       p_title: params.title ?? null,
@@ -171,10 +204,13 @@ export const presentationSubmissionService = {
    * Manager reviews a submission.
    * reviewed_at and reviewed_by are enforced server-side via DB trigger.
    */
-  async review(id: string, params: {
-    status: "approved" | "needs_improvement";
-    reviewerNotes?: string;
-  }): Promise<void> {
+  async review(
+    id: string,
+    params: {
+      status: "approved" | "needs_improvement";
+      reviewerNotes?: string;
+    },
+  ): Promise<void> {
     const { error } = await supabase
       .from("presentation_submissions")
       .update({
@@ -183,6 +219,20 @@ export const presentationSubmissionService = {
       })
       .eq("id", id);
     if (error) throw new Error(`Failed to review submission: ${error.message}`);
+
+    // Emit training.presentation_approved (non-fatal) only on approval. recipientId
+    // = the submission OWNER (fetched; the reviewer is a manager, not the recipient).
+    if (params.status === "approved") {
+      const submission = await this.getById(id);
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.TRAINING_PRESENTATION_APPROVED,
+        {
+          recipientId: submission?.user_id ?? undefined,
+          submissionId: id,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
   },
 
   /**
@@ -197,7 +247,9 @@ export const presentationSubmissionService = {
       .from(STORAGE_BUCKET)
       .remove([submission.storage_path]);
     if (storageError) {
-      console.warn(`Failed to remove recording from storage: ${storageError.message}`);
+      console.warn(
+        `Failed to remove recording from storage: ${storageError.message}`,
+      );
     }
 
     // Delete DB row
@@ -205,7 +257,8 @@ export const presentationSubmissionService = {
       .from("presentation_submissions")
       .delete()
       .eq("id", id);
-    if (dbError) throw new Error(`Failed to delete submission: ${dbError.message}`);
+    if (dbError)
+      throw new Error(`Failed to delete submission: ${dbError.message}`);
   },
 
   /**
@@ -226,15 +279,20 @@ export const presentationSubmissionService = {
    * Get weekly compliance: list of agents in agency + whether they submitted this week.
    * Validates the agencyId belongs to the caller's IMO to prevent cross-tenant enumeration.
    */
-  async getWeeklyCompliance(agencyId: string, weekStart: string): Promise<{
-    userId: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    submitted: boolean;
-    submissionId: string | null;
-    status: string | null;
-  }[]> {
+  async getWeeklyCompliance(
+    agencyId: string,
+    weekStart: string,
+  ): Promise<
+    {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      submitted: boolean;
+      submissionId: string | null;
+      status: string | null;
+    }[]
+  > {
     // Validate agency belongs to caller's IMO
     const { data: agency, error: agencyError } = await supabase
       .from("agencies")
@@ -254,7 +312,8 @@ export const presentationSubmissionService = {
       .eq("approval_status", "approved")
       .not("roles", "ov", "{trainer,contracting_manager}");
 
-    if (agentsError) throw new Error(`Failed to fetch agents: ${agentsError.message}`);
+    if (agentsError)
+      throw new Error(`Failed to fetch agents: ${agentsError.message}`);
 
     // Get submissions for this week
     const { data: submissions, error: subError } = await supabase
@@ -263,10 +322,14 @@ export const presentationSubmissionService = {
       .eq("agency_id", agencyId)
       .eq("week_start", weekStart);
 
-    if (subError) throw new Error(`Failed to fetch submissions: ${subError.message}`);
+    if (subError)
+      throw new Error(`Failed to fetch submissions: ${subError.message}`);
 
     const submissionMap = new Map(
-      (submissions || []).map((s) => [s.user_id, { id: s.id, status: s.status }])
+      (submissions || []).map((s) => [
+        s.user_id,
+        { id: s.id, status: s.status },
+      ]),
     );
 
     return (agents || []).map((agent) => {

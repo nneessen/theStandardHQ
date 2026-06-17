@@ -1,5 +1,9 @@
 // src/features/training-modules/services/trainingProgressService.ts
 import { supabase } from "@/services/base";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import type {
   TrainingProgress,
   ModuleProgressSummary,
@@ -70,6 +74,17 @@ export const trainingProgressService = {
       p_time_spent_seconds: timeSpentSeconds,
     });
     if (error) throw error;
-    return data as CompleteTrainingLessonResult;
+    const result = data as CompleteTrainingLessonResult;
+    // Emit training.lesson_completed (non-fatal). recipientId = the current agent.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await workflowEventEmitter.emit(WORKFLOW_EVENTS.TRAINING_LESSON_COMPLETED, {
+      recipientId: user?.id,
+      lessonId,
+      moduleCompleted: result.module_completed,
+      timestamp: new Date().toISOString(),
+    });
+    return result;
   },
 };

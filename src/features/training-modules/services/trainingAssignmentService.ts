@@ -1,5 +1,9 @@
 // src/features/training-modules/services/trainingAssignmentService.ts
 import { supabase } from "@/services/base";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "@/services/events/workflowEventEmitter";
 import type {
   TrainingAssignment,
   CreateAssignmentInput,
@@ -47,11 +51,27 @@ export const trainingAssignmentService = {
       .single();
     if (error) {
       if (error.code === "23505") {
-        throw new Error("This module is already assigned to the selected user.");
+        throw new Error(
+          "This module is already assigned to the selected user.",
+        );
       }
       throw error;
     }
-    return data as TrainingAssignment;
+    const assignment = data as TrainingAssignment;
+    // Emit training.assignment_created (non-fatal) for individual assignments only —
+    // agency-wide rows (assigned_to null) have no single recipient.
+    if (assignment.assigned_to) {
+      await workflowEventEmitter.emit(
+        WORKFLOW_EVENTS.TRAINING_ASSIGNMENT_CREATED,
+        {
+          recipientId: assignment.assigned_to,
+          assignmentId: assignment.id,
+          moduleId: assignment.module_id,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    }
+    return assignment;
   },
 
   async revoke(id: string): Promise<void> {
