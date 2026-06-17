@@ -3,6 +3,10 @@
 
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
+import {
+  workflowEventEmitter,
+  WORKFLOW_EVENTS,
+} from "../events/workflowEventEmitter";
 import type {
   OverrideCommission,
   OverrideCommissionWithAgents,
@@ -307,6 +311,20 @@ class OverrideService {
 
       if (error) {
         throw new DatabaseError("updateOverrideStatus", error);
+      }
+
+      // Emit override.paid (non-fatal) ONLY when actually paid — recipientId is
+      // the upline agent receiving the override income.
+      if (status === "paid") {
+        await workflowEventEmitter.emit(WORKFLOW_EVENTS.OVERRIDE_PAID, {
+          recipientId: data.override_agent_id ?? undefined,
+          overrideId,
+          baseAgentId: data.base_agent_id ?? undefined,
+          policyId: data.policy_id ?? undefined,
+          overrideAmount: data.override_commission_amount ?? undefined,
+          paymentDate: (paymentDate ?? new Date()).toISOString(),
+          timestamp: new Date().toISOString(),
+        });
       }
 
       logger.info(

@@ -31,6 +31,10 @@ export const WORKFLOW_EVENTS = {
   COMMISSION_EARNED: "commission.earned",
   COMMISSION_CHARGEBACK: "commission.chargeback",
   COMMISSION_PAID: "commission.paid",
+  COMMISSION_CANCELLED: "commission.cancelled",
+  COMMISSION_CHARGEBACK_REVERSED: "commission.chargeback_reversed",
+  CHARGEBACK_RESOLVED: "chargeback.resolved",
+  OVERRIDE_PAID: "override.paid",
 
   // Agent lifecycle events (emitted by userService)
   AGENT_APPROVED: "agent.approved",

@@ -210,6 +210,38 @@ export const WORKFLOW_EVENT_CATALOG: WorkflowEventDef[] = [
     availableVariables: [...AGENT, ...COMMON],
     active: true,
   },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_CANCELLED,
+    category: "commission",
+    label: "Commission cancelled",
+    description: "A commission is cancelled.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.COMMISSION_CHARGEBACK_REVERSED,
+    category: "commission",
+    label: "Commission chargeback reversed",
+    description: "A charged-back commission is restored to earned.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.CHARGEBACK_RESOLVED,
+    category: "commission",
+    label: "Chargeback resolved",
+    description: "A chargeback is marked resolved.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
+  {
+    eventName: WORKFLOW_EVENTS.OVERRIDE_PAID,
+    category: "commission",
+    label: "Override paid",
+    description: "An override commission is paid out to an upline agent.",
+    availableVariables: [...AGENT, ...COMMON],
+    active: true,
+  },
   // ---- Lead (emitted by LeadPurchaseService) ----
   {
     eventName: WORKFLOW_EVENTS.LEAD_PACK_PURCHASED,
