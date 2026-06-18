@@ -31,9 +31,12 @@ Deep record: `memory/project_inbound_crm_phase0_build_20260617.md` (updated with
 ---
 
 ## NEXT — GO-LIVE (only when the owner says go; needs owner authority — no staging exists)
-0. **Apply the go-live hardening migration to PROD:** `supabase/migrations/20260618093314_inbound_crm_phase5_hardening.sql`
-   (review #2/#5/#6 — concurrent-dup-client advisory lock, billable/duration clamp, text caps). Applied +
-   verified on LOCAL only so far; bundle this prod-apply with go-live. Smoke (12 + #13) green on both.
+0. **Apply the two LOCAL-only migrations to PROD (in order), bundled with go-live:**
+   - `supabase/migrations/20260618093314_inbound_crm_phase5_hardening.sql` (review #2/#5/#6 — concurrent-dup-client
+     advisory lock, billable/duration clamp, text caps). Smoke (12 + #13) green on both.
+   - `supabase/migrations/20260618132257_inbound_crm_phase3_disposition.sql` (Phase 3 disposition: +inbound_calls
+     call_type_id/inquiry_carrier_id/notes + `crm_set_call_disposition` RPC). Rolled-back disposition smoke green.
+   Both applied + verified on LOCAL only so far; NOT on prod.
 1. **Deploy the edge functions:** `supabase functions deploy crm-oauth-token crm-leads`.
    - These have NO `[functions.*]` block in `supabase/config.toml` → must add `[functions.crm-oauth-token]`
      and `[functions.crm-leads]` with `verify_jwt = false` (they carry their own OAuth bearer, not a Supabase
