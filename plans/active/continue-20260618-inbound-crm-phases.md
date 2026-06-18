@@ -31,10 +31,19 @@ Deep record: `memory/project_inbound_crm_phase0_build_20260617.md` (updated with
 ---
 
 ## NEXT — GO-LIVE (only when the owner says go; needs owner authority — no staging exists)
+0. **Apply the go-live hardening migration to PROD:** `supabase/migrations/20260618093314_inbound_crm_phase5_hardening.sql`
+   (review #2/#5/#6 — concurrent-dup-client advisory lock, billable/duration clamp, text caps). Applied +
+   verified on LOCAL only so far; bundle this prod-apply with go-live. Smoke (12 + #13) green on both.
 1. **Deploy the edge functions:** `supabase functions deploy crm-oauth-token crm-leads`.
-   - These have NO `[functions.*]` block in `supabase/config.toml` → confirm `verify_jwt` is handled. The CRM
-     fns must run with `verify_jwt=false` (they carry their own OAuth bearer, not a Supabase JWT). Add per-fn
-     `config.toml` entries OR deploy with `--no-verify-jwt`, and TEST that the platform's bearer reaches them.
+   - These have NO `[functions.*]` block in `supabase/config.toml` → must add `[functions.crm-oauth-token]`
+     and `[functions.crm-leads]` with `verify_jwt = false` (they carry their own OAuth bearer, not a Supabase
+     JWT; without a config block deploy defaults to `verify_jwt=true` and the gateway 401s the platform).
+   - 🔴 **COUPLED — token-endpoint rate limit (review #1, CRITICAL at go-live):** the moment
+     `crm-oauth-token` is `verify_jwt=false` it is unauthenticated, and it runs a full bcrypt cost-12 on
+     EVERY request (incl. the dummy-crypt on unknown client_ids) **inside the shared Postgres** → a flood
+     degrades all tenants. It has **no rate limit** and the app limiter **fails open**. Add a coarse
+     **IP-based** limit at the gateway (Vercel/Cloudflare/Supabase edge) IN THE SAME CHANGE as `verify_jwt=false`.
+     (`crm-leads` is safe — it verifies the cheap HMAC before any DB call.) TEST that the platform's bearer reaches the fns.
 2. **Set secrets (prod):** `CRM_CALL_PLATFORM_SIGNING_KEY` (HMAC key; fail-closed if unset) and
    `CRM_INSTANCE_URL` (the REAL onboarding base URL the platform prepends to `/api/v1/leads`; fail-closed if empty).
 3. **Issue the first Epic Life credential** via the credential RPCs (super-admin context) and hand the platform

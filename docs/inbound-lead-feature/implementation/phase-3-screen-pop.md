@@ -193,6 +193,18 @@ Phase 4 (Clients page — own-book + per-client call history grid), Phase 5 (obs
   fill-in later — but confirm that's acceptable vs requiring comp up front.
 - **Metrics guardrail (must verify):** `pending` policies + `pending` advance commissions excluded from
   earned/paid production dashboards.
-- **Rehydration on reconnect:** on socket reconnect, query open calls (`status <> 'ended'`,
-  `agent_id = user.id`; index `idx_inbound_calls_agent_open` supports it) to restore a missed pop —
-  Phase 3 or defer to Phase 5.
+- **Rehydration on reconnect (review #3 — do in Phase 3):** on socket reconnect, query open calls
+  (`status <> 'ended'`, `agent_id = user.id`; index `idx_inbound_calls_agent_open` supports it) to
+  restore a missed pop — but **time-bound it** (`created_at > now() - interval '15 minutes'`) so a
+  stuck `'ringing'` row (a call whose end-PATCH never arrived — dropped call / platform crash) does
+  **not** phantom-re-pop forever. Cheap and defends regardless of the reaper below.
+- **Stuck-`'ringing'` reaper (review #3 — ops):** nothing today moves a never-PATCHed call out of
+  `'ringing'`; such rows accumulate in `idx_inbound_calls_agent_open`. Add a `pg_cron` sweep marking
+  `status='ringing'` rows older than N minutes as `'ended'` (or a new `'abandoned'`). Pairs with the
+  retention story in Phase 5.
+- **Realtime fan-out at scale (review — design caution):** per-agent `postgres_changes` on
+  `inbound_calls` (with `REPLICA IDENTITY FULL`) is fine for one Epic Life agency, but pays Supabase's
+  per-subscriber RLS-evaluation-per-change cost as agent count grows. When it grows, prefer
+  **Broadcast-from-trigger** (`realtime.broadcast_changes` targeted at the agent's channel) over N
+  RLS-filtered subscribers. `REPLICA IDENTITY FULL` itself is fine here (narrow row, low write rate);
+  watch WAL volume only at ~100×.
