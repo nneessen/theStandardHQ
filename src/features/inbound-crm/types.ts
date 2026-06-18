@@ -23,6 +23,10 @@ export interface InboundCallRow {
   status: string; // 'ringing' | 'ended' | ...
   fired_pop: boolean;
   patch_only: boolean;
+  // Phase 3 disposition (agent-captured during the call via crm_set_call_disposition).
+  call_type_id: string | null;
+  inquiry_carrier_id: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }

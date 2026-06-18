@@ -6,3 +6,8 @@ export {
   useInboundCallClient,
   useInboundCallPolicyCount,
 } from "./hooks/useInboundCallClient";
+export {
+  useInboundCallTypes,
+  useInboundCarriers,
+  useInboundCallDisposition,
+} from "./hooks/useInboundCallDisposition";
