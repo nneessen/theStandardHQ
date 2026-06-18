@@ -23,11 +23,24 @@ DECLARE
   v_n     int;
 BEGIN
   -- Anchor on an existing agent that owns a client with a normalizable phone.
+  -- MUST exclude access-revoked agents (e.g. the sunset FFG tenant on prod): crm_lookup_aor
+  -- deliberately returns no row for a revoked agent, so anchoring on one makes check #1 fail
+  -- spuriously. Also require the phone be uniquely owned by ONE non-revoked client in the imo
+  -- so the household tiebreak (covered separately by #10) can't redirect the lookup off-anchor.
   SELECT c.user_id, up.imo_id, c.phone, c.phone_e164
     INTO v_agent, v_imo, v_phone, v_e164
   FROM clients c
   JOIN user_profiles up ON up.id = c.user_id
   WHERE c.phone_e164 IS NOT NULL AND up.imo_id IS NOT NULL
+    AND NOT public.is_access_revoked(c.user_id)
+    -- The agent must not already own a pcId mapping in this imo: the test INSERTs one and
+    -- imo_agent_external_ids is UNIQUE(imo_id, user_id). Committed fixtures (e.g. from
+    -- scripts/crm-e2e-local.sh on a dev DB) would otherwise collide here.
+    AND NOT EXISTS (SELECT 1 FROM imo_agent_external_ids m
+                    WHERE m.imo_id = up.imo_id AND m.user_id = c.user_id)
+    AND (SELECT count(*) FROM clients c2 JOIN user_profiles u2 ON u2.id = c2.user_id
+         WHERE u2.imo_id = up.imo_id AND c2.phone_e164 = c.phone_e164
+           AND NOT public.is_access_revoked(c2.user_id)) = 1
   LIMIT 1;
   IF v_agent IS NULL THEN RAISE EXCEPTION 'No usable agent/client found in local data'; END IF;
   RAISE NOTICE 'anchor agent=% imo=% phone=% e164=%', v_agent, v_imo, v_phone, v_e164;
