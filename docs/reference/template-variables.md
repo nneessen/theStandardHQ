@@ -10,17 +10,17 @@ The template variable system uses a **shared-definition, dual-runtime** pattern.
 
 ### Core Files
 
-| File | Runtime | Purpose |
-|------|---------|---------|
-| `src/lib/templateVariables.ts` | Frontend (Vite/React) | Canonical definitions — types, keys, metadata, categories, preview values, and the `replaceTemplateVariables()` function |
-| `supabase/functions/_shared/templateVariables.ts` | Edge (Deno) | Server-side key list + replacement logic. Kept in manual sync with the frontend file |
+| File                                              | Runtime               | Purpose                                                                                                                  |
+| ------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/templateVariables.ts`                    | Frontend (Vite/React) | Canonical definitions — types, keys, metadata, categories, preview values, and the `replaceTemplateVariables()` function |
+| `supabase/functions/_shared/templateVariables.ts` | Edge (Deno)           | Server-side key list + replacement logic. Kept in manual sync with the frontend file                                     |
 
 ### Context-Building Files (where variables get real values)
 
-| File | Context | Description |
-|------|---------|-------------|
-| `src/services/recruiting/pipelineAutomationService.ts` | Pipeline | `buildContext()` + `contextToRecord()` — populates variables for pipeline phase/checklist automations |
-| `supabase/functions/process-workflow/index.ts` | Workflow | `buildTemplateVariables()` — populates variables for the workflow engine |
+| File                                                       | Context         | Description                                                                                               |
+| ---------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/services/recruiting/pipelineAutomationService.ts`     | Pipeline        | `buildContext()` + `contextToRecord()` — populates variables for pipeline phase/checklist automations     |
+| `supabase/functions/process-workflow/index.ts`             | Workflow        | `buildTemplateVariables()` — populates variables for the workflow engine                                  |
 | `supabase/functions/process-automation-reminders/index.ts` | Pipeline (cron) | Inline context objects — populates variables for phase-stall, deadline, and password reminder automations |
 
 ### Data Flow
@@ -92,14 +92,14 @@ Add an entry to the `TEMPLATE_VARIABLES` array:
 
 **Fields:**
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `key` | Yes | Snake_case identifier. This is what template authors type: `{{recruit_middle_name}}` |
-| `description` | Yes | Shown in the variable picker UI |
-| `category` | Yes | Groups variables in the picker. Use an existing category or create a new one |
-| `preview` | Yes | Example value shown in the template editor preview |
-| `contexts` | Yes | Array of `"workflow"`, `"pipeline"`, `"email"` — controls where the variable appears in the UI |
-| `aliasFor` | No | If this is an alias for another key (e.g., `date_today` is an alias for `current_date`) |
+| Field         | Required | Description                                                                                    |
+| ------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| `key`         | Yes      | Snake_case identifier. This is what template authors type: `{{recruit_middle_name}}`           |
+| `description` | Yes      | Shown in the variable picker UI                                                                |
+| `category`    | Yes      | Groups variables in the picker. Use an existing category or create a new one                   |
+| `preview`     | Yes      | Example value shown in the template editor preview                                             |
+| `contexts`    | Yes      | Array of `"workflow"`, `"pipeline"`, `"email"` — controls where the variable appears in the UI |
+| `aliasFor`    | No       | If this is an alias for another key (e.g., `date_today` is an alias for `current_date`)        |
 
 **Derived constants update automatically** — `TEMPLATE_VARIABLE_KEYS` and `TEMPLATE_PREVIEW_VALUES` are computed from `TEMPLATE_VARIABLES`, so no extra step is needed.
 
@@ -110,7 +110,7 @@ Add the same key string to the `TEMPLATE_VARIABLE_KEYS` array:
 ```typescript
 export const TEMPLATE_VARIABLE_KEYS = [
   // ... existing keys ...
-  'recruit_middle_name',
+  "recruit_middle_name",
 ] as const;
 ```
 
@@ -139,7 +139,7 @@ export interface AutomationContext {
 function contextToRecord(context: AutomationContext): Record<string, string> {
   return {
     // ... existing mappings ...
-    recruit_middle_name: context.recruitMiddleName || '',
+    recruit_middle_name: context.recruitMiddleName || "",
   };
 }
 ```
@@ -166,7 +166,7 @@ Add the population logic in `buildTemplateVariables()`:
 async function buildTemplateVariables(
   context: Record<string, unknown>,
   ownerProfile: any,
-  supabase: any
+  supabase: any,
 ): Promise<Record<string, string>> {
   const vars = initEmptyVariables(); // starts with all 47+ keys = ""
 
@@ -174,7 +174,7 @@ async function buildTemplateVariables(
 
   // Add your new variable
   if (recipientProfile) {
-    vars['recruit_middle_name'] = recipientProfile.middle_name || '';
+    vars["recruit_middle_name"] = recipientProfile.middle_name || "";
   }
 
   return vars;
@@ -191,7 +191,7 @@ If the variable is relevant to cron-triggered automations (phase stall, deadline
 // Phase stall context
 const context: Record<string, string> = {
   // ... existing keys ...
-  recruit_middle_name: recruit.middle_name || '',
+  recruit_middle_name: recruit.middle_name || "",
 };
 ```
 
@@ -202,6 +202,7 @@ This file builds context objects inline (not via a shared builder), so each trig
 If the variable requires a new column:
 
 1. Create a migration:
+
    ```bash
    # Generate timestamp
    date +%Y%m%d%H%M%S
@@ -211,6 +212,7 @@ If the variable requires a new column:
    ```
 
 2. Apply it using the migration runner (never raw psql):
+
    ```bash
    ./scripts/migrations/run-migration.sh supabase/migrations/YYYYMMDDHHMMSS_add_recruit_middle_name.sql
    ```
@@ -234,119 +236,119 @@ If the variable requires a new column:
 
 ### Recruit Basic
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `recruit_name` | Full name of the recruit | pipeline, workflow, email | John Smith |
-| `recruit_first_name` | First name of the recruit | pipeline, workflow, email | John |
-| `recruit_last_name` | Last name of the recruit | pipeline, workflow, email | Smith |
-| `recruit_email` | Email address of the recruit | pipeline, workflow, email | john@example.com |
-| `recruit_phone` | Phone number of the recruit | pipeline, workflow, email | (555) 123-4567 |
-| `recruit_status` | Current status of the recruit | workflow, email | Active |
+| Key                  | Description                   | Contexts                  | Preview          |
+| -------------------- | ----------------------------- | ------------------------- | ---------------- |
+| `recruit_name`       | Full name of the recruit      | pipeline, workflow, email | John Smith       |
+| `recruit_first_name` | First name of the recruit     | pipeline, workflow, email | John             |
+| `recruit_last_name`  | Last name of the recruit      | pipeline, workflow, email | Smith            |
+| `recruit_email`      | Email address of the recruit  | pipeline, workflow, email | john@example.com |
+| `recruit_phone`      | Phone number of the recruit   | pipeline, workflow, email | (555) 123-4567   |
+| `recruit_status`     | Current status of the recruit | workflow, email           | Active           |
 
 ### Recruit Location
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `recruit_city` | City of the recruit | pipeline, workflow, email | Dallas |
-| `recruit_state` | State of the recruit | pipeline, workflow, email | TX |
-| `recruit_zip` | ZIP code of the recruit | pipeline, workflow, email | 75201 |
+| Key               | Description                 | Contexts                  | Preview                       |
+| ----------------- | --------------------------- | ------------------------- | ----------------------------- |
+| `recruit_city`    | City of the recruit         | pipeline, workflow, email | Dallas                        |
+| `recruit_state`   | State of the recruit        | pipeline, workflow, email | TX                            |
+| `recruit_zip`     | ZIP code of the recruit     | pipeline, workflow, email | 75201                         |
 | `recruit_address` | Full address of the recruit | pipeline, workflow, email | 123 Main St, Dallas, TX 75201 |
 
 ### Recruit Professional
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `recruit_contract_level` | Contract level of the recruit | pipeline, workflow, email | 80 |
-| `recruit_npn` | NPN of the recruit | pipeline, workflow, email | 12345678 |
-| `recruit_license_number` | License number of the recruit | pipeline, workflow, email | LIC-123456 |
-| `recruit_license_expiration` | License expiration date | workflow, email | 12/31/2026 |
-| `recruit_license_state` | State where recruit is licensed | pipeline, email | TX |
-| `recruit_referral_source` | How the recruit was referred | workflow, email | Agent Referral |
-| `contract_level` | Alias for recruit_contract_level | pipeline, email | 80 |
+| Key                          | Description                      | Contexts                  | Preview        |
+| ---------------------------- | -------------------------------- | ------------------------- | -------------- |
+| `recruit_contract_level`     | Contract level of the recruit    | pipeline, workflow, email | 80             |
+| `recruit_npn`                | NPN of the recruit               | pipeline, workflow, email | 12345678       |
+| `recruit_license_number`     | License number of the recruit    | pipeline, workflow, email | LIC-123456     |
+| `recruit_license_expiration` | License expiration date          | workflow, email           | 12/31/2026     |
+| `recruit_license_state`      | State where recruit is licensed  | pipeline, email           | TX             |
+| `recruit_referral_source`    | How the recruit was referred     | workflow, email           | Agent Referral |
+| `contract_level`             | Alias for recruit_contract_level | pipeline, email           | 80             |
 
 ### Recruit Social
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `recruit_facebook` | Facebook profile URL | workflow, email | facebook.com/johnsmith |
-| `recruit_instagram` | Instagram handle | workflow, email | @johnsmith |
-| `recruit_website` | Personal website URL | workflow, email | johnsmith.com |
+| Key                 | Description          | Contexts        | Preview                |
+| ------------------- | -------------------- | --------------- | ---------------------- |
+| `recruit_facebook`  | Facebook profile URL | workflow, email | facebook.com/johnsmith |
+| `recruit_instagram` | Instagram handle     | workflow, email | @johnsmith             |
+| `recruit_website`   | Personal website URL | workflow, email | johnsmith.com          |
 
 ### Organization
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `company_name` | Company name | workflow, email | The Standard HQ |
-| `agency_name` | Agency name | pipeline, email | Smith Insurance Group |
-| `imo_name` | IMO name | pipeline, email | National Marketing Org |
+| Key            | Description  | Contexts        | Preview                |
+| -------------- | ------------ | --------------- | ---------------------- |
+| `company_name` | Company name | workflow, email | The Standard HQ        |
+| `agency_name`  | Agency name  | pipeline, email | Smith Insurance Group  |
+| `imo_name`     | IMO name     | pipeline, email | National Marketing Org |
 
 ### User/Owner
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `user_name` | Full name of the logged-in user | workflow, email | Jane Doe |
-| `user_first_name` | First name of the logged-in user | workflow, email | Jane |
-| `user_last_name` | Last name of the logged-in user | workflow, email | Doe |
-| `user_email` | Email of the logged-in user | workflow, email | jane@example.com |
+| Key               | Description                      | Contexts        | Preview          |
+| ----------------- | -------------------------------- | --------------- | ---------------- |
+| `user_name`       | Full name of the logged-in user  | workflow, email | Jane Doe         |
+| `user_first_name` | First name of the logged-in user | workflow, email | Jane             |
+| `user_last_name`  | Last name of the logged-in user  | workflow, email | Doe              |
+| `user_email`      | Email of the logged-in user      | workflow, email | jane@example.com |
 
 ### Upline
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `upline_name` | Full name of the recruit's upline | pipeline, email | Sarah Johnson |
-| `upline_first_name` | First name of the upline | pipeline, email | Sarah |
-| `upline_email` | Email of the upline | pipeline, email | sarah@example.com |
-| `upline_phone` | Phone number of the upline | pipeline, email | (555) 987-6543 |
+| Key                 | Description                       | Contexts        | Preview           |
+| ------------------- | --------------------------------- | --------------- | ----------------- |
+| `upline_name`       | Full name of the recruit's upline | pipeline, email | Sarah Johnson     |
+| `upline_first_name` | First name of the upline          | pipeline, email | Sarah             |
+| `upline_email`      | Email of the upline               | pipeline, email | sarah@example.com |
+| `upline_phone`      | Phone number of the upline        | pipeline, email | (555) 987-6543    |
 
 ### Pipeline
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `phase_name` | Current pipeline phase name | pipeline, email | Onboarding |
+| Key                 | Description                       | Contexts        | Preview                    |
+| ------------------- | --------------------------------- | --------------- | -------------------------- |
+| `phase_name`        | Current pipeline phase name       | pipeline, email | Onboarding                 |
 | `phase_description` | Description of the pipeline phase | pipeline, email | Initial onboarding process |
-| `template_name` | Pipeline template name | pipeline, email | New Agent Pipeline |
-| `item_name` | Checklist item name | pipeline, email | Submit Application |
-| `checklist_items` | All checklist items | pipeline, email | Item 1, Item 2, Item 3 |
+| `template_name`     | Pipeline template name            | pipeline, email | New Agent Pipeline         |
+| `item_name`         | Checklist item name               | pipeline, email | Submit Application         |
+| `checklist_items`   | All checklist items               | pipeline, email | Item 1, Item 2, Item 3     |
 
 ### Sender
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `sender_name` | Name of the email sender | email | Jane Doe |
-| `recruiter_name` | Name of the recruiter | email | Jane Doe |
+| Key              | Description              | Contexts | Preview  |
+| ---------------- | ------------------------ | -------- | -------- |
+| `sender_name`    | Name of the email sender | email    | Jane Doe |
+| `recruiter_name` | Name of the recruiter    | email    | Jane Doe |
 
 ### Dates
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `current_date` | Today's date formatted | pipeline, workflow, email | Monday, January 15, 2026 |
-| `date_today` | Alias for current_date | pipeline, workflow, email | Monday, January 15, 2026 |
-| `date_tomorrow` | Tomorrow's date | workflow, email | Tuesday, January 16, 2026 |
-| `date_next_week` | Date one week from today | workflow, email | Monday, January 22, 2026 |
-| `date_current_month` | Current month name | workflow, email | January |
-| `date_current_year` | Current year | workflow, email | 2026 |
-| `deadline_date` | Deadline date for a task | pipeline, email | February 1, 2026 |
+| Key                  | Description              | Contexts                  | Preview                   |
+| -------------------- | ------------------------ | ------------------------- | ------------------------- |
+| `current_date`       | Today's date formatted   | pipeline, workflow, email | Monday, January 15, 2026  |
+| `date_today`         | Alias for current_date   | pipeline, workflow, email | Monday, January 15, 2026  |
+| `date_tomorrow`      | Tomorrow's date          | workflow, email           | Tuesday, January 16, 2026 |
+| `date_next_week`     | Date one week from today | workflow, email           | Monday, January 22, 2026  |
+| `date_current_month` | Current month name       | workflow, email           | January                   |
+| `date_current_year`  | Current year             | workflow, email           | 2026                      |
+| `deadline_date`      | Deadline date for a task | pipeline, email           | February 1, 2026          |
 
 ### Calculated
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `days_in_phase` | Days the recruit has been in current phase | pipeline, email | 14 |
-| `days_since_signup` | Days since the recruit signed up | pipeline, email | 30 |
+| Key                 | Description                                | Contexts        | Preview |
+| ------------------- | ------------------------------------------ | --------------- | ------- |
+| `days_in_phase`     | Days the recruit has been in current phase | pipeline, email | 14      |
+| `days_since_signup` | Days since the recruit signed up           | pipeline, email | 30      |
 
 ### Links
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
+| Key           | Description                    | Contexts                  | Preview                       |
+| ------------- | ------------------------------ | ------------------------- | ----------------------------- |
 | `portal_link` | Link to the application portal | pipeline, workflow, email | https://app.thestandardhq.com |
-| `app_url` | Application base URL | workflow, email | https://app.thestandardhq.com |
+| `app_url`     | Application base URL           | workflow, email           | https://app.thestandardhq.com |
 
 ### Workflow
 
-| Key | Description | Contexts | Preview |
-|-----|-------------|----------|---------|
-| `workflow_name` | Name of the executing workflow | workflow, email | Weekly Check-in |
-| `workflow_run_id` | Unique ID of the workflow run | workflow | run_abc123 |
+| Key               | Description                    | Contexts        | Preview         |
+| ----------------- | ------------------------------ | --------------- | --------------- |
+| `workflow_name`   | Name of the executing workflow | workflow, email | Weekly Check-in |
+| `workflow_run_id` | Unique ID of the workflow run  | workflow        | run_abc123      |
 
 ---
 
@@ -359,6 +361,7 @@ Template authors use double-brace syntax:
 ```
 
 The replacement engine is:
+
 - **Case-insensitive** — `{{Recruit_Name}}` works the same as `{{recruit_name}}`
 - **Whitespace-tolerant** — `{{ recruit_name }}`, `{{recruit_name}}`, and `{{ recruit_name}}` all resolve
 - **Single-brace backward compatible** (edge functions only) — `{recruit_name}` also works in server-side processing
@@ -369,11 +372,11 @@ The replacement engine is:
 
 Not every variable is populated in every context. This table shows which context builders actually set each variable.
 
-| Populated By | Description |
-|--------------|-------------|
-| **Pipeline frontend** (`contextToRecord`) | Recruit basic/location/professional, agency/IMO, upline, phase/item info, `days_in_phase`, `days_since_signup`, `current_date`, `portal_link` |
-| **Workflow engine** (`buildTemplateVariables`) | All 47 keys initialized to `""`. Actively sets: user/owner info, company name, all dates, workflow metadata, recruit profile (full), `app_url` |
-| **Cron reminders** (inline context) | Minimal subset per trigger type. Phase stall: recruit basic + phase + upline + `days_in_phase`. Deadline: recruit basic + phase + item + upline. Password: user info + `hours_remaining` |
+| Populated By                                   | Description                                                                                                                                                                              |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pipeline frontend** (`contextToRecord`)      | Recruit basic/location/professional, agency/IMO, upline, phase/item info, `days_in_phase`, `days_since_signup`, `current_date`, `portal_link`                                            |
+| **Workflow engine** (`buildTemplateVariables`) | All 47 keys initialized to `""`. Actively sets: user/owner info, company name, all dates, workflow metadata, recruit profile (full), `app_url`                                           |
+| **Cron reminders** (inline context)            | Minimal subset per trigger type. Phase stall: recruit basic + phase + upline + `days_in_phase`. Deadline: recruit basic + phase + item + upline. Password: user info + `hours_remaining` |
 
 **Key difference:** The workflow engine uses `initEmptyVariables()` so unused variables render as empty strings. The pipeline and cron contexts do not — unused variables will appear as literal `{{variable_name}}` text if referenced in a template but not populated.
 
