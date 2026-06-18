@@ -16,14 +16,14 @@ OAuth client.
 
 ## 1. What was built
 
-| Component | Path | Role |
-|---|---|---|
-| Credential + pcId RPCs | `supabase/migrations/20260617163403_inbound_crm_phase1_credential_rpcs.sql` | Issue/rotate/revoke credentials, authenticate a credential, register a platform pcId — all `SECURITY DEFINER` |
-| Token signer/verifier | `supabase/functions/_shared/crm-token-decoder.ts` | Mint + verify the stateless HMAC bearer with full claim checks |
-| Token endpoint | `supabase/functions/crm-oauth-token/{index.ts, config.toml}` | The `POST /oauth/token` edge function |
-| Credential RPC smoke test | `scripts/test-crm-credentials-smoke.sql` | Rolled-back issue→auth→rotate→revoke→register + denial checks |
-| Token decoder unit tests | `supabase/functions/_shared/__tests__/crm-token-decoder.test.ts` | 9 Deno tests (round-trip + negatives) |
-| End-to-end mock caller | `scripts/crm-mock-caller.ts` | Drives the served endpoint: issue → bearer → verify + negatives |
+| Component                 | Path                                                                        | Role                                                                                                          |
+| ------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Credential + pcId RPCs    | `supabase/migrations/20260617163403_inbound_crm_phase1_credential_rpcs.sql` | Issue/rotate/revoke credentials, authenticate a credential, register a platform pcId — all `SECURITY DEFINER` |
+| Token signer/verifier     | `supabase/functions/_shared/crm-token-decoder.ts`                           | Mint + verify the stateless HMAC bearer with full claim checks                                                |
+| Token endpoint            | `supabase/functions/crm-oauth-token/{index.ts, config.toml}`                | The `POST /oauth/token` edge function                                                                         |
+| Credential RPC smoke test | `scripts/test-crm-credentials-smoke.sql`                                    | Rolled-back issue→auth→rotate→revoke→register + denial checks                                                 |
+| Token decoder unit tests  | `supabase/functions/_shared/__tests__/crm-token-decoder.test.ts`            | 9 Deno tests (round-trip + negatives)                                                                         |
+| End-to-end mock caller    | `scripts/crm-mock-caller.ts`                                                | Drives the served endpoint: issue → bearer → verify + negatives                                               |
 
 The credential store table itself (`imo_call_platform_credentials`) and the pcId registry
 (`imo_agent_external_ids`) were created in **Phase 0**.
@@ -74,13 +74,13 @@ The credential store table itself (`imo_call_platform_credentials`) and the pcId
 
 All are `SECURITY DEFINER` with `SET search_path = public`.
 
-| RPC | AuthZ | Behavior |
-|---|---|---|
-| `crm_issue_credential(p_imo_id, p_label, p_scopes)` → `(credential_id, client_id, client_secret)` | super-admin in scope | Generates `client_id` (`crm_<hex>`) + a random secret; stores the **bcrypt hash**; returns the plaintext **once**. |
-| `crm_authenticate_credential(p_client_id, p_secret)` → `(credential_id, imo_id, scopes)` | **service_role only** | Verifies bcrypt against an active, non-revoked credential; bumps `last_used_at`; returns the identity or **no rows**. Never logs/raises the secret. |
-| `crm_rotate_credential(p_credential_id)` → `(client_secret)` | super-admin in scope | New secret + hash; returns plaintext once. |
-| `crm_revoke_credential(p_credential_id)` → `boolean` | super-admin in scope | Sets `is_active=false`, `revoked_at=now()`. |
-| `crm_register_agent_pcid(p_imo_id, p_user_id, p_pc_id)` → `boolean` | super-admin in scope; agent must be in the IMO | Upserts the **platform-issued** pcId for the agent (`ON CONFLICT (imo_id, user_id)`). |
+| RPC                                                                                               | AuthZ                                          | Behavior                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `crm_issue_credential(p_imo_id, p_label, p_scopes)` → `(credential_id, client_id, client_secret)` | super-admin in scope                           | Generates `client_id` (`crm_<hex>`) + a random secret; stores the **bcrypt hash**; returns the plaintext **once**.                                  |
+| `crm_authenticate_credential(p_client_id, p_secret)` → `(credential_id, imo_id, scopes)`          | **service_role only**                          | Verifies bcrypt against an active, non-revoked credential; bumps `last_used_at`; returns the identity or **no rows**. Never logs/raises the secret. |
+| `crm_rotate_credential(p_credential_id)` → `(client_secret)`                                      | super-admin in scope                           | New secret + hash; returns plaintext once.                                                                                                          |
+| `crm_revoke_credential(p_credential_id)` → `boolean`                                              | super-admin in scope                           | Sets `is_active=false`, `revoked_at=now()`.                                                                                                         |
+| `crm_register_agent_pcid(p_imo_id, p_user_id, p_pc_id)` → `boolean`                               | super-admin in scope; agent must be in the IMO | Upserts the **platform-issued** pcId for the agent (`ON CONFLICT (imo_id, user_id)`).                                                               |
 
 Super-admin gating uses `super_admin_in_scope(imo_id)`, which reads `auth.uid()` — so even though the
 RPC runs as the definer, the gate evaluates the **calling** user. For `rotate`/`revoke` (which take a
@@ -94,11 +94,13 @@ IMO A cannot rotate/revoke IMO B's credential.
 **`POST /oauth/token`** (served as `crm-oauth-token`).
 
 Request — `application/x-www-form-urlencoded` (or HTTP Basic for the credential pair):
+
 ```
 grant_type=client_credentials&client_id=<id>&client_secret=<secret>
 ```
 
 Success — `200`:
+
 ```json
 {
   "access_token": "<base64url-payload>.<hmac-hex>",
@@ -112,13 +114,13 @@ Success — `200`:
 
 Errors (OAuth2 `{error, error_description}` shape):
 
-| Status | `error` | When |
-|---|---|---|
-| `400` | `invalid_request` | missing/malformed body, or no client_id/secret |
-| `400` | `unsupported_grant_type` | `grant_type` present but not `client_credentials` |
-| `401` | `invalid_client` | unknown client_id, wrong secret, or inactive/revoked credential — **generic on purpose** (triggers the platform's refresh-and-retry-once; does not reveal which part failed) |
-| `405` | `invalid_request` | non-POST method |
-| `500` | `server_error` | RPC error, or token minting failed (e.g. signing key unset — fail closed) |
+| Status | `error`                  | When                                                                                                                                                                         |
+| ------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `400`  | `invalid_request`        | missing/malformed body, or no client_id/secret                                                                                                                               |
+| `400`  | `unsupported_grant_type` | `grant_type` present but not `client_credentials`                                                                                                                            |
+| `401`  | `invalid_client`         | unknown client_id, wrong secret, or inactive/revoked credential — **generic on purpose** (triggers the platform's refresh-and-retry-once; does not reveal which part failed) |
+| `405`  | `invalid_request`        | non-POST method                                                                                                                                                              |
+| `500`  | `server_error`           | RPC error, or token minting failed (e.g. signing key unset — fail closed)                                                                                                    |
 
 Secrets and the minted token are **never logged**; error logs carry only the (non-secret) `client_id`
 and error codes.
@@ -155,12 +157,12 @@ All green:
   ✓) → rotate (old secret denied, new works) → revoke (then auth denied) → **rotating a revoked
   credential is refused (`42501`)** → register pcId (mapping present) → **a non-super-admin is denied
   (`42501`)**. Admin RPCs are exercised by simulating a super-admin via `request.jwt.claims` + `SET ROLE
-  authenticated`; `crm_authenticate_credential` is exercised in the service-role context.
+authenticated`; `crm_authenticate_credential` is exercised in the service-role context.
 - **Token decoder** (`crm-token-decoder.test.ts`, `deno test`): **10/10** — valid round-trip, UTF-8-safe
   non-ASCII-scope round-trip, tampered payload, tampered signature, expired, wrong `typ`, future `iat`,
   forgery with a different key, fail-closed when the key is unset, and malformed tokens.
 - **End-to-end mock caller** (`scripts/crm-mock-caller.ts`) against the **served** function (`supabase
-  functions serve`): **12/12** — token mint returns `200`; `access_token` present; `token_type=Bearer`;
+functions serve`): **12/12** — token mint returns `200`; `access_token` present; `token_type=Bearer`;
   `expires_in=86400`; **the minted token verifies with the shared signing key** and carries
   `typ=crm_m2m` + `imo_id` + `credential_id`; wrong secret → `401 invalid_client`; unknown client →
   `401`; `GET` → `405`.

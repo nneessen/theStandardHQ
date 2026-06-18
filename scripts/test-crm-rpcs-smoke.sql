@@ -148,6 +148,23 @@ BEGIN
     END IF;
   END;
 
+  -- 11) Re-POST that omits ani must NOT clobber a previously-good ani/phone_e164 (guard #4).
+  PERFORM crm_upsert_call(v_imo, 'smoke-tag-ANI', v_pc, '+15557778888');
+  PERFORM crm_upsert_call(v_imo, 'smoke-tag-ANI', v_pc, '');  -- re-POST omitting ani
+  PERFORM 1 FROM inbound_calls WHERE imo_id=v_imo AND request_tag='smoke-tag-ANI'
+    AND ani='+15557778888' AND phone_e164='+15557778888';
+  IF NOT FOUND THEN RAISE EXCEPTION '11 FAIL: re-POST without ani clobbered ani/phone_e164'; END IF;
+  RAISE NOTICE '11 OK  re-POST without ani preserves ani/phone_e164';
+
+  -- 12) PATCH that omits billable must NOT wipe a previously-set billable (guard #3).
+  PERFORM crm_upsert_call(v_imo, 'smoke-tag-BILL', v_pc, '+15557779999');
+  PERFORM crm_patch_billable(v_imo, 'smoke-tag-BILL', 1::smallint, 60);   -- billable=1
+  PERFORM crm_patch_billable(v_imo, 'smoke-tag-BILL', NULL::smallint, 90); -- omit billable, set duration
+  PERFORM 1 FROM inbound_calls WHERE imo_id=v_imo AND request_tag='smoke-tag-BILL'
+    AND billable=1 AND duration=90;
+  IF NOT FOUND THEN RAISE EXCEPTION '12 FAIL: PATCH without billable wiped the prior billable'; END IF;
+  RAISE NOTICE '12 OK  PATCH without billable preserves prior billable';
+
   RAISE NOTICE 'ALL_SMOKE_CHECKS_PASSED';
 END$$;
 ROLLBACK;
