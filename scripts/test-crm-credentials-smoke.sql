@@ -66,6 +66,16 @@ SELECT 'register pcid'        AS chk, 1/(CASE WHEN crm_register_agent_pcid(:'imo
 RESET ROLE;
 SELECT 'pcid mapping exists'  AS chk, 1/(CASE WHEN (SELECT count(*) FROM imo_agent_external_ids WHERE imo_id=:'imo_id'::uuid AND user_id=:'agent_id'::uuid AND pc_id='platform-pc-001')=1 THEN 1 ELSE 0 END) ok;
 
+-- Re-point the SAME pcId to a DIFFERENT agent (the platform recycles pcIds) — must be a clean
+-- reassignment, not a 23505. After: the new agent holds it and the original agent no longer does.
+SET LOCAL ROLE authenticated;
+SELECT 're-point pcid'        AS chk, 1/(CASE WHEN crm_register_agent_pcid(:'imo_id'::uuid, :'admin_id'::uuid, 'platform-pc-001') THEN 1 ELSE 0 END) ok;
+RESET ROLE;
+SELECT 're-point moved owner' AS chk, 1/(CASE WHEN
+       (SELECT count(*) FROM imo_agent_external_ids WHERE imo_id=:'imo_id'::uuid AND pc_id='platform-pc-001' AND user_id=:'admin_id'::uuid)=1
+   AND (SELECT count(*) FROM imo_agent_external_ids WHERE imo_id=:'imo_id'::uuid AND pc_id='platform-pc-001' AND user_id=:'agent_id'::uuid)=0
+       THEN 1 ELSE 0 END) ok;
+
 -- Negative: a NON-super-admin must be denied (42501). DO block reads auth.uid() (no psql vars).
 SELECT set_config('request.jwt.claims', json_build_object('sub', :'agent_id', 'role', 'authenticated')::text, true);
 SET LOCAL ROLE authenticated;

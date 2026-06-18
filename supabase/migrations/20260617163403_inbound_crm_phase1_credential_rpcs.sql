@@ -18,6 +18,15 @@
 
 BEGIN;
 
+-- pgcrypto (bcrypt + random bytes) lives in the `extensions` schema on Supabase. Make the
+-- dependency explicit and self-contained; a no-op where it is already installed.
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
+-- NOTE: token `scopes` are carried/echoed but NOT yet enforced anywhere (issuance accepts any
+-- array, the verifier only checks it is an array, and the lead RPCs take no scope argument).
+-- Only the single 'crm:leads' scope exists today and only a super-admin can issue. Before relying
+-- on a restricted scope, add enforcement at issuance + in verifyCrmToken + at the lead RPCs.
+
 -- ============================================================================
 -- crm_issue_credential — super-admin issues a credential. Generates client_id +
 -- client_secret SERVER-SIDE; stores only the bcrypt hash; returns the plaintext ONCE.
@@ -73,17 +82,25 @@ DECLARE
   v_id     uuid;
   v_imo    uuid;
   v_scopes text[];
+  v_hash   text;
 BEGIN
-  SELECT c.id, c.imo_id, c.scopes
-    INTO v_id, v_imo, v_scopes
+  SELECT c.id, c.imo_id, c.scopes, c.client_secret_hash
+    INTO v_id, v_imo, v_scopes, v_hash
   FROM public.imo_call_platform_credentials c
   WHERE c.client_id = p_client_id
     AND c.is_active
-    AND c.revoked_at IS NULL
-    AND c.client_secret_hash = extensions.crypt(p_secret, c.client_secret_hash);
+    AND c.revoked_at IS NULL;
 
+  -- Always run exactly one bcrypt round so an unknown/inactive/revoked client_id takes ~the same
+  -- time as a known client_id with a wrong secret — removes the client_id existence timing oracle
+  -- on this publicly reachable (verify_jwt=false) endpoint.
   IF v_id IS NULL THEN
-    RETURN;  -- no rows: unknown client_id, inactive/revoked, or wrong secret (caller returns 401)
+    PERFORM extensions.crypt(p_secret, extensions.gen_salt('bf', 12));
+    RETURN;  -- unknown/inactive/revoked (caller returns 401)
+  END IF;
+
+  IF v_hash IS DISTINCT FROM extensions.crypt(p_secret, v_hash) THEN
+    RETURN;  -- wrong secret (caller returns 401)
   END IF;
 
   UPDATE public.imo_call_platform_credentials SET last_used_at = now() WHERE id = v_id;
@@ -174,6 +191,12 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.user_profiles up WHERE up.id = p_user_id AND up.imo_id = p_imo_id) THEN
     RAISE EXCEPTION 'agent % is not in IMO %', p_user_id, p_imo_id USING ERRCODE = '42501';
   END IF;
+
+  -- A pcId maps to exactly ONE agent (UNIQUE(imo_id, pc_id)). If a DIFFERENT agent currently holds
+  -- this platform-issued pcId, release it first so re-pointing the pcId is a clean reassignment
+  -- rather than an unhandled unique_violation (23505).
+  DELETE FROM public.imo_agent_external_ids
+  WHERE imo_id = p_imo_id AND pc_id = p_pc_id AND user_id <> p_user_id;
 
   INSERT INTO public.imo_agent_external_ids (imo_id, user_id, pc_id)
   VALUES (p_imo_id, p_user_id, p_pc_id)

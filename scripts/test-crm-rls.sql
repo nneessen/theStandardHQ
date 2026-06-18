@@ -64,5 +64,35 @@ BEGIN
 END $b$;
 RESET ROLE;
 
+-- ── Grant isolation: the M2M crm_* RPCs are service_role-only. The headline tenant-isolation
+--    control is the explicit REVOKE EXECUTE ... FROM authenticated (Supabase ALTER DEFAULT
+--    PRIVILEGES auto-grants it, so REVOKE FROM PUBLIC alone is insufficient). Asserting it here
+--    as the authenticated role catches any future migration/regen that silently re-grants.
+SELECT set_config('request.jwt.claims', json_build_object('sub', :'agent_a', 'role', 'authenticated')::text, true);
+SET LOCAL ROLE authenticated;
+DO $g$
+DECLARE n int := 0;
+BEGIN
+  BEGIN PERFORM * FROM crm_lookup_aor('00000000-0000-0000-0000-000000000000'::uuid, '+15550000000');
+    RAISE EXCEPTION 'GRANT FAIL: authenticated executed crm_lookup_aor';
+  EXCEPTION WHEN insufficient_privilege THEN n := n + 1; END;
+
+  BEGIN PERFORM * FROM crm_upsert_call('00000000-0000-0000-0000-000000000000'::uuid, 't', NULL, '+15550000000');
+    RAISE EXCEPTION 'GRANT FAIL: authenticated executed crm_upsert_call';
+  EXCEPTION WHEN insufficient_privilege THEN n := n + 1; END;
+
+  BEGIN PERFORM * FROM crm_patch_billable('00000000-0000-0000-0000-000000000000'::uuid, 't', 1::smallint);
+    RAISE EXCEPTION 'GRANT FAIL: authenticated executed crm_patch_billable';
+  EXCEPTION WHEN insufficient_privilege THEN n := n + 1; END;
+
+  BEGIN PERFORM * FROM crm_authenticate_credential('crm_x', 's');
+    RAISE EXCEPTION 'GRANT FAIL: authenticated executed crm_authenticate_credential';
+  EXCEPTION WHEN insufficient_privilege THEN n := n + 1; END;
+
+  IF n <> 4 THEN RAISE EXCEPTION 'GRANT FAIL: expected 4 EXECUTE denials, got %', n; END IF;
+  RAISE NOTICE 'RLS OK  authenticated denied EXECUTE on all 4 M2M crm_* RPCs (42501)';
+END $g$;
+RESET ROLE;
+
 DO $done$ BEGIN RAISE NOTICE 'ALL_RLS_CHECKS_PASSED'; END $done$;
 ROLLBACK;

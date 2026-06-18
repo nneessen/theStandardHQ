@@ -56,6 +56,15 @@ COMMENT ON FUNCTION public.normalize_phone_e164(text) IS
 -- ============================================================================
 -- 2) clients.phone_e164 — generated + indexed for exact-match lookup at call speed.
 --    NON-unique index: households legitimately share a phone number.
+--
+--    ⚠️ STORED generated columns are computed at row-write time and are NOT recomputed
+--    when normalize_phone_e164 is later CREATE OR REPLACE'd. crm_lookup_aor compares this
+--    STORED column against a LIVE normalize_phone_e164(p_ani) call, so after ANY change to
+--    the normalizer you MUST recompute existing rows — `UPDATE public.clients SET phone = phone;`
+--    (a full table rewrite) — or pre-existing callers' AoR lookups silently miss.
+--
+--    Adding this column takes ACCESS EXCLUSIVE on clients and rewrites the table once at apply
+--    time (negligible at Epic Life scale; schedule a quiet window if ever run on a large table).
 -- ============================================================================
 ALTER TABLE public.clients
   ADD COLUMN IF NOT EXISTS phone_e164 text

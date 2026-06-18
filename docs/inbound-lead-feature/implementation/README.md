@@ -40,3 +40,28 @@ screen-pop, PATCH = billable).
 - **Clients page:** each agent sees their **own** book/intake.
 - Still to confirm at onboarding: exact `CRM_INSTANCE_URL` base, whether ANI rides in the query
   string vs a header (Vercel PII-logging nuance).
+
+## Operational notes & known by-design caveats
+
+Surfaced by an xhigh code review; kept by design but worth knowing:
+
+- **Normalizer changes require a recompute.** `clients.phone_e164` is a STORED generated column;
+  it is NOT recomputed when `normalize_phone_e164` is later replaced. After ANY change to the
+  normalizer, run `UPDATE public.clients SET phone = phone;` (a full rewrite) or existing callers'
+  AoR lookups silently miss. (Commented in the Phase-0 schema migration.)
+- **The generated-column add rewrites `clients`** under `ACCESS EXCLUSIVE` once at apply time —
+  negligible at Epic Life scale; schedule a quiet window if ever applied to a large table.
+- **Token revocation lags up to 24h.** Bearers are stateless (no DB hit on the hot path), so a
+  revoked credential's already-minted tokens stay valid until they expire. If instant revocation is
+  ever required, shorten the TTL or add a credential-version claim checked on the data path.
+- **Scopes are non-authoritative.** They are carried/echoed but not enforced (only `crm:leads`
+  exists and only super-admins issue). Add enforcement before relying on a restricted scope.
+- **Duplicate-client edge cases are absorbed, not prevented.** A concurrent first-call race, or a
+  caller already on file under a non-normalizable phone, can create a second client row. A unique
+  index is deliberately NOT used (households legitimately share a number under one agent); every
+  consumer dedups via `ORDER BY … LIMIT 1`.
+- **`database.types.ts` regen is deferred to prod-apply.** The new tables/RPCs are local-only until
+  the migrations are applied to prod, so a prod-targeted regen now wouldn't include them and nothing
+  consumes them yet. Regenerate + commit as part of the prod-apply step.
+- **`inbound_calls` RLS is own-book only** (matches the confirmed agent-sees-own-book scope). An
+  admin/oversight read (e.g. unassigned calls) would need an added OR-branch in Phase 4.
