@@ -215,6 +215,37 @@ if (!bearer) {
     );
   }
 
+  // Malformed-but-present scalars must degrade to 200 (NOT a permanent 500) — guard #2.
+  {
+    const res = await leads("POST", {
+      body: {
+        requestTag: tag(),
+        pcId: PC_ID,
+        ani: KNOWN_ANI,
+        callStart: "9am",
+        duration: "120abc",
+        billable: 40000,
+      },
+    });
+    check(
+      "POST with malformed scalars -> 200",
+      res.status === 200,
+      `(got ${res.status})`,
+    );
+    await res.body?.cancel();
+  }
+  {
+    const res = await leads("PATCH", {
+      body: { requestTag: tag(), billable: 999999 },
+    });
+    check(
+      "PATCH with out-of-range billable -> 200",
+      res.status === 200,
+      `(got ${res.status})`,
+    );
+    await res.body?.cancel();
+  }
+
   // Negatives
   {
     const res = await leads("GET", { ani: KNOWN_ANI, bearer: null });

@@ -27,7 +27,9 @@ client, the phone normalizer, and the rate-limiter — **no new database objects
 
 Common to all: `Authorization: Bearer <token>` → `verifyCrmToken` (`401` if invalid/expired). **The
 tenant (`imo_id`) is taken from the verified token, never the request body.** A per-credential
-rate-limit is applied (secondary, fails open). The token is never logged.
+rate-limit is applied to the **GET lookup only** (the enumeration-prone path; secondary, fails open) —
+**never** to the POST/PATCH lifecycle writes, so a cap-hit can never `429` a real call. No request
+field (including the ANI) is ever logged.
 
 | Method | Input | RPC | Responses |
 |---|---|---|---|
@@ -40,6 +42,10 @@ rate-limit is applied (secondary, fails open). The token is never logged.
 platform's retry-once model is never tripped:
 - Unknown / cross-tenant `pcId` → the call is recorded unassigned (`agent_id NULL`, no pop), still `200`.
 - Malformed `ani` → stored raw, still `200`.
+- Malformed-but-present scalars (`callStart`/`duration`/`billable`) are **coerced to NULL** before the
+  RPC → still `200` (never a permanent `500` from a Postgres cast error the retry would just repeat).
+- A re-delivery that **omits** a field never wipes a prior value: the RPCs COALESCE-guard `ani`/
+  `phone_e164` (`crm_upsert_call`) and `billable` (`crm_patch_billable`) — migration `20260618060715`.
 - Duplicate POST (same `requestTag`) → one row (idempotent), same `id`.
 - PATCH before POST → a `patch_only` row keeps the billing, fires no phantom pop; response `queued: true`.
 - The only POST/PATCH `4xx` is a missing `requestTag` (the idempotency key). A genuine DB fault is `500`.

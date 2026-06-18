@@ -10,11 +10,14 @@
 // Auth: the OAuth bearer minted by crm-oauth-token, verified with verifyCrmToken (HMAC, expiry,
 // typ). The tenant (imo_id) is ALWAYS taken from the verified token, never the request body.
 // config.toml sets verify_jwt=false (own auth). We do NOT import _shared/cors.ts (M2M; the bearer
-// is the auth, not a browser origin). Secrets/PII are never logged; the ANI is masked to last-4.
+// is the auth, not a browser origin). Secrets/PII are never logged (no request field, incl. the ANI,
+// is ever written to logs — only the method + an RPC error code).
 //
 // Lifecycle resilience (POST/PATCH): per the platform's retry-once model, these never 4xx on a
-// valid-but-edge request (unknown pcId, malformed ANI) — they degrade gracefully and return 200.
-// The only POST/PATCH 4xx is a missing requestTag (the idempotency key). A genuine DB fault is 500.
+// valid-but-edge request and never permanent-500 on bad-but-present scalars — body scalars are
+// coerced (bad → NULL) so the call still degrades to 200. The only POST/PATCH 4xx is a missing
+// requestTag (the idempotency key); 500 is reserved for a genuine DB/transport fault. The rate-limit
+// is applied to GET ONLY (the enumeration-prone lookup) so a cap-hit can never 429 a lifecycle write.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
@@ -26,6 +29,8 @@ const JSON_HEADERS = {
   "Content-Type": "application/json",
   "Cache-Control": "no-store",
 };
+// GET (AoR lookup) enumeration guard — generous vs the ~100/hr expected; never applied to POST/PATCH.
+const GET_RATE_LIMIT_PER_HOUR = 2000;
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
@@ -34,6 +39,28 @@ function json(body: unknown, status: number): Response {
 function getBearer(req: Request): string | null {
   const h = req.headers.get("authorization") ?? "";
   return h.toLowerCase().startsWith("bearer ") ? h.slice(7).trim() : null;
+}
+
+// Coerce body scalars so a malformed-but-present value degrades to NULL (and the call to 200),
+// instead of raising a Postgres cast error that the handler can only map to a permanent 500.
+function coerceTimestamp(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+function coerceInt(v: unknown): number | null {
+  const n =
+    typeof v === "number"
+      ? v
+      : typeof v === "string" && v.trim() !== ""
+        ? Number(v)
+        : NaN;
+  return Number.isInteger(n) && n >= -2147483648 && n <= 2147483647 ? n : null;
+}
+function coerceSmallint(v: unknown): number | null {
+  if (typeof v === "boolean") return v ? 1 : 0;
+  const n = coerceInt(v);
+  return n !== null && n >= -32768 && n <= 32767 ? n : null;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -53,23 +80,23 @@ serve(async (req: Request): Promise<Response> => {
   if (!payload) return json({ error: "invalid_token" }, 401);
   const imoId = payload.imo_id;
 
-  const supabase = createSupabaseAdminClient();
-
-  // ── Per-credential rate-limit (secondary; checkRateLimit fails open on any fault). ──
-  const limited = await enforceRateLimit(
-    supabase,
-    {
-      key: `ratelimit:req:crm-leads:${payload.credential_id}`,
-      maxRequests: 1000,
-      windowSeconds: 3600,
-    },
-    {},
-  );
-  if (limited) return limited;
-
   try {
+    const supabase = createSupabaseAdminClient();
+
     if (method === "GET") {
-      // Latency-critical path: validate ANI, single indexed lookup, allocation-light.
+      // Per-credential rate-limit on the lookup ONLY (enumeration guard; fails open on a limiter
+      // fault). Never applied to POST/PATCH so a cap-hit can't 429 a lifecycle write.
+      const limited = await enforceRateLimit(
+        supabase,
+        {
+          key: `ratelimit:req:crm-leads:${payload.credential_id}`,
+          maxRequests: GET_RATE_LIMIT_PER_HOUR,
+          windowSeconds: 3600,
+        },
+        {},
+      );
+      if (limited) return limited;
+
       const ani = normalizePhoneNumber(
         new URL(req.url).searchParams.get("ani"),
       );
@@ -110,9 +137,9 @@ serve(async (req: Request): Promise<Response> => {
         p_offer_id: body.offerId ?? null,
         p_call_program: body.callProgram ?? null,
         p_sub_id: body.subId ?? null,
-        p_call_start: body.callStart ?? null,
-        p_duration: body.duration ?? null,
-        p_billable: body.billable ?? null,
+        p_call_start: coerceTimestamp(body.callStart),
+        p_duration: coerceInt(body.duration),
+        p_billable: coerceSmallint(body.billable),
         p_caller_name: body.callerName ?? null,
       });
       if (error) {
@@ -130,8 +157,8 @@ serve(async (req: Request): Promise<Response> => {
     const { data, error } = await supabase.rpc("crm_patch_billable", {
       p_imo_id: imoId,
       p_request_tag: requestTag,
-      p_billable: body.billable ?? null,
-      p_duration: body.duration ?? null,
+      p_billable: coerceSmallint(body.billable),
+      p_duration: coerceInt(body.duration),
       p_ani: body.ani ?? null,
     });
     if (error) {
@@ -147,6 +174,7 @@ serve(async (req: Request): Promise<Response> => {
       200,
     );
   } catch (e) {
+    // Includes a transport-level throw from the admin client or the rate-limiter — clean 500, not a bare crash.
     console.error("crm-leads: unhandled error", {
       method,
       message: (e as Error).message,
