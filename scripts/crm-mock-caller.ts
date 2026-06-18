@@ -1,13 +1,14 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env
-// End-to-end mock caller for the inbound-CRM endpoints. Phase 1 exercises the OAuth
-// token lifecycle; the GET/POST/PATCH /api/v1/leads calls get added here as Phases 2+ land.
+// End-to-end mock caller for the inbound-CRM endpoints. Drives the OAuth token lifecycle
+// (Phase 1) AND the /api/v1/leads data lifecycle (Phase 2) against the locally-served functions.
 //
-// Closes the full loop: POST client_id/secret -> receive a bearer -> VERIFY that bearer
-// with the shared signing key (so we know the mint path actually produced a valid token),
-// plus the negatives (wrong secret -> 401, unknown client -> 401, GET -> 405).
+// Closes the full loop: POST client_id/secret -> bearer -> verify it -> then exercise GET (AoR
+// lookup) / POST (find-create + call event) / PATCH (billable) plus the negatives. The Phase-2
+// checks need a seeded fixture (a credential, a pcId registered to an agent, and that agent owning
+// the KNOWN_ANI client) — the E2E harness seeds it before serving.
 //
-// Env: CRM_BASE_URL (default local serve), CRM_CLIENT_ID, CRM_CLIENT_SECRET,
-//      CRM_CALL_PLATFORM_SIGNING_KEY (to verify the returned token).
+// Env: CRM_BASE_URL, CRM_CLIENT_ID, CRM_CLIENT_SECRET, CRM_CALL_PLATFORM_SIGNING_KEY (to verify the
+//      returned token), CRM_TEST_PC_ID, CRM_TEST_KNOWN_ANI, CRM_TEST_UNKNOWN_ANI.
 //
 //   deno run --allow-net --allow-env scripts/crm-mock-caller.ts
 import { verifyCrmToken } from "../supabase/functions/_shared/crm-token-decoder.ts";
@@ -15,10 +16,17 @@ import { verifyCrmToken } from "../supabase/functions/_shared/crm-token-decoder.
 const BASE =
   Deno.env.get("CRM_BASE_URL") ?? "http://127.0.0.1:54321/functions/v1";
 const TOKEN_URL = `${BASE}/crm-oauth-token`;
+const LEADS_URL = `${BASE}/crm-leads`;
 const CLIENT_ID = Deno.env.get("CRM_CLIENT_ID") ?? "crm_mocktest";
 const CLIENT_SECRET = Deno.env.get("CRM_CLIENT_SECRET") ?? "mock-secret-123";
+const PC_ID = Deno.env.get("CRM_TEST_PC_ID") ?? "mock-pc-001";
+const KNOWN_ANI = Deno.env.get("CRM_TEST_KNOWN_ANI") ?? "555-200-1000";
+const UNKNOWN_ANI = Deno.env.get("CRM_TEST_UNKNOWN_ANI") ?? "+19995550000";
 
 let failures = 0;
+let bearer: string | null = null;
+const tag = () => `phase2-e2e-${crypto.randomUUID()}`;
+
 function check(name: string, cond: boolean, detail = ""): void {
   if (cond) {
     console.log(`  ok   ${name}`);
@@ -41,9 +49,25 @@ async function postToken(id: string, secret: string): Promise<Response> {
   });
 }
 
-console.log(`Token endpoint: ${TOKEN_URL}`);
+async function leads(
+  method: string,
+  opts: { ani?: string; body?: unknown; bearer?: string | null } = {},
+): Promise<Response> {
+  const headers: Record<string, string> = {};
+  const b = opts.bearer === undefined ? bearer : opts.bearer;
+  if (b) headers["Authorization"] = `Bearer ${b}`;
+  let url = LEADS_URL;
+  if (opts.ani !== undefined) url += `?ani=${encodeURIComponent(opts.ani)}`;
+  const init: RequestInit = { method, headers };
+  if (opts.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(opts.body);
+  }
+  return await fetch(url, init);
+}
 
-// 1) Happy path: mint + verify the returned bearer.
+// ── Phase 1: token lifecycle ────────────────────────────────────────────────
+console.log(`Token endpoint: ${TOKEN_URL}`);
 {
   const res = await postToken(CLIENT_ID, CLIENT_SECRET);
   check("token mint returns 200", res.status === 200, `(got ${res.status})`);
@@ -54,8 +78,9 @@ console.log(`Token endpoint: ${TOKEN_URL}`);
   );
   check("token_type is Bearer", json.token_type === "Bearer");
   check("expires_in is 86400", json.expires_in === 86400);
-  if (json.access_token) {
-    const payload = await verifyCrmToken(json.access_token).catch(() => null);
+  bearer = json.access_token ?? null;
+  if (bearer) {
+    const payload = await verifyCrmToken(bearer).catch(() => null);
     check(
       "minted token verifies with the shared signing key",
       payload !== null,
@@ -71,27 +96,136 @@ console.log(`Token endpoint: ${TOKEN_URL}`);
     );
   }
 }
-
-// 2) Wrong secret -> 401 invalid_client.
 {
   const res = await postToken(CLIENT_ID, "wrong-secret");
   check("wrong secret -> 401", res.status === 401, `(got ${res.status})`);
   const json = await res.json().catch(() => ({}));
   check("error is invalid_client", json.error === "invalid_client");
 }
-
-// 3) Unknown client -> 401.
 {
   const res = await postToken("crm_does_not_exist", CLIENT_SECRET);
   check("unknown client -> 401", res.status === 401, `(got ${res.status})`);
   await res.body?.cancel();
 }
-
-// 4) Wrong method -> 405.
 {
   const res = await fetch(TOKEN_URL, { method: "GET" });
-  check("GET -> 405", res.status === 405, `(got ${res.status})`);
+  check("token endpoint GET -> 405", res.status === 405, `(got ${res.status})`);
   await res.body?.cancel();
+}
+
+// ── Phase 2: leads lifecycle ────────────────────────────────────────────────
+console.log(`\nLeads endpoint: ${LEADS_URL}`);
+if (!bearer) {
+  check("leads lifecycle", false, "(skipped — token mint failed)");
+} else {
+  // GET — AoR lookup
+  {
+    const res = await leads("GET", { ani: KNOWN_ANI });
+    check("GET known ANI -> 200", res.status === 200, `(got ${res.status})`);
+    const j = await res.json().catch(() => ({}));
+    check(`GET returns pcId=${PC_ID}`, j.pcId === PC_ID, `(got ${j.pcId})`);
+  }
+  {
+    const res = await leads("GET", { ani: UNKNOWN_ANI });
+    check("GET unknown ANI -> 204", res.status === 204, `(got ${res.status})`);
+    await res.body?.cancel();
+  }
+  {
+    const res = await leads("GET", { ani: "abc" });
+    check(
+      "GET malformed ANI -> 400",
+      res.status === 400,
+      `(got ${res.status})`,
+    );
+    await res.body?.cancel();
+  }
+
+  // POST — find/create + call event (idempotent)
+  const tagA = tag();
+  let idA: string | null = null;
+  {
+    const res = await leads("POST", {
+      body: { requestTag: tagA, pcId: PC_ID, ani: KNOWN_ANI, state: "CA" },
+    });
+    check("POST -> 200", res.status === 200, `(got ${res.status})`);
+    const j = await res.json().catch(() => ({}));
+    check("POST returns a row id", typeof j.id === "string" && j.id.length > 0);
+    idA = j.id ?? null;
+  }
+  {
+    const res = await leads("POST", {
+      body: { requestTag: tagA, pcId: PC_ID, ani: KNOWN_ANI },
+    });
+    check("duplicate POST -> 200", res.status === 200, `(got ${res.status})`);
+    const j = await res.json().catch(() => ({}));
+    check(
+      "duplicate POST is idempotent (same id)",
+      j.id === idA,
+      `(got ${j.id})`,
+    );
+  }
+  {
+    const res = await leads("POST", {
+      body: { requestTag: tag(), pcId: "pc-does-not-exist", ani: UNKNOWN_ANI },
+    });
+    check(
+      "POST unknown pcId -> 200",
+      res.status === 200,
+      `(got ${res.status})`,
+    );
+    await res.body?.cancel();
+  }
+  {
+    const res = await leads("POST", { body: { pcId: PC_ID, ani: KNOWN_ANI } });
+    check(
+      "POST missing requestTag -> 400",
+      res.status === 400,
+      `(got ${res.status})`,
+    );
+    await res.body?.cancel();
+  }
+
+  // PATCH — billable / end of call
+  {
+    const res = await leads("PATCH", {
+      body: { requestTag: tagA, billable: 1, duration: 120 },
+    });
+    check("PATCH after POST -> 200", res.status === 200, `(got ${res.status})`);
+    const j = await res.json().catch(() => ({}));
+    check(
+      "PATCH after POST is not patch_only",
+      j.queued === false,
+      `(queued=${j.queued})`,
+    );
+  }
+  {
+    const res = await leads("PATCH", {
+      body: { requestTag: tag(), billable: 1, ani: UNKNOWN_ANI },
+    });
+    check(
+      "PATCH before POST -> 200",
+      res.status === 200,
+      `(got ${res.status})`,
+    );
+    const j = await res.json().catch(() => ({}));
+    check(
+      "PATCH before POST is patch_only",
+      j.queued === true,
+      `(queued=${j.queued})`,
+    );
+  }
+
+  // Negatives
+  {
+    const res = await leads("GET", { ani: KNOWN_ANI, bearer: null });
+    check("no bearer -> 401", res.status === 401, `(got ${res.status})`);
+    await res.body?.cancel();
+  }
+  {
+    const res = await leads("DELETE", {});
+    check("leads DELETE -> 405", res.status === 405, `(got ${res.status})`);
+    await res.body?.cancel();
+  }
 }
 
 console.log(

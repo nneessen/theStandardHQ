@@ -1,0 +1,5 @@
+# crm-leads is the inbound-call data API (GET/POST/PATCH on /api/v1/leads) for the external
+# dialer platform. It authenticates with the OAuth bearer minted by crm-oauth-token (NOT a
+# Supabase JWT), so the platform's verify_jwt middleware would always 401 us. Disable it and
+# let the function verify the bearer itself (verifyCrmToken).
+verify_jwt = false

@@ -57,6 +57,14 @@
       "destination": "https://bubbly-manifestation-production-f87d.up.railway.app/api/extract"
     },
     {
+      "source": "/oauth/token",
+      "destination": "https://pcyaqwodnyrpkaiojnpz.supabase.co/functions/v1/crm-oauth-token"
+    },
+    {
+      "source": "/api/v1/leads",
+      "destination": "https://pcyaqwodnyrpkaiojnpz.supabase.co/functions/v1/crm-leads"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
