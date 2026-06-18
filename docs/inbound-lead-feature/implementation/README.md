@@ -23,7 +23,7 @@ screen-pop, PATCH = billable).
 | **0** | Schema, phone normalizer, data RPCs (`crm_lookup_aor`/`crm_upsert_call`/`crm_patch_billable`), RLS, realtime | ✅ Built + verified (local) |
 | **1** | OAuth token issuer: credential store + RPCs, token signer/verifier, `crm-oauth-token` edge fn | ✅ Built + verified (local) — see [phase-1-oauth-token-issuer.md](./phase-1-oauth-token-issuer.md) |
 | **2** | Data endpoints — one `crm-leads` edge fn (GET/POST/PATCH) that verifies the bearer and calls the Phase 0 RPCs; `vercel.json` rewrites | ✅ Built + verified (local) — see [phase-2-data-endpoints.md](./phase-2-data-endpoints.md) |
-| 3 | Realtime agent screen-pop (`InboundCallProvider` + dialog) | ⬜ Not started |
+| **3** | Realtime agent screen-pop (`InboundCallProvider` + dialog) | ⬜ Not started — see [phase-3-screen-pop.md](./phase-3-screen-pop.md) |
 | 4 | Clients page (own-book per agent) + per-client inbound-call history | ⬜ Not started |
 | 5 | Paths, observability, PII/retention, hardening | ⬜ Not started |
 | 1b | Credential + pcId **admin UI** (super-admin: issue/rotate/revoke, register pcIds) | ⬜ Backend RPCs ready; UI not built |

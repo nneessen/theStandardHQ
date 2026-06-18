@@ -23,11 +23,24 @@ DECLARE
   v_n     int;
 BEGIN
   -- Anchor on an existing agent that owns a client with a normalizable phone.
+  -- MUST exclude access-revoked agents (e.g. the sunset FFG tenant on prod): crm_lookup_aor
+  -- deliberately returns no row for a revoked agent, so anchoring on one makes check #1 fail
+  -- spuriously. Also require the phone be uniquely owned by ONE non-revoked client in the imo
+  -- so the household tiebreak (covered separately by #10) can't redirect the lookup off-anchor.
   SELECT c.user_id, up.imo_id, c.phone, c.phone_e164
     INTO v_agent, v_imo, v_phone, v_e164
   FROM clients c
   JOIN user_profiles up ON up.id = c.user_id
   WHERE c.phone_e164 IS NOT NULL AND up.imo_id IS NOT NULL
+    AND NOT public.is_access_revoked(c.user_id)
+    -- The agent must not already own a pcId mapping in this imo: the test INSERTs one and
+    -- imo_agent_external_ids is UNIQUE(imo_id, user_id). Committed fixtures (e.g. from
+    -- scripts/crm-e2e-local.sh on a dev DB) would otherwise collide here.
+    AND NOT EXISTS (SELECT 1 FROM imo_agent_external_ids m
+                    WHERE m.imo_id = up.imo_id AND m.user_id = c.user_id)
+    AND (SELECT count(*) FROM clients c2 JOIN user_profiles u2 ON u2.id = c2.user_id
+         WHERE u2.imo_id = up.imo_id AND c2.phone_e164 = c.phone_e164
+           AND NOT public.is_access_revoked(c2.user_id)) = 1
   LIMIT 1;
   IF v_agent IS NULL THEN RAISE EXCEPTION 'No usable agent/client found in local data'; END IF;
   RAISE NOTICE 'anchor agent=% imo=% phone=% e164=%', v_agent, v_imo, v_phone, v_e164;
@@ -123,7 +136,14 @@ BEGIN
     v_pc2     text := 'agent-smoke-002';
     v_hh      text := '555-321-7654';
   BEGIN
-    SELECT id INTO v_agent2 FROM user_profiles WHERE imo_id = v_imo AND id <> v_agent LIMIT 1;
+    -- Must not already own a pcId mapping (imo_agent_external_ids is UNIQUE(imo_id,user_id)); the
+    -- test INSERTs one below. Committed fixtures (crm-e2e-local.sh / crm-simulate-inbound.sh on a dev
+    -- DB) would otherwise collide. SKIPs cleanly if no unmapped 2nd agent remains.
+    SELECT up.id INTO v_agent2 FROM user_profiles up
+      WHERE up.imo_id = v_imo AND up.id <> v_agent
+        AND NOT EXISTS (SELECT 1 FROM imo_agent_external_ids m
+                        WHERE m.imo_id = v_imo AND m.user_id = up.id)
+      LIMIT 1;
     -- A carrier already valid for this IMO (a policies trigger enforces carrier-in-IMO).
     SELECT carrier_id INTO v_carrier FROM policies WHERE imo_id = v_imo LIMIT 1;
     IF v_agent2 IS NULL OR v_carrier IS NULL THEN
@@ -164,6 +184,40 @@ BEGIN
     AND billable=1 AND duration=90;
   IF NOT FOUND THEN RAISE EXCEPTION '12 FAIL: PATCH without billable wiped the prior billable'; END IF;
   RAISE NOTICE '12 OK  PATCH without billable preserves prior billable';
+
+  -- 13) Revoked agent is EXCLUDED from AoR (locks the `AND NOT is_access_revoked` filter). The
+  --     sunset FFG tenant is live on prod and IS revoked, so this exercises the real negative path;
+  --     a regression in the revocation join would silently leak pre-call AoR + pops to revoked
+  --     agents. SKIPs gracefully where no revoked agent exists (mirrors #10).
+  DECLARE
+    v_ragent uuid;
+    v_rimo   uuid;
+    v_rphone text := '555-444-3322';
+    v_rc     uuid;
+  BEGIN
+    SELECT up.id, up.imo_id INTO v_ragent, v_rimo
+    FROM user_profiles up
+    WHERE up.imo_id IS NOT NULL AND public.is_access_revoked(up.id)
+    LIMIT 1;
+    IF v_ragent IS NULL THEN
+      RAISE NOTICE '13 SKIP revoked-agent exclusion (no revoked agent in this DB)';
+    ELSE
+      INSERT INTO imo_agent_external_ids (imo_id, user_id, pc_id)
+        VALUES (v_rimo, v_ragent, 'revoked-smoke-001')
+        ON CONFLICT (imo_id, user_id) DO UPDATE SET pc_id = EXCLUDED.pc_id;
+      INSERT INTO clients (user_id, name, phone, status)
+        VALUES (v_ragent, 'Revoked Caller', v_rphone, 'active') RETURNING id INTO v_rc;
+      -- crm_lookup_aor must return NO rows for a revoked agent...
+      SELECT count(*) INTO v_n FROM crm_lookup_aor(v_rimo, v_rphone);
+      IF v_n <> 0 THEN RAISE EXCEPTION '13 FAIL revoked agent surfaced in AoR (% rows)', v_n; END IF;
+      -- ...and a POST resolving that pcId must degrade to unassigned (no agent, no pop, no client).
+      SELECT * INTO r FROM crm_upsert_call(v_rimo, 'revoked-tag-A', 'revoked-smoke-001', v_rphone);
+      IF r.agent_id IS NOT NULL OR r.fired_pop IS NOT FALSE THEN
+        RAISE EXCEPTION '13 FAIL revoked agent assigned/popped: agent=% pop=%', r.agent_id, r.fired_pop;
+      END IF;
+      RAISE NOTICE '13 OK  revoked agent excluded from AoR + POST degrades to unassigned';
+    END IF;
+  END;
 
   RAISE NOTICE 'ALL_SMOKE_CHECKS_PASSED';
 END$$;

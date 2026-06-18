@@ -12,10 +12,7 @@ export function HqFooter() {
         <div className="foot-grid">
           <div>
             <a className="brand" href="#top">
-              <span className="mark">
-                <span>S</span>
-              </span>{" "}
-              THE STANDARD
+              THE STANDARD <span className="hq-tag">HQ</span>
             </a>
             <p className="desc">
               The agency built like a tech company. Recruiting agents who want
