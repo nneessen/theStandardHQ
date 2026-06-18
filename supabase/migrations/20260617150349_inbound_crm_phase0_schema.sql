@@ -146,6 +146,16 @@ CREATE INDEX IF NOT EXISTS idx_inbound_calls_agent_open
 CREATE INDEX IF NOT EXISTS idx_inbound_calls_client
   ON public.inbound_calls (client_id);
 
+COMMENT ON COLUMN public.inbound_calls.billable IS
+  '0 = not billable, 1 = billable. Authoritative value is set by the platform PATCH (the POST value is provisional).';
+
+-- Keep updated_at fresh on ANY update. The RPCs already set it explicitly; this makes direct
+-- or future writes outside the RPCs robust too (reuses the shared bump function used by clients).
+DROP TRIGGER IF EXISTS set_inbound_calls_updated_at ON public.inbound_calls;
+CREATE TRIGGER set_inbound_calls_updated_at
+  BEFORE UPDATE ON public.inbound_calls
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
 -- Realtime change feed drives the screen-pop (INSERT -> open, status='ended' UPDATE -> dismiss).
 ALTER TABLE public.inbound_calls REPLICA IDENTITY FULL;
 DO $$

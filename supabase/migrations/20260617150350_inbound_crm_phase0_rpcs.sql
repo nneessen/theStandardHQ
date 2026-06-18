@@ -205,6 +205,8 @@ BEGIN
   IF v_id IS NULL THEN
     -- PATCH arrived before POST: record billing now; agent_id NULL + patch_only=true
     -- => no pop. The later POST fills identity via crm_upsert_call's ON CONFLICT.
+    -- ani is NOT NULL; on a PATCH-before-POST we may not have it yet, so seed an empty-string
+    -- placeholder. The later POST's ON CONFLICT overwrites ani (and phone_e164) with the real value.
     INSERT INTO public.inbound_calls (
       imo_id, request_tag, ani, phone_e164, billable, duration, status, fired_pop, patch_only
     ) VALUES (
