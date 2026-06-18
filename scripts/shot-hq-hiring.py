@@ -53,11 +53,11 @@ def main():
         page.goto(BASE + "/", wait_until="domcontentloaded", timeout=30000)
         time.sleep(4)  # lazy three.js + effects
 
-        tag = page.locator(".theme-hq .hero-tag")
+        title = page.locator(".theme-hq .hero-title")
         hiring = page.locator(".theme-hq .hero-hiring")
         result["checks"]["desktop"] = {
-            "hero_tag_count": tag.count(),
-            "hero_tag_text": tag.first.inner_text() if tag.count() else "",
+            "hero_title_count": title.count(),
+            "hero_title_text": title.first.inner_text() if title.count() else "",
             "hero_hiring_count": hiring.count(),
             "hero_hiring_text": hiring.first.inner_text() if hiring.count() else "",
             # is the hiring callout within the first viewport (above the fold)?
@@ -94,9 +94,9 @@ def main():
     mob = result["checks"]["mobile"]
     result["console_errors"] = errors
     result["ok"] = (
-        d["hero_tag_count"] >= 1
+        d["hero_title_count"] >= 1
+        and "STANDARD" in d["hero_title_text"].upper()
         and d["hero_hiring_count"] >= 1
-        and "HIRING" in d["hero_tag_text"].upper()
         and mob["hero_hiring_count"] >= 1
         and mob["no_h_overflow"]
         and len(errors) == 0

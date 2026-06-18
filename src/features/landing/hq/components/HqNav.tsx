@@ -13,9 +13,6 @@ export function HqNav() {
       <div className="progress" data-progress />
       <nav className="hq-nav" data-nav>
         <a className="brand" href="#top">
-          <span className="mark">
-            <span>S</span>
-          </span>{" "}
           THE STANDARD <span className="hq-tag">HQ</span>
         </a>
         <div className="navlinks">
