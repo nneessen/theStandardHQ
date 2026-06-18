@@ -192,6 +192,7 @@ import { ThemeProvider } from "next-themes";
 import { router } from "./router";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import { InboundCallProvider } from "./contexts/InboundCallContext";
 import { CustomDomainProvider } from "./contexts/CustomDomainContext";
 import { Toaster } from "@/components/ui/sonner";
 import { metricsService } from "./services/observability/MetricsService";
@@ -242,10 +243,12 @@ root.render(
           <CustomDomainProvider>
             <AuthProvider>
               <NotificationProvider>
-                <RouterProvider router={router} />
-                <Toaster />
-                <VersionUpdateDialog />
-                <ReactQueryDevtools initialIsOpen={false} />
+                <InboundCallProvider>
+                  <RouterProvider router={router} />
+                  <Toaster />
+                  <VersionUpdateDialog />
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </InboundCallProvider>
               </NotificationProvider>
             </AuthProvider>
           </CustomDomainProvider>
