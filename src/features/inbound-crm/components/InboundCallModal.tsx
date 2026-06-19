@@ -31,15 +31,20 @@ import {
   transformFormToCreateData,
 } from "@/features/policies";
 import type { NewPolicyForm, Policy } from "@/types/policy.types";
-import {
-  useInboundCallTypes,
-  useInboundCarriers,
-} from "../hooks/useInboundCallDisposition";
+import { useActiveCallTypes } from "@/features/kpi";
+import { useCarriers } from "@/hooks/carriers";
 import {
   useInboundClientRecord,
   useInboundCallHistory,
   useSaveInboundIntake,
 } from "../hooks/useInboundCallIntake";
+import { CarrierCombobox, type CarrierChoice } from "./CarrierCombobox";
+import {
+  ExistingCoverageSection,
+  type CoverageItem,
+} from "./ExistingCoverageSection";
+import { BeneficiariesSection, type Beneficiary } from "./BeneficiariesSection";
+import { MedicationsField } from "./MedicationsField";
 
 const tint = (v: string, pct: number) =>
   `color-mix(in srgb, var(${v}) ${pct}%, transparent)`;
@@ -204,6 +209,8 @@ interface ClientIntake {
   lastReceivedAgent?: string;
   reasonForCalling?: string;
   currentCoverageAmount?: string;
+  currentMonthlyPremium?: string;
+  currentCarrierName?: string;
   spanishCall?: boolean;
   majorHealthConditions?: string;
   majorConditionsDetails?: string;
@@ -212,12 +219,9 @@ interface ClientIntake {
   nicotineUser?: boolean;
   birthCountry?: string;
   birthState?: string;
-  shipping?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-  };
+  existingCoverage?: CoverageItem[];
+  beneficiaries?: Beneficiary[];
+  medications?: string[];
 }
 // Raw policy row shape (getWithPolicies casts the Supabase rows without camel-mapping, so these are
 // the on-the-wire snake_case columns + the nested carrier join).
@@ -247,8 +251,10 @@ const blankForm = {
   lastReceivedAgent: "",
   callTypeId: "",
   currentCarrierId: "",
+  currentCarrierName: "",
   reasonForCalling: "",
   currentCoverageAmount: "",
+  currentMonthlyPremium: "",
   spanishCall: false,
   notes: "",
   majorHealthConditions: "",
@@ -258,10 +264,6 @@ const blankForm = {
   nicotineUser: false,
   birthCountry: "",
   birthState: "",
-  shipStreet: "",
-  shipCity: "",
-  shipState: "",
-  shipZip: "",
 };
 function parseJson<T>(s?: string | null): Partial<T> {
   if (!s) return {};
@@ -317,12 +319,10 @@ export function InboundCallModal() {
     clientId,
     activeCall?.id ?? null,
   );
-  const { data: callTypes = [] } = useInboundCallTypes(
-    activeCall?.imo_id ?? null,
-  );
-  const { data: carriers = [] } = useInboundCarriers(
-    activeCall?.imo_id ?? null,
-  );
+  // Canonical sources (reuse the service layer; no duplicate raw queries). The modal renders
+  // inside ImoProvider, so useCarriers resolves the agent's IMO automatically.
+  const { callTypes } = useActiveCallTypes(activeCall?.imo_id ?? undefined);
+  const { data: carriers = [] } = useCarriers();
   const saveMut = useSaveInboundIntake();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -330,6 +330,9 @@ export function InboundCallModal() {
   const [policyOpen, setPolicyOpen] = useState(false);
 
   const [form, setForm] = useState(blankForm);
+  const [coverage, setCoverage] = useState<CoverageItem[]>([]);
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [medications, setMedications] = useState<string[]>([]);
   const set = <K extends keyof typeof blankForm>(
     k: K,
     v: (typeof blankForm)[K],
@@ -345,7 +348,6 @@ export function InboundCallModal() {
     }>(record?.address);
     const intake =
       (record as unknown as { intake?: ClientIntake })?.intake ?? {};
-    const ship = intake.shipping ?? {};
     setForm({
       name: record?.name ?? "",
       email: record?.email ?? "",
@@ -361,8 +363,10 @@ export function InboundCallModal() {
       lastReceivedAgent: intake.lastReceivedAgent ?? "",
       callTypeId: activeCall.call_type_id ?? "",
       currentCarrierId: activeCall.inquiry_carrier_id ?? "",
+      currentCarrierName: intake.currentCarrierName ?? "",
       reasonForCalling: intake.reasonForCalling ?? "",
       currentCoverageAmount: intake.currentCoverageAmount ?? "",
+      currentMonthlyPremium: intake.currentMonthlyPremium ?? "",
       spanishCall: !!intake.spanishCall,
       notes: activeCall.notes ?? "",
       majorHealthConditions: intake.majorHealthConditions ?? "",
@@ -372,11 +376,10 @@ export function InboundCallModal() {
       nicotineUser: !!intake.nicotineUser,
       birthCountry: intake.birthCountry ?? "",
       birthState: intake.birthState ?? "",
-      shipStreet: ship.street ?? "",
-      shipCity: ship.city ?? "",
-      shipState: ship.state ?? "",
-      shipZip: ship.zipCode ?? "",
     });
+    setCoverage(intake.existingCoverage ?? []);
+    setBeneficiaries(intake.beneficiaries ?? []);
+    setMedications(intake.medications ?? []);
   }, [activeCall, record]);
 
   const policies = useMemo(
@@ -415,6 +418,8 @@ export function InboundCallModal() {
           lastReceivedAgent: form.lastReceivedAgent,
           reasonForCalling: form.reasonForCalling,
           currentCoverageAmount: form.currentCoverageAmount,
+          currentMonthlyPremium: form.currentMonthlyPremium,
+          currentCarrierName: form.currentCarrierName,
           spanishCall: form.spanishCall,
           majorHealthConditions: form.majorHealthConditions,
           majorConditionsDetails: form.majorConditionsDetails,
@@ -423,12 +428,9 @@ export function InboundCallModal() {
           nicotineUser: form.nicotineUser,
           birthCountry: form.birthCountry,
           birthState: form.birthState,
-          shipping: {
-            street: form.shipStreet,
-            city: form.shipCity,
-            state: form.shipState,
-            zipCode: form.shipZip,
-          },
+          existingCoverage: coverage,
+          beneficiaries,
+          medications,
         },
         callTypeId: form.callTypeId || null,
         inquiryCarrierId: form.currentCarrierId || null,
@@ -716,6 +718,12 @@ export function InboundCallModal() {
                   Call Details
                 </TabsTrigger>
                 <TabsTrigger
+                  value="coverage"
+                  className="data-[state=active]:bg-v2-card"
+                >
+                  Coverage
+                </TabsTrigger>
+                <TabsTrigger
                   value="health"
                   className="data-[state=active]:bg-v2-card"
                 >
@@ -777,7 +785,7 @@ export function InboundCallModal() {
                         />
                       </div>
                     </Panel>
-                    <Panel title="Billing Address">
+                    <Panel title="Address">
                       <div className="grid grid-cols-2 gap-3">
                         <TextField
                           label="Street"
@@ -802,31 +810,6 @@ export function InboundCallModal() {
                         />
                       </div>
                     </Panel>
-                    <Panel title="Shipping Address">
-                      <div className="grid grid-cols-2 gap-3">
-                        <TextField
-                          label="Street"
-                          value={form.shipStreet}
-                          onChange={(v) => set("shipStreet", v)}
-                          className="col-span-2"
-                        />
-                        <TextField
-                          label="City"
-                          value={form.shipCity}
-                          onChange={(v) => set("shipCity", v)}
-                        />
-                        <TextField
-                          label="State"
-                          value={form.shipState}
-                          onChange={(v) => set("shipState", v)}
-                        />
-                        <TextField
-                          label="ZIP"
-                          value={form.shipZip}
-                          onChange={(v) => set("shipZip", v)}
-                        />
-                      </div>
-                    </Panel>
                   </div>
                 </TabsContent>
 
@@ -841,16 +824,39 @@ export function InboundCallModal() {
                           onChange={(v) => set("callTypeId", v)}
                           options={callTypes}
                         />
-                        <SelectField
-                          label="Current carrier"
-                          value={form.currentCarrierId}
-                          onChange={(v) => set("currentCarrierId", v)}
-                          options={carriers}
-                        />
+                        <div>
+                          <FieldLabel>Current carrier</FieldLabel>
+                          <CarrierCombobox
+                            carriers={carriers}
+                            value={{
+                              id: form.currentCarrierId || null,
+                              name:
+                                form.currentCarrierName ||
+                                carriers.find(
+                                  (c) => c.id === form.currentCarrierId,
+                                )?.name ||
+                                "",
+                            }}
+                            onChange={(v: CarrierChoice) =>
+                              setForm((f) => ({
+                                ...f,
+                                currentCarrierId: v.id ?? "",
+                                currentCarrierName: v.name,
+                              }))
+                            }
+                          />
+                        </div>
                         <TextField
                           label="Current coverage amount"
                           value={form.currentCoverageAmount}
                           onChange={(v) => set("currentCoverageAmount", v)}
+                          placeholder="$ face amount"
+                        />
+                        <TextField
+                          label="Current monthly premium"
+                          value={form.currentMonthlyPremium}
+                          onChange={(v) => set("currentMonthlyPremium", v)}
+                          placeholder="$ / mo"
                         />
                         <CheckField
                           label="Spanish call?"
@@ -882,68 +888,95 @@ export function InboundCallModal() {
                   </div>
                 </TabsContent>
 
+                {/* COVERAGE & BENEFICIARIES */}
+                <TabsContent value="coverage" className="mt-0 h-full">
+                  <div className="grid h-full gap-4 xl:grid-cols-2">
+                    <Panel title="Current Coverage">
+                      <ExistingCoverageSection
+                        value={coverage}
+                        onChange={setCoverage}
+                        carriers={carriers}
+                      />
+                    </Panel>
+                    <Panel title="Beneficiaries">
+                      <BeneficiariesSection
+                        value={beneficiaries}
+                        onChange={setBeneficiaries}
+                      />
+                    </Panel>
+                  </div>
+                </TabsContent>
+
                 {/* HEALTH */}
                 <TabsContent value="health" className="mt-0 h-full">
-                  <div className="grid h-full gap-4 xl:grid-cols-2">
-                    <Panel title="Health Details">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
-                          <FieldLabel>Major health conditions</FieldLabel>
-                          <Textarea
-                            value={form.majorHealthConditions}
-                            onChange={(e) =>
-                              set("majorHealthConditions", e.target.value)
-                            }
-                            placeholder="Diabetes, heart, cancer, COPD…"
-                            className="min-h-[80px] text-sm"
+                  <div className="flex h-full flex-col gap-4">
+                    <div className="grid gap-4 xl:grid-cols-2">
+                      <Panel title="Health Details">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="col-span-2">
+                            <FieldLabel>Major health conditions</FieldLabel>
+                            <Textarea
+                              value={form.majorHealthConditions}
+                              onChange={(e) =>
+                                set("majorHealthConditions", e.target.value)
+                              }
+                              placeholder="Diabetes, heart, cancer, COPD…"
+                              className="min-h-[80px] text-sm"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <FieldLabel>
+                              Conditions details / date of dx
+                            </FieldLabel>
+                            <Textarea
+                              value={form.majorConditionsDetails}
+                              onChange={(e) =>
+                                set("majorConditionsDetails", e.target.value)
+                              }
+                              placeholder="Diagnosis dates, medications, severity…"
+                              className="min-h-[80px] text-sm"
+                            />
+                          </div>
+                          <TextField
+                            label="Height"
+                            value={form.height}
+                            onChange={(v) => set("height", v)}
+                            placeholder={`5' 10"`}
+                          />
+                          <TextField
+                            label="Weight"
+                            value={form.weight}
+                            onChange={(v) => set("weight", v)}
+                            placeholder="lbs"
+                          />
+                          <CheckField
+                            label="Nicotine user"
+                            checked={form.nicotineUser}
+                            onChange={(v) => set("nicotineUser", v)}
                           />
                         </div>
-                        <div className="col-span-2">
-                          <FieldLabel>
-                            Conditions details / date of dx
-                          </FieldLabel>
-                          <Textarea
-                            value={form.majorConditionsDetails}
-                            onChange={(e) =>
-                              set("majorConditionsDetails", e.target.value)
-                            }
-                            placeholder="Diagnosis dates, medications, severity…"
-                            className="min-h-[80px] text-sm"
+                      </Panel>
+                      <Panel title="Birthplace & Tobacco">
+                        <div className="grid grid-cols-2 gap-3">
+                          <TextField
+                            label="Birth country"
+                            value={form.birthCountry}
+                            onChange={(v) => set("birthCountry", v)}
+                            placeholder="United States"
+                          />
+                          <TextField
+                            label="Birth state"
+                            value={form.birthState}
+                            onChange={(v) => set("birthState", v)}
                           />
                         </div>
-                        <TextField
-                          label="Height"
-                          value={form.height}
-                          onChange={(v) => set("height", v)}
-                          placeholder={`5' 10"`}
-                        />
-                        <TextField
-                          label="Weight"
-                          value={form.weight}
-                          onChange={(v) => set("weight", v)}
-                          placeholder="lbs"
-                        />
-                        <CheckField
-                          label="Nicotine user"
-                          checked={form.nicotineUser}
-                          onChange={(v) => set("nicotineUser", v)}
-                        />
-                      </div>
-                    </Panel>
-                    <Panel title="Birthplace & Tobacco">
-                      <div className="grid grid-cols-2 gap-3">
-                        <TextField
-                          label="Birth country"
-                          value={form.birthCountry}
-                          onChange={(v) => set("birthCountry", v)}
-                          placeholder="United States"
-                        />
-                        <TextField
-                          label="Birth state"
-                          value={form.birthState}
-                          onChange={(v) => set("birthState", v)}
-                        />
-                      </div>
+                      </Panel>
+                    </div>
+                    <Panel title="Common Medications">
+                      <MedicationsField
+                        value={medications}
+                        onChange={setMedications}
+                      />
                     </Panel>
                   </div>
                 </TabsContent>

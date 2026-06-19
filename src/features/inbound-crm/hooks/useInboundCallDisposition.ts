@@ -1,52 +1,10 @@
 // src/features/inbound-crm/hooks/useInboundCallDisposition.ts
-// Dropdown data + the save mutation for in-call disposition on the screen-pop. The call types and
-// carriers are fetched scoped to the popped call's imo_id directly (NOT via useImo/useCarriers,
-// which depend on ImoContext — the pop renders above ImoProvider), keeping the pop self-contained.
-import { useMutation, useQuery } from "@tanstack/react-query";
+// In-call disposition mutation for the inbound screen-pop intake. The call-type and carrier
+// DROPDOWN data is NOT fetched here — that duplicated the canonical service layer. The intake
+// (which renders INSIDE ImoProvider) reuses `useActiveCallTypes` (@/features/kpi) and
+// `useCarriers` (@/hooks/carriers) directly.
+import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/services";
-
-export interface DispositionOption {
-  id: string;
-  name: string;
-}
-
-/** Active call types for the call's tenant (kpi_call_types), for the call-type dropdown. */
-export function useInboundCallTypes(imoId: string | null) {
-  return useQuery({
-    queryKey: ["inbound-call", "call-types", imoId],
-    queryFn: async (): Promise<DispositionOption[]> => {
-      const { data, error } = await supabase
-        .from("kpi_call_types")
-        .select("id, name")
-        .eq("imo_id", imoId!)
-        .eq("is_active", true)
-        .order("sort_order");
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-    enabled: !!imoId,
-    staleTime: 5 * 60 * 1000,
-  });
-}
-
-/** Active carriers for the call's tenant, for the "carrier calling in from" dropdown. */
-export function useInboundCarriers(imoId: string | null) {
-  return useQuery({
-    queryKey: ["inbound-call", "carriers", imoId],
-    queryFn: async (): Promise<DispositionOption[]> => {
-      const { data, error } = await supabase
-        .from("carriers")
-        .select("id, name")
-        .eq("imo_id", imoId!)
-        .eq("is_active", true)
-        .order("name");
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-    enabled: !!imoId,
-    staleTime: 5 * 60 * 1000,
-  });
-}
 
 export interface DispositionInput {
   requestTag: string;
