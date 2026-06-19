@@ -8,3 +8,4 @@ export {
   clientHierarchyKeys,
 } from "./useDownlineClients";
 export { useCreateOrFindClient } from "./useCreateOrFindClient";
+export { useClients, ownClientKeys } from "./useClients";

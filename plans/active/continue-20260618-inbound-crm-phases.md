@@ -1,74 +1,92 @@
-# CONTINUATION — Inbound-Call CRM Integration (resume here)
+# CONTINUATION — Inbound-Call CRM (resume here)
 
-**Updated:** 2026-06-18 (session 2). **Branch:** `feat/inbound-crm-phase2`.
-The four tasks from the prior handoff are **ALL DONE** (see "Completed this session"). What remains is the
-**GO-LIVE** sequence — do NOT re-run the completed work below.
-
-Deep record: `memory/project_inbound_crm_phase0_build_20260617.md` (updated with the prod-apply milestone).
+**Updated:** 2026-06-18 (session 3 — Phase 3 screen-pop UI). **Branch:** `feat/inbound-crm-phase3` (PR #24).
+Deep record: `memory/project_inbound_crm_phase0_build_20260617.md`.
 
 ---
 
-## STATE NOW
-- **Phases 0–2 are CODE-COMPLETE on `main` AND all 4 migrations are APPLIED TO PROD** (`20260617150349`,
-  `20260617150350`, `20260617163403`, `20260618060715`). Verified on prod: RPC smoke 12/12, RLS isolation,
-  grant gate, realtime publication + `REPLICA IDENTITY FULL`, and a live happy-path lookup→upsert→pop.
-- **The feature is INERT in prod**: no edge functions deployed, no credentials issued, the platform is not
-  pointed at us. Nothing fires. Applying the schema changed no behavior.
-- **Uncommitted on `feat/inbound-crm-phase2`** (this session): `scripts/crm-e2e-local.sh` (new E2E harness),
-  `scripts/test-crm-rpcs-smoke.sql` (anchor hardened vs revoked/pre-mapped agents),
-  `docs/inbound-lead-feature/implementation/phase-3-screen-pop.md` (new) + its README row.
+## WHERE WE ARE NOW (Phase 3 = the inbound screen-pop INTAKE)
+The full-screen client INTAKE that takes over the agent's screen on an inbound call is **built, verified,
+and committed LOCALLY** as `b3cabe8d` on `feat/inbound-crm-phase3`. **NOT pushed** — held for owner design
+sign-off (the look was rejected 3× before this redesign).
 
-## Completed this session (do NOT redo)
-1. **Mock E2E live** — `scripts/crm-e2e-local.sh` seeds a committed fixture (issues a real OAuth credential —
-   the RPC mints a RANDOM client_id/secret, so capture it; the mock defaults `crm_mocktest`/`mock-secret-123`
-   do NOT exist), serves both fns, runs `crm-mock-caller.ts` → all 28 checks green. `CRM_INSTANCE_URL` need only
-   be NON-EMPTY locally (token issuer fails closed on empty); its value is irrelevant for local E2E.
-2. **Phase 3 screen-pop doc** — written, build-ready, DOC ONLY (not built).
-3. **Prod apply** — done + verified (above).
-4. **Vault re-sync** — inbound docs folded into wiki `external-api-integrations.md`; 42 orphaned raw-sources
-   mirrors from doc-cleanup `bd1a1fb7` pruned (collision-guarded); `wiki-lint` exit 0.
+### What `b3cabe8d` contains
+- **`src/features/inbound-crm/components/InboundCallModal.tsx`** — rewritten. Full-screen, mounted in
+  `App.tsx` inside the authed shell (inherits `.theme-v2`). Layout:
+  - PINNED header: caller name + sub-line + status badge (Existing N policies / New caller — now consistent) +
+    Close + Save intake.
+  - ALWAYS-VISIBLE left **context rail** (360px): Caller card, 3-up stat strip (Policies/Active/Premium),
+    Existing Policies (tinted status), Recent Calls history. This is what makes it data-dense (anchored to the
+    Policies page) and kills the old bottom-void.
+  - RIGHT: 3-tab form **Client · Call Details · Health** (user asked for tabs). Panels **stretch to fill height**
+    (`xl:[grid-template-rows:auto_1fr]` / `h-full`) → no vertical scroll within a tab, no bottom void.
+- **`src/features/inbound-crm/hooks/useInboundCallIntake.ts`** — `useInboundClientRecord` (now also hydrates
+  `clients.intake` jsonb), `useInboundCallHistory` (recent inbound_calls, nulls-last), `useSaveInboundIntake`
+  (clientService.update + `crm_set_client_intake` + `crm_set_call_disposition` in one mutation).
+- **`src/services/clients/client/ClientService.ts`** — FIX: `getWithPolicies` selected `carriers.logo_url`
+  which **does not exist** (Postgres 42703) → it 400'd and silently dropped the client record (name/policies
+  never bound). Now `carrier:carriers(id, name)`. NOTE: `getWithPolicies` is consumed ONLY by the inbound
+  intake (the deprecated `getClientWithPolicies` wrapper has no callers) → this was harmless until now, NOT a
+  live prod-page bug.
+- **`scripts/crm-fire-test-call.sh`** — richer demo seed: client is now **Maria Sanchez** (named, DOB, email,
+  address) + 2 policies (Aflac whole_life active, term_life lapsed) + 1 prior ENDED call, so the rail shows
+  real data. Best-effort/exception-wrapped so a seed failure never aborts the fire.
+
+### New migration (LOCAL ONLY — bundle at go-live)
+- `supabase/migrations/20260618185726_inbound_crm_client_intake.sql` — `clients.intake jsonb` +
+  `crm_set_client_intake(p_client_id, p_intake)` SECURITY DEFINER (scoped to `clients.user_id = auth.uid()`),
+  REVOKE from PUBLIC/anon, GRANT authenticated. Applied LOCAL; NOT on prod.
+
+### Verified this session (LOCAL, real authed browser via Playwright + DB read-back)
+- typecheck 0, build green.
+- Name/DOB/address/policies/recent-calls all **bind** (was the `logo_url` bug).
+- DOB UTC off-by-one fixed (local-date parse).
+- **Both save paths persist**: intake → `clients.intake` (15 keys incl. title + reasonForCalling);
+  disposition → `inbound_calls` (call_type="Cash Out", carrier="Aflac", notes) via the real dropdowns + Notes
+  field. Dropdowns populated (3 call types, 9 carriers for the imo) + render on-brand.
+- Screenshots: `/tmp/intake-v5-{client,call,health}.png`, `/tmp/dispo-dropdown.png`.
+
+### Demo it
+`bash scripts/crm-fire-test-call.sh` (log in as `epiclife.neessen@gmail.com` first) → Maria Sanchez pop.
+Clean leftover ringing rows:
+`./scripts/migrations/run-sql.sh "DELETE FROM inbound_calls ic USING clients c WHERE ic.client_id=c.id AND c.phone_e164=public.normalize_phone_e164('555-867-5309') AND ic.status='ringing';"`
+(NOTE: local Supabase/Docker had stopped mid-session; if `run-sql.sh` says connection refused, `open -a Docker`
+then `npx supabase start`.)
 
 ---
 
-## NEXT — GO-LIVE (only when the owner says go; needs owner authority — no staging exists)
-0. **Apply the two LOCAL-only migrations to PROD (in order), bundled with go-live:**
-   - `supabase/migrations/20260618093314_inbound_crm_phase5_hardening.sql` (review #2/#5/#6 — concurrent-dup-client
-     advisory lock, billable/duration clamp, text caps). Smoke (12 + #13) green on both.
-   - `supabase/migrations/20260618132257_inbound_crm_phase3_disposition.sql` (Phase 3 disposition: +inbound_calls
-     call_type_id/inquiry_carrier_id/notes + `crm_set_call_disposition` RPC). Rolled-back disposition smoke green.
-   Both applied + verified on LOCAL only so far; NOT on prod.
-1. **Deploy the edge functions:** `supabase functions deploy crm-oauth-token crm-leads`.
-   - These have NO `[functions.*]` block in `supabase/config.toml` → must add `[functions.crm-oauth-token]`
-     and `[functions.crm-leads]` with `verify_jwt = false` (they carry their own OAuth bearer, not a Supabase
-     JWT; without a config block deploy defaults to `verify_jwt=true` and the gateway 401s the platform).
-   - 🔴 **COUPLED — token-endpoint rate limit (review #1, CRITICAL at go-live):** the moment
-     `crm-oauth-token` is `verify_jwt=false` it is unauthenticated, and it runs a full bcrypt cost-12 on
-     EVERY request (incl. the dummy-crypt on unknown client_ids) **inside the shared Postgres** → a flood
-     degrades all tenants. It has **no rate limit** and the app limiter **fails open**. Add a coarse
-     **IP-based** limit at the gateway (Vercel/Cloudflare/Supabase edge) IN THE SAME CHANGE as `verify_jwt=false`.
-     (`crm-leads` is safe — it verifies the cheap HMAC before any DB call.) TEST that the platform's bearer reaches the fns.
-2. **Set secrets (prod):** `CRM_CALL_PLATFORM_SIGNING_KEY` (HMAC key; fail-closed if unset) and
-   `CRM_INSTANCE_URL` (the REAL onboarding base URL the platform prepends to `/api/v1/leads`; fail-closed if empty).
-3. **Issue the first Epic Life credential** via the credential RPCs (super-admin context) and hand the platform
-   `client_id` + one-time `client_secret` + the `/oauth/token` and `/api/v1/leads` URLs.
-4. **`database.types.ts`** — now that the inbound tables ARE on prod, a `generate:types` regen WILL include them
-   (fixes nothing today since no frontend consumes them yet; do it when Phase 3/4 frontend lands). Needs
-   `SUPABASE_ACCESS_TOKEN` (not in `.env`). Keep it a separate chore commit.
-5. **`vercel.json` rewrites** (`/oauth/token`, `/api/v1/leads`) only matter if the platform targets the app
-   domain rather than the direct `…supabase.co/functions/v1/…` URLs.
+## OPEN DECISION (awaiting owner)
+Right-side tab panels **stretch to fill** the height. The data-rich ones (Notes, Address, Health Details) look
+great; the SPARSE ones (esp. "Birthplace & Tobacco" = 2 fields in a full-height bordered box) carry interior
+whitespace. Owner to rule: **stretch-to-fill** vs **natural height** (top-aligned, accept some bottom gap).
 
-## Then — remaining BUILD phases (frontend)
-- **Phase 3** (screen-pop) — spec in `docs/inbound-lead-feature/implementation/phase-3-screen-pop.md`.
-- **Phase 4** Clients page (own-book per agent + per-client inbound-call history).
-- **Phase 5** observability / PII-retention / hardening.
-- **Phase 1b** credential + pcId admin UI (super-admin).
+## NEXT (do NOT start until owner signs off on the look)
+1. Push `b3cabe8d` to PR #24 once approved.
+2. **Task #13 (remaining): Capture-New-Policy** — reuse `usePolicyForm` + `transformFormToCreateData(form,
+   clientId, userId)` + `useCreatePolicy` with `status:'pending'` (mirror `PolicyDashboard.onSave`). Confirm
+   pending policies/commissions are EXCLUDED from earned-production dashboards.
+3. **Task #14: Clients page** — sidebar nav (`sidebar-nav.config.ts`, business group, UserCircle) + `/clients`
+   & `/clients/$clientId` routes (RouteGuard noRecruits noStaffRoles) + own-book list + detail (reuse
+   getWithPolicies + per-client inbound_calls history). Factor a shared `ClientRecord`.
+4. **Banking/SSN** section — deferred (needs encrypted storage + access-gating).
+
+---
+
+## GO-LIVE (unchanged; only when owner says go — no staging exists)
+0. Apply the **three** LOCAL-only inbound migrations to PROD in order, bundled with go-live:
+   `20260618093314_…phase5_hardening` → `20260618132257_…phase3_disposition` → `20260618185726_…client_intake`.
+1. Deploy edge fns `crm-oauth-token crm-leads`; add `[functions.*]` blocks with `verify_jwt=false`.
+   🔴 COUPLED: add a coarse **IP rate-limit at the gateway** in the SAME change as `verify_jwt=false` on
+   `crm-oauth-token` (unauth bcrypt cost-12 in shared Postgres = all-tenant DoS; app limiter fails open).
+2. Secrets (prod): `CRM_CALL_PLATFORM_SIGNING_KEY`, `CRM_INSTANCE_URL` (both fail-closed if unset).
+3. Issue first Epic Life credential (super-admin) → hand platform client_id + one-time secret + URLs.
+4. `database.types.ts` regen (needs `SUPABASE_ACCESS_TOKEN`, not in `.env`) — separate chore commit, when
+   frontend consumes the inbound tables.
 
 ## Carry-forward gotchas
-- `REMOTE_DATABASE_URL` is in `.env` but UNEXPORTED — `source .env` to read it, then prefix
-  `DATABASE_URL="$REMOTE" ./scripts/migrations/run-*.sh`; confirm `Target DB: REMOTE` before trusting any prod op.
-- Supabase grant rule: `REVOKE FROM PUBLIC` is insufficient — must `REVOKE FROM anon, authenticated`.
-- `crm_lookup_aor` correctly returns NO row for a revoked agent (`AND NOT is_access_revoked`). The smoke test's
-  anchor now excludes revoked-FFG (`ffffffff-…`) agents and agents that already own a pcId mapping.
-- Rolled-back prod smoke is side-effect-free: the `clients`/`policies` sync webhooks use `net.http_post` (pg_net),
-  whose queue insert is transactional → rolls back with the test (verified; no dblink/autonomous path exists).
-- CI red on `main` is pre-existing/non-blocking (`generate:types` drift; `Supabase Preview` not from-scratch-applicable).
+- `REMOTE_DATABASE_URL` in `.env` is UNEXPORTED — `source .env` then prefix `DATABASE_URL="$REMOTE" ./scripts/…`;
+  confirm `Target DB: REMOTE` before any prod op.
+- Supabase grant rule: `REVOKE FROM PUBLIC` is insufficient — also `REVOKE FROM anon, authenticated`.
+- NEVER change the user's local login (`epiclife.neessen@gmail.com`) for any reason.
+- Untracked at repo root: `carrier_product_named.csv` (NOT created by me — leave it; flag to owner) +
+  `docs/inbound-lead-feature/client-info-screenshots-dashboard/` (the Salesforce reference screenshots).

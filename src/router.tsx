@@ -11,6 +11,7 @@ import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import App from "./App";
 import { ExpensesPage } from "./features/expenses";
+import { ClientsPage, ClientDetailPage } from "./features/clients";
 import { PolicyDashboard } from "./features/policies";
 import { AnalyticsDashboard } from "./features/analytics";
 import { DashboardHome } from "./features/dashboard";
@@ -311,6 +312,30 @@ const expensesRoute = createRoute({
       <ExpensesPage />
     </RouteGuard>
   ),
+});
+
+// Clients route — the agent's own book. Blocks recruits + staff roles (same gate as the nav item).
+const clientsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "clients",
+  component: () => (
+    <RouteGuard permission="nav.clients" noRecruits noStaffRoles>
+      <ClientsPage />
+    </RouteGuard>
+  ),
+});
+
+const clientDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "clients/$clientId",
+  component: function ClientDetailRouteComponent() {
+    const { clientId } = clientDetailRoute.useParams();
+    return (
+      <RouteGuard permission="nav.clients" noRecruits noStaffRoles>
+        <ClientDetailPage clientId={clientId} />
+      </RouteGuard>
+    );
+  },
 });
 
 // Test route for debugging comp guide - Super-admin only
@@ -1245,6 +1270,8 @@ const routeTree = rootRoute.addChildren([
   settingsRoute,
   targetsRoute,
   expensesRoute,
+  clientsRoute,
+  clientDetailRoute,
   testCompGuideRoute,
   hierarchyIndexRoute,
   hierarchyTreeRoute,

@@ -11,3 +11,9 @@ export {
   useInboundCarriers,
   useInboundCallDisposition,
 } from "./hooks/useInboundCallDisposition";
+export {
+  useInboundClientRecord,
+  useInboundCallHistory,
+  useSaveInboundIntake,
+} from "./hooks/useInboundCallIntake";
+export type { InboundCallHistoryRow } from "./hooks/useInboundCallIntake";
