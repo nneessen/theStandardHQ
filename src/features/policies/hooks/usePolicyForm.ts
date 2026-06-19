@@ -33,6 +33,12 @@ export interface UsePolicyFormOptions {
   policyId?: string;
   policy?: Policy | null;
   products: Array<{ id: string; product_type: string }>;
+  /**
+   * New-mode only: seed values merged over the empty defaults (e.g. prefill the client
+   * identity when starting an application from a context that already knows the client,
+   * like the inbound-call intake). Ignored in edit mode (policy values win).
+   */
+  defaultFormData?: Partial<NewPolicyForm>;
 }
 
 export interface UsePolicyFormReturn {
@@ -186,10 +192,15 @@ export function usePolicyForm({
   policyId,
   policy,
   products,
+  defaultFormData,
 }: UsePolicyFormOptions): UsePolicyFormReturn {
-  const [formData, setFormData] = useState<NewPolicyForm>(() =>
-    createInitialFormData(policyId, policy),
-  );
+  const [formData, setFormData] = useState<NewPolicyForm>(() => {
+    const base = createInitialFormData(policyId, policy);
+    // Prefill only for new policies; edit mode keeps the policy's own values.
+    return policyId || !defaultFormData
+      ? base
+      : { ...base, ...defaultFormData };
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

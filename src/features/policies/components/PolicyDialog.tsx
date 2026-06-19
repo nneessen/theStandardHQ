@@ -17,6 +17,8 @@ interface PolicyDialogProps {
   externalErrors?: Record<string, string>;
   /** Parent mutation pending state */
   isPending?: boolean;
+  /** New-mode only: prefill values (e.g. the known client when opened from the inbound intake). */
+  defaultFormData?: Partial<NewPolicyForm>;
 }
 
 /**
@@ -38,6 +40,7 @@ export function PolicyDialog({
   isLoadingPolicy = false,
   externalErrors = {},
   isPending = false,
+  defaultFormData,
 }: PolicyDialogProps) {
   // Track form submission state locally (from PolicyForm callback)
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
@@ -130,6 +133,7 @@ export function PolicyDialog({
             externalErrors={externalErrors}
             isPending={isPending}
             onSubmittingChange={setIsFormSubmitting}
+            defaultFormData={defaultFormData}
           />
         )}
       </DialogContent>

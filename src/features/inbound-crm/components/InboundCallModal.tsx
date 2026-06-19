@@ -8,8 +8,9 @@
 // live on the call), and a 3-tab form on the right (Client · Call Details · Health) so each section
 // stays bounded with no vertical scrolling. Non-banking v1 (SSN/bank deferred to encrypted storage).
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Phone } from "lucide-react";
+import { Phone, FilePlus2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,13 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useInboundCall } from "@/contexts/InboundCallContext";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  PolicyDialog,
+  useCreatePolicy,
+  transformFormToCreateData,
+} from "@/features/policies";
+import type { NewPolicyForm, Policy } from "@/types/policy.types";
 import {
   useInboundCallTypes,
   useInboundCarriers,
@@ -316,6 +324,10 @@ export function InboundCallModal() {
     activeCall?.imo_id ?? null,
   );
   const saveMut = useSaveInboundIntake();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const createPolicy = useCreatePolicy();
+  const [policyOpen, setPolicyOpen] = useState(false);
 
   const [form, setForm] = useState(blankForm);
   const set = <K extends keyof typeof blankForm>(
@@ -429,7 +441,41 @@ export function InboundCallModal() {
     );
   };
 
+  // Start a new application (status: 'pending') for the popped client, reusing the standard
+  // PolicyForm. Binds to the KNOWN clientId (not name-based createOrFind) so it attaches to this
+  // exact caller. Throws on failure so PolicyForm keeps the dialog open + surfaces the error.
+  const onSavePolicy = async (fd: NewPolicyForm): Promise<Policy | null> => {
+    if (!user?.id || !clientId) {
+      throw new Error("No client on this call to attach a policy to");
+    }
+    const createData = transformFormToCreateData(fd, clientId, user.id);
+    const result = await createPolicy.mutateAsync(createData);
+    toast.success(
+      `Application started — pending${
+        result.policyNumber ? ` (${result.policyNumber})` : ""
+      }`,
+    );
+    // Refresh the context rail so the new pending policy shows immediately.
+    queryClient.invalidateQueries({
+      queryKey: ["inbound-call", "record", clientId],
+    });
+    return result;
+  };
+
   if (!activeCall) return null;
+
+  // Prefill the policy form's client fields from the intake so validation passes and the agent
+  // sees who the application is for; the policy still binds by clientId in onSavePolicy.
+  const policyPrefill: Partial<NewPolicyForm> = {
+    clientName: form.name,
+    clientEmail: form.email,
+    clientPhone: form.phone,
+    clientState: form.state,
+    clientDOB: form.dob,
+    clientStreet: form.street,
+    clientCity: form.city,
+    clientZipCode: form.zip,
+  };
 
   const isExisting = !!clientId;
   const headerName =
@@ -447,435 +493,477 @@ export function InboundCallModal() {
   const badgeVar = isExisting ? "--blue" : "--amber";
 
   return (
-    <Dialog open={!!activeCall} onOpenChange={(o) => !o && dismiss()}>
-      <DialogContent
-        hideCloseButton
-        className="left-0 top-0 flex h-screen w-screen max-h-none max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 text-v2-ink"
-        style={{ background: "var(--surface-1)" }}
-      >
-        {/* ── header ─────────────────────────────────────────────────────── */}
-        <div
-          className="flex shrink-0 items-center justify-between gap-4 px-6 py-3"
-          style={{
-            background: "var(--surface-3)",
-            borderBottom: "1px solid var(--line)",
-          }}
+    <>
+      <Dialog open={!!activeCall} onOpenChange={(o) => !o && dismiss()}>
+        <DialogContent
+          hideCloseButton
+          className="left-0 top-0 flex h-screen w-screen max-h-none max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 text-v2-ink"
+          style={{ background: "var(--surface-1)" }}
         >
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-              style={{ background: tint("--green", 15), color: "var(--green)" }}
-            >
-              <Phone size={20} />
-            </span>
-            <div className="min-w-0">
-              <div
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: "var(--green)" }}
-              >
-                Incoming call
-              </div>
-              <div className="truncate font-display text-[20px] font-extrabold uppercase tracking-wide text-v2-ink">
-                {headerName}
-              </div>
-              <div className="truncate text-sm text-v2-ink-muted">{sub}</div>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <span
-              className="rounded-md px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wide"
-              style={{
-                background: tint(badgeVar, 14),
-                color: `var(${badgeVar})`,
-                border: `1px solid ${tint(badgeVar, 30)}`,
-              }}
-            >
-              {badge}
-            </span>
-            <Button variant="ghost" onClick={dismiss}>
-              Close
-            </Button>
-            <Button
-              onClick={save}
-              disabled={saveMut.isPending}
-              style={{ background: "var(--blue)", color: "#0c1322" }}
-            >
-              {saveMut.isPending ? "Saving…" : "Save intake"}
-            </Button>
-          </div>
-        </div>
-
-        {/* ── body: context rail + tabbed form ───────────────────────────── */}
-        <div className="flex min-h-0 flex-1">
-          {/* LEFT — always-visible caller context (real data) */}
-          <aside
-            className="flex w-[360px] shrink-0 flex-col gap-3 overflow-y-auto p-4"
+          {/* ── header ─────────────────────────────────────────────────────── */}
+          <div
+            className="flex shrink-0 items-center justify-between gap-4 px-6 py-3"
             style={{
-              background: "var(--surface-2)",
-              borderRight: "1px solid var(--line)",
+              background: "var(--surface-3)",
+              borderBottom: "1px solid var(--line)",
             }}
           >
-            <Panel title="Caller">
-              <SummaryRow label="Phone" value={fmtPhone(form.phone)} />
-              <SummaryRow label="Email" value={form.email} />
-              <SummaryRow
-                label="DOB"
-                value={
-                  form.dob
-                    ? `${fmtDate(form.dob)}${
-                        ageFromDob(form.dob) ? ` · ${ageFromDob(form.dob)}` : ""
-                      }`
-                    : ""
-                }
-              />
-              <SummaryRow
-                label="Location"
-                value={[form.city, form.state].filter(Boolean).join(", ")}
-              />
-              <SummaryRow
-                label="Program"
-                value={activeCall.call_program ?? activeCall.offer_id}
-              />
-            </Panel>
-
-            {/* stat strip — mirrors the Policies-page metric row */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { k: "Policies", v: String(stats.total), c: "--blue" },
-                { k: "Active", v: String(stats.active), c: "--green" },
-                { k: "Premium", v: money(stats.annual), c: "--violet" },
-              ].map((s) => (
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
+                style={{
+                  background: tint("--green", 15),
+                  color: "var(--green)",
+                }}
+              >
+                <Phone size={20} />
+              </span>
+              <div className="min-w-0">
                 <div
-                  key={s.k}
-                  className="rounded-lg border border-v2-ring bg-v2-card px-3 py-2"
+                  className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+                  style={{ color: "var(--green)" }}
                 >
-                  <div
-                    className="font-display text-lg font-extrabold leading-none"
-                    style={{ color: `var(${s.c})` }}
-                  >
-                    {s.v}
-                  </div>
-                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
-                    {s.k}
-                  </div>
+                  Incoming call
                 </div>
-              ))}
+                <div className="truncate font-display text-[20px] font-extrabold uppercase tracking-wide text-v2-ink">
+                  {headerName}
+                </div>
+                <div className="truncate text-sm text-v2-ink-muted">{sub}</div>
+              </div>
             </div>
-
-            <Panel title="Existing Policies" bodyClassName="p-0">
-              {policies.length === 0 ? (
-                <div className="px-4 py-6 text-center text-sm text-v2-ink-subtle">
-                  No policies on file.
-                </div>
-              ) : (
-                <ul className="divide-y divide-v2-ring">
-                  {policies.map((p) => (
-                    <li key={p.id} className="px-4 py-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm font-semibold text-v2-ink">
-                          {p.carrier?.name ?? "—"}
-                        </span>
-                        <StatusBadge status={p.lifecycle_status ?? p.status} />
-                      </div>
-                      <div className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-v2-ink-muted">
-                        <span className="truncate capitalize">
-                          {String(p.product ?? "—").replace(/_/g, " ")}
-                        </span>
-                        <span className="shrink-0 tabular-nums">
-                          {money(p.monthly_premium)}/mo
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+            <div className="flex shrink-0 items-center gap-3">
+              <span
+                className="rounded-md px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wide"
+                style={{
+                  background: tint(badgeVar, 14),
+                  color: `var(${badgeVar})`,
+                  border: `1px solid ${tint(badgeVar, 30)}`,
+                }}
+              >
+                {badge}
+              </span>
+              {isExisting && (
+                <Button
+                  variant="outline"
+                  onClick={() => setPolicyOpen(true)}
+                  className="gap-1.5"
+                >
+                  <FilePlus2 size={15} />
+                  New application
+                </Button>
               )}
-            </Panel>
+              <Button variant="ghost" onClick={dismiss}>
+                Close
+              </Button>
+              <Button
+                onClick={save}
+                disabled={saveMut.isPending}
+                style={{ background: "var(--blue)", color: "#0c1322" }}
+              >
+                {saveMut.isPending ? "Saving…" : "Save intake"}
+              </Button>
+            </div>
+          </div>
 
-            <Panel title="Recent Calls" bodyClassName="p-0" className="flex-1">
-              {history.length === 0 ? (
-                <div className="px-4 py-6 text-center text-sm text-v2-ink-subtle">
-                  No prior calls.
-                </div>
-              ) : (
-                <ul className="divide-y divide-v2-ring">
-                  {history.map((h) => (
-                    <li key={h.id} className="px-4 py-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm text-v2-ink">
-                          {h.call_start ? fmtDate(h.call_start) : "In progress"}
-                        </span>
-                        <StatusBadge status={h.status} />
-                      </div>
-                      <div className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-v2-ink-muted">
-                        <span className="truncate">
-                          {h.call_program ?? "—"}
-                        </span>
-                        <span className="shrink-0 tabular-nums">
-                          {fmtDuration(h.duration)}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Panel>
-          </aside>
-
-          {/* RIGHT — tabbed form (no vertical scroll within a tab) */}
-          <Tabs defaultValue="client" className="flex min-h-0 flex-1 flex-col">
-            <TabsList
-              className="w-full justify-start gap-1 px-6"
+          {/* ── body: context rail + tabbed form ───────────────────────────── */}
+          <div className="flex min-h-0 flex-1">
+            {/* LEFT — always-visible caller context (real data) */}
+            <aside
+              className="flex w-[360px] shrink-0 flex-col gap-3 overflow-y-auto p-4"
               style={{
                 background: "var(--surface-2)",
-                borderBottom: "1px solid var(--line)",
+                borderRight: "1px solid var(--line)",
               }}
             >
-              <TabsTrigger
-                value="client"
-                className="data-[state=active]:bg-v2-card"
-              >
-                Client
-              </TabsTrigger>
-              <TabsTrigger
-                value="call"
-                className="data-[state=active]:bg-v2-card"
-              >
-                Call Details
-              </TabsTrigger>
-              <TabsTrigger
-                value="health"
-                className="data-[state=active]:bg-v2-card"
-              >
-                Health
-              </TabsTrigger>
-            </TabsList>
+              <Panel title="Caller">
+                <SummaryRow label="Phone" value={fmtPhone(form.phone)} />
+                <SummaryRow label="Email" value={form.email} />
+                <SummaryRow
+                  label="DOB"
+                  value={
+                    form.dob
+                      ? `${fmtDate(form.dob)}${
+                          ageFromDob(form.dob)
+                            ? ` · ${ageFromDob(form.dob)}`
+                            : ""
+                        }`
+                      : ""
+                  }
+                />
+                <SummaryRow
+                  label="Location"
+                  value={[form.city, form.state].filter(Boolean).join(", ")}
+                />
+                <SummaryRow
+                  label="Program"
+                  value={activeCall.call_program ?? activeCall.offer_id}
+                />
+              </Panel>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-              {/* CLIENT */}
-              <TabsContent value="client" className="mt-0 h-full">
-                <div className="grid h-full gap-4 xl:grid-cols-2 xl:[grid-template-rows:auto_1fr]">
-                  <Panel title="Identity">
-                    <div className="grid grid-cols-2 gap-3">
-                      <TextField
-                        label="Name"
-                        value={form.name}
-                        onChange={(v) => set("name", v)}
-                      />
-                      <TextField
-                        label="Title"
-                        value={form.title}
-                        onChange={(v) => set("title", v)}
-                        placeholder="Mr. / Mrs. / Ms."
-                      />
-                      <TextField
-                        label="Phone"
-                        value={form.phone}
-                        onChange={(v) => set("phone", v)}
-                      />
-                      <TextField
-                        label="Email"
-                        value={form.email}
-                        onChange={(v) => set("email", v)}
-                      />
-                      <TextField
-                        label="Date of birth"
-                        type="date"
-                        value={form.dob}
-                        onChange={(v) => set("dob", v)}
-                      />
-                      <CheckField
-                        label="Wants more coverage later"
-                        checked={form.wantsMoreCoverageLater}
-                        onChange={(v) => set("wantsMoreCoverageLater", v)}
-                      />
+              {/* stat strip — mirrors the Policies-page metric row */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { k: "Policies", v: String(stats.total), c: "--blue" },
+                  { k: "Active", v: String(stats.active), c: "--green" },
+                  { k: "Premium", v: money(stats.annual), c: "--violet" },
+                ].map((s) => (
+                  <div
+                    key={s.k}
+                    className="rounded-lg border border-v2-ring bg-v2-card px-3 py-2"
+                  >
+                    <div
+                      className="font-display text-lg font-extrabold leading-none"
+                      style={{ color: `var(${s.c})` }}
+                    >
+                      {s.v}
                     </div>
-                  </Panel>
-                  <Panel title="Servicing">
-                    <div className="grid gap-3">
-                      <TextField
-                        label="Writing agent"
-                        value={form.writingAgent}
-                        onChange={(v) => set("writingAgent", v)}
-                      />
-                      <TextField
-                        label="Last received agent"
-                        value={form.lastReceivedAgent}
-                        onChange={(v) => set("lastReceivedAgent", v)}
-                      />
+                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted">
+                      {s.k}
                     </div>
-                  </Panel>
-                  <Panel title="Billing Address">
-                    <div className="grid grid-cols-2 gap-3">
-                      <TextField
-                        label="Street"
-                        value={form.street}
-                        onChange={(v) => set("street", v)}
-                        className="col-span-2"
-                      />
-                      <TextField
-                        label="City"
-                        value={form.city}
-                        onChange={(v) => set("city", v)}
-                      />
-                      <TextField
-                        label="State"
-                        value={form.state}
-                        onChange={(v) => set("state", v)}
-                      />
-                      <TextField
-                        label="ZIP"
-                        value={form.zip}
-                        onChange={(v) => set("zip", v)}
-                      />
-                    </div>
-                  </Panel>
-                  <Panel title="Shipping Address">
-                    <div className="grid grid-cols-2 gap-3">
-                      <TextField
-                        label="Street"
-                        value={form.shipStreet}
-                        onChange={(v) => set("shipStreet", v)}
-                        className="col-span-2"
-                      />
-                      <TextField
-                        label="City"
-                        value={form.shipCity}
-                        onChange={(v) => set("shipCity", v)}
-                      />
-                      <TextField
-                        label="State"
-                        value={form.shipState}
-                        onChange={(v) => set("shipState", v)}
-                      />
-                      <TextField
-                        label="ZIP"
-                        value={form.shipZip}
-                        onChange={(v) => set("shipZip", v)}
-                      />
-                    </div>
-                  </Panel>
-                </div>
-              </TabsContent>
+                  </div>
+                ))}
+              </div>
 
-              {/* CALL */}
-              <TabsContent value="call" className="mt-0 h-full">
-                <div className="grid h-full gap-4 xl:grid-cols-2">
-                  <Panel title="Initial Call Details">
-                    <div className="grid grid-cols-2 gap-3">
-                      <SelectField
-                        label="Call type"
-                        value={form.callTypeId}
-                        onChange={(v) => set("callTypeId", v)}
-                        options={callTypes}
-                      />
-                      <SelectField
-                        label="Current carrier"
-                        value={form.currentCarrierId}
-                        onChange={(v) => set("currentCarrierId", v)}
-                        options={carriers}
-                      />
-                      <TextField
-                        label="Current coverage amount"
-                        value={form.currentCoverageAmount}
-                        onChange={(v) => set("currentCoverageAmount", v)}
-                      />
-                      <CheckField
-                        label="Spanish call?"
-                        checked={form.spanishCall}
-                        onChange={(v) => set("spanishCall", v)}
-                      />
-                      <div className="col-span-2">
-                        <FieldLabel>Reason for calling</FieldLabel>
-                        <Textarea
-                          value={form.reasonForCalling}
-                          onChange={(e) =>
-                            set("reasonForCalling", e.target.value)
-                          }
-                          placeholder="Cash surrender, consolidation, more coverage…"
-                          className="min-h-[120px] text-sm"
+              <Panel title="Existing Policies" bodyClassName="p-0">
+                {policies.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-sm text-v2-ink-subtle">
+                    No policies on file.
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-v2-ring">
+                    {policies.map((p) => (
+                      <li key={p.id} className="px-4 py-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm font-semibold text-v2-ink">
+                            {p.carrier?.name ?? "—"}
+                          </span>
+                          <StatusBadge
+                            status={p.lifecycle_status ?? p.status}
+                          />
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-v2-ink-muted">
+                          <span className="truncate capitalize">
+                            {String(p.product ?? "—").replace(/_/g, " ")}
+                          </span>
+                          <span className="shrink-0 tabular-nums">
+                            {money(p.monthly_premium)}/mo
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+
+              <Panel
+                title="Recent Calls"
+                bodyClassName="p-0"
+                className="flex-1"
+              >
+                {history.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-sm text-v2-ink-subtle">
+                    No prior calls.
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-v2-ring">
+                    {history.map((h) => (
+                      <li key={h.id} className="px-4 py-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm text-v2-ink">
+                            {h.call_start
+                              ? fmtDate(h.call_start)
+                              : "In progress"}
+                          </span>
+                          <StatusBadge status={h.status} />
+                        </div>
+                        <div className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-v2-ink-muted">
+                          <span className="truncate">
+                            {h.call_program ?? "—"}
+                          </span>
+                          <span className="shrink-0 tabular-nums">
+                            {fmtDuration(h.duration)}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+            </aside>
+
+            {/* RIGHT — tabbed form (no vertical scroll within a tab) */}
+            <Tabs
+              defaultValue="client"
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <TabsList
+                className="w-full justify-start gap-1 px-6"
+                style={{
+                  background: "var(--surface-2)",
+                  borderBottom: "1px solid var(--line)",
+                }}
+              >
+                <TabsTrigger
+                  value="client"
+                  className="data-[state=active]:bg-v2-card"
+                >
+                  Client
+                </TabsTrigger>
+                <TabsTrigger
+                  value="call"
+                  className="data-[state=active]:bg-v2-card"
+                >
+                  Call Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="health"
+                  className="data-[state=active]:bg-v2-card"
+                >
+                  Health
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+                {/* CLIENT */}
+                <TabsContent value="client" className="mt-0 h-full">
+                  <div className="grid h-full gap-4 xl:grid-cols-2 xl:[grid-template-rows:auto_1fr]">
+                    <Panel title="Identity">
+                      <div className="grid grid-cols-2 gap-3">
+                        <TextField
+                          label="Name"
+                          value={form.name}
+                          onChange={(v) => set("name", v)}
+                        />
+                        <TextField
+                          label="Title"
+                          value={form.title}
+                          onChange={(v) => set("title", v)}
+                          placeholder="Mr. / Mrs. / Ms."
+                        />
+                        <TextField
+                          label="Phone"
+                          value={form.phone}
+                          onChange={(v) => set("phone", v)}
+                        />
+                        <TextField
+                          label="Email"
+                          value={form.email}
+                          onChange={(v) => set("email", v)}
+                        />
+                        <TextField
+                          label="Date of birth"
+                          type="date"
+                          value={form.dob}
+                          onChange={(v) => set("dob", v)}
+                        />
+                        <CheckField
+                          label="Wants more coverage later"
+                          checked={form.wantsMoreCoverageLater}
+                          onChange={(v) => set("wantsMoreCoverageLater", v)}
                         />
                       </div>
-                    </div>
-                  </Panel>
-                  <Panel title="Notes" bodyClassName="flex flex-1 flex-col">
-                    <FieldLabel>Call notes</FieldLabel>
-                    <Textarea
-                      value={form.notes}
-                      onChange={(e) => set("notes", e.target.value)}
-                      placeholder="What the client said, objections, follow-ups…"
-                      className="min-h-[220px] flex-1 text-sm"
-                    />
-                  </Panel>
-                </div>
-              </TabsContent>
+                    </Panel>
+                    <Panel title="Servicing">
+                      <div className="grid gap-3">
+                        <TextField
+                          label="Writing agent"
+                          value={form.writingAgent}
+                          onChange={(v) => set("writingAgent", v)}
+                        />
+                        <TextField
+                          label="Last received agent"
+                          value={form.lastReceivedAgent}
+                          onChange={(v) => set("lastReceivedAgent", v)}
+                        />
+                      </div>
+                    </Panel>
+                    <Panel title="Billing Address">
+                      <div className="grid grid-cols-2 gap-3">
+                        <TextField
+                          label="Street"
+                          value={form.street}
+                          onChange={(v) => set("street", v)}
+                          className="col-span-2"
+                        />
+                        <TextField
+                          label="City"
+                          value={form.city}
+                          onChange={(v) => set("city", v)}
+                        />
+                        <TextField
+                          label="State"
+                          value={form.state}
+                          onChange={(v) => set("state", v)}
+                        />
+                        <TextField
+                          label="ZIP"
+                          value={form.zip}
+                          onChange={(v) => set("zip", v)}
+                        />
+                      </div>
+                    </Panel>
+                    <Panel title="Shipping Address">
+                      <div className="grid grid-cols-2 gap-3">
+                        <TextField
+                          label="Street"
+                          value={form.shipStreet}
+                          onChange={(v) => set("shipStreet", v)}
+                          className="col-span-2"
+                        />
+                        <TextField
+                          label="City"
+                          value={form.shipCity}
+                          onChange={(v) => set("shipCity", v)}
+                        />
+                        <TextField
+                          label="State"
+                          value={form.shipState}
+                          onChange={(v) => set("shipState", v)}
+                        />
+                        <TextField
+                          label="ZIP"
+                          value={form.shipZip}
+                          onChange={(v) => set("shipZip", v)}
+                        />
+                      </div>
+                    </Panel>
+                  </div>
+                </TabsContent>
 
-              {/* HEALTH */}
-              <TabsContent value="health" className="mt-0 h-full">
-                <div className="grid h-full gap-4 xl:grid-cols-2">
-                  <Panel title="Health Details">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="col-span-2">
-                        <FieldLabel>Major health conditions</FieldLabel>
-                        <Textarea
-                          value={form.majorHealthConditions}
-                          onChange={(e) =>
-                            set("majorHealthConditions", e.target.value)
-                          }
-                          placeholder="Diabetes, heart, cancer, COPD…"
-                          className="min-h-[80px] text-sm"
+                {/* CALL */}
+                <TabsContent value="call" className="mt-0 h-full">
+                  <div className="grid h-full gap-4 xl:grid-cols-2">
+                    <Panel title="Initial Call Details">
+                      <div className="grid grid-cols-2 gap-3">
+                        <SelectField
+                          label="Call type"
+                          value={form.callTypeId}
+                          onChange={(v) => set("callTypeId", v)}
+                          options={callTypes}
+                        />
+                        <SelectField
+                          label="Current carrier"
+                          value={form.currentCarrierId}
+                          onChange={(v) => set("currentCarrierId", v)}
+                          options={carriers}
+                        />
+                        <TextField
+                          label="Current coverage amount"
+                          value={form.currentCoverageAmount}
+                          onChange={(v) => set("currentCoverageAmount", v)}
+                        />
+                        <CheckField
+                          label="Spanish call?"
+                          checked={form.spanishCall}
+                          onChange={(v) => set("spanishCall", v)}
+                        />
+                        <div className="col-span-2">
+                          <FieldLabel>Reason for calling</FieldLabel>
+                          <Textarea
+                            value={form.reasonForCalling}
+                            onChange={(e) =>
+                              set("reasonForCalling", e.target.value)
+                            }
+                            placeholder="Cash surrender, consolidation, more coverage…"
+                            className="min-h-[120px] text-sm"
+                          />
+                        </div>
+                      </div>
+                    </Panel>
+                    <Panel title="Notes" bodyClassName="flex flex-1 flex-col">
+                      <FieldLabel>Call notes</FieldLabel>
+                      <Textarea
+                        value={form.notes}
+                        onChange={(e) => set("notes", e.target.value)}
+                        placeholder="What the client said, objections, follow-ups…"
+                        className="min-h-[220px] flex-1 text-sm"
+                      />
+                    </Panel>
+                  </div>
+                </TabsContent>
+
+                {/* HEALTH */}
+                <TabsContent value="health" className="mt-0 h-full">
+                  <div className="grid h-full gap-4 xl:grid-cols-2">
+                    <Panel title="Health Details">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2">
+                          <FieldLabel>Major health conditions</FieldLabel>
+                          <Textarea
+                            value={form.majorHealthConditions}
+                            onChange={(e) =>
+                              set("majorHealthConditions", e.target.value)
+                            }
+                            placeholder="Diabetes, heart, cancer, COPD…"
+                            className="min-h-[80px] text-sm"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <FieldLabel>
+                            Conditions details / date of dx
+                          </FieldLabel>
+                          <Textarea
+                            value={form.majorConditionsDetails}
+                            onChange={(e) =>
+                              set("majorConditionsDetails", e.target.value)
+                            }
+                            placeholder="Diagnosis dates, medications, severity…"
+                            className="min-h-[80px] text-sm"
+                          />
+                        </div>
+                        <TextField
+                          label="Height"
+                          value={form.height}
+                          onChange={(v) => set("height", v)}
+                          placeholder={`5' 10"`}
+                        />
+                        <TextField
+                          label="Weight"
+                          value={form.weight}
+                          onChange={(v) => set("weight", v)}
+                          placeholder="lbs"
+                        />
+                        <CheckField
+                          label="Nicotine user"
+                          checked={form.nicotineUser}
+                          onChange={(v) => set("nicotineUser", v)}
                         />
                       </div>
-                      <div className="col-span-2">
-                        <FieldLabel>Conditions details / date of dx</FieldLabel>
-                        <Textarea
-                          value={form.majorConditionsDetails}
-                          onChange={(e) =>
-                            set("majorConditionsDetails", e.target.value)
-                          }
-                          placeholder="Diagnosis dates, medications, severity…"
-                          className="min-h-[80px] text-sm"
+                    </Panel>
+                    <Panel title="Birthplace & Tobacco">
+                      <div className="grid grid-cols-2 gap-3">
+                        <TextField
+                          label="Birth country"
+                          value={form.birthCountry}
+                          onChange={(v) => set("birthCountry", v)}
+                          placeholder="United States"
+                        />
+                        <TextField
+                          label="Birth state"
+                          value={form.birthState}
+                          onChange={(v) => set("birthState", v)}
                         />
                       </div>
-                      <TextField
-                        label="Height"
-                        value={form.height}
-                        onChange={(v) => set("height", v)}
-                        placeholder={`5' 10"`}
-                      />
-                      <TextField
-                        label="Weight"
-                        value={form.weight}
-                        onChange={(v) => set("weight", v)}
-                        placeholder="lbs"
-                      />
-                      <CheckField
-                        label="Nicotine user"
-                        checked={form.nicotineUser}
-                        onChange={(v) => set("nicotineUser", v)}
-                      />
-                    </div>
-                  </Panel>
-                  <Panel title="Birthplace & Tobacco">
-                    <div className="grid grid-cols-2 gap-3">
-                      <TextField
-                        label="Birth country"
-                        value={form.birthCountry}
-                        onChange={(v) => set("birthCountry", v)}
-                        placeholder="United States"
-                      />
-                      <TextField
-                        label="Birth state"
-                        value={form.birthState}
-                        onChange={(v) => set("birthState", v)}
-                      />
-                    </div>
-                  </Panel>
-                </div>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
-      </DialogContent>
-    </Dialog>
+                    </Panel>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Start a new application for this caller (pending). Reuses the standard policy form;
+          binds to the known clientId. Only offered for an existing client. */}
+      {isExisting && (
+        <PolicyDialog
+          open={policyOpen}
+          onOpenChange={setPolicyOpen}
+          onSave={onSavePolicy}
+          isPending={createPolicy.isPending}
+          defaultFormData={policyPrefill}
+        />
+      )}
+    </>
   );
 }
