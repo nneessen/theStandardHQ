@@ -1,11 +1,12 @@
 // src/contexts/InboundCallContext.tsx
-// App-wide provider for the inbound-call screen-pop. Subscribes (Supabase realtime) to INSERTs on
-// public.inbound_calls scoped to the logged-in agent, and exposes { activeCall, dismiss } for the
-// active call. Mirrors NotificationContext's realtime pattern exactly: synchronous channel creation
-// inside useEffect, chained .on() listeners, one .subscribe(), cleanup via supabase.removeChannel.
+// App-wide provider for the inbound-call screen-pop. Subscribes (Supabase realtime BROADCAST) to a
+// PRIVATE per-agent topic `inbound:<agent_id>`, fed by the inbound_call_broadcast() DB trigger
+// (migration 20260619134244), and exposes { activeCall, dismiss }. Replaces the earlier
+// postgres_changes subscription — Broadcast scales to high concurrent call volume (no single-threaded
+// WAL reader, no per-subscriber RLS sweep). See docs/inbound-lead-feature/SCALE_REVIEW.md.
 //
-// RLS (inbound_calls_select_own: agent_id = auth.uid() AND imo_id = get_my_imo_id()) means the
-// channel only ever delivers this agent's own calls — no client-side tenant filtering needed.
+// Channel authorization: RLS on realtime.messages (topic = 'inbound:' || auth.uid()) means the agent
+// only ever receives their OWN screen-pop feed — no client-side tenant filtering needed.
 import React, {
   createContext,
   useContext,
@@ -38,44 +39,54 @@ export const InboundCallProvider: React.FC<{ children: ReactNode }> = ({
       return;
     }
 
-    const channel = supabase
-      .channel(`inbound_calls:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "inbound_calls",
-          filter: `agent_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const row = payload.new as InboundCallRow;
-          // Pop only a real, live, agent-resolved call. Skip speculative billing rows
-          // (patch_only: a PATCH that arrived before any POST) and anything already ended.
-          if (row.patch_only || row.status === "ended") return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    void (async () => {
+      // A PRIVATE Broadcast channel authorizes the JOIN via RLS on realtime.messages, which requires
+      // the realtime client to carry the user's access token. Set it explicitly before subscribing —
+      // relying on auto-auth races the subscribe and silently yields no messages.
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session?.access_token) {
+        await supabase.realtime.setAuth(data.session.access_token);
+      }
+      if (cancelled) return;
+
+      // Single-subscribe guard: tear down any pre-existing channel on this topic before opening a
+      // new one. A double effect run (React StrictMode / an auth-driven re-render) could otherwise
+      // leave two channels on `inbound:<id>` — and in supabase-js, removing one unsubscribes the
+      // topic for the other. The topic embeds the agent's UUID, so endsWith() can't false-match.
+      const topic = `inbound:${user.id}`;
+      supabase
+        .getChannels()
+        .filter((c) => c.topic.endsWith(topic))
+        .forEach((c) => supabase.removeChannel(c));
+
+      channel = supabase
+        .channel(topic, { config: { private: true } })
+        .on("broadcast", { event: "inbound_call" }, ({ payload }) => {
+          const row = payload as InboundCallRow;
+          if (row.status === "ended") {
+            // Auto-dismiss when THIS call ends.
+            setActiveCall((cur) => (cur && cur.id === row.id ? null : cur));
+            return;
+          }
+          // A fresh, agent-resolved ringing pop. The trigger only broadcasts fired_pop ringing
+          // INSERTs, so patch_only/already-ended rows never reach here.
           setActiveCall(row);
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "inbound_calls",
-          filter: `agent_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const row = payload.new as InboundCallRow;
-          // Auto-dismiss when THIS call ends (the billing PATCH flips status to 'ended').
-          setActiveCall((cur) =>
-            cur && cur.id === row.id && row.status === "ended" ? null : cur,
-          );
-        },
-      )
-      .subscribe();
+        })
+        .subscribe((status) => {
+          // Surface join/auth problems for ops; a healthy channel stays silent.
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.warn("[inbound-call] realtime channel:", status);
+          }
+        });
+    })();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [user?.id]);
 
