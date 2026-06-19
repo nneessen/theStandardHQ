@@ -235,8 +235,8 @@ root.render(
     <ChunkErrorBoundary context="application">
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
-        enableSystem
+        defaultTheme="light"
+        enableSystem={false}
         storageKey="commission-tracker-theme"
       >
         <QueryClientProvider client={queryClient}>

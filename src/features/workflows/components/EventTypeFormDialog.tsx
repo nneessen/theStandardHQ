@@ -409,7 +409,7 @@ export default function EventTypeFormDialog({
             onClick={handleSave}
             disabled={isSaving}
             className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-            style={{ background: "var(--blue)", color: "#0c1322" }}
+            style={{ background: "var(--blue)", color: "var(--on-accent)" }}
           >
             <Save className="h-4 w-4" />
             {isSaving ? "Saving…" : isNew ? "Create Event" : "Save Changes"}

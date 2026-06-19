@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { LineChart as LineIcon } from "lucide-react";
 import { Board, EmptyState, T } from "@/components/board";
+import { useChartColors } from "@/components/board/useChartColors";
 import { useDailyMetrics } from "../../hooks";
 import { SectionCap } from "./SectionCap";
 import { LoadingRow, ErrorRow } from "./PerformanceBand";
@@ -44,7 +45,7 @@ const TooltipBox = ({
   return (
     <div
       style={{
-        background: "#252525",
+        background: "var(--panel)",
         border: `1px solid ${T.line2}`,
         borderRadius: 8,
         padding: "10px 14px",
@@ -85,6 +86,7 @@ const TooltipBox = ({
 
 export function TrendPanel({ range }: Props) {
   const { data, isLoading, isError, error } = useDailyMetrics(range);
+  const chart = useChartColors();
 
   const points = useMemo<Point[]>(() => {
     const rows = data ?? [];
@@ -131,12 +133,12 @@ export function TrendPanel({ range }: Props) {
             >
               <CartesianGrid
                 strokeDasharray="4 4"
-                stroke={T.line}
+                stroke={chart.grid}
                 vertical={false}
               />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12, fill: T.mut, fontFamily: T.mono }}
+                tick={{ fontSize: 12, fill: chart.axis, fontFamily: T.mono }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
@@ -144,13 +146,13 @@ export function TrendPanel({ range }: Props) {
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 12, fill: T.mut, fontFamily: T.mono }}
+                tick={{ fontSize: 12, fill: chart.axis, fontFamily: T.mono }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 content={<TooltipBox />}
-                cursor={{ fill: T.line, opacity: 0.4 }}
+                cursor={{ fill: chart.grid, opacity: 0.4 }}
               />
               <Legend
                 wrapperStyle={{
@@ -163,7 +165,7 @@ export function TrendPanel({ range }: Props) {
               <Bar
                 dataKey="calls"
                 name="Inbound calls"
-                fill={T.blue}
+                fill={chart.blue}
                 radius={[3, 3, 0, 0]}
                 isAnimationActive
                 animationDuration={900}
@@ -172,9 +174,9 @@ export function TrendPanel({ range }: Props) {
                 type="monotone"
                 dataKey="policies"
                 name="Policies sold"
-                stroke={T.green}
+                stroke={chart.green}
                 strokeWidth={2.5}
-                dot={{ r: 2.5, fill: T.green, strokeWidth: 0 }}
+                dot={{ r: 2.5, fill: chart.green, strokeWidth: 0 }}
                 isAnimationActive
                 animationDuration={900}
               />

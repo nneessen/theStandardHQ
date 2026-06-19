@@ -252,7 +252,7 @@ export default function WorkflowManager() {
                 setShowDialog(true);
               }}
               className="mb-1.5 flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
-              style={{ background: "var(--blue)", color: "#0c1322" }}
+              style={{ background: "var(--blue)", color: "var(--on-accent)" }}
             >
               <Plus className="h-4 w-4" />
               Create Workflow
@@ -408,7 +408,7 @@ export default function WorkflowManager() {
                   setShowDialog(true);
                 }}
                 className="mt-1 flex h-10 items-center gap-1.5 rounded-lg px-5 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
-                style={{ background: "var(--blue)", color: "#0c1322" }}
+                style={{ background: "var(--blue)", color: "var(--on-accent)" }}
               >
                 <Plus className="h-4 w-4" />
                 Create Your First Workflow

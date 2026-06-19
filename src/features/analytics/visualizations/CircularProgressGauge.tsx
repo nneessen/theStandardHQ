@@ -72,7 +72,7 @@ export function CircularProgressGauge({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-v2-canvas dark:text-v2-ink"
+          className="text-v2-ring-strong dark:text-v2-ink"
         />
 
         {/* Progress circle */}

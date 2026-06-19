@@ -511,7 +511,7 @@ export default function WorkflowWizard({
                 : isActive
                   ? {
                       background: "var(--blue)",
-                      color: "#0c1322",
+                      color: "var(--on-accent)",
                       boxShadow: `0 0 0 4px ${tint("--blue", 22)}`,
                     }
                   : isDone
@@ -608,7 +608,7 @@ export default function WorkflowWizard({
                 onClick={handleNext}
                 disabled={isSubmitting}
                 className="flex h-9 items-center gap-1.5 rounded-lg px-5 font-sans text-[13px] font-semibold transition-opacity disabled:opacity-40"
-                style={{ background: "var(--blue)", color: "#0c1322" }}
+                style={{ background: "var(--blue)", color: "var(--on-accent)" }}
               >
                 Next
                 <ArrowRight className="h-3.5 w-3.5" />

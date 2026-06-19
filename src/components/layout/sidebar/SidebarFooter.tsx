@@ -1,8 +1,9 @@
 // src/components/layout/sidebar/SidebarFooter.tsx
 // Presentational footer for support/settings/billing/theme/logout controls.
 
-import React from "react";
-import { LifeBuoy, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LifeBuoy, LogOut, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +31,16 @@ export function SidebarFooter({
   onLogout,
   onSupportOpen,
 }: SidebarFooterProps) {
+  const { resolvedTheme, setTheme } = useTheme();
+  // Guard against a hydration/first-paint flash of the wrong icon.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isDark = resolvedTheme === "dark";
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
+  const themeLabel = isDark ? "Switch to light mode" : "Switch to dark mode";
+
   return (
     <div className="p-2 border-t border-v2-ring bg-v2-card/60">
       {footerItems.map((item) => (
@@ -66,6 +77,43 @@ export function SidebarFooter({
           <span className="truncate">Contact Support</span>
         </button>
       )}
+
+      {mounted &&
+        (isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="relative flex items-center h-9 w-9 justify-center mx-auto rounded-v2-pill text-sm transition-colors mb-0.5 text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft"
+                onClick={toggleTheme}
+                aria-label={themeLabel}
+              >
+                {isDark ? (
+                  <Sun size={16} className="flex-shrink-0" />
+                ) : (
+                  <Moon size={16} className="flex-shrink-0" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {themeLabel}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            className="relative flex items-center h-9 w-full gap-2.5 px-3 rounded-v2-pill text-sm transition-colors mb-0.5 text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft"
+            onClick={toggleTheme}
+            aria-label={themeLabel}
+          >
+            {isDark ? (
+              <Sun size={16} className="flex-shrink-0" />
+            ) : (
+              <Moon size={16} className="flex-shrink-0" />
+            )}
+            <span className="truncate">
+              {isDark ? "Light Mode" : "Dark Mode"}
+            </span>
+          </button>
+        ))}
 
       <div className="my-1.5 mx-1 border-t border-v2-ring/60" />
 

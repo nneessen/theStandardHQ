@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { Users } from "lucide-react";
 import { Board, EmptyState, T } from "@/components/board";
+import { useChartColors } from "@/components/board/useChartColors";
 import { useKpiCallAnalytics } from "../../hooks";
 import { SectionCap } from "./SectionCap";
 import { LoadingRow, ErrorRow } from "./PerformanceBand";
@@ -28,16 +29,11 @@ interface Props {
   range: DateRange;
 }
 
-const GENDER_COLORS: Record<string, string> = {
-  male: T.blue,
-  female: T.amber,
-  other: T.green,
-  unknown: "rgba(255,255,255,0.4)",
-};
-
-const axisTick = { fontSize: 12, fill: T.mut, fontFamily: T.mono };
+// Tooltip is recharts' default HTML div (CSS context) — `var()` resolves, so this
+// flips with the theme. Chart SVG-attr colors (axis/grid/bar/cell) come from
+// useChartColors() inside the component (var() does NOT resolve in SVG attributes).
 const tipStyle = {
-  background: "#252525",
+  background: "var(--panel)",
   border: `1px solid ${T.line2}`,
   borderRadius: 8,
   fontFamily: T.mono,
@@ -46,6 +42,14 @@ const tipStyle = {
 
 export function DemographicsPanel({ range }: Props) {
   const { data, isLoading, isError, error } = useKpiCallAnalytics(range);
+  const chart = useChartColors();
+  const axisTick = { fontSize: 12, fill: chart.axis, fontFamily: T.mono };
+  const GENDER_COLORS: Record<string, string> = {
+    male: chart.blue,
+    female: chart.amber,
+    other: chart.green,
+    unknown: chart.axisFaint,
+  };
 
   const ageBands = data?.byAgeBand ?? [];
   const ageData = ageBands.map((b) => ({ band: b.label, calls: b.calls }));
@@ -105,7 +109,7 @@ export function DemographicsPanel({ range }: Props) {
                 >
                   <CartesianGrid
                     strokeDasharray="4 4"
-                    stroke={T.line}
+                    stroke={chart.grid}
                     vertical={false}
                   />
                   <XAxis
@@ -125,12 +129,12 @@ export function DemographicsPanel({ range }: Props) {
                     contentStyle={tipStyle}
                     itemStyle={{ color: T.cream }}
                     labelStyle={{ color: T.mut2 }}
-                    cursor={{ fill: T.line, opacity: 0.4 }}
+                    cursor={{ fill: chart.grid, opacity: 0.4 }}
                   />
                   <Bar
                     dataKey="calls"
                     name="Calls"
-                    fill={T.blue}
+                    fill={chart.blue}
                     radius={[3, 3, 0, 0]}
                     maxBarSize={46}
                   />

@@ -296,7 +296,7 @@ export default function EventTypeManager() {
           type="button"
           onClick={handleCreate}
           className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-85"
-          style={{ background: "var(--blue)", color: "#0c1322" }}
+          style={{ background: "var(--blue)", color: "var(--on-accent)" }}
         >
           <Plus className="h-4 w-4" />
           Add Event

@@ -79,7 +79,7 @@ export function InsightRail({
         flexShrink: 0,
         height: "100%",
         overflowY: "auto",
-        background: "linear-gradient(180deg, #1c1c1c, #181818)", // --rail1/--rail2
+        background: "linear-gradient(180deg, var(--rail1), var(--rail2))", // --rail1/--rail2
         borderLeft: `1px solid ${T.line}`,
         padding: "22px 20px",
         display: "flex",

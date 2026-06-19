@@ -312,7 +312,7 @@ export function ChatBotLanding({
                           {/* Popular badge */}
                           {isPopular && !isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-foreground dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-v2-card-tinted text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Zap className="h-2.5 w-2.5" />
                                 Popular
                               </span>
@@ -498,7 +498,7 @@ export function ChatBotLanding({
                       >
                         {tier.popular && (
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-foreground dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-0.5 bg-v2-card-tinted text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                               <Zap className="h-2.5 w-2.5" />
                               Popular
                             </span>

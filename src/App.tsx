@@ -256,10 +256,11 @@ function AuthenticatedApp() {
       <CookieConsentBanner />
       <ImoProvider>
         <SunsetGate>
-          {/* `dark` is scoped here (not on <html>) so "The Board" dark theme +
-              dark: variants apply ONLY inside the authenticated shell — public
-              pages follow the global theme untouched. */}
-          <div className="dark theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
+          {/* `theme-v2` scopes "The Board" tokens to the authenticated shell. The
+              light/dark choice now follows next-themes' `<html>.dark` class: the
+              base `.theme-v2` block is LIGHT, `.dark .theme-v2` is the charcoal dark
+              theme. Public pages (no `.theme-v2`) follow the global palette untouched. */}
+          <div className="theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
             <PortalContainerProvider>
               {shouldHideSidebar ? (
                 <>
