@@ -1,7 +1,7 @@
 // src/features/hierarchy/HierarchyDashboardCompact.tsx
 
 import { useState, useMemo } from "react";
-import { Download, UserPlus, AlertCircle } from "lucide-react";
+import { Download, AlertCircle } from "lucide-react";
 import { PillButton, SoftCard, SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap, FlapTile, Num, T } from "@/components/board";
 import { useMyDownlines, useMyHierarchyStats } from "@/hooks";
@@ -10,7 +10,6 @@ import { useFeatureAccess } from "@/hooks";
 import { OWNER_EMAILS } from "@/hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { SendInvitationModal } from "./components/SendInvitationModal";
 import { TeamMetricsCard } from "./components/TeamMetricsCard";
 import { AgentTable } from "./components/AgentTable";
 import { IssuedPremiumTable } from "./components/IssuedPremiumTable";
@@ -102,7 +101,6 @@ export function HierarchyDashboardCompact() {
       }
     : null;
 
-  const [sendInvitationModalOpen, setSendInvitationModalOpen] = useState(false);
   // One team-production table at a time — submissions (AP) vs issued (IP) —
   // instead of two near-identical tables stacked (which read as duplicates).
   const [teamTableView, setTeamTableView] = useState<"submissions" | "issued">(
@@ -176,15 +174,6 @@ export function HierarchyDashboardCompact() {
               >
                 <Download className="h-3 w-3" />
                 CSV
-              </PillButton>
-              <PillButton
-                onClick={() => setSendInvitationModalOpen(true)}
-                tone="black"
-                size="sm"
-                className="h-7 px-2.5 text-[12px]"
-              >
-                <UserPlus className="h-3 w-3" />
-                Invite
               </PillButton>
             </div>
           </header>
@@ -402,12 +391,6 @@ export function HierarchyDashboardCompact() {
             )}
           </div>
         </div>
-
-        {/* Send Invitation Modal */}
-        <SendInvitationModal
-          open={sendInvitationModalOpen}
-          onOpenChange={setSendInvitationModalOpen}
-        />
       </div>
     </SectionShell>
   );
