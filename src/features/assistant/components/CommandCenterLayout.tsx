@@ -46,8 +46,11 @@ export function CommandCenterLayout({
   const theme = agentTheme(agentKey);
   const tilt = usePointerTilt(5);
 
+  // `dark theme-v2` on the root: the Command Center renders OUTSIDE the app shell
+  // (App.tsx exits the .theme-v2 shell for /command-center) and the app now defaults
+  // to LIGHT. `.theme-v2.dark` pins the dark board tokens so the Jarvis HUD stays dark.
   return (
-    <div className="dark relative flex h-screen flex-col overflow-hidden bg-[#050811] text-foreground">
+    <div className="dark theme-v2 relative flex h-screen flex-col overflow-hidden bg-[#050811] text-foreground">
       {/* Ambient HUD stage — desktop only */}
       <div className="hidden lg:block">
         <HudFrame accent={accent} />

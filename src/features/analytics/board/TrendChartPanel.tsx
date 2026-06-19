@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { Activity } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
+import { useChartColors } from "@/components/board/useChartColors";
 import { useAnalyticsData } from "@/hooks";
 // eslint-disable-next-line no-restricted-imports
 import {
@@ -31,7 +32,7 @@ const CustomTooltip = ({
   return (
     <div
       style={{
-        background: "#252525",
+        background: "var(--panel)",
         border: `1px solid ${T.line2}`,
         borderRadius: 8,
         padding: "10px 14px",
@@ -100,6 +101,7 @@ export function TrendChartPanel() {
   // Period-independent: the 12-month trend + current-status snapshot always
   // reflect the full book, not the page's period selector.
   const { raw, isLoading } = useAnalyticsData();
+  const chart = useChartColors();
 
   const snapshot = useMemo(
     () => (raw?.policies ? getPolicyStatusSnapshot(raw.policies) : null),
@@ -205,23 +207,27 @@ export function TrendChartPanel() {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="0%" stopColor={T.green} stopOpacity={0.32} />
+                    <stop
+                      offset="0%"
+                      stopColor={chart.green}
+                      stopOpacity={0.32}
+                    />
                     <stop
                       offset="100%"
-                      stopColor={T.green}
+                      stopColor={chart.green}
                       stopOpacity={0.02}
                     />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="4 10"
-                  stroke="rgba(255,255,255,0.08)"
+                  stroke={chart.grid}
                   vertical={false}
                 />
                 <XAxis
                   dataKey="month"
                   tickFormatter={(m: string) => String(m).split(" ")[0]}
-                  tick={{ fontSize: 11, fill: T.mut, fontFamily: T.mono }}
+                  tick={{ fontSize: 11, fill: chart.axis, fontFamily: T.mono }}
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
@@ -229,19 +235,19 @@ export function TrendChartPanel() {
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11, fill: T.mut, fontFamily: T.mono }}
+                  tick={{ fontSize: 11, fill: chart.axis, fontFamily: T.mono }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
                   content={<CustomTooltip />}
-                  cursor={{ stroke: T.line2 }}
+                  cursor={{ stroke: chart.grid }}
                 />
                 <Area
                   type="monotone"
                   dataKey="active"
                   name="Active policies"
-                  stroke={T.green}
+                  stroke={chart.green}
                   strokeWidth={2.4}
                   fill="url(#trendActiveFill)"
                   dot={false}
@@ -252,7 +258,7 @@ export function TrendChartPanel() {
                   type="monotone"
                   dataKey="lapsed"
                   name="Lapsed"
-                  stroke={T.amber}
+                  stroke={chart.amber}
                   strokeWidth={2.4}
                   strokeDasharray="7 5"
                   dot={false}

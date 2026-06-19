@@ -579,7 +579,7 @@ export function MyRecruitingPipeline() {
           caption="A clear headshot helps your recruiter and trainers match a face to the name. Keep it under 5 MB."
           compact
         >
-          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-v2-card hover:bg-v2-ring dark:bg-v2-ring  text-white dark:text-v2-ink px-4 py-2.5 text-sm font-semibold transition-colors">
+          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-v2-card hover:bg-v2-ring dark:bg-v2-ring text-v2-ink dark:text-v2-ink px-4 py-2.5 text-sm font-semibold transition-colors">
             {uploadingPhoto ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (

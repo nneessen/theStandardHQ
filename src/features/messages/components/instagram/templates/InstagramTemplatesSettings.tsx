@@ -135,7 +135,7 @@ export function InstagramTemplatesSettings(): ReactNode {
           borderRight: `1px solid ${T.line}`,
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(180deg, #1c1c1c, #181818)",
+          background: "linear-gradient(180deg, var(--rail1), var(--rail2))",
         }}
       >
         <CategoryManager

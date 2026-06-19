@@ -557,7 +557,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
             gap: 8,
           }}
         >
-          {/* Primary reply button — cream bg, dark text (mock .btn.cream) */}
+          {/* Primary reply button — solid CTA, theme-aware via btn-solid-bg/fg */}
           <button
             style={{
               display: "inline-flex",
@@ -566,9 +566,9 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
               height: 34,
               padding: "0 14px",
               borderRadius: 9,
-              background: T.cream,
+              background: "var(--btn-solid-bg)",
               border: "none",
-              color: "#141414",
+              color: "var(--btn-solid-fg)",
               font: `700 12.5px ${T.data}`,
               cursor: "pointer",
             }}

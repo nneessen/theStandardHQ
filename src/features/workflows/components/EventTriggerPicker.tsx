@@ -316,7 +316,7 @@ export default function EventTriggerPicker({
               onClick={confirm}
               disabled={!localSel}
               className="h-9 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ background: "var(--blue)", color: "#0c1322" }}
+              style={{ background: "var(--blue)", color: "var(--on-accent)" }}
             >
               Use this trigger
             </button>
@@ -425,7 +425,9 @@ function EventCard({
           background: selected ? "var(--violet)" : "transparent",
         }}
       >
-        {selected && <Check className="h-3 w-3" style={{ color: "#1a1430" }} />}
+        {selected && (
+          <Check className="h-3 w-3" style={{ color: "var(--on-accent)" }} />
+        )}
       </span>
 
       <div className="min-w-0 flex-1">

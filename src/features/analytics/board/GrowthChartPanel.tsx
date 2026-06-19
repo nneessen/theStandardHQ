@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
+import { useChartColors } from "@/components/board/useChartColors";
 import { useAnalyticsData, useConstants, useCalculatedTargets } from "@/hooks";
 import { useHistoricalAverages } from "../../../hooks/targets/useHistoricalAverages";
 import { resolveGoalAvgAP } from "@/lib/goal";
@@ -38,7 +39,7 @@ const CustomTooltip = ({
   return (
     <div
       style={{
-        background: "#252525",
+        background: "var(--panel)",
         border: `1px solid ${T.line2}`,
         borderRadius: 8,
         padding: "10px 14px",
@@ -73,7 +74,9 @@ const CustomTooltip = ({
   );
 };
 
-/** Recharts custom dot — hollow ring: fill = panel bg, stroke = confidence color */
+/** Recharts custom dot — hollow ring: fill = panel bg, stroke = confidence color.
+    fill/stroke go through `style` (CSS) so the `var(--*)` board tokens resolve —
+    they would NOT resolve as raw SVG presentation attributes. */
 const ConfidenceDot = (props: { cx?: number; cy?: number; index?: number }) => {
   const { cx, cy, index = 0 } = props;
   if (cx == null || cy == null) return null;
@@ -83,10 +86,12 @@ const ConfidenceDot = (props: { cx?: number; cy?: number; index?: number }) => {
       cx={cx}
       cy={cy}
       r={4}
-      fill="#252525"
-      stroke={color}
       strokeWidth={2.4}
-      style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+      style={{
+        fill: "var(--panel)",
+        stroke: color,
+        filter: `drop-shadow(0 0 4px ${color})`,
+      }}
     />
   );
 };
@@ -171,6 +176,7 @@ export function GrowthChartPanel() {
     useCalculatedTargets();
   const { averages: historicalAverages, isLoading: averagesLoading } =
     useHistoricalAverages();
+  const chart = useChartColors();
 
   const isLoading =
     analyticsLoading || constantsLoading || targetsLoading || averagesLoading;
@@ -350,20 +356,28 @@ export function GrowthChartPanel() {
               >
                 <defs>
                   <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={T.blue} stopOpacity={0.32} />
-                    <stop offset="100%" stopColor={T.blue} stopOpacity={0.02} />
+                    <stop
+                      offset="0%"
+                      stopColor={chart.blue}
+                      stopOpacity={0.32}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={chart.blue}
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="4 10"
-                  stroke={T.line}
+                  stroke={chart.grid}
                   vertical={false}
                 />
                 <XAxis
                   dataKey="month"
                   tick={{
                     fontSize: 11,
-                    fill: T.mut,
+                    fill: chart.axis,
                     fontFamily: T.mono,
                   }}
                   axisLine={false}
@@ -374,7 +388,7 @@ export function GrowthChartPanel() {
                   tickFormatter={formatYAxis}
                   tick={{
                     fontSize: 11,
-                    fill: T.mut,
+                    fill: chart.axis,
                     fontFamily: T.mono,
                   }}
                   axisLine={false}
@@ -385,18 +399,18 @@ export function GrowthChartPanel() {
                   type="monotone"
                   dataKey="projectedRevenue"
                   name="Projected AP"
-                  stroke={T.blue}
+                  stroke={chart.blue}
                   strokeWidth={2}
                   fill={`url(#${GRADIENT_ID})`}
                   dot={<ConfidenceDot />}
-                  activeDot={{ r: 5, fill: T.blue }}
+                  activeDot={{ r: 5, fill: chart.blue }}
                   isAnimationActive
                   animationDuration={1100}
                 />
                 {monthlyGoal > 0 && (
                   <ReferenceLine
                     y={monthlyGoal}
-                    stroke={T.blue}
+                    stroke={chart.blue}
                     strokeDasharray="5 5"
                     opacity={0.7}
                     strokeWidth={1.5}

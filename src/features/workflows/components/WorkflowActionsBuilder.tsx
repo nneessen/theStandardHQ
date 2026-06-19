@@ -185,7 +185,7 @@ export default function WorkflowActionsBuilder({
           type="button"
           onClick={addAction}
           className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
-          style={{ background: "var(--blue)", color: "#0c1322" }}
+          style={{ background: "var(--blue)", color: "var(--on-accent)" }}
         >
           <Plus className="h-3.5 w-3.5" />
           Add Action
@@ -208,7 +208,7 @@ export default function WorkflowActionsBuilder({
             type="button"
             onClick={addAction}
             className="flex h-9 items-center gap-1.5 rounded-lg px-4 font-sans text-[13px] font-semibold transition-opacity hover:opacity-80"
-            style={{ background: "var(--blue)", color: "#0c1322" }}
+            style={{ background: "var(--blue)", color: "var(--on-accent)" }}
           >
             <Plus className="h-3.5 w-3.5" />
             Add Your First Action

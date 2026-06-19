@@ -79,7 +79,7 @@ export function FolderRail({
         flexShrink: 0,
         height: "100%",
         overflowY: "auto",
-        background: "linear-gradient(180deg, #1c1c1c, #181818)",
+        background: "linear-gradient(180deg, var(--rail1), var(--rail2))",
         borderRight: `1px solid ${T.line}`,
         padding: "16px 12px",
         display: "flex",

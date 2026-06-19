@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { Hourglass } from "lucide-react";
 import { Board, EmptyState, T } from "@/components/board";
+import { useChartColors } from "@/components/board/useChartColors";
 import { useKpiCallAnalytics } from "../../hooks";
 import { SectionCap } from "./SectionCap";
 import { LoadingRow, ErrorRow } from "./PerformanceBand";
@@ -24,9 +25,9 @@ interface Props {
   range: DateRange;
 }
 
-const axisTick = { fontSize: 12, fill: T.mut, fontFamily: T.mono };
+// tipStyle: recharts default HTML tooltip (CSS context) — var() flips it.
 const tipStyle = {
-  background: "#252525",
+  background: "var(--panel)",
   border: `1px solid ${T.line2}`,
   borderRadius: 8,
   fontFamily: T.mono,
@@ -35,6 +36,8 @@ const tipStyle = {
 
 export function LengthDistributionPanel({ range }: Props) {
   const { data, isLoading, isError, error } = useKpiCallAnalytics(range);
+  const chart = useChartColors();
+  const axisTick = { fontSize: 12, fill: chart.axis, fontFamily: T.mono };
 
   const buckets = data?.byLengthBucket ?? [];
   const chartData = buckets.map((b) => ({ bucket: b.label, count: b.count }));
@@ -69,7 +72,7 @@ export function LengthDistributionPanel({ range }: Props) {
               >
                 <CartesianGrid
                   strokeDasharray="4 4"
-                  stroke={T.line}
+                  stroke={chart.grid}
                   vertical={false}
                 />
                 <XAxis
@@ -89,12 +92,12 @@ export function LengthDistributionPanel({ range }: Props) {
                   contentStyle={tipStyle}
                   itemStyle={{ color: T.cream }}
                   labelStyle={{ color: T.mut2 }}
-                  cursor={{ fill: T.line, opacity: 0.4 }}
+                  cursor={{ fill: chart.grid, opacity: 0.4 }}
                 />
                 <Bar
                   dataKey="count"
                   name="Calls"
-                  fill={T.blue}
+                  fill={chart.blue}
                   radius={[3, 3, 0, 0]}
                   maxBarSize={64}
                 />

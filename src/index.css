@@ -161,14 +161,151 @@
   /* ════════════════════ "THE BOARD" — AUTHENTICATED APP THEME ════════════════════ */
   /* Scoped to `.theme-v2` (the authenticated shell wrapper in App.tsx) so it
      NEVER affects public pages (landing, auth, join, register, legal) — those
-     keep the original :root / .dark palettes above. The three selectors cover
-     the authenticated app in any global theme state, and `.dark .theme-v2`
-     (0,2,0) outranks the global `.dark` block so board always wins here.
-     Surfaces = NEUTRAL CHARCOAL (no warm/brown cast). Text = warm cream.
+     keep the original :root / .dark palettes above. DUAL-THEME:
+       • base `.theme-v2`            → LIGHT (neutral cool gray/white) — the default.
+       • `.dark .theme-v2`, `.theme-v2.dark` → DARK (charcoal "Standard HQ").
+     The dark selectors are (0,2,0) and beat the light base (0,1,0), so dark wins
+     whenever <html> carries `.dark` (next-themes). The base wins on the shell <div>
+     because a directly-set custom property outranks the inherited :root/.dark vars.
      Accents: blue = primary, cyan = Jarvis only, amber/red/green = status. */
-  .theme-v2,
-  .theme-v2.dark,
-  .dark .theme-v2 {
+
+  /* ──────────── LIGHT (default) — mirror of the dark block; same vars, light values ──────────── */
+  .theme-v2 {
+    /* Light surface ramp: soft gray canvas → white raised surfaces. Elevation at the
+       top steps comes from SHADOW (surfaces 4/5/7 are white), not luminance. */
+    --surface-1: #eef0f3; /* page / app canvas         */
+    --surface-2: #f1f3f6; /* controls: search, chips    */
+    --surface-3: #f8f9fb; /* cards / panels             */
+    --surface-4: #ffffff; /* card hover / raised tile    */
+    --surface-5: #ffffff; /* popover                    */
+    --surface-6: #fcfcfd; /* menu on a popover           */
+    --surface-7: #ffffff; /* dialog content             */
+    --surface-8: #fcfcfd; /* menu inside a dialog        */
+
+    /* shadcn semantic tokens (board, light) — mapped to the ramp BY ROLE */
+    --background: var(--surface-1);
+    --foreground: #0f172a;
+    --card: var(--surface-3);
+    --card-foreground: #0f172a;
+    --popover: var(--surface-5);
+    --popover-foreground: #0f172a;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: var(--surface-2);
+    --secondary-foreground: #0f172a;
+    --muted: var(--surface-2);
+    --muted-foreground: #475569;
+    --accent: #3b82f6;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: rgba(15, 23, 42, 0.1);
+    --input: rgba(15, 23, 42, 0.16);
+    --ring: #3b82f6;
+    --border-soft: rgba(15, 23, 42, 0.06);
+    /* Status used as TABLE TEXT → darker text-safe variants (chargeback red must read). */
+    --success: #059669;
+    --success-foreground: #ffffff;
+    --warning: #b45309;
+    --warning-foreground: #ffffff;
+    --error: #b91c1c;
+    --error-foreground: #ffffff;
+    --info: #0e7490;
+    --info-foreground: #ffffff;
+    --accent-strong: #1d4ed8;
+    --surface-deep: var(--surface-2);
+    --surface-deep-foreground: #0f172a;
+
+    /* v2 tokens (board, light) */
+    --v2-surface-1: var(--surface-1);
+    --v2-surface-2: var(--surface-2);
+    --v2-surface-3: var(--surface-3);
+    --v2-surface-4: var(--surface-4);
+    --v2-surface-5: var(--surface-5);
+    --v2-surface-6: var(--surface-6);
+    --v2-surface-7: var(--surface-7);
+    --v2-surface-8: var(--surface-8);
+    --v2-bg-canvas: var(--surface-1);
+    --v2-bg-card: var(--surface-3);
+    --v2-bg-card-tinted: var(--surface-4);
+    --v2-bg-card-dark: var(--surface-2);
+    --v2-accent: #3b82f6;
+    --v2-accent-strong: #1d4ed8;
+    --v2-accent-soft: rgba(59, 130, 246, 0.12);
+    --v2-ink: #0f172a;
+    /* Muted text — SOLID slate grays validated vs the gray canvas (#eef0f3). NOT
+       black@opacity (that reproduces the "labels too dim" complaint at ~2.85:1).
+       muted #475569 ≈ 7.0:1, subtle #5b6677 ≈ 5.2:1 — both clear 4.5:1. */
+    --v2-ink-muted: #475569;
+    --v2-ink-subtle: #5b6677;
+    --v2-ring: rgba(15, 23, 42, 0.1);
+    --v2-ring-strong: rgba(15, 23, 42, 0.16);
+    --v2-shadow-soft:
+      0 1px 0 rgba(15, 23, 42, 0.04), 0 4px 16px -2px rgba(15, 23, 42, 0.06);
+    --v2-shadow-lift:
+      0 1px 0 rgba(15, 23, 42, 0.08), 0 8px 24px -4px rgba(15, 23, 42, 0.12);
+    --v2-font-display: "Archivo", system-ui, sans-serif;
+
+    /* board raw tokens (consumed by src/components/board/* + board-* classes) */
+    --bg: var(--surface-1);
+    --panel: var(--surface-3);
+    --panel2: var(--surface-4);
+    --tile: var(--surface-4);
+    /* `cream` is the board's high-contrast FOREGROUND token → flips to near-black on
+       light. (3 CTA buttons that used it as a BACKGROUND are repointed to
+       --btn-solid-bg below, so they are unaffected by this flip.) */
+    --cream: #1a1c1f;
+    --line: rgba(15, 23, 42, 0.1);
+    --line2: rgba(15, 23, 42, 0.16);
+    --ink: #0f172a;
+    --mut: #475569;
+    --mut2: #5b6677;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --green: #10b981;
+    --violet: #8b5cf6;
+    --blue2: #1d4ed8;
+    --pink: #db2777;
+    --line3: rgba(15, 23, 42, 0.22);
+    --mut3: #64748b;
+    --panelgrad: linear-gradient(180deg, #ffffff, var(--surface-3));
+    --panelshadow:
+      0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.1);
+    --board-brushed: repeating-linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.015) 0 1px,
+      transparent 1px 3px
+    );
+    --board-panel-gradient: linear-gradient(180deg, #ffffff, #f8f9fb);
+    --board-panel-shadow:
+      0 1px 0 rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.1);
+
+    /* Shared tokens added for the light-mode work (also defined in the dark block). */
+    --cyan2: #0891b2;
+    --lit-bg: #e8f0ff;
+    --lit-text: #1d4ed8;
+    --tile-edge: rgba(15, 23, 42, 0.12);
+    --on-accent: #ffffff;
+    --rail1: #ffffff;
+    --rail2: #f8f9fb;
+    --btn-solid-bg: #0f172a;
+    --btn-solid-fg: #ffffff;
+
+    /* board fonts (identical in both themes) */
+    --font-sans:
+      "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    --font-mono:
+      "Space Mono", ui-monospace, SFMono-Regular, Menlo, "Cascadia Code",
+      Consolas, monospace;
+    --font-display: "Archivo", system-ui, sans-serif;
+  }
+
+  /* ──────────── DARK override — original charcoal "Standard HQ" board theme ──────────── */
+  .dark .theme-v2,
+  .theme-v2.dark {
     /* Surface / Substrate Elevation ramp (Jun 14 2026 — "The Standard HQ" handoff).
        Eight levels, lightest-on-top; exact hex. A component renders ONE level above
        whatever it sits on. Kept in lockstep with the `surface` ramp in tokens.ts. */
@@ -281,6 +418,17 @@
     --board-panel-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 26px rgba(0, 0, 0, 0.45);
 
+    /* Shared tokens added for the light-mode work (also defined in the light block). */
+    --cyan2: #35d6f5;
+    --lit-bg: #1a2740;
+    --lit-text: #cfe0ff;
+    --tile-edge: rgba(0, 0, 0, 0.55);
+    --on-accent: #08152b;
+    --rail1: #1c1c1c;
+    --rail2: #181818;
+    --btn-solid-bg: #fbfbfc;
+    --btn-solid-fg: #141414;
+
     /* board fonts */
     --font-sans:
       "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -339,9 +487,11 @@
   content: "";
   position: absolute;
   inset: 0;
+  /* Base = LIGHT theme: dark-on-light lattice. The `.dark .dashboard-canvas::before`
+     rule below overrides with the white-on-dark grid when the app is dark. */
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
   background-size: 64px 64px;
   background-position: -1px -1px;
   pointer-events: none;
