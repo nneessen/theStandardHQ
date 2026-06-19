@@ -49,7 +49,9 @@ export function useInboundCallHistory(
   excludeId?: string | null,
 ) {
   return useQuery({
-    queryKey: ["inbound-call", "history", clientId],
+    // excludeId is baked into the result, so it MUST be part of the key — otherwise the modal
+    // (excludeId=live call id) and the detail page (no excludeId) collide on one cache entry.
+    queryKey: ["inbound-call", "history", clientId, excludeId ?? null],
     queryFn: async (): Promise<InboundCallHistoryRow[]> => {
       const { data, error } = await supabase
         .from("inbound_calls")
@@ -83,6 +85,34 @@ export interface IntakeSavePayload {
   callTypeId: string | null;
   inquiryCarrierId: string | null;
   notes: string | null;
+}
+
+export interface ClientRecordSavePayload {
+  clientId: string;
+  identity: {
+    name: string;
+    email?: string;
+    phone?: string;
+    date_of_birth?: string;
+    address: string;
+  };
+  intake: Record<string, unknown>;
+}
+
+/** Persist a client's identity + rich intake from the Clients detail page (NO call disposition —
+ *  there's no live call). Same two writes the inbound save uses, minus crm_set_call_disposition. */
+export function useSaveClientRecord() {
+  return useMutation({
+    mutationFn: async (p: ClientRecordSavePayload) => {
+      const res = await clientService.update(p.clientId, p.identity);
+      if (!res.success) throw res.error ?? new Error("Client update failed");
+      const { error: ie } = await supabase.rpc(
+        "crm_set_client_intake" as never,
+        { p_client_id: p.clientId, p_intake: p.intake } as never,
+      );
+      if (ie) throw new Error((ie as { message: string }).message);
+    },
+  });
 }
 
 /** Persist identity + rich intake + call disposition for the popped call. */

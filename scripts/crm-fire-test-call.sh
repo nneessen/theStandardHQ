@@ -25,7 +25,7 @@ cat > /tmp/crm_fire.sql <<SQL
 DO \$\$
 DECLARE
   v_agent uuid; v_imo uuid; v_pc text; r record;
-  v_client uuid; v_carrier uuid;
+  v_client uuid;
 BEGIN
   SELECT up.id, up.imo_id INTO v_agent, v_imo
   FROM user_profiles up JOIN auth.users au ON au.id = up.id
@@ -55,20 +55,12 @@ BEGIN
      WHERE id = v_client;
   END IF;
 
-  -- Best-effort fixtures (policies + a prior call) so the context rail shows real data.
+  -- A prior ENDED call so the "Recent Calls" rail shows real history.
+  -- IMPORTANT: we deliberately seed NO policies here. A real inbound call (crm_upsert_call)
+  -- creates ONLY a client — never a policy — so the pop's "Existing Policies" rail correctly
+  -- shows none until you write a real application in the app. (Seeding demo policies used to
+  -- make it look like firing a pop "created" policies on the Policies page; it doesn't anymore.)
   -- Wrapped so any schema/FK drift can't abort the actual call fire.
-  BEGIN
-    SELECT id INTO v_carrier FROM carriers ORDER BY name LIMIT 1;
-    IF v_carrier IS NOT NULL
-       AND NOT EXISTS (SELECT 1 FROM policies WHERE client_id = v_client) THEN
-      INSERT INTO policies (imo_id, user_id, client_id, carrier_id, product,
-                            monthly_premium, annual_premium, effective_date, status, lifecycle_status, policy_number)
-      VALUES
-        (v_imo, v_agent, v_client, v_carrier, 'whole_life', 68.40, 820.80, '2022-06-15', 'active', 'active', 'WL-DEMO-1001'),
-        (v_imo, v_agent, v_client, v_carrier, 'term_life',  42.10, 505.20, '2020-02-01', 'lapsed', 'lapsed', 'TL-DEMO-2002');
-    END IF;
-  EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'policy fixture skipped: %', SQLERRM; END;
-
   BEGIN
     IF NOT EXISTS (SELECT 1 FROM inbound_calls WHERE client_id = v_client AND request_tag = 'demo-hist-1') THEN
       INSERT INTO inbound_calls (imo_id, request_tag, agent_id, client_id, ani, state, pc_id,
