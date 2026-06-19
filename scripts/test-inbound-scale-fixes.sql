@@ -65,10 +65,29 @@ BEGIN
   IF v_cnt <> 0 THEN RAISE EXCEPTION 'FAIL T7: ringing INSERT without fired_pop broadcast (got %)', v_cnt; END IF;
   RAISE NOTICE 'PASS T7: ringing INSERT with fired_pop=false produced NO broadcast';
 
+  -- T8: LATE agent-resolve (review fix #1) — INSERT with agent NULL (no pop), then an UPDATE that
+  -- first resolves the agent on a still-ringing row MUST broadcast the pop.
+  INSERT INTO inbound_calls (imo_id, request_tag, agent_id, client_id, ani, phone_e164, status, fired_pop, patch_only)
+  VALUES (v_imo, v_tag||'-late', NULL, v_client, '5550007777', public.normalize_phone_e164('5550007777'), 'ringing', false, false);
+  SELECT count(*) INTO v_cnt FROM realtime.messages WHERE (payload->>'request_tag')=v_tag||'-late';
+  IF v_cnt <> 0 THEN RAISE EXCEPTION 'FAIL T8a: NULL-agent INSERT broadcast (got %)', v_cnt; END IF;
+  UPDATE inbound_calls SET agent_id=v_agent WHERE imo_id=v_imo AND request_tag=v_tag||'-late';
+  SELECT count(*) INTO v_cnt FROM realtime.messages
+   WHERE topic=v_topic AND (payload->>'request_tag')=v_tag||'-late' AND (payload->>'status')='ringing';
+  IF v_cnt <> 1 THEN RAISE EXCEPTION 'FAIL T8: late agent-resolve did not pop (got %)', v_cnt; END IF;
+  RAISE NOTICE 'PASS T8: late agent-resolve UPDATE broadcasts the pop';
+
+  -- T9: a later UPDATE on that call (agent ALREADY set) must NOT re-pop.
+  UPDATE inbound_calls SET notes='disp' WHERE imo_id=v_imo AND request_tag=v_tag||'-late';
+  SELECT count(*) INTO v_cnt FROM realtime.messages
+   WHERE topic=v_topic AND (payload->>'request_tag')=v_tag||'-late' AND (payload->>'status')='ringing';
+  IF v_cnt <> 1 THEN RAISE EXCEPTION 'FAIL T9: re-pop on agent-already-set UPDATE (got %)', v_cnt; END IF;
+  RAISE NOTICE 'PASS T9: UPDATE with agent already set does NOT re-pop';
+
   -- roll back all test rows (DELETE here; on any failure above the whole txn rolls back anyway)
   DELETE FROM inbound_calls WHERE request_tag LIKE v_tag || '%';
 
   RAISE NOTICE '==================================================';
-  RAISE NOTICE 'ALL 7 INBOUND-CRM SCALE-FIX TESTS PASSED';
+  RAISE NOTICE 'ALL 9 INBOUND-CRM SCALE-FIX TESTS PASSED';
   RAISE NOTICE '==================================================';
 END$$;

@@ -80,7 +80,28 @@ export const InboundCallProvider: React.FC<{ children: ReactNode }> = ({
           // Surface join/auth problems for ops; a healthy channel stays silent.
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
             console.warn("[inbound-call] realtime channel:", status);
+            return;
           }
+          if (status !== "SUBSCRIBED") return;
+          // Rehydrate: a broadcast is fire-and-forget (no replay), so a pop fired while this channel
+          // was not yet joined (page load, brief disconnect, or the auth/subscribe gap) is otherwise
+          // lost forever. On every (re)subscribe, fetch the agent's currently-ringing call and pop it
+          // if nothing is shown (RLS already scopes inbound_calls to this agent's own calls).
+          void (async () => {
+            const { data } = await supabase
+              .from("inbound_calls")
+              .select("*")
+              .eq("agent_id", user.id)
+              .eq("status", "ringing")
+              .order("call_start", { ascending: false, nullsFirst: false })
+              .limit(1)
+              .maybeSingle();
+            if (!cancelled && data) {
+              setActiveCall(
+                (cur) => cur ?? (data as unknown as InboundCallRow),
+              );
+            }
+          })();
         });
     })();
 

@@ -106,11 +106,16 @@ export function useSaveClientRecord() {
     mutationFn: async (p: ClientRecordSavePayload) => {
       const res = await clientService.update(p.clientId, p.identity);
       if (!res.success) throw res.error ?? new Error("Client update failed");
-      const { error: ie } = await supabase.rpc(
+      const { data: intakeRows, error: ie } = await supabase.rpc(
         "crm_set_client_intake" as never,
         { p_client_id: p.clientId, p_intake: p.intake } as never,
       );
       if (ie) throw new Error((ie as { message: string }).message);
+      // The RPC returns the row id, or NULL when the scoped UPDATE matched nothing (the client
+      // isn't on the caller's book). A green toast on a no-op save would silently lose the work.
+      if (!(intakeRows as { id: string | null }[] | null)?.[0]?.id) {
+        throw new Error("Couldn't save: this client isn't on your book.");
+      }
     },
   });
 }
@@ -122,13 +127,17 @@ export function useSaveInboundIntake() {
       if (p.clientId) {
         const res = await clientService.update(p.clientId, p.identity);
         if (!res.success) throw res.error ?? new Error("Client update failed");
-        const { error: ie } = await supabase.rpc(
+        const { data: intakeRows, error: ie } = await supabase.rpc(
           "crm_set_client_intake" as never,
           { p_client_id: p.clientId, p_intake: p.intake } as never,
         );
         if (ie) throw new Error((ie as { message: string }).message);
+        // NULL id => the scoped UPDATE matched nothing (client not on the caller's book).
+        if (!(intakeRows as { id: string | null }[] | null)?.[0]?.id) {
+          throw new Error("Couldn't save: this client isn't on your book.");
+        }
       }
-      const { error: de } = await supabase.rpc(
+      const { data: dispoRows, error: de } = await supabase.rpc(
         "crm_set_call_disposition" as never,
         {
           p_request_tag: p.requestTag,
@@ -138,6 +147,12 @@ export function useSaveInboundIntake() {
         } as never,
       );
       if (de) throw new Error((de as { message: string }).message);
+      // NULL id => the call isn't assigned to this agent (no row updated). Surface it.
+      if (!(dispoRows as { id: string | null }[] | null)?.[0]?.id) {
+        throw new Error(
+          "Couldn't record the call disposition: call not assigned to you.",
+        );
+      }
     },
   });
 }
