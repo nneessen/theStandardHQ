@@ -16,9 +16,56 @@ export function useInboundClientRecord(clientId: string | null) {
       if (!res.success || !res.data) {
         throw res.error ?? new Error("Client not found");
       }
-      return res.data;
+      // getWithPolicies maps the client entity but DROPS the `intake` jsonb (not in the entity).
+      // Pull it separately so the rich intake re-hydrates when the same caller pops again.
+      const { data: extra } = await supabase
+        .from("clients")
+        .select("intake")
+        .eq("id", clientId!)
+        .maybeSingle();
+      return {
+        ...res.data,
+        intake: (extra?.intake ?? {}) as Record<string, unknown>,
+      };
     },
     enabled: !!clientId,
+  });
+}
+
+/** One inbound-call row in the caller's recent-call history (left context rail). */
+export interface InboundCallHistoryRow {
+  id: string;
+  call_start: string | null;
+  call_program: string | null;
+  status: string;
+  duration: number | null;
+  billable: number | null;
+  notes: string | null;
+}
+
+/** Prior inbound calls for this caller (most recent first), excluding the live call. */
+export function useInboundCallHistory(
+  clientId: string | null,
+  excludeId?: string | null,
+) {
+  return useQuery({
+    queryKey: ["inbound-call", "history", clientId],
+    queryFn: async (): Promise<InboundCallHistoryRow[]> => {
+      const { data, error } = await supabase
+        .from("inbound_calls")
+        .select(
+          "id, call_start, call_program, status, duration, billable, notes",
+        )
+        .eq("client_id", clientId!)
+        .order("call_start", { ascending: false, nullsFirst: false })
+        .limit(12);
+      if (error) throw new Error(error.message);
+      return ((data ?? []) as InboundCallHistoryRow[]).filter(
+        (r) => r.id !== excludeId,
+      );
+    },
+    enabled: !!clientId,
+    staleTime: 30_000,
   });
 }
 

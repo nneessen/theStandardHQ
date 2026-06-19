@@ -143,7 +143,7 @@ class ClientServiceClass {
       // Fetch all policies for this client with carrier info
       const { data: policies, error: policiesError } = await supabase
         .from(TABLES.POLICIES)
-        .select(`*, carrier:carriers(id, name, logo_url)`)
+        .select(`*, carrier:carriers(id, name)`)
         .eq("client_id", id)
         .order("effective_date", { ascending: false });
 
