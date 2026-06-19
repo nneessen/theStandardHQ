@@ -241,7 +241,7 @@ export function MyContractingPanel() {
                 setStatus.mutate({
                   agentId: me.data,
                   carrierId,
-                  status: "submitted",
+                  status: "pending",
                 })
               }
             >

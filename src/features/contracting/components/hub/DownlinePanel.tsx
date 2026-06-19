@@ -365,7 +365,7 @@ export function DownlinePanel() {
                       setStatus.mutate({
                         agentId: selected,
                         carrierId,
-                        status: "submitted",
+                        status: "pending",
                       })
                     }
                   >
