@@ -1,6 +1,6 @@
 // src/contexts/InboundCallContext.tsx
 // App-wide provider for the inbound-call screen-pop. Subscribes (Supabase realtime) to INSERTs on
-// public.inbound_calls scoped to the logged-in agent, and renders a single <InboundCallPop> for the
+// public.inbound_calls scoped to the logged-in agent, and exposes { activeCall, dismiss } for the
 // active call. Mirrors NotificationContext's realtime pattern exactly: synchronous channel creation
 // inside useEffect, chained .on() listeners, one .subscribe(), cleanup via supabase.removeChannel.
 //
@@ -15,7 +15,7 @@ import React, {
 } from "react";
 import { supabase } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
-import { InboundCallPop, type InboundCallRow } from "@/features/inbound-crm";
+import type { InboundCallRow } from "@/features/inbound-crm";
 
 interface InboundCallContextValue {
   activeCall: InboundCallRow | null;
@@ -84,7 +84,8 @@ export const InboundCallProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <InboundCallContext.Provider value={{ activeCall, dismiss }}>
       {children}
-      {activeCall && <InboundCallPop call={activeCall} onDismiss={dismiss} />}
+      {/* The UI (full-screen InboundCallModal) is rendered separately inside the authed
+          app shell (App.tsx) so it inherits the board theme + ImoContext + router. */}
     </InboundCallContext.Provider>
   );
 };
