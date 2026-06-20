@@ -10,14 +10,19 @@
 //
 // No DB / auth / network needed — pure synthetic data. Run via run.mjs.
 import { pdf } from "@react-pdf/renderer";
+// Deep imports are intentional here: this standalone regression harness must
+// render the REAL ScriptPdfDocument (not a barrel re-export) to reproduce the
+// exact production code path. Not part of the app bundle.
+// eslint-disable-next-line no-restricted-imports
 import { ScriptPdfDocument } from "@/features/call-reviews/components/scripts/ScriptPdfDocument";
+// eslint-disable-next-line no-restricted-imports
 import type { GeneratedScript } from "@/features/call-reviews/types";
 
 const out = document.getElementById("out")!;
 function report(r: unknown) {
   (window as unknown as { __PDF_RESULT__: unknown }).__PDF_RESULT__ = r;
   out.textContent = "RESULT: " + JSON.stringify(r);
-  // eslint-disable-next-line no-console
+
   console.log("__PDF_RESULT__", r);
 }
 
@@ -30,7 +35,8 @@ const script: GeneratedScript = {
     "renderer survives a multi-page document. ".repeat(8),
   key_principles: Array.from(
     { length: 6 },
-    (_, i) => `Principle ${i + 1}: keep the conversation service-first — ${"detail ".repeat(12)}`,
+    (_, i) =>
+      `Principle ${i + 1}: keep the conversation service-first — ${"detail ".repeat(12)}`,
   ),
   placeholders_used: ["[CLIENT_NAME]", "[CARRIER]", "[STATE]", "[AMOUNT]"],
   phases: Array.from({ length: PHASES }, (_, p) => ({
@@ -52,7 +58,10 @@ const script: GeneratedScript = {
         {
           objection: "I'm not interested — I just want to cancel.",
           type: "stall",
-          rebuttal: "Totally understand. Before anything, let me confirm a detail. ".repeat(3),
+          rebuttal:
+            "Totally understand. Before anything, let me confirm a detail. ".repeat(
+              3,
+            ),
           tonality: "Calm",
         },
       ],
