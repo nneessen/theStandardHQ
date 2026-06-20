@@ -28,6 +28,21 @@ export interface RateLimitOptions {
   tokens?: number;
   /** Max token_count in the window. NULL/undefined = skip token axis. */
   maxTokens?: number;
+  /**
+   * Fail CLOSED on a limiter fault (default false). When true, a limiter fault — the RPC
+   * resolving with `{error}` OR the rpc() call rejecting/throwing at the transport layer
+   * (timeout/connection-reset, common under flood) — returns `allowed:false` instead of
+   * admitting the request. Use ONLY for unauthenticated DoS gates (e.g. the public OAuth
+   * token endpoint) where admitting traffic the limiter can't account for is worse than
+   * rejecting it.
+   *
+   * When false (the default), behaviour is UNCHANGED from before this flag existed: a
+   * resolved `{error}` fails OPEN (admits — an infra blip should not block a legit user),
+   * and a thrown/rejected rpc() PROPAGATES to the caller (whose own try/catch handles it).
+   * We deliberately do NOT fail-open a throw for legacy callers, so this shared change can
+   * never weaken an existing caller that relies on a limiter fault blocking its action.
+   */
+  failClosed?: boolean;
 }
 
 export interface RateLimitResult {
@@ -46,18 +61,51 @@ export async function checkRateLimit(
   adminClient: AdminClient,
   opts: RateLimitOptions,
 ): Promise<RateLimitResult> {
-  const { data, error } = await adminClient.rpc("check_rate_limit", {
-    p_key: opts.key,
-    p_max_requests: opts.maxRequests,
-    p_window_seconds: opts.windowSeconds,
-    p_tokens: opts.tokens ?? 0,
-    p_max_tokens: opts.maxTokens ?? null,
-  });
+  let data: unknown;
+  let error: unknown;
+  try {
+    const res = await adminClient.rpc("check_rate_limit", {
+      p_key: opts.key,
+      p_max_requests: opts.maxRequests,
+      p_window_seconds: opts.windowSeconds,
+      p_tokens: opts.tokens ?? 0,
+      p_max_tokens: opts.maxTokens ?? null,
+    });
+    data = res?.data;
+    error = res?.error;
+  } catch (e) {
+    // The rpc() promise itself rejected (transport timeout/connection-reset — common
+    // precisely under the flood a fail-closed gate defends against).
+    if (opts.failClosed) {
+      const message = (e as { message?: string })?.message ?? String(e);
+      console.error("[rate-limit] check_rate_limit threw; failing closed:", message);
+      return {
+        allowed: false,
+        requestsUsed: 0,
+        tokensUsed: BigInt(0),
+        retryAfterSeconds: 60,
+      };
+    }
+    // Legacy callers: propagate the throw unchanged (do NOT silently fail-open a throw —
+    // that could weaken an existing caller that relies on a limiter fault blocking it).
+    throw e;
+  }
 
   if (error) {
-    // Log and fail-open: if the limiter itself errors we prefer serving the
-    // request over blocking a user on an infrastructure fault.
-    console.error("[rate-limit] check_rate_limit RPC error:", error.message);
+    const message = (error as { message?: string })?.message ?? String(error);
+    console.error("[rate-limit] check_rate_limit RPC error:", message);
+    if (opts.failClosed) {
+      // Fail CLOSED: an unauthenticated DoS gate must reject — not admit — traffic
+      // the limiter can't account for. retryAfterSeconds mirrors the 60s window.
+      return {
+        allowed: false,
+        requestsUsed: 0,
+        tokensUsed: BigInt(0),
+        retryAfterSeconds: 60,
+      };
+    }
+    // Fail OPEN (default, unchanged): prefer serving over blocking a user on an
+    // infrastructure fault.
     return {
       allowed: true,
       requestsUsed: 0,
@@ -67,7 +115,15 @@ export async function checkRateLimit(
   }
 
   // PostgREST returns an array (one row from RETURNS TABLE).
-  const row = Array.isArray(data) ? data[0] : data;
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | {
+        allowed?: boolean;
+        requests_used?: number;
+        tokens_used?: number;
+        retry_after_seconds?: number;
+      }
+    | null
+    | undefined;
 
   return {
     allowed: row?.allowed ?? true,
