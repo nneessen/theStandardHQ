@@ -18,7 +18,7 @@ export function calculateMonthlyPremium(
   switch (paymentFrequency) {
     case "annual":
       return annualPremium / 12;
-    case "semi-annual":
+    case "semi_annual":
       return annualPremium / 6;
     case "quarterly":
       return annualPremium / 3;

@@ -38,9 +38,12 @@ export type PolicyLifecycleStatus =
   | "lapsed"
   | "cancelled"
   | "expired";
+// Values MUST match the Postgres `payment_frequency` enum exactly (the Select
+// emits these and they are stored verbatim). `semi_annual` is the DB form — a
+// hyphenated "semi-annual" never matches the enum and silently mis-annualizes.
 export type PaymentFrequency =
   | "annual"
-  | "semi-annual"
+  | "semi_annual"
   | "quarterly"
   | "monthly";
 

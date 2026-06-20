@@ -19,7 +19,9 @@ describe("Policy Calculations", () => {
     });
 
     it("should calculate annual premium for semi-annual payments", () => {
-      expect(calculateAnnualPremium(600, "semi-annual")).toBe(1200);
+      // Regression: the DB-enum form is `semi_annual` (underscore). A hyphenated
+      // value never matched the case and fell through to ×1 (saved $600 as $600/yr).
+      expect(calculateAnnualPremium(600, "semi_annual")).toBe(1200);
     });
 
     it("should calculate annual premium for annual payments", () => {
@@ -46,7 +48,7 @@ describe("Policy Calculations", () => {
     });
 
     it("should calculate semi-annual payment from annual premium", () => {
-      expect(calculatePaymentAmount(1200, "semi-annual")).toBe(600);
+      expect(calculatePaymentAmount(1200, "semi_annual")).toBe(600);
     });
 
     it("should return annual premium for annual frequency", () => {

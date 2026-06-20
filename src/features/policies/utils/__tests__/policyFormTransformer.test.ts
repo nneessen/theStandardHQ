@@ -1,7 +1,10 @@
 // src/features/policies/utils/__tests__/policyFormTransformer.test.ts
 
 import { describe, it, expect } from "vitest";
-import { transformFormToCreateData } from "../policyFormTransformer";
+import {
+  transformFormToCreateData,
+  calculateMonthlyPremium,
+} from "../policyFormTransformer";
 import type { NewPolicyForm } from "@/types/policy.types";
 
 const baseForm: NewPolicyForm = {
@@ -60,5 +63,19 @@ describe("transformFormToCreateData — manual commission entry", () => {
       "user-1",
     );
     expect(result.commissionPercentage).toBe(0);
+  });
+});
+
+describe("calculateMonthlyPremium — frequency divisor", () => {
+  it("derives monthly from a semi-annual annual premium (annual / 6)", () => {
+    // Regression: the DB-enum form is `semi_annual`; a hyphenated value fell
+    // through to the monthly default (/12), halving the displayed monthly figure.
+    expect(calculateMonthlyPremium(1200, "semi_annual")).toBe(200);
+  });
+
+  it("derives monthly for the other frequencies", () => {
+    expect(calculateMonthlyPremium(1200, "annual")).toBe(100);
+    expect(calculateMonthlyPremium(1200, "quarterly")).toBe(400);
+    expect(calculateMonthlyPremium(1200, "monthly")).toBe(100);
   });
 });

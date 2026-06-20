@@ -16,7 +16,7 @@ export function calculateAnnualPremium(
       return premium * 12;
     case "quarterly":
       return premium * 4;
-    case "semi-annual":
+    case "semi_annual":
       return premium * 2;
     case "annual":
       return premium;
@@ -42,7 +42,7 @@ export function calculatePaymentAmount(
     case "quarterly":
       result = annualPremium / 4;
       break;
-    case "semi-annual":
+    case "semi_annual":
       result = annualPremium / 2;
       break;
     case "annual":
