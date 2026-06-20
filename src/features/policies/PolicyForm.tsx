@@ -6,7 +6,7 @@ import { useCarriers } from "../../hooks/carriers";
 import { useProducts } from "../../hooks/products/useProducts";
 import { NewPolicyForm, Policy } from "../../types/policy.types";
 import { PillButton } from "@/components/v2";
-import { Loader2 } from "lucide-react";
+import { Loader2, StickyNote } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PolicyFormClientSection } from "./components/PolicyFormClientSection";
 import { PolicyFormPolicySection } from "./components/PolicyFormPolicySection";
 import { PolicyFormFinancialSection } from "./components/PolicyFormFinancialSection";
+import { PolicySectionHeader } from "./components/PolicySectionHeader";
 import { SubmitDateConfirmDialog } from "./components/SubmitDateConfirmDialog";
 
 interface PolicyFormProps {
@@ -297,17 +298,21 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex-1 flex flex-col overflow-hidden min-h-0"
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
     >
-      <div className="flex-1 overflow-y-auto min-h-0 overscroll-y-contain p-5">
-        {/* Three balanced columns: Client · Policy · Financial. Each flows
-            independently so there's no dead space, and the whole form fits a
-            normal desktop window without scrolling. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-6">
-          <section className="flex flex-col gap-3.5">
-            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
-              Client
-            </div>
+      {/* Direction B — Two-Pane Linear. The body scrolls as one region; on
+          desktop an ordered, scannable field column sits on the left and the
+          compensation + computed summary live in a sticky rail on the right,
+          OUT of the input flow so the math never reads as another field. Under
+          `md` the panes stack: fields first, then the rail. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        {/* Two-pane only at `lg` (>=1024px): below that the rail would squeeze
+            the field column under ~250px and break the inner 2-col grids, so the
+            panes stay stacked full-width through the tablet band. */}
+        <div className="flex flex-col lg:flex-row lg:items-start">
+          {/* Left — ordered field groups: Client → Product → Policy → Premium
+              → Status → Notes */}
+          <div className="min-w-0 flex-1 space-y-8 p-5 sm:p-6">
             <PolicyFormClientSection
               formData={formData}
               displayErrors={displayErrors}
@@ -323,12 +328,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
               onPhoneChange={handlePhoneChange}
               onDOBChange={handleDOBChange}
             />
-          </section>
 
-          <section className="flex flex-col gap-3.5">
-            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
-              Policy
-            </div>
             <PolicyFormPolicySection
               formData={formData}
               displayErrors={displayErrors}
@@ -336,12 +336,23 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
               onInputChange={handleInputChange}
               onSelectChange={handleSelectChange}
             />
-          </section>
 
-          <section className="flex flex-col gap-3.5">
-            <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
-              Compensation
-            </div>
+            <section className="space-y-3.5">
+              <PolicySectionHeader icon={StickyNote} label="Notes" />
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                rows={3}
+                placeholder="Add any context about this policy — underwriting notes, client preferences, follow-ups…"
+                className="min-h-[88px] resize-y rounded-lg border-border/60 bg-background text-sm shadow-inner focus:border-accent"
+              />
+            </section>
+          </div>
+
+          {/* Right — compensation + computed summary, out of the field flow */}
+          <aside className="space-y-5 border-t border-border/60 bg-v2-card-tinted p-5 sm:p-6 lg:sticky lg:top-0 lg:w-[372px] lg:flex-none lg:self-start lg:border-l lg:border-t-0">
             <PolicyFormFinancialSection
               formData={formData}
               displayErrors={displayErrors}
@@ -352,49 +363,38 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
               contractLevelLoading={contractLevelLoading}
               onInputChange={handleInputChange}
             />
-          </section>
+          </aside>
         </div>
-
-        {/* Notes — a generous full-width block at the foot of the form. */}
-        <section className="mt-5 border-t border-border/40 pt-4">
-          <div className="mb-2 text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.2em]">
-            Notes
-          </div>
-          <Textarea
-            id="notes"
-            name="notes"
-            value={formData.notes}
-            onChange={handleInputChange}
-            rows={3}
-            placeholder="Add any context about this policy — underwriting notes, client preferences, follow-ups…"
-            className="text-sm resize-vertical min-h-[92px] bg-background border-border/60 focus:border-accent"
-          />
-        </section>
       </div>
 
       {/* Footer — fixed, no scroll */}
-      <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0">
-        <PillButton
-          type="button"
-          onClick={onClose}
-          tone="ghost"
-          size="sm"
-          disabled={isLoading}
-        >
-          Cancel
-        </PillButton>
-        <PillButton type="submit" tone="black" size="sm" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              {policyId ? "Saving…" : "Creating…"}
-            </>
-          ) : policyId ? (
-            "Update policy"
-          ) : (
-            "Add policy"
-          )}
-        </PillButton>
+      <div className="flex flex-shrink-0 items-center justify-between gap-2 border-t border-v2-ring bg-v2-card-tinted px-5 py-3">
+        <span className="text-[11px] text-muted-foreground">
+          <span className="text-destructive">*</span> Required fields
+        </span>
+        <div className="flex items-center gap-2">
+          <PillButton
+            type="button"
+            onClick={onClose}
+            tone="ghost"
+            size="sm"
+            disabled={isLoading}
+          >
+            Cancel
+          </PillButton>
+          <PillButton type="submit" tone="black" size="sm" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {policyId ? "Saving…" : "Creating…"}
+              </>
+            ) : policyId ? (
+              "Update policy"
+            ) : (
+              "Add policy"
+            )}
+          </PillButton>
+        </div>
       </div>
 
       {/* Submit Date Confirmation Dialog */}

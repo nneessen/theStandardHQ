@@ -1,7 +1,7 @@
 // src/features/policies/components/PolicyFormPolicySection.tsx
 
 import React from "react";
-import { Cap } from "@/components/board";
+import { FileText, CreditCard, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,6 +18,14 @@ import {
   PaymentFrequency,
 } from "../../../types/policy.types";
 import { isToday } from "../hooks/usePolicyForm";
+import { PolicySectionHeader } from "./PolicySectionHeader";
+import {
+  FIELD,
+  LABEL,
+  HELPER,
+  ERROR_TEXT,
+  fieldClass,
+} from "./policyFormStyles";
 
 interface PolicyFormPolicySectionProps {
   formData: NewPolicyForm;
@@ -27,14 +35,11 @@ interface PolicyFormPolicySectionProps {
   onSelectChange: (name: string, value: string) => void;
 }
 
-const FIELD = "h-9 text-sm bg-background border-border/60 focus:border-accent";
-const LABEL = "text-xs text-muted-foreground";
-
 /**
- * Policy "core" column: identification, premium & payment, and status. Styled
- * to "The Board" language (flat, mono-cap group labels, soft hairline dividers,
- * recessed fields). The computed Financial Summary lives in its own column
- * (PolicyFormFinancialSection).
+ * Policy · Premium & Payment · Status groups — the lower half of the Direction B
+ * left column. Same section-header + recessed-well treatment as the Client/
+ * Product groups above. The computed Financial Summary lives in the right rail
+ * (PolicyFormFinancialSection), never inline with these inputs.
  */
 export const PolicyFormPolicySection: React.FC<
   PolicyFormPolicySectionProps
@@ -43,14 +48,17 @@ export const PolicyFormPolicySection: React.FC<
   const showLifecycleStatus = formData.status === "approved";
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Identification */}
-      <div className="space-y-3">
-        <Cap style={{ fontSize: 11 }}>Identification</Cap>
+    <div className="flex flex-col gap-8">
+      {/* ─── Policy ────────────────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <PolicySectionHeader icon={FileText} label="Policy" />
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="policyNumber" className={LABEL}>
-            Policy Number
+            Policy number{" "}
+            <span className="text-[10px] font-normal text-muted-foreground">
+              optional
+            </span>
           </Label>
           <Input
             id="policyNumber"
@@ -58,23 +66,19 @@ export const PolicyFormPolicySection: React.FC<
             name="policyNumber"
             value={formData.policyNumber}
             onChange={onInputChange}
-            className={`${FIELD} ${displayErrors.policyNumber ? "border-destructive" : ""}`}
+            className={fieldClass(!!displayErrors.policyNumber)}
             placeholder="POL-123456"
           />
-          <span className="text-[11px] text-muted-foreground">
-            Optional — leave blank if not yet assigned
-          </span>
+          <span className={HELPER}>Leave blank if not yet assigned</span>
           {displayErrors.policyNumber && (
-            <span className="text-[11px] text-destructive">
-              {displayErrors.policyNumber}
-            </span>
+            <span className={ERROR_TEXT}>{displayErrors.policyNumber}</span>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="submitDate" className={LABEL}>
-              Submit Date *
+              Submit date <span className="text-destructive">*</span>
             </Label>
             <Input
               id="submitDate"
@@ -82,12 +86,10 @@ export const PolicyFormPolicySection: React.FC<
               name="submitDate"
               value={formData.submitDate}
               onChange={onInputChange}
-              className={`${FIELD} ${displayErrors.submitDate ? "border-destructive" : ""}`}
+              className={`${fieldClass(!!displayErrors.submitDate)} font-mono`}
             />
             {displayErrors.submitDate && (
-              <span className="text-[11px] text-destructive">
-                {displayErrors.submitDate}
-              </span>
+              <span className={ERROR_TEXT}>{displayErrors.submitDate}</span>
             )}
             {!policyId &&
               isToday(formData.submitDate) &&
@@ -100,7 +102,7 @@ export const PolicyFormPolicySection: React.FC<
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="effectiveDate" className={LABEL}>
-              Effective Date *
+              Effective date <span className="text-destructive">*</span>
             </Label>
             <Input
               id="effectiveDate"
@@ -108,47 +110,49 @@ export const PolicyFormPolicySection: React.FC<
               name="effectiveDate"
               value={formData.effectiveDate}
               onChange={onInputChange}
-              className={`${FIELD} ${displayErrors.effectiveDate ? "border-destructive" : ""}`}
+              className={`${fieldClass(!!displayErrors.effectiveDate)} font-mono`}
             />
             {displayErrors.effectiveDate && (
-              <span className="text-[11px] text-destructive">
-                {displayErrors.effectiveDate}
-              </span>
+              <span className={ERROR_TEXT}>{displayErrors.effectiveDate}</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Premium & Payment */}
-      <div className="space-y-3 border-t border-border/40 pt-4">
-        <Cap style={{ fontSize: 11 }}>Premium &amp; Payment</Cap>
+      {/* ─── Premium & Payment ─────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <PolicySectionHeader icon={CreditCard} label="Premium & Payment" />
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="premium" className={LABEL}>
-              Premium Amount *
+              Premium amount <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="premium"
-              type="number"
-              inputMode="decimal"
-              name="premium"
-              value={formData.premium || ""}
-              onChange={onInputChange}
-              className={`${FIELD} ${displayErrors.premium ? "border-destructive" : ""}`}
-              placeholder="250.00"
-              step="0.01"
-              min="0"
-            />
-            {displayErrors.premium && (
-              <span className="text-[11px] text-destructive">
-                {displayErrors.premium}
+            {/* `$` prefix so the figure reads as money, not a bare number. */}
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                $
               </span>
+              <Input
+                id="premium"
+                type="number"
+                inputMode="decimal"
+                name="premium"
+                value={formData.premium || ""}
+                onChange={onInputChange}
+                className={`${fieldClass(!!displayErrors.premium)} pl-7`}
+                placeholder="250.00"
+                step="0.01"
+                min="0"
+              />
+            </div>
+            {displayErrors.premium && (
+              <span className={ERROR_TEXT}>{displayErrors.premium}</span>
             )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="paymentFrequency" className={LABEL}>
-              Payment Frequency *
+              Payment frequency <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.paymentFrequency}
@@ -162,6 +166,9 @@ export const PolicyFormPolicySection: React.FC<
               <SelectContent>
                 <SelectItem value="monthly">Monthly</SelectItem>
                 <SelectItem value="quarterly">Quarterly</SelectItem>
+                {/* NOTE: value is the DB-enum form `semi_annual` (preserved
+                    exactly — changing it is a money-math + enum-contract fix
+                    that belongs in its own change, not this redesign). */}
                 <SelectItem value="semi_annual">Semi-Annual</SelectItem>
                 <SelectItem value="annual">Annual</SelectItem>
               </SelectContent>
@@ -170,14 +177,14 @@ export const PolicyFormPolicySection: React.FC<
         </div>
       </div>
 
-      {/* Status */}
-      <div className="space-y-3 border-t border-border/40 pt-4">
-        <Cap style={{ fontSize: 11 }}>Status</Cap>
+      {/* ─── Status ────────────────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <PolicySectionHeader icon={Activity} label="Status" />
 
         <div className={showLifecycleStatus ? "grid grid-cols-2 gap-3" : ""}>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="status" className={LABEL}>
-              Application Status
+              Application status
             </Label>
             <Select
               value={formData.status}
@@ -199,15 +206,13 @@ export const PolicyFormPolicySection: React.FC<
                 <SelectItem value="withdrawn">Withdrawn</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-[11px] text-muted-foreground">
-              Carrier decision on the application
-            </span>
+            <span className={HELPER}>Carrier decision on the application</span>
           </div>
 
           {showLifecycleStatus && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="lifecycleStatus" className={LABEL}>
-                Policy Lifecycle
+                Policy lifecycle
               </Label>
               <Select
                 value={formData.lifecycleStatus || "active"}
@@ -228,9 +233,7 @@ export const PolicyFormPolicySection: React.FC<
                   <SelectItem value="expired">Expired</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-[11px] text-muted-foreground">
-                Current state of the policy
-              </span>
+              <span className={HELPER}>Current state of the policy</span>
             </div>
           )}
         </div>

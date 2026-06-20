@@ -1,6 +1,6 @@
 // src/features/policies/components/PolicyDialog.tsx
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { PolicyForm } from "../PolicyForm";
@@ -26,10 +26,11 @@ interface PolicyDialogProps {
  *
  * Sizing is locked to the viewport on every device: the outer card sits
  * 12px / 24px in from the edge and the form body is the only scrollable
- * region (header + footer stay fixed). It opens wide (max-w-6xl) so the form
- * lays out in up to three columns and fits without scrolling on a normal
- * desktop window; the `w-[calc(100vw-Xrem)]` cap keeps it inside the viewport
- * on narrow screens, and the body can still scroll as a fallback on short ones.
+ * region (header + footer stay fixed). It opens wide (max-w-6xl) so the
+ * Direction B two-pane layout — an ordered field column beside a sticky
+ * compensation/summary rail — has room without crowding; the
+ * `w-[calc(100vw-Xrem)]` cap keeps it inside the viewport on narrow screens,
+ * where the two panes stack and the body scrolls.
  */
 export function PolicyDialog({
   open,

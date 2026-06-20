@@ -1,8 +1,7 @@
 // src/features/policies/components/PolicyFormClientSection.tsx
 
 import React from "react";
-import { ChevronDown } from "lucide-react";
-import { Cap } from "@/components/board";
+import { ChevronDown, UserRound, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateOfBirthInput } from "@/components/ui/date-of-birth-input";
@@ -24,6 +23,8 @@ import {
   type TermCommissionModifiers,
 } from "../../../types/product.types";
 import { NewPolicyForm } from "../../../types/policy.types";
+import { PolicySectionHeader } from "./PolicySectionHeader";
+import { FIELD, LABEL, ERROR_TEXT, fieldClass } from "./policyFormStyles";
 
 interface Carrier {
   id: string;
@@ -54,16 +55,11 @@ interface PolicyFormClientSectionProps {
   onDOBChange: (value: string) => void;
 }
 
-// Shared field styling — readable (text-sm) recessed wells that sit distinctly
-// against the charcoal dialog surface, with only a soft hairline border.
-const FIELD = "h-9 text-sm bg-background border-border/60 focus:border-accent";
-const LABEL = "text-xs text-muted-foreground";
-
 /**
- * Client column of the New/Edit Policy form. Styled to "The Board" design
- * language used across the app: no nested cards, amber gradients, or hard
- * borders — just mono-cap group labels, soft hairline dividers, and recessed
- * fields. Notes live in their own full-width block in PolicyForm.
+ * Client + Product groups — the top of the Direction B left column. Each group
+ * sits behind the shared section-header pattern (icon tile + mono label + rule)
+ * over recessed field wells. Rarely-used contact fields hide behind the
+ * "Additional client details" disclosure so the default view stays calm.
  */
 export const PolicyFormClientSection: React.FC<
   PolicyFormClientSectionProps
@@ -85,15 +81,15 @@ export const PolicyFormClientSection: React.FC<
   const selectedProduct = products.find((p) => p.id === formData.productId);
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Client Details */}
-      <div className="space-y-3">
-        <Cap style={{ fontSize: 11 }}>Client Details</Cap>
+    <div className="flex flex-col gap-8">
+      {/* ─── Client ────────────────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <PolicySectionHeader icon={UserRound} label="Client" />
 
         {/* Client Name */}
         <div className="space-y-1.5">
           <Label htmlFor="clientName" className={LABEL}>
-            Client Name <span className="text-destructive">*</span>
+            Client name <span className="text-destructive">*</span>
           </Label>
           <Input
             id="clientName"
@@ -101,13 +97,11 @@ export const PolicyFormClientSection: React.FC<
             name="clientName"
             value={formData.clientName}
             onChange={onInputChange}
-            className={`${FIELD} ${displayErrors.clientName ? "border-destructive" : ""}`}
+            className={fieldClass(!!displayErrors.clientName)}
             placeholder="John Smith"
           />
           {displayErrors.clientName && (
-            <span className="text-[11px] text-destructive">
-              {displayErrors.clientName}
-            </span>
+            <span className={ERROR_TEXT}>{displayErrors.clientName}</span>
           )}
         </div>
 
@@ -115,7 +109,7 @@ export const PolicyFormClientSection: React.FC<
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="clientState" className={LABEL}>
-              State *
+              State <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.clientState}
@@ -123,7 +117,7 @@ export const PolicyFormClientSection: React.FC<
             >
               <SelectTrigger
                 id="clientState"
-                className={`${FIELD} ${displayErrors.clientState ? "border-destructive" : ""}`}
+                className={fieldClass(!!displayErrors.clientState)}
               >
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -136,14 +130,12 @@ export const PolicyFormClientSection: React.FC<
               </SelectContent>
             </Select>
             {displayErrors.clientState && (
-              <span className="text-[11px] text-destructive">
-                {displayErrors.clientState}
-              </span>
+              <span className={ERROR_TEXT}>{displayErrors.clientState}</span>
             )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="clientDOB" className={LABEL}>
-              Date of Birth *
+              Date of birth <span className="text-destructive">*</span>
             </Label>
             <DateOfBirthInput
               id="clientDOB"
@@ -151,12 +143,10 @@ export const PolicyFormClientSection: React.FC<
               value={formData.clientDOB}
               onChange={onDOBChange}
               error={!!displayErrors.clientDOB}
-              className="h-9 text-sm bg-background border-border/60"
+              className={FIELD}
             />
             {displayErrors.clientDOB && (
-              <span className="text-[11px] text-destructive">
-                {displayErrors.clientDOB}
-              </span>
+              <span className={ERROR_TEXT}>{displayErrors.clientDOB}</span>
             )}
           </div>
         </div>
@@ -169,15 +159,15 @@ export const PolicyFormClientSection: React.FC<
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-1.5 text-xs text-accent hover:text-accent/80 font-medium transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-accent transition-colors hover:text-accent/80"
             >
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform ${showContactDetails ? "rotate-180" : ""}`}
               />
-              Additional Client Details
+              Additional client details
             </button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-3 space-y-3">
+          <CollapsibleContent className="space-y-3 pt-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="clientEmail" className={LABEL}>
@@ -211,7 +201,7 @@ export const PolicyFormClientSection: React.FC<
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="clientStreet" className={LABEL}>
-                Street Address
+                Street address
               </Label>
               <Input
                 id="clientStreet"
@@ -240,7 +230,7 @@ export const PolicyFormClientSection: React.FC<
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="clientZipCode" className={LABEL}>
-                  Zip Code
+                  Zip code
                 </Label>
                 <Input
                   id="clientZipCode"
@@ -259,14 +249,14 @@ export const PolicyFormClientSection: React.FC<
         </Collapsible>
       </div>
 
-      {/* Product Selection */}
-      <div className="space-y-3 border-t border-border/40 pt-4">
-        <Cap style={{ fontSize: 11 }}>Product Selection</Cap>
+      {/* ─── Product ───────────────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <PolicySectionHeader icon={Package} label="Product" />
 
         {/* Carrier Select */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="carrierId" className={LABEL}>
-            Carrier *
+            Carrier <span className="text-destructive">*</span>
           </Label>
           <Select
             value={formData.carrierId}
@@ -274,9 +264,9 @@ export const PolicyFormClientSection: React.FC<
           >
             <SelectTrigger
               id="carrierId"
-              className={`${FIELD} ${displayErrors.carrierId ? "border-destructive" : ""}`}
+              className={fieldClass(!!displayErrors.carrierId)}
             >
-              <SelectValue placeholder="Select Carrier" />
+              <SelectValue placeholder="Select carrier" />
             </SelectTrigger>
             <SelectContent>
               {carriers.map((carrier) => (
@@ -287,16 +277,14 @@ export const PolicyFormClientSection: React.FC<
             </SelectContent>
           </Select>
           {displayErrors.carrierId && (
-            <span className="text-[11px] text-destructive">
-              {displayErrors.carrierId}
-            </span>
+            <span className={ERROR_TEXT}>{displayErrors.carrierId}</span>
           )}
         </div>
 
         {/* Product Select */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="productId" className={LABEL}>
-            Product *
+            Product <span className="text-destructive">*</span>
           </Label>
           <Select
             value={formData.productId}
@@ -305,7 +293,7 @@ export const PolicyFormClientSection: React.FC<
           >
             <SelectTrigger
               id="productId"
-              className={`${FIELD} ${displayErrors.productId ? "border-destructive" : ""}`}
+              className={fieldClass(!!displayErrors.productId)}
             >
               <SelectValue
                 placeholder={
@@ -315,7 +303,7 @@ export const PolicyFormClientSection: React.FC<
                       ? "Loading products..."
                       : products.length === 0
                         ? "No products available for this carrier"
-                        : "Select Product"
+                        : "Select product"
                 }
               />
             </SelectTrigger>
@@ -330,12 +318,10 @@ export const PolicyFormClientSection: React.FC<
             </SelectContent>
           </Select>
           {displayErrors.productId && (
-            <span className="text-[11px] text-destructive">
-              {displayErrors.productId}
-            </span>
+            <span className={ERROR_TEXT}>{displayErrors.productId}</span>
           )}
           {formData.carrierId && !productsLoading && products.length === 0 && (
-            <span className="text-[11px] text-destructive">
+            <span className={ERROR_TEXT}>
               This carrier has no products configured. Please contact admin or
               select a different carrier.
             </span>
@@ -347,7 +333,7 @@ export const PolicyFormClientSection: React.FC<
           selectedProduct?.product_type === "term_life" && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="termLength" className={LABEL}>
-                Term Length *
+                Term length <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={formData.termLength?.toString() ?? ""}
@@ -355,7 +341,7 @@ export const PolicyFormClientSection: React.FC<
               >
                 <SelectTrigger
                   id="termLength"
-                  className={`${FIELD} ${displayErrors.termLength ? "border-destructive" : ""}`}
+                  className={fieldClass(!!displayErrors.termLength)}
                 >
                   <SelectValue placeholder="Select term length" />
                 </SelectTrigger>
@@ -375,9 +361,7 @@ export const PolicyFormClientSection: React.FC<
                 </SelectContent>
               </Select>
               {displayErrors.termLength && (
-                <span className="text-[11px] text-destructive">
-                  {displayErrors.termLength}
-                </span>
+                <span className={ERROR_TEXT}>{displayErrors.termLength}</span>
               )}
             </div>
           )}
