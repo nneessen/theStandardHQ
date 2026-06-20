@@ -20,6 +20,21 @@ export const fmtDate = (d?: string | null) => {
   return dt ? dt.toLocaleDateString() : "—";
 };
 
+// Date + time, compact (e.g. "Jun 19, 6:30 PM"). For inbound-call timestamps the agent needs to see
+// WHEN a call came through, not just the day. Full ISO timestamptz values route through toLocalDate's
+// `new Date(d)` branch (the date-only regex doesn't match), so the local-time conversion is correct.
+export const fmtDateTime = (d?: string | null) => {
+  const dt = toLocalDate(d);
+  return dt
+    ? dt.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "—";
+};
+
 export const fmtPhone = (raw?: string | null) => {
   if (!raw) return "";
   const m = raw.replace(/[^\d]/g, "").match(/^1?(\d{3})(\d{3})(\d{4})$/);

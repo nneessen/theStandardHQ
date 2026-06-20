@@ -4,7 +4,14 @@
 // renders identically in the full-screen inbound modal and on the Clients detail page.
 import { useMemo } from "react";
 import { Panel, SummaryRow, StatusBadge } from "./primitives";
-import { money, fmtDate, fmtPhone, ageFromDob, fmtDuration } from "./format";
+import {
+  money,
+  fmtDate,
+  fmtDateTime,
+  fmtPhone,
+  ageFromDob,
+  fmtDuration,
+} from "./format";
 import type { InboundCallHistoryRow } from "../../hooks/useInboundCallIntake";
 
 // Raw policy row shape (getWithPolicies casts rows without camel-mapping → snake_case + carrier join).
@@ -133,13 +140,24 @@ export function ClientRecordRail({
             {history.map((h) => (
               <li key={h.id} className="px-4 py-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-v2-ink">
-                    {h.call_start ? fmtDate(h.call_start) : "In progress"}
+                  {/* Agent-wide feed leads with WHO called in; the single-client history (detail
+                      page) has no per-row name, so it leads with the timestamp. */}
+                  <span className="truncate text-sm font-semibold text-v2-ink">
+                    {h.client_name ?? fmtDateTime(h.call_start ?? h.created_at)}
                   </span>
                   <StatusBadge status={h.status} />
                 </div>
                 <div className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-v2-ink-muted">
-                  <span className="truncate">{h.call_program ?? "—"}</span>
+                  <span className="truncate">
+                    {h.client_name
+                      ? [
+                          fmtDateTime(h.call_start ?? h.created_at),
+                          h.call_program,
+                        ]
+                          .filter(Boolean)
+                          .join("  ·  ")
+                      : (h.call_program ?? "—")}
+                  </span>
                   <span className="shrink-0 tabular-nums">
                     {fmtDuration(h.duration)}
                   </span>
