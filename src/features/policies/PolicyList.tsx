@@ -88,6 +88,7 @@ import {
 } from "./utils/policyExport";
 import type { Commission } from "@/types/commission.types";
 import { useFeatureAccess } from "@/hooks/subscription";
+import { PolicyInsightsBand } from "./components/PolicyInsightsBand";
 
 interface PolicyListProps {
   onEditPolicy: (policyId: string) => void;
@@ -155,7 +156,6 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     error,
     totalCount: totalItems,
     totalPages,
-    metrics,
     refetch: refresh,
   } = usePoliciesPaginated({
     page: currentPage,
@@ -255,38 +255,37 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     {} as Record<string, (typeof commissions)[0]>,
   );
 
-  // When filters are active, fetch all matching policy IDs to scope commission metrics
-  const hasActiveFilters = filterCount > 0;
-  const { data: allFilteredPolicies } = useQuery({
-    ...policyQueries.list(filters),
-    enabled: hasActiveFilters,
-  });
-
-  // Scope commissions to filtered policies when filters are active
-  const filteredPolicyIds =
-    hasActiveFilters && allFilteredPolicies
-      ? new Set(allFilteredPolicies.map((p) => p.id))
-      : null;
-  const commissionsForMetrics = filteredPolicyIds
-    ? commissions.filter((c) => c.policyId && filteredPolicyIds.has(c.policyId))
-    : commissions;
-
-  // Commission metrics scoped to current filter selection
-  // Only count commissions that have actually been paid out (advanced to agent)
-  const paidCommissions = commissionsForMetrics.filter(
-    (c) => c.status === "paid",
+  // Full filtered policy list (all rows, not just the current page). Drives the
+  // insights band cards AND scopes commission figures to the current filter.
+  // Mirrors the same filters/date-field the table uses so the cards reconcile
+  // with what's on screen. Cached by TanStack (same key the export reuses).
+  // Edge cases (both rare/acceptable, matching existing export behavior):
+  //   • min/maxPremium filters are applied client-side here but NOT in the
+  //     server `getCount`, so with a premium filter active the band totals can
+  //     differ from the pager's "of N".
+  //   • past the PostgREST default row ceiling the band would aggregate a
+  //     subset; the pager count stays exact.
+  const { data: allFilteredPolicies = [] } = useQuery(
+    policyQueries.list(queryFilters),
   );
-  const earnedCommission = paidCommissions.reduce(
-    (sum, c) => sum + (c.earnedAmount || 0),
-    0,
+
+  // Carrier id → name map for the Top Carriers card.
+  const carrierNames = useMemo(
+    () => Object.fromEntries(carriers.map((c) => [c.id, c.name])),
+    [carriers],
   );
-  const pendingCommission = commissionsForMetrics
-    .filter((c) => c.status === "pending")
-    .reduce((sum, c) => sum + (c.amount || 0), 0);
-  // TODO:  _totalAdvances Is declared but its value was never read.
-  const _totalAdvances = paidCommissions.reduce(
-    (sum, c) => sum + (c.amount || 0),
-    0,
+
+  // Scope commissions to the filtered policy set so the pipeline card matches.
+  const filteredPolicyIds = useMemo(
+    () => new Set(allFilteredPolicies.map((p) => p.id)),
+    [allFilteredPolicies],
+  );
+  const commissionsForMetrics = useMemo(
+    () =>
+      commissions.filter(
+        (c) => c.policyId && filteredPolicyIds.has(c.policyId),
+      ),
+    [commissions, filteredPolicyIds],
   );
 
   // Handle search with debounce
@@ -417,8 +416,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const handleExport = async (format: "csv" | "excel") => {
     setExporting(true);
     try {
+      // Use queryFilters (same key the insights band already warmed) so export
+      // reuses the cached full list instead of firing a duplicate fetch, and so
+      // it honours the date column the user is currently viewing.
       const allPolicies = await queryClient.fetchQuery(
-        policyQueries.list(filters),
+        policyQueries.list(queryFilters),
       );
       const carrierMap: Record<string, string> = Object.fromEntries(
         carriers.map((c) => [c.id, c.name]),
@@ -450,72 +452,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Light board chrome: Archivo board title + the existing compact metric
-          strip (kept dense) + actions. */}
+    <div className="flex flex-col gap-3 md:flex-1 md:min-h-0">
+      {/* Light board chrome: Archivo board title + actions. The former inline
+          stat strip is removed — the insights band below carries those figures
+          (and reclaims the dead space above the table). */}
       <BoardListHeader
+        className="flex-none"
         icon={<FileText className="h-4 w-4 text-foreground" />}
         title="Policies"
-        stats={
-          metrics ? (
-            <div className="flex items-center gap-x-2 gap-y-0.5 text-[15px] text-muted-foreground flex-wrap leading-tight">
-              <span>
-                <span className="text-foreground font-semibold">
-                  {metrics.totalPolicies.toLocaleString()}
-                </span>{" "}
-                total
-              </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="inline-flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                <span className="text-foreground font-semibold">
-                  {metrics.activePolicies.toLocaleString()}
-                </span>{" "}
-                active
-              </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="inline-flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                <span className="text-foreground font-semibold">
-                  {metrics.pendingPolicies.toLocaleString()}
-                </span>{" "}
-                pending
-              </span>
-              <span className="text-muted-foreground">·</span>
-              <span>
-                <span className="text-foreground font-semibold">
-                  ${(metrics.totalPremium / 1000).toFixed(1)}k
-                </span>{" "}
-                premium
-              </span>
-              {canViewCommissions && (
-                <>
-                  <span className="text-muted-foreground">·</span>
-                  <span>
-                    <span className="text-success font-semibold">
-                      ${(earnedCommission / 1000).toFixed(1)}k
-                    </span>{" "}
-                    earned
-                  </span>
-                  <span className="text-muted-foreground">·</span>
-                  <span>
-                    <span className="text-warning font-semibold">
-                      ${(pendingCommission / 1000).toFixed(1)}k
-                    </span>{" "}
-                    pending
-                  </span>
-                </>
-              )}
-              <span className="text-muted-foreground">·</span>
-              <span>
-                <span className="text-foreground font-semibold">
-                  {metrics.ytdPolicies.toLocaleString()}
-                </span>{" "}
-                YTD
-              </span>
-            </div>
-          ) : null
-        }
         actions={
           <>
             <DropdownMenu>
@@ -558,8 +502,26 @@ export const PolicyList: React.FC<PolicyListProps> = ({
         }
       />
 
-      {/* Table card */}
-      <SoftCard padding="none" lift className="overflow-hidden flex flex-col">
+      {/* Insights band — fills the freed space above the table (flex:1 1 auto,
+          min-h-0 so it shrinks before the table ever scrolls). */}
+      <PolicyInsightsBand
+        className="md:flex-1 md:min-h-[156px]"
+        policies={allFilteredPolicies}
+        commissions={commissionsForMetrics}
+        carrierNames={carrierNames}
+        canViewCommissions={canViewCommissions}
+      />
+
+      {/* Table card — pinned to the bottom. flex-initial (grow 0, shrink 1):
+          on a tall window it stays its natural 10-row height and the band fills
+          the slack above; on a short window it yields FIRST (the band keeps its
+          156px floor so the cards never collapse to slivers) and the table body
+          scrolls internally instead. */}
+      <SoftCard
+        padding="none"
+        lift
+        className="flex-none md:flex-initial md:min-h-0 overflow-hidden flex flex-col"
+      >
         {/* Search + filter toggle (compact, single row) */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border bg-v2-card-tinted">
           <div className="flex-1 relative flex items-center min-w-0">
@@ -718,8 +680,10 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           </div>
         )}
 
-        {/* Table Container - Desktop Only */}
-        <div className="hidden md:block flex-1 overflow-auto">
+        {/* Table Container - Desktop Only. Capped so 10 compact rows render at
+            natural height on a normal viewport (no scroll) while a very short
+            window falls back to internal scroll instead of clipping the pager. */}
+        <div className="hidden md:block flex-1 min-h-0 overflow-auto max-h-[calc(100vh-13rem)]">
           <Table>
             <TableHeader className="sticky top-0 bg-card z-10">
               <TableRow className="h-8 border-b border-border dark:border-border hover:bg-transparent">
@@ -917,7 +881,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                       key={policy.id}
                       className="h-9 border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-v2-card-tinted/50 transition-colors"
                     >
-                      <TableCell className="text-[14px] text-foreground dark:text-foreground py-1.5 px-2 font-medium">
+                      <TableCell className="text-[14px] text-foreground dark:text-foreground py-1 px-2 font-medium">
                         <div className="flex items-center gap-1.5">
                           {policy.policyNumber}
                           {!policy.leadPurchaseId && (
@@ -937,7 +901,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-[14px] py-1.5 px-2">
+                      <TableCell className="text-[14px] py-1 px-2">
                         <div className="flex flex-col gap-0">
                           <span className="font-medium text-foreground dark:text-foreground">
                             {policy.client.name}
@@ -947,7 +911,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[14px] py-1.5 px-2">
+                      <TableCell className="text-[14px] py-1 px-2">
                         <div className="flex flex-col gap-0">
                           <span className="font-medium text-foreground dark:text-foreground">
                             {carrier?.name || "Unknown"}
@@ -957,8 +921,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-1.5 px-2">
-                        <div className="flex flex-col gap-0.5">
+                      <TableCell className="py-1 px-2">
+                        {/* Status + lifecycle SIDE BY SIDE (not stacked) so
+                            approved rows stay ~40px tall and all 10 rows fit
+                            without crushing the insights band above. */}
+                        <div className="flex flex-row items-center gap-1">
                           {/* Application Status Dropdown */}
                           <Select
                             value={policy.status}
@@ -1077,7 +1044,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-[14px] py-1.5 px-2 text-right tabular-nums">
+                      <TableCell className="text-[14px] py-1 px-2 text-right tabular-nums">
                         <div className="flex flex-col gap-0 items-end">
                           <span className="text-foreground dark:text-foreground">
                             {formatCurrency(policy.annualPremium)}
@@ -1088,7 +1055,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                         </div>
                       </TableCell>
                       {canViewCommissions && (
-                        <TableCell className="text-[14px] py-1.5 px-2 text-right tabular-nums">
+                        <TableCell className="text-[14px] py-1 px-2 text-right tabular-nums">
                           <div className="flex flex-col gap-0 items-end">
                             <span className="text-success font-medium">
                               {formatCurrency(commission)}
@@ -1099,7 +1066,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           </div>
                         </TableCell>
                       )}
-                      <TableCell className="py-1.5 px-2">
+                      <TableCell className="py-1 px-2">
                         {policyCommission ? (
                           <Select
                             value={policyCommission.status}
@@ -1149,14 +1116,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-[14px] text-muted-foreground dark:text-muted-foreground py-1.5 px-2">
+                      <TableCell className="text-[14px] text-muted-foreground dark:text-muted-foreground py-1 px-2">
                         {dateColumnType === "effective"
                           ? formatDate(policy.effectiveDate)
                           : policy.submitDate
                             ? formatDate(policy.submitDate)
                             : "—"}
                       </TableCell>
-                      <TableCell className="py-1.5 px-2">
+                      <TableCell className="py-1 px-2">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button

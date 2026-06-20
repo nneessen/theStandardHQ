@@ -112,8 +112,15 @@ export const PolicyDashboard: React.FC = () => {
   }
 
   return (
-    <SectionShell className="dashboard-canvas">
-      <div className="mx-auto flex w-full max-w-[2400px] flex-col gap-5 px-4 py-5 lg:py-6">
+    <SectionShell fullHeight={false} className="dashboard-canvas">
+      {/* No-scroll viewport model (md+ only): the page owns exactly the height
+          left after AppShell's p-6 (3rem top+bottom); the table renders all 10
+          rows at natural height pinned to the bottom and the insights band
+          fills the rest. On mobile we deliberately fall back to natural
+          document scroll (the fixed-height/overflow-hidden model would clip the
+          stacked card list, which has no internal scroll). Desktop-scoped per
+          the redesign handoff. */}
+      <div className="mx-auto flex w-full max-w-[2400px] flex-col px-4 pt-2 md:h-[calc(100vh-3rem)] md:overflow-hidden">
         <PolicyList
           onEditPolicy={handleEditPolicy}
           onNewPolicy={() => setIsPolicyFormOpen(true)}

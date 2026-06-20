@@ -12,6 +12,7 @@ export type ClientUpdate = Database["public"]["Tables"]["clients"]["Update"];
 export type ClientStatus = "active" | "inactive" | "lead";
 
 // Core client interface with all fields from database
+// TODO: With the new inbound feature and the new client's page and the pop-up dialogue that pops up when an inbound call comes through from the platform that takes inbound calls, do we need to update this interface for the client to include additional fields to identify who the client belongs to (PCID, etc.)? Which would be found in Docs Inbound Feature.
 export interface Client {
   id: string;
   user_id: string | null;

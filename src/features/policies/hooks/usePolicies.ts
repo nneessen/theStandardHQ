@@ -66,8 +66,12 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
     enabled = true,
   } = options;
 
-  // Parallel queries for data, count, and metrics
-  const [dataQuery, countQuery, metricsQuery] = useQueries({
+  // Parallel queries for the current page of data and the total count.
+  // NOTE: the aggregate-metrics query was removed once the Policies page
+  // dropped its inline stat strip — the insights band derives its figures from
+  // the full filtered list instead, so fetching metrics here was pure waste
+  // (and a metrics-RPC failure would wrongly surface as a table error).
+  const [dataQuery, countQuery] = useQueries({
     queries: [
       {
         queryKey: [...policyKeys.list(filters), 'paginated', page, pageSize, sortConfig] as const,
@@ -78,10 +82,6 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
       },
       {
         ...policyQueries.count(filters),
-        enabled,
-      },
-      {
-        ...policyQueries.metrics(filters),
         enabled,
       },
     ],
@@ -96,18 +96,16 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
     policies,
     totalCount,
     totalPages,
-    metrics: metricsQuery.data,
 
     // Loading states
     isLoading: dataQuery.isLoading || countQuery.isLoading,
     isFetching: dataQuery.isFetching || countQuery.isFetching,
-    error: dataQuery.error || countQuery.error || metricsQuery.error,
+    error: dataQuery.error || countQuery.error,
 
     // Refetch all
     refetch: () => {
       dataQuery.refetch();
       countQuery.refetch();
-      metricsQuery.refetch();
     },
   };
 }
