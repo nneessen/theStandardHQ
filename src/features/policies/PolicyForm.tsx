@@ -41,6 +41,8 @@ interface PolicyFormProps {
   isPending?: boolean;
   /** Callback to notify parent when form submission state changes */
   onSubmittingChange?: (isSubmitting: boolean) => void;
+  /** New-mode only: prefill values merged over empty defaults (e.g. known client from intake). */
+  defaultFormData?: Partial<NewPolicyForm>;
 }
 
 export const PolicyForm: React.FC<PolicyFormProps> = ({
@@ -52,6 +54,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   externalErrors = {},
   isPending = false,
   onSubmittingChange,
+  defaultFormData,
 }) => {
   const { user } = useAuth();
 
@@ -104,6 +107,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     policyId,
     policy,
     products,
+    defaultFormData,
   });
 
   // Sync productQueryCarrierId when carrier changes in the form

@@ -2641,6 +2641,7 @@ export type Database = {
           name: string;
           notes: string | null;
           phone: string | null;
+          phone_e164: string | null;
           state: string | null;
           status: string | null;
           updated_at: string | null;
@@ -2655,6 +2656,7 @@ export type Database = {
           name: string;
           notes?: string | null;
           phone?: string | null;
+          phone_e164?: string | null;
           state?: string | null;
           status?: string | null;
           updated_at?: string | null;
@@ -2669,6 +2671,7 @@ export type Database = {
           name?: string;
           notes?: string | null;
           phone?: string | null;
+          phone_e164?: string | null;
           state?: string | null;
           status?: string | null;
           updated_at?: string | null;
@@ -4861,6 +4864,106 @@ export type Database = {
         };
         Relationships: [];
       };
+      imo_agent_external_ids: {
+        Row: {
+          created_at: string;
+          id: string;
+          imo_id: string;
+          pc_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          imo_id: string;
+          pc_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          imo_id?: string;
+          pc_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imo_agent_external_ids_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imo_agent_external_ids_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imo_agent_external_ids_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imo_agent_external_ids_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      imo_call_platform_credentials: {
+        Row: {
+          client_id: string;
+          client_secret_hash: string;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          is_active: boolean;
+          label: string | null;
+          last_used_at: string | null;
+          revoked_at: string | null;
+          scopes: string[];
+        };
+        Insert: {
+          client_id: string;
+          client_secret_hash: string;
+          created_at?: string;
+          id?: string;
+          imo_id: string;
+          is_active?: boolean;
+          label?: string | null;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          scopes?: string[];
+        };
+        Update: {
+          client_id?: string;
+          client_secret_hash?: string;
+          created_at?: string;
+          id?: string;
+          imo_id?: string;
+          is_active?: boolean;
+          label?: string | null;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          scopes?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imo_call_platform_credentials_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       imos: {
         Row: {
           access_revoked_at: string | null;
@@ -4932,6 +5035,114 @@ export type Database = {
           zip?: string | null;
         };
         Relationships: [];
+      };
+      inbound_calls: {
+        Row: {
+          agent_id: string | null;
+          ani: string;
+          billable: number | null;
+          call_program: string | null;
+          call_start: string | null;
+          client_id: string | null;
+          created_at: string;
+          duration: number | null;
+          fired_pop: boolean;
+          id: string;
+          imo_id: string;
+          offer_id: string | null;
+          patch_only: boolean;
+          pc_id: string | null;
+          phone_e164: string | null;
+          record_type: string | null;
+          request_tag: string;
+          state: string | null;
+          status: string;
+          sub_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          agent_id?: string | null;
+          ani: string;
+          billable?: number | null;
+          call_program?: string | null;
+          call_start?: string | null;
+          client_id?: string | null;
+          created_at?: string;
+          duration?: number | null;
+          fired_pop?: boolean;
+          id?: string;
+          imo_id: string;
+          offer_id?: string | null;
+          patch_only?: boolean;
+          pc_id?: string | null;
+          phone_e164?: string | null;
+          record_type?: string | null;
+          request_tag: string;
+          state?: string | null;
+          status?: string;
+          sub_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          agent_id?: string | null;
+          ani?: string;
+          billable?: number | null;
+          call_program?: string | null;
+          call_start?: string | null;
+          client_id?: string | null;
+          created_at?: string;
+          duration?: number | null;
+          fired_pop?: boolean;
+          id?: string;
+          imo_id?: string;
+          offer_id?: string | null;
+          patch_only?: boolean;
+          pc_id?: string | null;
+          phone_e164?: string | null;
+          record_type?: string | null;
+          request_tag?: string;
+          state?: string | null;
+          status?: string;
+          sub_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbound_calls_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_calls_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_calls_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_calls_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_calls_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       instagram_conversations: {
         Row: {
@@ -14869,56 +15080,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      workflow_actions: {
-        Row: {
-          action_order: number;
-          action_type: string;
-          conditions: Json | null;
-          config: Json;
-          created_at: string | null;
-          delay_minutes: number | null;
-          id: string;
-          max_retries: number | null;
-          retry_on_failure: boolean | null;
-          updated_at: string | null;
-          workflow_id: string;
-        };
-        Insert: {
-          action_order: number;
-          action_type: string;
-          conditions?: Json | null;
-          config?: Json;
-          created_at?: string | null;
-          delay_minutes?: number | null;
-          id?: string;
-          max_retries?: number | null;
-          retry_on_failure?: boolean | null;
-          updated_at?: string | null;
-          workflow_id: string;
-        };
-        Update: {
-          action_order?: number;
-          action_type?: string;
-          conditions?: Json | null;
-          config?: Json;
-          created_at?: string | null;
-          delay_minutes?: number | null;
-          id?: string;
-          max_retries?: number | null;
-          retry_on_failure?: boolean | null;
-          updated_at?: string | null;
-          workflow_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "workflow_actions_workflow_id_fkey";
-            columns: ["workflow_id"];
-            isOneToOne: false;
-            referencedRelation: "workflows";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       workflow_email_tracking: {
         Row: {
           date: string | null;
@@ -15080,15 +15241,22 @@ export type Database = {
           actions_completed: number | null;
           actions_executed: Json | null;
           actions_failed: number | null;
+          actions_snapshot: Json | null;
+          attempts: number;
+          cancelled: boolean;
           completed_at: string | null;
           context: Json | null;
           created_at: string | null;
+          dedupe_key: string | null;
           duration_ms: number | null;
           emails_sent: number | null;
           error: string | null;
           error_details: Json | null;
           error_message: string | null;
           id: string;
+          imo_id: string | null;
+          resume_action_index: number;
+          scheduled_at: string | null;
           started_at: string | null;
           status: string;
           trigger_source: string | null;
@@ -15098,15 +15266,22 @@ export type Database = {
           actions_completed?: number | null;
           actions_executed?: Json | null;
           actions_failed?: number | null;
+          actions_snapshot?: Json | null;
+          attempts?: number;
+          cancelled?: boolean;
           completed_at?: string | null;
           context?: Json | null;
           created_at?: string | null;
+          dedupe_key?: string | null;
           duration_ms?: number | null;
           emails_sent?: number | null;
           error?: string | null;
           error_details?: Json | null;
           error_message?: string | null;
           id?: string;
+          imo_id?: string | null;
+          resume_action_index?: number;
+          scheduled_at?: string | null;
           started_at?: string | null;
           status?: string;
           trigger_source?: string | null;
@@ -15116,15 +15291,22 @@ export type Database = {
           actions_completed?: number | null;
           actions_executed?: Json | null;
           actions_failed?: number | null;
+          actions_snapshot?: Json | null;
+          attempts?: number;
+          cancelled?: boolean;
           completed_at?: string | null;
           context?: Json | null;
           created_at?: string | null;
+          dedupe_key?: string | null;
           duration_ms?: number | null;
           emails_sent?: number | null;
           error?: string | null;
           error_details?: Json | null;
           error_message?: string | null;
           id?: string;
+          imo_id?: string | null;
+          resume_action_index?: number;
+          scheduled_at?: string | null;
           started_at?: string | null;
           status?: string;
           trigger_source?: string | null;
@@ -15136,6 +15318,41 @@ export type Database = {
             columns: ["workflow_id"];
             isOneToOne: false;
             referencedRelation: "workflows";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workflow_send_log: {
+        Row: {
+          action_order: number;
+          channel: string;
+          created_at: string;
+          id: string;
+          recipient: string;
+          run_id: string;
+        };
+        Insert: {
+          action_order: number;
+          channel: string;
+          created_at?: string;
+          id?: string;
+          recipient: string;
+          run_id: string;
+        };
+        Update: {
+          action_order?: number;
+          channel?: string;
+          created_at?: string;
+          id?: string;
+          recipient?: string;
+          run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workflow_send_log_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "workflow_runs";
             referencedColumns: ["id"];
           },
         ];
@@ -15210,56 +15427,6 @@ export type Database = {
           },
         ];
       };
-      workflow_triggers: {
-        Row: {
-          created_at: string | null;
-          event_config: Json | null;
-          id: string;
-          is_active: boolean | null;
-          last_triggered_at: string | null;
-          next_trigger_at: string | null;
-          schedule_config: Json | null;
-          trigger_type: string;
-          updated_at: string | null;
-          webhook_config: Json | null;
-          workflow_id: string;
-        };
-        Insert: {
-          created_at?: string | null;
-          event_config?: Json | null;
-          id?: string;
-          is_active?: boolean | null;
-          last_triggered_at?: string | null;
-          next_trigger_at?: string | null;
-          schedule_config?: Json | null;
-          trigger_type: string;
-          updated_at?: string | null;
-          webhook_config?: Json | null;
-          workflow_id: string;
-        };
-        Update: {
-          created_at?: string | null;
-          event_config?: Json | null;
-          id?: string;
-          is_active?: boolean | null;
-          last_triggered_at?: string | null;
-          next_trigger_at?: string | null;
-          schedule_config?: Json | null;
-          trigger_type?: string;
-          updated_at?: string | null;
-          webhook_config?: Json | null;
-          workflow_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "workflow_triggers_workflow_id_fkey";
-            columns: ["workflow_id"];
-            isOneToOne: false;
-            referencedRelation: "workflows";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       workflows: {
         Row: {
           actions: Json;
@@ -15279,6 +15446,7 @@ export type Database = {
           name: string;
           priority: number | null;
           status: string | null;
+          trigger_event_name: string | null;
           trigger_type: string;
           updated_at: string | null;
         };
@@ -15300,6 +15468,7 @@ export type Database = {
           name: string;
           priority?: number | null;
           status?: string | null;
+          trigger_event_name?: string | null;
           trigger_type: string;
           updated_at?: string | null;
         };
@@ -15321,6 +15490,7 @@ export type Database = {
           name?: string;
           priority?: number | null;
           status?: string | null;
+          trigger_event_name?: string | null;
           trigger_type?: string;
           updated_at?: string | null;
         };
@@ -16776,6 +16946,15 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      claim_workflow_send: {
+        Args: {
+          p_action_order: number;
+          p_channel: string;
+          p_recipient: string;
+          p_run_id: string;
+        };
+        Returns: boolean;
+      };
       cleanup_expired_evaluation_logs: { Args: never; Returns: number };
       cleanup_expired_invitations: { Args: never; Returns: number };
       cleanup_instagram_jobs: {
@@ -17032,6 +17211,78 @@ export type Database = {
         Args: { context_param?: Json; workflow_id_param: string };
         Returns: string;
       };
+      crm_authenticate_credential: {
+        Args: { p_client_id: string; p_secret: string };
+        Returns: {
+          credential_id: string;
+          imo_id: string;
+          scopes: string[];
+        }[];
+      };
+      crm_issue_credential: {
+        Args: { p_imo_id: string; p_label?: string; p_scopes?: string[] };
+        Returns: {
+          client_id: string;
+          client_secret: string;
+          credential_id: string;
+        }[];
+      };
+      crm_lookup_aor: {
+        Args: { p_ani: string; p_imo_id: string };
+        Returns: {
+          agent_id: string;
+          pc_id: string;
+        }[];
+      };
+      crm_patch_billable: {
+        Args: {
+          p_ani?: string;
+          p_billable: number;
+          p_duration?: number;
+          p_imo_id: string;
+          p_request_tag: string;
+        };
+        Returns: {
+          id: string;
+          patch_only: boolean;
+        }[];
+      };
+      crm_register_agent_pcid: {
+        Args: { p_imo_id: string; p_pc_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      crm_revoke_credential: {
+        Args: { p_credential_id: string };
+        Returns: boolean;
+      };
+      crm_rotate_credential: {
+        Args: { p_credential_id: string };
+        Returns: {
+          client_secret: string;
+        }[];
+      };
+      crm_upsert_call: {
+        Args: {
+          p_ani: string;
+          p_billable?: number;
+          p_call_program?: string;
+          p_call_start?: string;
+          p_caller_name?: string;
+          p_duration?: number;
+          p_imo_id: string;
+          p_offer_id?: string;
+          p_pc_id: string;
+          p_record_type?: string;
+          p_request_tag: string;
+          p_state?: string;
+          p_sub_id?: string;
+        };
+        Returns: {
+          agent_id: string;
+          fired_pop: boolean;
+          id: string;
+        }[];
+      };
       current_user_imo_grants_all_features: { Args: never; Returns: boolean };
       delete_alert_rule: { Args: { p_rule_id: string }; Returns: boolean };
       delete_lead_purchase_with_expense: {
@@ -17040,6 +17291,13 @@ export type Database = {
       };
       delete_orphan_identity: { Args: { del_email: string }; Returns: Json };
       delete_recruit: { Args: { target_recruit_id: string }; Returns: Json };
+      dequeue_workflow_runs: {
+        Args: { p_batch?: number };
+        Returns: {
+          run_id: string;
+          workflow_id: string;
+        }[];
+      };
       duplicate_training_lesson: {
         Args: { p_lesson_id: string };
         Returns: Json;
@@ -17054,6 +17312,15 @@ export type Database = {
           p_scheduled_for?: string;
         };
         Returns: string;
+      };
+      enqueue_workflow_event: {
+        Args: {
+          p_context?: Json;
+          p_dedupe_key?: string;
+          p_event_name: string;
+          p_imo_id: string;
+        };
+        Returns: number;
       };
       ensure_system_labels: { Args: { p_user_id: string }; Returns: undefined };
       expire_instagram_scheduled_messages: { Args: never; Returns: number };
@@ -19309,6 +19576,7 @@ export type Database = {
         Args: never;
         Returns: undefined;
       };
+      invoke_workflow_worker: { Args: never; Returns: undefined };
       is_access_revoked: { Args: { p_user_id: string }; Returns: boolean };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
@@ -19497,6 +19765,7 @@ export type Database = {
       };
       nextval: { Args: { sequence_name: string }; Returns: number };
       normalize_email_subject: { Args: { subject: string }; Returns: string };
+      normalize_phone_e164: { Args: { phone: string }; Returns: string };
       notify_user: {
         Args: {
           p_message?: string;
@@ -19704,6 +19973,10 @@ export type Database = {
       remove_suppression: {
         Args: { p_channel: string; p_contact: string };
         Returns: undefined;
+      };
+      requeue_stale_workflow_runs: {
+        Args: { p_max_attempts?: number; p_ttl?: string };
+        Returns: number;
       };
       resend_recruit_invitation: {
         Args: { p_invitation_id: string };

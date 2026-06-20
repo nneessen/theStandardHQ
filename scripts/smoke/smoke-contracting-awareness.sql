@@ -24,6 +24,7 @@ DECLARE
   v_car2  uuid := gen_random_uuid();
   v_leaf2 uuid := gen_random_uuid();
   v_sa    uuid := gen_random_uuid();
+  v_saChild uuid := gen_random_uuid();
   v_reqid uuid;
   v_cnt int;
   v_cnt2 int;
@@ -125,7 +126,11 @@ BEGIN
   RAISE NOTICE 'TESTC PASS: activity feed + downline arrangements scoped to the upline';
 
   -- ════════════════════════════════════════════════════════════════════════════
-  -- TEST D — super-admin Activity feed is scoped to the ACTING imo (no cross-IMO bleed)
+  -- TEST D — Activity feed is DOWNLINE-ONLY, even for a super-admin.
+  --   As of 20260619135313, get_contracting_activity() has NO whole-org / whole-IMO admin
+  --   branch — only is_upline_of(agent). A super-admin sees their OWN downline subtree and
+  --   nothing else: no other-team bleed within the IMO, no cross-IMO bleed. (The "Recent
+  --   activity" panel is titled "Downline Activity" — it must show team activity only.)
   -- ════════════════════════════════════════════════════════════════════════════
   -- second IMO (IMO2) with its own carrier + a contract there
   INSERT INTO imos(id,name,code) VALUES (v_imo2,'SMOKE AWARE IMO2','SMB'||substr(v_imo2::text,1,8));
@@ -135,30 +140,35 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub',v_leaf2)::text, true);
   PERFORM set_carrier_contract_status(v_leaf2, v_car2, 'submitted', NULL);
 
-  -- super-admin whose ACTING imo = IMO1 (v_imo). auth.users carries acting_imo_id; the
-  -- handle_new_user trigger creates the profile, then we force the super-admin state.
+  -- super-admin in IMO1, standalone (NOT in v_top/v_mid/v_leaf's upline chain). The
+  -- handle_new_user trigger creates the profile, then we force the super-admin state in a
+  -- SERVICE context (empty claims) — a guard trigger blocks non-super-admins from elevating.
   INSERT INTO auth.users (id, email, raw_user_meta_data)
     VALUES (v_sa, 'aw-sa@smoke-aware.test',
             jsonb_build_object('roles', jsonb_build_array('agent'),
                                'imo_id', v_imo::text, 'acting_imo_id', v_imo::text));
-  -- elevate in SERVICE context (empty claims) — a guard trigger blocks non-super-admins
-  -- from setting is_super_admin, and the jwt is still 'leaf2' from the line above.
   PERFORM set_config('request.jwt.claims', '', true);
   UPDATE user_profiles SET is_super_admin=true, imo_id=v_imo, approval_status='approved', contract_level=200
     WHERE id=v_sa;
 
-  PERFORM set_config('request.jwt.claims', json_build_object('sub',v_sa)::text, true);
-  SELECT count(*) INTO v_cnt  FROM get_contracting_activity(200) WHERE agent_id=v_leaf  AND carrier_id=v_carA;
-  SELECT count(*) INTO v_cnt2 FROM get_contracting_activity(200) WHERE agent_id=v_leaf2 AND carrier_id=v_car2;
-  IF v_cnt < 1 THEN RAISE EXCEPTION 'TESTD FAIL: super-admin acting IMO1 cannot see IMO1 activity (got %)', v_cnt; END IF;
-  IF v_cnt2 <> 0 THEN RAISE EXCEPTION 'TESTD FAIL: super-admin acting IMO1 sees IMO2 activity — CROSS-IMO BLEED (got %)', v_cnt2; END IF;
-  RAISE NOTICE 'TESTD PASS: super-admin Activity feed scoped to the acting IMO (no cross-IMO bleed)';
+  -- a child DIRECTLY under the super-admin so v_sa has a real downline of its own
+  PERFORM set_config('request.jwt.claims', '', true);
+  INSERT INTO user_profiles(id,email,imo_id,contract_level,upline_id,approval_status,first_name,last_name,roles)
+    VALUES (v_saChild,'aw-sachild@smoke-aware.test',v_imo,100,v_sa,'approved','AwSa','Child',ARRAY['agent']);
+  PERFORM set_config('request.jwt.claims', json_build_object('sub',v_saChild)::text, true);
+  PERFORM set_carrier_contract_status(v_saChild, v_carA, 'submitted', NULL);
 
-  -- see-all escape hatch: clear acting_imo_id → effective NULL → super-admin sees ALL IMOs
-  UPDATE auth.users SET raw_user_meta_data = raw_user_meta_data - 'acting_imo_id' WHERE id=v_sa;
+  PERFORM set_config('request.jwt.claims', json_build_object('sub',v_sa)::text, true);
+  -- POSITIVE: super-admin sees their OWN downline child (is_upline_of branch still works)
+  SELECT count(*) INTO v_cnt FROM get_contracting_activity(200) WHERE agent_id=v_saChild AND carrier_id=v_carA;
+  IF v_cnt < 1 THEN RAISE EXCEPTION 'TESTD FAIL: super-admin cannot see own downline child (got %)', v_cnt; END IF;
+  -- NEGATIVE: super-admin does NOT see a same-IMO agent outside their downline (no whole-IMO view)
+  SELECT count(*) INTO v_cnt FROM get_contracting_activity(200) WHERE agent_id=v_leaf AND carrier_id=v_carA;
+  IF v_cnt <> 0 THEN RAISE EXCEPTION 'TESTD FAIL: super-admin sees non-downline same-IMO agent — whole-IMO bleed (got %)', v_cnt; END IF;
+  -- NEGATIVE: super-admin does NOT see another IMO's agent (no cross-IMO bleed)
   SELECT count(*) INTO v_cnt2 FROM get_contracting_activity(200) WHERE agent_id=v_leaf2 AND carrier_id=v_car2;
-  IF v_cnt2 < 1 THEN RAISE EXCEPTION 'TESTD FAIL: see-all hatch broken — IMO2 hidden with no acting IMO (got %)', v_cnt2; END IF;
-  RAISE NOTICE 'TESTD-hatch PASS: super-admin with no acting IMO sees all IMOs (escape hatch intact)';
+  IF v_cnt2 <> 0 THEN RAISE EXCEPTION 'TESTD FAIL: super-admin sees another IMO agent — cross-IMO bleed (got %)', v_cnt2; END IF;
+  RAISE NOTICE 'TESTD PASS: Activity feed is downline-only even for super-admin (own downline visible; no whole-IMO / cross-IMO bleed)';
 
   RAISE NOTICE '✅ ALL CONTRACTING AWARENESS SMOKE TESTS PASSED';
 END $$;

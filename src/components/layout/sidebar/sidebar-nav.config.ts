@@ -8,6 +8,7 @@ import {
   CreditCard,
   FileText,
   Users,
+  UserCircle,
   UserPlus,
   Settings,
   Shield,
@@ -92,6 +93,12 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         href: "/policies",
         primary: true,
         permission: "nav.policies",
+      },
+      {
+        icon: UserCircle,
+        label: "Clients",
+        href: "/clients",
+        permission: "nav.clients",
       },
       {
         icon: CreditCard,

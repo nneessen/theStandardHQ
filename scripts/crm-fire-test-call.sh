@@ -23,7 +23,9 @@ DEMO_PHONE="555-867-5309"
 cat > /tmp/crm_fire.sql <<SQL
 \set ON_ERROR_STOP on
 DO \$\$
-DECLARE v_agent uuid; v_imo uuid; v_pc text; r record;
+DECLARE
+  v_agent uuid; v_imo uuid; v_pc text; r record;
+  v_client uuid;
 BEGIN
   SELECT up.id, up.imo_id INTO v_agent, v_imo
   FROM user_profiles up JOIN auth.users au ON au.id = up.id
@@ -37,11 +39,36 @@ BEGIN
     VALUES (v_imo, v_agent, v_pc)
     ON CONFLICT (imo_id, user_id) DO UPDATE SET pc_id = EXCLUDED.pc_id;
 
-  IF NOT EXISTS (SELECT 1 FROM clients WHERE user_id = v_agent
-                 AND phone_e164 = public.normalize_phone_e164('${DEMO_PHONE}')) THEN
-    INSERT INTO clients (user_id, name, phone, state, status)
-      VALUES (v_agent, 'Demo Caller', '${DEMO_PHONE}', 'CA', 'active');
+  -- Demo client: realistic, named record so the intake binds visibly (name/DOB/email/address).
+  SELECT id INTO v_client FROM clients
+   WHERE user_id = v_agent AND phone_e164 = public.normalize_phone_e164('${DEMO_PHONE}') LIMIT 1;
+  IF v_client IS NULL THEN
+    INSERT INTO clients (user_id, name, phone, state, status, email, date_of_birth, address)
+      VALUES (v_agent, 'Maria Sanchez', '${DEMO_PHONE}', 'CA', 'active',
+              'maria.sanchez@example.com', '1958-04-12',
+              '{"street":"482 Alameda Blvd","city":"Sacramento","state":"CA","zipCode":"95814"}')
+      RETURNING id INTO v_client;
+  ELSE
+    UPDATE clients SET name = 'Maria Sanchez', email = 'maria.sanchez@example.com',
+           date_of_birth = '1958-04-12',
+           address = '{"street":"482 Alameda Blvd","city":"Sacramento","state":"CA","zipCode":"95814"}'
+     WHERE id = v_client;
   END IF;
+
+  -- A prior ENDED call so the "Recent Calls" rail shows real history.
+  -- IMPORTANT: we deliberately seed NO policies here. A real inbound call (crm_upsert_call)
+  -- creates ONLY a client — never a policy — so the pop's "Existing Policies" rail correctly
+  -- shows none until you write a real application in the app. (Seeding demo policies used to
+  -- make it look like firing a pop "created" policies on the Policies page; it doesn't anymore.)
+  -- Wrapped so any schema/FK drift can't abort the actual call fire.
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM inbound_calls WHERE client_id = v_client AND request_tag = 'demo-hist-1') THEN
+      INSERT INTO inbound_calls (imo_id, request_tag, agent_id, client_id, ani, state, pc_id,
+                                 call_program, call_start, duration, billable, status, fired_pop, patch_only)
+      VALUES (v_imo, 'demo-hist-1', v_agent, v_client, '${DEMO_PHONE}', 'CA', v_pc,
+              'Final Expense', now() - interval '9 days', 372, 1, 'ended', true, false);
+    END IF;
+  EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'history fixture skipped: %', SQLERRM; END;
 
   SELECT * INTO r FROM crm_upsert_call(v_imo, '${TAG}', v_pc, '${DEMO_PHONE}', 'CA', NULL, NULL, 'Final Expense');
   RAISE NOTICE 'Fired ringing call id=% agent=% fired_pop=% (tag ${TAG}) for ${EMAIL}', r.id, r.agent_id, r.fired_pop;

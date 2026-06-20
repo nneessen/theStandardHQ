@@ -181,7 +181,7 @@ export function ActionCenter() {
                     setStatus.mutate({
                       agentId: me.data,
                       carrierId: c.carrierId,
-                      status: "submitted",
+                      status: "pending",
                     })
                   }
                   disabled={setStatus.isPending}

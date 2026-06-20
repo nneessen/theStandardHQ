@@ -14,6 +14,7 @@ import { getDisplayName } from "./types/user.types";
 import { useSubscription, useTemporaryAccessCheck } from "./hooks/subscription";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicLandingPage } from "./features/landing";
+import { InboundCallModal } from "./features/inbound-crm";
 import { RecruitHeader } from "./components/layout/RecruitHeader";
 import { classifyHost } from "./lib/hostname";
 
@@ -305,6 +306,8 @@ function AuthenticatedApp() {
                   </ApprovalGuard>
                 </AppShell>
               )}
+              {/* Full-screen inbound-call intake — inside .theme-v2 + ImoProvider + router. */}
+              <InboundCallModal />
             </PortalContainerProvider>
           </div>
         </SunsetGate>

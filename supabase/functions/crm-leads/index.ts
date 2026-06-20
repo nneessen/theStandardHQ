@@ -31,6 +31,12 @@ const JSON_HEADERS = {
 };
 // GET (AoR lookup) enumeration guard — generous vs the ~100/hr expected; never applied to POST/PATCH.
 const GET_RATE_LIMIT_PER_HOUR = 2000;
+// SCALE FIX: shard the GET rate-limit counter across this many rows. With ONE credential per agency,
+// a single keyed row made all ~1000 concurrent AoR lookups convoy on one INSERT…ON CONFLICT row-lock
+// (the burst's first serialization point). Sharding spreads contention ~N-fold; effective cap becomes
+// GET_RATE_LIMIT_PER_HOUR × RATELIMIT_SHARDS. The caller is a trusted token-authed M2M client — hard
+// enumeration protection belongs at a gateway IP limit, not this loose per-credential counter.
+const RATELIMIT_SHARDS = 64;
 
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
@@ -86,10 +92,12 @@ serve(async (req: Request): Promise<Response> => {
     if (method === "GET") {
       // Per-credential rate-limit on the lookup ONLY (enumeration guard; fails open on a limiter
       // fault). Never applied to POST/PATCH so a cap-hit can't 429 a lifecycle write.
+      // The :${shard} suffix breaks the single-row lock convoy (see RATELIMIT_SHARDS).
+      const shard = Math.floor(Math.random() * RATELIMIT_SHARDS);
       const limited = await enforceRateLimit(
         supabase,
         {
-          key: `ratelimit:req:crm-leads:${payload.credential_id}`,
+          key: `ratelimit:req:crm-leads:${payload.credential_id}:${shard}`,
           maxRequests: GET_RATE_LIMIT_PER_HOUR,
           windowSeconds: 3600,
         },
