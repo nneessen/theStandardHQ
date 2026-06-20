@@ -10,9 +10,13 @@
 // handoff's dark hex (e.g. `#121212`) here — a literal dark well inverts in
 // light mode.
 
-/** Recessed input well. Pair with `FIELD_ERROR` when a field has an error. */
+/**
+ * Recessed input well — the Substrate field treatment from the handoff: a deep
+ * inset that reads as a well (not a panel), 12px radius, ~15px Hanken body, a
+ * soft inner shadow, and a blue focus ring. Pair with `FIELD_ERROR` on error.
+ */
 export const FIELD =
-  "h-10 text-sm bg-background border-border/60 rounded-lg shadow-inner transition-colors hover:border-border focus:border-accent";
+  "h-11 text-[15px] bg-background border-border/60 rounded-xl shadow-[inset_0_1px_3px_rgba(0,0,0,0.30)] transition-colors hover:border-border focus:border-accent focus-visible:ring-2 focus-visible:ring-accent/25";
 
 /** Error treatment appended to `FIELD` when a field fails validation. */
 export const FIELD_ERROR = "border-destructive focus:border-destructive";
