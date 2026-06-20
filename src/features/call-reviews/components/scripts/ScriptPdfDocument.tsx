@@ -269,13 +269,18 @@ export function ScriptPdfDocument({
           </View>
         ) : null}
 
-        <Text
-          style={styles.pageNo}
-          render={({ pageNumber, totalPages }) =>
-            `${callTypeName}  ·  ${pageNumber} / ${totalPages}`
-          }
-          fixed
-        />
+        {/*
+          Footer repeated on every page. It MUST use static children — a
+          dynamic `render={({ pageNumber, totalPages }) => …}` callback on a
+          `fixed` element makes @react-pdf v4 emit an out-of-range layout
+          coordinate on documents that span 3+ pages, throwing
+          "unsupported number: -9.4…e+21" and failing the whole download.
+          Longer (real) scripts hit this; do NOT reintroduce page numbers via
+          a render callback here. (Repro: scripts/smoke/smoke-call-scripts.py.)
+        */}
+        <Text style={styles.pageNo} fixed>
+          {callTypeName}
+        </Text>
       </Page>
     </Document>
   );
