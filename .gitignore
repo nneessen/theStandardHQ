@@ -92,3 +92,8 @@ dev.log
 skills/
 skills-lock.json
 
+# Local-only client PII (intake screenshots) — privacy: never commit
+docs/inbound-lead-feature/client-info-screenshots-dashboard/
+# Scratch / working data (not source)
+carrier_product_named.csv
+
