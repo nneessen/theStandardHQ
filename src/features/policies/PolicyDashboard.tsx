@@ -196,7 +196,7 @@ export const PolicyDashboard: React.FC = () => {
                 const result =
                   await createPolicyMutation.mutateAsync(createData);
                 toast.success(
-                  `Policy ${result.policyNumber} created successfully!`,
+                  `Policy${result.policyNumber ? ` ${result.policyNumber}` : ""} created successfully!`,
                 );
 
                 if (canTrackLeadSource || isLeadSourceAccessLoading) {
