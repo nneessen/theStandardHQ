@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   ScrollText,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useImo } from "@/contexts/ImoContext";
 import { useCallScripts } from "../../hooks/useCallScripts";
@@ -96,9 +97,25 @@ export function ScriptDetailPage({ callTypeId }: ScriptDetailPageProps) {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
-    } catch {
-      /* PDF render failed — leave the page untouched, button re-enables */
+      // Defer the revoke: revoking the object URL synchronously right after
+      // click() can cancel the download in some browsers before it has begun.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (err) {
+      // A user-initiated action must never fail silently (the old empty catch
+      // is exactly what made this button look like it "did nothing"). Surface
+      // it: log the real error and tell the user what to do. A failed dynamic
+      // import almost always means a stale cached build — a refresh fixes it.
+      console.error("[ScriptDetailPage] Download PDF failed:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      const isChunkLoadError =
+        /dynamically imported module|error loading dynamically|failed to fetch|loading chunk|importing a module/i.test(
+          msg,
+        );
+      toast.error(
+        isChunkLoadError
+          ? "Couldn’t load the PDF generator — the app may have updated. Please refresh the page and try again."
+          : "Couldn’t generate the PDF. Please try again, or contact support if it keeps failing.",
+      );
     } finally {
       setDownloading(false);
     }
