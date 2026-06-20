@@ -332,7 +332,9 @@ export const DashboardHome: React.FC = () => {
         user.id,
       );
       const result = await createPolicy.mutateAsync(policyData);
-      toast.success(`Policy ${result.policyNumber} created successfully!`);
+      toast.success(
+        `Policy${result.policyNumber ? ` ${result.policyNumber}` : ""} created successfully!`,
+      );
       setActiveDialog(null);
       return result;
     } catch (error) {

@@ -19,7 +19,6 @@ import {
   usePolicyForm,
   validatePolicyForm,
   createInitialFormData,
-  isToday,
 } from "./hooks/usePolicyForm";
 import {
   usePolicyCommission,
@@ -31,7 +30,6 @@ import { WizardStepClient } from "./components/WizardStepClient";
 import { WizardStepProductPolicy } from "./components/WizardStepProductPolicy";
 import { WizardStepPremiumComp } from "./components/WizardStepPremiumComp";
 import { WizardStepReview } from "./components/WizardStepReview";
-import { SubmitDateConfirmDialog } from "./components/SubmitDateConfirmDialog";
 
 interface PolicyFormProps {
   policyId?: string;
@@ -79,11 +77,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
   // already exists) so the user can jump straight to the field they want.
   const [step, setStep] = useState(0);
   const [furthest, setFurthest] = useState(policyId ? STEPS.length - 1 : 0);
-
-  // Submit date confirmation dialog state
-  const [showDateConfirm, setShowDateConfirm] = useState(false);
-  const [pendingSubmission, setPendingSubmission] =
-    useState<NewPolicyForm | null>(null);
 
   // Combined loading state - true if either local or parent says we're loading
   const isLoading = isSubmitting || isPending;
@@ -255,7 +248,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       );
     } finally {
       setIsSubmitting(false);
-      setPendingSubmission(null);
     }
   };
 
@@ -317,33 +309,9 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       return;
     }
 
-    // For NEW policies with today's date, show confirmation dialog
-    if (!policyId && isToday(formData.submitDate)) {
-      setPendingSubmission(formData);
-      setShowDateConfirm(true);
-      return;
-    }
-
+    // The Review step (step 4) already surfaces the submit date for the agent
+    // to confirm, so we submit directly — no separate "sold today?" dialog.
     await executeSubmission(formData);
-  };
-
-  // Handle user confirming that today is correct
-  const handleConfirmToday = async () => {
-    if (pendingSubmission) {
-      await executeSubmission(pendingSubmission);
-    }
-    setShowDateConfirm(false);
-  };
-
-  // Handle user selecting a different date
-  const handleSelectDifferentDate = async (newDate: string) => {
-    if (pendingSubmission) {
-      const updatedData = { ...pendingSubmission, submitDate: newDate };
-      // Also update form state so UI reflects the change
-      setFormData((prev) => ({ ...prev, submitDate: newDate }));
-      await executeSubmission(updatedData);
-    }
-    setShowDateConfirm(false);
   };
 
   // Calculate display values
@@ -492,15 +460,6 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
           )}
         </PillButton>
       </div>
-
-      {/* Submit Date Confirmation Dialog */}
-      <SubmitDateConfirmDialog
-        open={showDateConfirm}
-        onOpenChange={setShowDateConfirm}
-        onConfirmToday={handleConfirmToday}
-        onSelectDate={handleSelectDifferentDate}
-        isSubmitting={isSubmitting}
-      />
     </form>
   );
 };

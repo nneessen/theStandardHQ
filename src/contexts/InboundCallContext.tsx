@@ -162,11 +162,21 @@ export const InboundCallProvider: React.FC<{ children: ReactNode }> = ({
           // pop it if nothing is open, else queue it (e.g. a call that arrived while the agent was
           // wrapping up a previous, already-ended intake). Without the queue branch it would be lost.
           void (async () => {
+            // Only rehydrate a GENUINELY LIVE call. A row stuck in `ringing`
+            // far longer than any real intake (no `ended` ever arrived — an
+            // abandoned call, a dropped NetTrio webhook, or leftover local test
+            // data) must NOT re-pop the intake on every reload. Bound the lookup
+            // to recently-created ringing calls so stale rows are ignored.
+            const STALE_RINGING_MS = 60 * 60 * 1000; // 1h — beyond any real call
+            const freshSince = new Date(
+              Date.now() - STALE_RINGING_MS,
+            ).toISOString();
             const { data } = await supabase
               .from("inbound_calls")
               .select("*")
               .eq("agent_id", user.id)
               .eq("status", "ringing")
+              .gte("created_at", freshSince)
               .order("call_start", { ascending: false, nullsFirst: false })
               .limit(1)
               .maybeSingle();
