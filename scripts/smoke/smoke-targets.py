@@ -115,6 +115,20 @@ def main() -> int:
         if "commission rate" not in body_lc:
             problems.append("'Commission Rate' row missing")
 
+        # Avg-premium divisor label must render a valid source token. After the
+        # avgAP-override wiring the parenthetical is one of override/mean/median
+        # (was previously only mean/median). A missing/garbled token means the
+        # override conditional broke.
+        avg_label = re.search(r"÷\s*Avg Premium\s*\(\s*(\w+)\s*\)", body)
+        if not avg_label:
+            problems.append("'÷ Avg Premium (…)' divisor label missing")
+        elif avg_label.group(1).lower() not in {"override", "mean", "median"}:
+            problems.append(
+                f"unexpected Avg Premium source token: {avg_label.group(1)!r}"
+            )
+        else:
+            print(f"  ✓ Avg Premium divisor source = {avg_label.group(1)}")
+
         pcts = collect_percentages(body)
         absurd = [v for v in pcts if v >= ABSURD_PCT]
         if absurd:

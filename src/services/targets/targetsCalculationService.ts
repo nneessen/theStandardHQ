@@ -124,6 +124,8 @@ export interface CalculatedTargets {
   // Averages used (optimistic)
   avgCommissionRate: number; // First-year rate from comp_guide
   avgPolicyPremium: number; // Mean by default; switches to median when premiumStat='median'
+  /** True when avgPolicyPremium came from the Settings avgAP override (not the computed cohort). */
+  avgPolicyPremiumIsOverride: boolean;
 
   // Other metrics
   persistency13MonthTarget: number;
@@ -214,13 +216,22 @@ class TargetsCalculationService {
 
     // Pick the premium stat for the divisor. Median is more robust against
     // a single large case skewing the picture.
-    const meanPremium =
-      overrides?.avgPolicyPremium ?? historicalAverages?.avgPolicyPremium ?? 0;
+    //
+    // An explicit avgPolicyPremium override (the IMO-wide `avgAP` constant set
+    // in Settings) wins over BOTH the agency mean and median — it is the single
+    // source of truth when present. Only when no override is set do we fall back
+    // to the computed agency cohort (mean/median per the Realism toggle).
+    const overrideAP = overrides?.avgPolicyPremium ?? 0;
+    const meanPremium = historicalAverages?.avgPolicyPremium ?? 0;
     const medianPremium = historicalAverages?.medianPolicyPremium ?? 0;
-    const avgPolicyPremium =
+    const computedAP =
       realism.premiumStat === "median" && medianPremium > 0
         ? medianPremium
         : meanPremium;
+    const avgPolicyPremiumIsOverride = overrideAP > 0;
+    const avgPolicyPremium = avgPolicyPremiumIsOverride
+      ? overrideAP
+      : computedAP;
 
     const monthlyExpenseTarget =
       overrides?.monthlyExpenseTarget ??
@@ -354,6 +365,7 @@ class TargetsCalculationService {
       // Averages used in calculations
       avgCommissionRate,
       avgPolicyPremium,
+      avgPolicyPremiumIsOverride,
 
       // Other metrics
       persistency13MonthTarget,

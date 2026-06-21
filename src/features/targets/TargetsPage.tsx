@@ -11,6 +11,7 @@ import {
 } from "../../hooks/targets";
 import { useHistoricalAverages } from "../../hooks/targets/useHistoricalAverages";
 import { useUserCommissionProfile } from "../../hooks/commissions/useUserCommissionProfile";
+import { useConstants } from "../../hooks/expenses/useConstants";
 import { Input } from "@/components/ui/input";
 import { PillButton, SectionShell } from "@/components/v2";
 import {
@@ -134,6 +135,12 @@ export function TargetsPage() {
   const updateTargets = useUpdateTargets();
   const { averages, isLoading: averagesLoading } = useHistoricalAverages();
   const { data: commissionProfile } = useUserCommissionProfile();
+  const { data: constants } = useConstants();
+
+  // IMO-wide avg-premium override (Settings → Constants `avgAP`). When set, it
+  // drives the divisor in both plans and supersedes the Mean/Median toggle.
+  const avgPremiumOverride =
+    constants?.avgAP && constants.avgAP > 0 ? constants.avgAP : undefined;
 
   const [showInputDialog, setShowInputDialog] = useState(false);
   const [isEditingInline, setIsEditingInline] = useState(false);
@@ -198,7 +205,7 @@ export function TargetsPage() {
       ? targetsCalculationService.calculateTargets({
           annualIncomeTarget: targets.annualIncomeTarget,
           historicalAverages: averages,
-          overrides: undefined,
+          overrides: { avgPolicyPremium: avgPremiumOverride },
           realism,
         })
       : null;
@@ -212,10 +219,15 @@ export function TargetsPage() {
 
   const handleSaveTarget = async (newAnnualTarget: number) => {
     try {
-      // Calculate all derived values
+      // Calculate all derived values. Pass the live `realism` knobs (same as
+      // the on-page calc at calculatedTargets) so the persisted optimistic
+      // policy counts reflect the user's chosen Mean/Median — these columns
+      // feed team/hierarchy analytics (hierarchyService, teamAnalyticsService).
       const calculated = targetsCalculationService.calculateTargets({
         annualIncomeTarget: newAnnualTarget,
         historicalAverages: averages,
+        overrides: { avgPolicyPremium: avgPremiumOverride },
+        realism,
       });
 
       // Save to database
@@ -642,8 +654,10 @@ export function TargetsPage() {
                           Apps to write = issued × (1 + drag).
                         </li>
                         <li>
-                          <strong>Premium stat</strong> — median is robust
-                          against one big case skewing the avg.
+                          <strong>Premium stat</strong> —{" "}
+                          {avgPremiumOverride
+                            ? "currently overridden by the avgAP value set in Settings → Constants."
+                            : "median is robust against one big case skewing the avg."}
                         </li>
                       </ul>
                     </div>
@@ -740,38 +754,54 @@ export function TargetsPage() {
 
               <label className="flex flex-col gap-0.5">
                 <span className="text-[11px] text-muted-foreground">
-                  Premium Stat
+                  {avgPremiumOverride
+                    ? "Avg Premium (override)"
+                    : "Premium Stat"}
                 </span>
-                <div className="flex h-7 rounded-v2-pill border border-border overflow-hidden">
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex-1 text-[11px] font-medium transition-colors",
-                      realism.premiumStat === "median"
-                        ? "bg-foreground text-background"
-                        : "bg-card text-muted-foreground hover:text-foreground",
-                    )}
-                    onClick={() =>
-                      setRealism((r) => ({ ...r, premiumStat: "median" }))
-                    }
-                  >
-                    Median
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex-1 text-[11px] font-medium transition-colors border-l border-border",
-                      realism.premiumStat === "mean"
-                        ? "bg-foreground text-background"
-                        : "bg-card text-muted-foreground hover:text-foreground",
-                    )}
-                    onClick={() =>
-                      setRealism((r) => ({ ...r, premiumStat: "mean" }))
-                    }
-                  >
-                    Mean
-                  </button>
-                </div>
+                {avgPremiumOverride ? (
+                  <>
+                    <div className="flex h-7 items-center rounded-v2-pill border border-border bg-muted/40 px-2.5">
+                      <span className="text-[13px] font-mono font-semibold text-foreground">
+                        {formatCurrency(avgPremiumOverride)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/80 mt-0.5">
+                      Agency-wide override active — Mean/Median off. Change in
+                      Settings → Constants.
+                    </span>
+                  </>
+                ) : (
+                  <div className="flex h-7 rounded-v2-pill border border-border overflow-hidden">
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex-1 text-[11px] font-medium transition-colors",
+                        realism.premiumStat === "median"
+                          ? "bg-foreground text-background"
+                          : "bg-card text-muted-foreground hover:text-foreground",
+                      )}
+                      onClick={() =>
+                        setRealism((r) => ({ ...r, premiumStat: "median" }))
+                      }
+                    >
+                      Median
+                    </button>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex-1 text-[11px] font-medium transition-colors border-l border-border",
+                        realism.premiumStat === "mean"
+                          ? "bg-foreground text-background"
+                          : "bg-card text-muted-foreground hover:text-foreground",
+                      )}
+                      onClick={() =>
+                        setRealism((r) => ({ ...r, premiumStat: "mean" }))
+                      }
+                    >
+                      Mean
+                    </button>
+                  </div>
+                )}
               </label>
             </div>
           </Board>
@@ -1161,11 +1191,30 @@ export function TargetsPage() {
                                 Avg Premium Breakdown
                               </div>
 
-                              {/* Agency cohort — used for the calc */}
+                              {avgPremiumOverride && (
+                                <div className="rounded border border-border bg-muted/40 p-2 mb-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                                      Override (used)
+                                    </span>
+                                    <span className="font-mono text-foreground font-semibold">
+                                      {formatCurrency(avgPremiumOverride)}
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                                    Set in Settings → Constants. The cohorts
+                                    below are shown for comparison only.
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Agency cohort — used for the calc (unless overridden) */}
                               <div className="rounded border border-border p-2 mb-2">
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-                                    Agency-wide (used)
+                                    {avgPremiumOverride
+                                      ? "Agency-wide (comparison)"
+                                      : "Agency-wide (used)"}
                                   </span>
                                   <span className="text-[11px] text-muted-foreground">
                                     {(() => {
@@ -1287,10 +1336,9 @@ export function TargetsPage() {
                               )}
 
                               <div className="text-[11px] text-muted-foreground">
-                                Realistic plan uses the agency cohort so new
-                                agents and skewed personal books get a stable
-                                baseline. Toggle Mean/Median in Realism
-                                Settings.
+                                {avgPremiumOverride
+                                  ? "Both plans currently use the avgAP override from Settings → Constants. Clear it there to fall back to the agency cohort (Mean/Median)."
+                                  : "Realistic plan uses the agency cohort so new agents and skewed personal books get a stable baseline. Toggle Mean/Median in Realism Settings."}
                               </div>
                             </div>
                           </PopoverContent>
@@ -1493,7 +1541,11 @@ export function TargetsPage() {
                     </div>
                     <div className="flex justify-between text-[13px]">
                       <span style={{ color: T.mut }}>
-                        ÷ Avg Premium ({realism.premiumStat})
+                        ÷ Avg Premium (
+                        {calculatedTargets.avgPolicyPremiumIsOverride
+                          ? "override"
+                          : realism.premiumStat}
+                        )
                       </span>
                       <span
                         className="font-mono font-semibold"

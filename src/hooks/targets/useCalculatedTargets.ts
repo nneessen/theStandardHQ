@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useTargets } from "./useTargets";
 import { useHistoricalAverages } from "./useHistoricalAverages";
+import { useConstants } from "../expenses/useConstants";
 import {
   targetsCalculationService,
   type CalculatedTargets,
@@ -41,12 +42,16 @@ interface UseCalculatedTargetsResult {
 export function useCalculatedTargets(): UseCalculatedTargetsResult {
   const { data: targets, isLoading: targetsLoading, error } = useTargets();
   const { averages, isLoading: averagesLoading } = useHistoricalAverages();
+  const { data: constants } = useConstants();
 
   const calculated = useMemo<CalculatedTargets | null>(() => {
     if (!targets || targets.annualIncomeTarget <= 0) return null;
     return targetsCalculationService.calculateTargets({
       annualIncomeTarget: targets.annualIncomeTarget,
       historicalAverages: averages,
+      // IMO-wide avgAP override from Settings → Constants. When set (> 0) it
+      // drives the avg-premium divisor; otherwise the computed cohort is used.
+      overrides: { avgPolicyPremium: constants?.avgAP || undefined },
       realism: {
         persistencyRate: targets.persistencyAssumption,
         taxReserveRate: targets.taxReserveRate,
@@ -54,7 +59,7 @@ export function useCalculatedTargets(): UseCalculatedTargetsResult {
         premiumStat: targets.premiumStatPreference,
       },
     });
-  }, [targets, averages]);
+  }, [targets, averages, constants?.avgAP]);
 
   return {
     calculated,
