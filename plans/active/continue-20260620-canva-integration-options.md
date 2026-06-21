@@ -90,6 +90,85 @@ Connect API specifics (verified, for Path C / future)
 Full sourced report: research agent run on Jun 20 2026 (canva.dev docs).
 
 ═══════════════════════════════════════════════════════════════════════
+PIVOT (Jun 20 2026) — the real ask + the right tool
+═══════════════════════════════════════════════════════════════════════
+Owner clarified: he wants REPORTING templates = a ranked LIST of the TOP-N
+agents sorted by AP (high→low), for day / week / month, scoped to HIS AGENCY
+ONLY (not the whole Epic Life IMO), and looking like the actual app.
+
+- Canva `generate-design` (AI) CANNOT reproduce "The Board" — abandoned after 2
+  misses. Confirmed dead end for fidelity.
+- RIGHT APPROACH = render the leaderboard from the app's OWN components to PNG.
+  Built `src/features/leaderboard/social/LeaderboardSocialCard.tsx` (pure,
+  presentational; reuses Board/Cap/Num/T tokens) + headless render harness
+  `scripts/leaderboard-card-render/` (vite+playwright, mirrors pdf-render-check).
+  Renders dark/light × post(1080²)/story(1080×1920) → `out/*.png`. All 4 green,
+  0 page errors. THIS looks like the app; awaiting owner look sign-off.
+
+DATA WIRING (confirmed feasible, not yet built):
+- `get_leaderboard_data(p_start_date,p_end_date,p_scope,p_scope_id,...)` — the
+  `p_scope`/`p_scope_id` params allow AGENCY scoping (page currently hardcodes
+  "all" = whole IMO). Returns ip_total + ap_total per agent.
+- Rank by AP: re-sort entries by ap_total DESC, take top-N, re-number (the "all"
+  scope's rank_overall leads on IP; the `submit` scope is AP-native but IMO-wide
+  & unscopable). So: agency-scoped get_leaderboard_data → sort by AP client-side.
+- Periods: calculateDateRange already supports daily / weekly / mtd → day/week/
+  month. (Confirm exact "week" definition with owner later.)
+
+OUTPUT FORMAT FORK (ask AFTER look sign-off):
+- A) auto-generated PNGs from the app (real data, daily/weekly/monthly, zero
+  manual work) — recommended. B) editable-in-Canva files (tweakable but fidelity
+  drifts + manual data). Canva = optional editable export later, NOT the engine.
+
+═══════════════════════════════════════════════════════════════════════
+BUILD REQUIREMENTS — "SOCIAL STUDIO" PAGE (LOCKED Jun 20 2026, owner sign-off)
+═══════════════════════════════════════════════════════════════════════
+Owner approved the rendered cards (daily/weekly leaderboard + monthly report,
+dark+light, post+story; branding THE STANDARD / EPIC LIFE; last-initial names).
+Now build the actual page. MUST be comprehensive, NOT cookie-cutter/basic.
+
+HARD REQUIREMENTS:
+1. NEW owner-gated route + SIDEBAR NAV ITEM — visible to NICK ONLY for now
+   (reuse existing super-admin / specific-user nav gating). 
+2. Full editing capabilities — edit everything (title, top-N, metrics shown,
+   theme, format, post time/timezone, caption) as schedule DEFAULTS and per a
+   single queued post before it goes out.
+3. On/off toggles — per cadence: a generation toggle AND a SEPARATE auto-post-to-
+   Instagram toggle.
+4. Fully automated daily posting when enabled (cron worker).
+5. DEFAULT EVERYTHING OFF — agency just started, NO metrics/data yet. Nothing
+   auto-generates or posts until the owner explicitly turns it on.
+6. NO-METRICS EMPTY STATE — until real agency data exists, preview uses CLEARLY
+   LABELED sample data ("Sample preview"); NEVER auto-post empty/garbage. Worker
+   must skip/raise when a period has no real data.
+7. AI ONE-OFFS — an ad-hoc generator for arbitrary posts beyond the 3 cadences:
+   recruiting / "we're hiring", highlights, AGENT OF THE WEEK, new-recruit
+   welcome, policy/production milestones, streaks, anniversaries, motivational.
+   Reuse existing app AI infra (ANTHROPIC_API_KEY + edge fns, same as workflow
+   email-template gen) to draft caption + pick template + fill copy; owner edits
+   before posting. THINK OUTSIDE THE BOX on post types.
+8. Scalable + ZERO security vulnerabilities — multi-tenant RLS by imo_id/agency_id
+   on every table; IG tokens stored ENCRYPTED (never client-readable); idempotent
+   worker w/ retries; IG 25/day rate-limit aware; least-privilege; no cross-agency
+   leakage; secdef RPCs + REVOKE anon/authenticated where writes go through RPCs.
+9. Canva = OPTIONAL "open in Canva to edit" export (import-from-url); not the
+   engine (Autofill is Enterprise-gated; owner is Business).
+
+PHASING (each shippable; Phase 1 needs NO Instagram App Review):
+- P1: owner-gated page + live preview (real data w/ sample fallback) + full
+  customization editor + manual "Generate now" + download. All toggles default
+  OFF. No external posting, no tokens yet.
+- P2: persistence (schedules + generated_posts tables, RLS) + render+upload-to-
+  Storage pipeline + cron worker generating (NOT posting) into a review queue.
+- P3: Instagram connect (encrypted tokens) + auto-post toggle + publish flow +
+  rate-limit/retry/idempotency. (App Review / Business Verification as needed.)
+- P4: AI one-offs generator (post types above) + caption tokens.
+
+STATUS: 7-agent architecture workflow running (run wf_ead42c9e-dd5) → produces
+build-ready plan + adversarial security review. AI-one-offs design to be added on
+top of that output before building. BUILD STARTS once plan + review land.
+
+═══════════════════════════════════════════════════════════════════════
 RECOMMENDATION
 ═══════════════════════════════════════════════════════════════════════
 1. NOW: confirm connector → Business account. Lock a sample design (dark vs light).
@@ -99,11 +178,17 @@ RECOMMENDATION
    scales to all agency owners). This is the real differentiator.
 4. LATER/OPTIONAL: Path C for Enterprise customers only.
 
-## Sample designs created in Nick's Canva (Jun 20 2026)
-- Dark: design `DAHNI5fMZD0` — edit https://www.canva.com/d/8A14yhbH-9X0AoB
-- Light: design `DAHNIydLh-U` (5 layout variants) — edit https://www.canva.com/d/zEA5qg_aQlSZB_S
-- 6 more unsaved candidates available (3 dark / 3 light) from generate-design jobs
-  `885ac35d-...` (dark) and `0fb5a1df-...` (light).
+## Canva account
+- Connector reconnected Jun 20 2026 → now on **Canva Business (Teams)** (was Free).
+- Existing Brand Kit on account: `kAHNI9X4ky4` (empty — paste palettes above; API
+  cannot write colors). Bulk Create + Brand Kit confirmed available.
+
+## Sample designs (in the Business account, Jun 20 2026)
+- Dark: design `DAHNJKo-OOA` — edit https://www.canva.com/d/BkWG9NTsUY9fG-z
+- Light: design `DAHNJL6xP88` — edit https://www.canva.com/d/Emlk1m9iZnmjeya
+- NOTE: earlier samples `DAHNI5fMZD0` / `DAHNIydLh-U` are stranded on the old Free
+  account — ignore them. More unsaved candidates from jobs `4b98ee01` (dark) /
+  `cc4e3321` (light) if more variety is wanted.
 
 NEXT STEP when resuming: (a) which theme + sample, (b) confirm Business plan on the
 connected account, (c) pick Path A and/or B to start building.

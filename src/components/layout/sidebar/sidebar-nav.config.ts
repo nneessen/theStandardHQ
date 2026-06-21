@@ -29,6 +29,7 @@ import {
   // IdCard,
   FileCheck,
   ScrollText,
+  Images,
 } from "lucide-react";
 // import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 // import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -215,6 +216,16 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         icon: Megaphone,
         label: "Marketing",
         href: "/marketing",
+        public: true,
+        superAdminOnly: true,
+      },
+      {
+        icon: Images,
+        label: "Spotlight",
+        href: "/social-studio",
+        // Owner-only for now. `public: true` is REQUIRED alongside
+        // `superAdminOnly` so the pending-user check doesn't short-circuit;
+        // the resolver still returns null for non-super-admins.
         public: true,
         superAdminOnly: true,
       },

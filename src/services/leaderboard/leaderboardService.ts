@@ -333,6 +333,76 @@ export const leaderboardService = {
   },
 
   /**
+   * Fetch the AGENT leaderboard scoped to a SINGLE agency, ranked by AP (desc).
+   * Used by Social Studio — "my agency only" graphics, AP as the hero metric.
+   * The RPC's rank_overall leads on IP under the "all" scope, so we re-sort by
+   * apTotal and re-number client-side.
+   */
+  async getAgencyAgentLeaderboard(
+    filters: LeaderboardFilters,
+    agencyId: string,
+  ): Promise<AgentLeaderboardResponse> {
+    const { timePeriod, startDate, endDate } = filters;
+    const dateRange = calculateDateRange(timePeriod, startDate, endDate);
+
+    // Two calls in parallel: the canonical leaderboard (full agent metrics) and the
+    // additive AP-count companion (submitted_policies that MATCHES apTotal —
+    // get_leaderboard_data computes but drops it). Merge by agent_id so a social card
+    // shows a policy count consistent with the premium it ranks on.
+    const [lb, apc] = await Promise.all([
+      supabase.rpc("get_leaderboard_data", {
+        p_start_date: dateRange.start,
+        p_end_date: dateRange.end,
+        p_scope: "agency",
+        p_scope_id: agencyId,
+      }),
+      supabase.rpc("get_agency_ap_leaderboard", {
+        p_start_date: dateRange.start,
+        p_end_date: dateRange.end,
+        p_agency_id: agencyId,
+      }),
+    ]);
+
+    if (lb.error) {
+      console.error("Error fetching agency agent leaderboard:", lb.error);
+      throw new Error(
+        `Failed to fetch agency agent leaderboard: ${lb.error.message}`,
+      );
+    }
+
+    // Non-fatal enrichment: if the submitted-count call fails, fall back to the
+    // legacy approved policyCount rather than breaking the card.
+    const submittedByAgent = new Map<string, number>();
+    if (apc.error) {
+      console.error(
+        "Error fetching agency submitted counts (non-fatal):",
+        apc.error,
+      );
+    } else {
+      for (const r of apc.data ?? [])
+        submittedByAgent.set(r.agent_id, r.submitted_policies);
+    }
+
+    const entries: AgentLeaderboardEntry[] = (lb.data || [])
+      .map(transformAgentEntry)
+      .map((entry: AgentLeaderboardEntry) => ({
+        ...entry,
+        submittedPolicies: submittedByAgent.get(entry.agentId),
+      }))
+      .sort(
+        (a: AgentLeaderboardEntry, b: AgentLeaderboardEntry) =>
+          b.apTotal - a.apTotal,
+      )
+      .map((entry: AgentLeaderboardEntry, i: number) => ({
+        ...entry,
+        rankOverall: i + 1,
+      }));
+    const totals = calculateAgentTotals(entries);
+
+    return { entries, totals };
+  },
+
+  /**
    * Fetch agency leaderboard data (rankings agencies as units)
    */
   async getAgencyLeaderboard(

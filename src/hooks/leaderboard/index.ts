@@ -4,6 +4,7 @@
 export {
   useLeaderboard,
   useAgentLeaderboard,
+  useAgencyAgentLeaderboard,
   useAgencyLeaderboard,
   useTeamLeaderboard,
   useSubmitLeaderboard,

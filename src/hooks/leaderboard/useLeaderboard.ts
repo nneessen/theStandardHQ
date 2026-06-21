@@ -36,6 +36,33 @@ export const useAgentLeaderboard = (options: UseLeaderboardOptions) => {
   });
 };
 
+interface UseAgencyAgentOptions extends UseLeaderboardOptions {
+  agencyId: string | null;
+}
+
+/**
+ * Agent leaderboard scoped to a SINGLE agency, ranked by AP (Social Studio).
+ * Disabled until an agencyId is known.
+ */
+export const useAgencyAgentLeaderboard = (options: UseAgencyAgentOptions) => {
+  const {
+    filters,
+    agencyId,
+    enabled = true,
+    staleTime = 60_000,
+    gcTime = 5 * 60_000,
+  } = options;
+
+  return useQuery<AgentLeaderboardResponse, Error>({
+    queryKey: [...leaderboardKeys.agents(filters), "agency", agencyId],
+    queryFn: () =>
+      leaderboardService.getAgencyAgentLeaderboard(filters, agencyId as string),
+    staleTime,
+    gcTime,
+    enabled: enabled && !!agencyId,
+  });
+};
+
 /**
  * Hook to fetch agency leaderboard data (agencies ranked as units)
  */

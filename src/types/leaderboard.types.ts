@@ -49,11 +49,14 @@ export interface AgentLeaderboardEntry {
   directDownlineCount: number;
   ipTotal: number; // Issued Premium - active policies with paid commissions based off effective date
   apTotal: number; // Annual Premium - pending policies based off submit date
-  policyCount: number; // Number of issued policies
+  policyCount: number; // Number of issued policies (approved, by effective_date)
   pendingPolicyCount: number; // Number of pending policies
   prospectCount: number; // Agent's own prospects (not yet in pipeline)
   pipelineCount: number; // Agent's own recruits in active pipeline
   rankOverall: number; // Position in the leaderboard
+  /** SUBMITTED policy count (by submit_date) — matches apTotal's population. Set
+   *  only by the agency-AP path (get_agency_ap_leaderboard); undefined elsewhere. */
+  submittedPolicies?: number;
 }
 
 /**

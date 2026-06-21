@@ -81,6 +81,7 @@ import { AssistantPage } from "./features/assistant";
 import { VoiceAgentPage } from "./features/voice-agent";
 import { VoiceCloneWizardPage } from "./features/voice-agent/components/VoiceCloneWizardPage";
 import { MarketingHubPage } from "./features/marketing";
+import { SocialStudioPage } from "./features/social-studio";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
 
@@ -1040,6 +1041,17 @@ function TheStandardTeamRouteComponent() {
   );
 }
 
+// Social Studio - super admin (owner) only
+const socialStudioRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "social-studio",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles superAdminOnly>
+      <SocialStudioPage />
+    </RouteGuard>
+  ),
+});
+
 // Marketing Hub - super admin only
 const marketingRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1305,6 +1317,7 @@ const routeTree = rootRoute.addChildren([
   theStandardTeamRoute,
   leadVendorsRoute,
   marketingRoute,
+  socialStudioRoute,
   marketingCampaignsRoute,
   marketingCampaignCreateRoute,
   marketingCampaignEditRoute,

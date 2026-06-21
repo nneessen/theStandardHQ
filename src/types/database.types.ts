@@ -2638,6 +2638,7 @@ export type Database = {
           date_of_birth: string | null;
           email: string | null;
           id: string;
+          intake: Json;
           name: string;
           notes: string | null;
           phone: string | null;
@@ -2653,6 +2654,7 @@ export type Database = {
           date_of_birth?: string | null;
           email?: string | null;
           id?: string;
+          intake?: Json;
           name: string;
           notes?: string | null;
           phone?: string | null;
@@ -2668,6 +2670,7 @@ export type Database = {
           date_of_birth?: string | null;
           email?: string | null;
           id?: string;
+          intake?: Json;
           name?: string;
           notes?: string | null;
           phone?: string | null;
@@ -5043,12 +5046,15 @@ export type Database = {
           billable: number | null;
           call_program: string | null;
           call_start: string | null;
+          call_type_id: string | null;
           client_id: string | null;
           created_at: string;
           duration: number | null;
           fired_pop: boolean;
           id: string;
           imo_id: string;
+          inquiry_carrier_id: string | null;
+          notes: string | null;
           offer_id: string | null;
           patch_only: boolean;
           pc_id: string | null;
@@ -5066,12 +5072,15 @@ export type Database = {
           billable?: number | null;
           call_program?: string | null;
           call_start?: string | null;
+          call_type_id?: string | null;
           client_id?: string | null;
           created_at?: string;
           duration?: number | null;
           fired_pop?: boolean;
           id?: string;
           imo_id: string;
+          inquiry_carrier_id?: string | null;
+          notes?: string | null;
           offer_id?: string | null;
           patch_only?: boolean;
           pc_id?: string | null;
@@ -5089,12 +5098,15 @@ export type Database = {
           billable?: number | null;
           call_program?: string | null;
           call_start?: string | null;
+          call_type_id?: string | null;
           client_id?: string | null;
           created_at?: string;
           duration?: number | null;
           fired_pop?: boolean;
           id?: string;
           imo_id?: string;
+          inquiry_carrier_id?: string | null;
+          notes?: string | null;
           offer_id?: string | null;
           patch_only?: boolean;
           pc_id?: string | null;
@@ -5129,6 +5141,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "inbound_calls_call_type_id_fkey";
+            columns: ["call_type_id"];
+            isOneToOne: false;
+            referencedRelation: "kpi_call_types";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "inbound_calls_client_id_fkey";
             columns: ["client_id"];
             isOneToOne: false;
@@ -5140,6 +5159,13 @@ export type Database = {
             columns: ["imo_id"];
             isOneToOne: false;
             referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_calls_inquiry_carrier_id_fkey";
+            columns: ["inquiry_carrier_id"];
+            isOneToOne: false;
+            referencedRelation: "carriers";
             referencedColumns: ["id"];
           },
         ];
@@ -10726,6 +10752,75 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [];
+      };
+      social_templates: {
+        Row: {
+          agency_id: string | null;
+          config: Json;
+          created_at: string;
+          id: string;
+          imo_id: string;
+          name: string;
+          owner_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          agency_id?: string | null;
+          config: Json;
+          created_at?: string;
+          id?: string;
+          imo_id: string;
+          name: string;
+          owner_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string | null;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          imo_id?: string;
+          name?: string;
+          owner_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "social_templates_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_templates_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_templates_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_templates_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_templates_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       state_classifications: {
         Row: {
@@ -17261,6 +17356,23 @@ export type Database = {
           client_secret: string;
         }[];
       };
+      crm_set_call_disposition: {
+        Args: {
+          p_call_type_id?: string;
+          p_inquiry_carrier_id?: string;
+          p_notes?: string;
+          p_request_tag: string;
+        };
+        Returns: {
+          id: string;
+        }[];
+      };
+      crm_set_client_intake: {
+        Args: { p_client_id: string; p_intake: Json };
+        Returns: {
+          id: string;
+        }[];
+      };
       crm_upsert_call: {
         Args: {
           p_ani: string;
@@ -17388,6 +17500,16 @@ export type Database = {
           mtd_policies: number;
           wtd_ip: number;
           wtd_policies: number;
+        }[];
+      };
+      get_agency_ap_leaderboard: {
+        Args: { p_agency_id: string; p_end_date: string; p_start_date: string };
+        Returns: {
+          agent_id: string;
+          agent_name: string;
+          ap_total: number;
+          profile_photo_url: string;
+          submitted_policies: number;
         }[];
       };
       get_agency_dashboard_metrics: {
