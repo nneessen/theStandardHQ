@@ -35,6 +35,7 @@ interface UserTargetsEntity {
   taxReserveRate: number;
   ntoBufferRate: number;
   premiumStatPreference: "mean" | "median";
+  avgPremiumOverride: number | null;
   achievements: Achievement[];
   lastMilestoneDate: string | null;
   createdAt: string;
@@ -57,6 +58,7 @@ export interface CreateUserTargetsInput {
   taxReserveRate?: number;
   ntoBufferRate?: number;
   premiumStatPreference?: "mean" | "median";
+  avgPremiumOverride?: number | null;
   achievements?: Achievement[];
   lastMilestoneDate?: string | null;
 }
@@ -75,6 +77,7 @@ export interface UpdateUserTargetsInput {
   taxReserveRate?: number;
   ntoBufferRate?: number;
   premiumStatPreference?: "mean" | "median";
+  avgPremiumOverride?: number | null;
   achievements?: Achievement[];
   lastMilestoneDate?: string | null;
 }
@@ -120,6 +123,7 @@ export class UserTargetsRepository extends BaseRepository<
       ntoBufferRate: row.nto_buffer_rate ?? 0.12,
       premiumStatPreference:
         (row.premium_stat_preference as "mean" | "median") ?? "median",
+      avgPremiumOverride: row.avg_premium_override ?? null,
       achievements: (row.achievements as unknown as Achievement[]) || [],
       lastMilestoneDate: row.last_milestone_date,
       createdAt: row.created_at || "",
@@ -177,6 +181,9 @@ export class UserTargetsRepository extends BaseRepository<
     }
     if (data.premiumStatPreference !== undefined) {
       result.premium_stat_preference = data.premiumStatPreference;
+    }
+    if (data.avgPremiumOverride !== undefined) {
+      result.avg_premium_override = data.avgPremiumOverride;
     }
     if (data.achievements !== undefined) {
       result.achievements = data.achievements;

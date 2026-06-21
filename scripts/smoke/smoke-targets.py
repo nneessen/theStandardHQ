@@ -87,23 +87,57 @@ def main() -> int:
 
         print(f"→ loading {BASE}/targets")
         page.goto(f"{BASE}/targets", wait_until="networkidle", timeout=30_000)
-        # The plans only render once targets + historical averages resolve.
+
+        # ── SIMPLE view is the default ──────────────────────────────────────
+        # A fresh browser context has empty localStorage → the page defaults to
+        # the Simple view. Its headline is the realistic "apps to write" answer;
+        # the full math cascade lives behind the Advanced toggle.
         try:
-            page.wait_for_selector("text=Optimistic Plan", timeout=20_000)
+            page.wait_for_selector("text=Apps to write", timeout=20_000)
         except Exception:
-            page.screenshot(path=OUT, full_page=True)
+            page.screenshot(path="/tmp/targets-simple.png", full_page=True)
             print(
-                "✗ 'Optimistic Plan' never rendered — the dev user may have no "
-                f"income target set, or the page is degraded. shot: {OUT}"
+                "✗ Simple view headline ('Apps to write') never rendered — the "
+                "dev user may have no income target set, or the page is "
+                "degraded. shot: /tmp/targets-simple.png"
             )
             print("  page errors:", page_errors[:5])
             browser.close()
             return 1
-        page.wait_for_timeout(1500)
+        page.wait_for_timeout(1000)
+
+        simple_body = page.locator("body").inner_text()
+        page.screenshot(path="/tmp/targets-simple.png", full_page=True)
+        print("  ✓ Simple view is the default (shot: /tmp/targets-simple.png)")
+        simple_lc = simple_body.lower()
+        if "apps to write" not in simple_lc:
+            problems.append("Simple view: 'Apps to write' headline missing")
+        if "your numbers" not in simple_lc:
+            problems.append("Simple view: 'Your Numbers' input panel missing")
+        # The Advanced-only math cascade must NOT be present in Simple.
+        if "optimistic plan" in simple_lc:
+            problems.append(
+                "Simple view leaked the Advanced 'Optimistic Plan' cascade"
+            )
+
+        # ── Toggle to ADVANCED ──────────────────────────────────────────────
+        try:
+            page.get_by_role("button", name="Advanced").first.click()
+            page.wait_for_selector("text=Optimistic Plan", timeout=20_000)
+        except Exception:
+            page.screenshot(path=OUT, full_page=True)
+            print(
+                "✗ Advanced view ('Optimistic Plan') never rendered after "
+                f"clicking the Advanced toggle. shot: {OUT}"
+            )
+            print("  page errors:", page_errors[:5])
+            browser.close()
+            return 1
+        page.wait_for_timeout(1200)
 
         body = page.locator("body").inner_text()
         page.screenshot(path=OUT, full_page=True)
-        print(f"  → screenshot: {OUT}")
+        print(f"  → advanced screenshot: {OUT}")
 
         # Section labels render via a <Cap> component that uppercases with CSS,
         # so match case-insensitively.
@@ -115,10 +149,9 @@ def main() -> int:
         if "commission rate" not in body_lc:
             problems.append("'Commission Rate' row missing")
 
-        # Avg-premium divisor label must render a valid source token. After the
-        # avgAP-override wiring the parenthetical is one of override/mean/median
-        # (was previously only mean/median). A missing/garbled token means the
-        # override conditional broke.
+        # Avg-premium divisor label must render a valid source token. With the
+        # per-agent override the parenthetical is one of override/mean/median.
+        # A missing/garbled token means the override conditional broke.
         avg_label = re.search(r"÷\s*Avg Premium\s*\(\s*(\w+)\s*\)", body)
         if not avg_label:
             problems.append("'÷ Avg Premium (…)' divisor label missing")

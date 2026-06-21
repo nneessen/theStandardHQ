@@ -12,7 +12,7 @@ import {
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Board, Cap, Num, FlapTile, EmptyState, T } from "@/components/board";
 import { useChartColors } from "@/components/board/useChartColors";
-import { useAnalyticsData, useConstants, useCalculatedTargets } from "@/hooks";
+import { useAnalyticsData, useTargets, useCalculatedTargets } from "@/hooks";
 import { useHistoricalAverages } from "../../../hooks/targets/useHistoricalAverages";
 import { resolveGoalAvgAP } from "@/lib/goal";
 
@@ -171,15 +171,14 @@ export function GrowthChartPanel() {
   // Period-independent: growth forecast + renewal projection are inherently
   // 12-month / forward views computed from the full book.
   const { forecast, isLoading: analyticsLoading } = useAnalyticsData();
-  const { data: constants, isLoading: constantsLoading } = useConstants();
+  const { data: targets } = useTargets();
   const { calculated: calculatedTargets, isLoading: targetsLoading } =
     useCalculatedTargets();
   const { averages: historicalAverages, isLoading: averagesLoading } =
     useHistoricalAverages();
   const chart = useChartColors();
 
-  const isLoading =
-    analyticsLoading || constantsLoading || targetsLoading || averagesLoading;
+  const isLoading = analyticsLoading || targetsLoading || averagesLoading;
 
   const growth = useMemo(() => forecast?.growth ?? [], [forecast?.growth]);
   const renewals = useMemo(
@@ -200,7 +199,10 @@ export function GrowthChartPanel() {
   );
 
   // Monthly AP goal — same formula as AnalyticsHero / DashboardHome.
-  const avgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages ?? {});
+  const avgAP = resolveGoalAvgAP(
+    targets?.avgPremiumOverride ?? undefined,
+    historicalAverages ?? {},
+  );
   const policyTarget =
     calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
       ? calculatedTargets.realisticMonthlyAppsToWrite

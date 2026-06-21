@@ -56,6 +56,10 @@ export interface UserTargets {
   ntoBufferRate: number;
   premiumStatPreference: "mean" | "median";
 
+  // Per-agent average-premium override (Targets page). null = "not set" →
+  // target math falls back to the computed cohort average (Mean/Median).
+  avgPremiumOverride: number | null;
+
   // Milestones
   achievements: Achievement[];
   lastMilestoneDate: Date | null;
@@ -156,6 +160,9 @@ export interface UpdateTargetsForm {
   taxReserveRate?: number;
   ntoBufferRate?: number;
   premiumStatPreference?: "mean" | "median";
+
+  // Per-agent average-premium override (null clears it back to computed cohort)
+  avgPremiumOverride?: number | null;
 }
 
 // Milestone detection result

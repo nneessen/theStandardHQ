@@ -65,7 +65,7 @@ export const ConstantsManagement: React.FC = () => {
 
   const getFieldLabel = (field: string): string => {
     const labels: Record<string, string> = {
-      avgAP: "Average Annual Premium Override",
+      avgAP: "Agency Default Average Premium",
     };
     return labels[field] || field;
   };
@@ -73,7 +73,7 @@ export const ConstantsManagement: React.FC = () => {
   const getFieldDescription = (field: string): string => {
     const descriptions: Record<string, string> = {
       avgAP:
-        "Optional: Override the calculated average annual premium. This value will be used in targets calculations instead of your historical average. Leave at 0 to use automatic calculations.",
+        "Agency-wide fallback average annual premium, used for pace and breakeven estimates. Per-agent target plans (Optimistic/Realistic) now use each agent's own average premium, set on their Targets page — this value no longer drives those calculations. Leave at 0 to use automatic calculations.",
     };
     return descriptions[field] || "";
   };

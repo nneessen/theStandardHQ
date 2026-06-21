@@ -24,7 +24,7 @@ import {
   RadialProgress,
   T,
 } from "@/components/board";
-import { useAnalyticsData, useConstants, useCalculatedTargets } from "@/hooks";
+import { useAnalyticsData, useTargets, useCalculatedTargets } from "@/hooks";
 // Relative import: useHistoricalAverages is not in the targets barrel index.
 import { useHistoricalAverages } from "../../../hooks/targets/useHistoricalAverages";
 import { formatCurrency, formatCompactCurrency } from "@/lib/format";
@@ -72,14 +72,13 @@ export function AnalyticsHero() {
     startDate: monthStart,
     endDate: monthEnd,
   });
-  const { data: constants, isLoading: constantsLoading } = useConstants();
+  const { data: targets } = useTargets();
   const { calculated: calculatedTargets, isLoading: targetsLoading } =
     useCalculatedTargets();
   const { averages: historicalAverages, isLoading: averagesLoading } =
     useHistoricalAverages();
 
-  const isLoading =
-    analyticsLoading || constantsLoading || targetsLoading || averagesLoading;
+  const isLoading = analyticsLoading || targetsLoading || averagesLoading;
 
   if (isLoading) return <HeroSkeleton />;
 
@@ -102,7 +101,10 @@ export function AnalyticsHero() {
   // Single, stable average premium (shared with DashboardHome via
   // resolveGoalAvgAP) rather than the old aspirational MAX-of-5 that biased the
   // goal high.
-  const avgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages);
+  const avgAP = resolveGoalAvgAP(
+    targets?.avgPremiumOverride ?? undefined,
+    historicalAverages,
+  );
   const policyTarget =
     calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
       ? calculatedTargets.realisticMonthlyAppsToWrite

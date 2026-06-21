@@ -1,6 +1,12 @@
 // src/features/targets/components/TargetInputDialog.tsx
+//
+// Set / edit the annual commission income target. Styled to match the rest of
+// the app (v2 board surfaces): eyebrow cap, bold display title, one prominent
+// $ input, a compact "what gets calculated" panel, and PillButton actions.
+// Used for BOTH first-time setup and later edits (opened from the obvious
+// "Edit Goal" button in the Targets header).
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +15,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { TrendingUp, Calculator, Target } from "lucide-react";
+import { PillButton } from "@/components/v2";
+import { TrendingUp, Calculator, Target, AlertCircle } from "lucide-react";
 
 interface TargetInputDialogProps {
   open: boolean;
@@ -87,61 +92,42 @@ export function TargetInputDialog({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-info" />
-            {isFirstTime
-              ? "Welcome to Your Targets Dashboard"
-              : "Set Your Annual Income Target"}
+      <DialogContent className="sm:max-w-[520px] gap-0 overflow-hidden p-0">
+        {/* ── Header band ──────────────────────────────────────────────── */}
+        <DialogHeader className="space-y-1.5 border-b border-border bg-muted/30 px-5 py-4 text-left">
+          <div className="flex items-center gap-2">
+            <Target className="h-4 w-4 text-accent" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Income Plan · {targetYear}
+            </span>
+          </div>
+          <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
+            {isFirstTime ? "Set your income goal" : "Edit your income goal"}
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            {isFirstTime ? (
-              <>
-                Let's start by setting your commission income goal for{" "}
-                {targetYear}. Everything else will be calculated automatically
-                based on your historical data.
-              </>
-            ) : (
-              <>
-                Enter your annual commission income target for {targetYear}. All
-                other metrics will be calculated automatically.
-              </>
-            )}
+          <DialogDescription className="text-[13px] leading-relaxed text-muted-foreground">
+            {isFirstTime
+              ? `Set your commission income goal for ${targetYear}. Everything else — policies, apps to write, and pace — is calculated automatically from your book.`
+              : `Update your annual commission income target for ${targetYear}. Every other target recalculates automatically.`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {isFirstTime && (
-            <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
-              <TrendingUp className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
-              <div className="text-info">
-                <strong>How it works:</strong>
-                <ul className="mt-2 space-y-1 text-sm">
-                  <li>
-                    • We'll use your historical commission rates and policy data
-                  </li>
-                  <li>
-                    • Calculate how many policies you need to hit your target
-                  </li>
-                  <li>• Break it down by quarter, month, week, and day</li>
-                  <li>• Show you exactly what you need to achieve</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="annual-target" className="text-foreground">
-              Annual Commission Income Target for {targetYear}
-            </Label>
+        <div className="space-y-4 px-5 py-5">
+          {/* ── The one input that matters ──────────────────────────────── */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="annual-target"
+              className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+            >
+              Annual commission income target
+            </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl font-semibold text-muted-foreground">
                 $
               </span>
               <Input
                 id="annual-target"
                 type="text"
+                inputMode="numeric"
                 value={formatInputValue(inputValue)}
                 onChange={(e) =>
                   setInputValue(e.target.value.replace(/,/g, ""))
@@ -152,44 +138,63 @@ export function TargetInputDialog({
                   }
                 }}
                 placeholder="400,000"
-                className="pl-7 text-lg font-semibold"
+                className="h-12 pl-8 text-2xl font-bold tabular-nums"
                 autoFocus
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <p className="text-xs text-muted-foreground">
-              This is your total commission income goal for the year, not
-              including expenses.
-            </p>
+            {error ? (
+              <div className="flex items-center gap-1.5 text-[12px] text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                {error}
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                Your total commission income goal for the year — before
+                expenses.
+              </p>
+            )}
           </div>
 
-          <div className="rounded-lg bg-muted p-3 space-y-2">
-            <div className="flex items-start gap-2">
-              <Calculator className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-foreground">
-                  What we'll calculate for you:
-                </p>
-                <ul className="mt-1 space-y-0.5 text-muted-foreground">
-                  <li>• Quarterly target: Annual ÷ 4</li>
-                  <li>• Monthly target: Annual ÷ 12</li>
-                  <li>
-                    • Policies needed based on your average commission rate
-                  </li>
-                  <li>• Daily and weekly pace requirements</li>
-                </ul>
-              </div>
+          {/* ── What gets calculated ────────────────────────────────────── */}
+          <div className="rounded-lg border border-border bg-card/50 p-3">
+            <div className="mb-2 flex items-center gap-1.5">
+              <Calculator className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Calculated for you
+              </span>
             </div>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-[12px] text-foreground/80">
+              <li>• Quarterly &amp; monthly targets</li>
+              <li>• Policies &amp; apps to write</li>
+              <li>• Daily / weekly pace</li>
+              <li>• Realistic vs. optimistic plans</li>
+            </ul>
           </div>
+
+          {isFirstTime && (
+            <div className="flex items-start gap-2 rounded-lg border border-accent/20 bg-accent/5 p-3">
+              <TrendingUp className="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" />
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                Uses your historical commission rates and policy data to turn
+                this goal into a concrete monthly activity plan.
+              </p>
+            </div>
+          )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+        {/* ── Actions ──────────────────────────────────────────────────── */}
+        <DialogFooter className="gap-2 border-t border-border px-5 py-3">
+          <PillButton tone="ghost" onClick={onClose} disabled={isLoading}>
             Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || !inputValue}>
-            {isLoading ? "Saving..." : "Set Target"}
-          </Button>
+          </PillButton>
+          <PillButton
+            tone="black"
+            onClick={handleSubmit}
+            disabled={isLoading || !inputValue}
+            leadingIcon={<Target className="h-3.5 w-3.5" />}
+          >
+            {isLoading ? "Saving…" : isFirstTime ? "Set goal" : "Save goal"}
+          </PillButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

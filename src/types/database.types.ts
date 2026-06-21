@@ -14945,6 +14945,7 @@ export type Database = {
           achievements: Json | null;
           annual_income_target: number | null;
           annual_policies_target: number | null;
+          avg_premium_override: number | null;
           avg_premium_target: number | null;
           created_at: string | null;
           expense_ratio_target: number | null;
@@ -14967,6 +14968,7 @@ export type Database = {
           achievements?: Json | null;
           annual_income_target?: number | null;
           annual_policies_target?: number | null;
+          avg_premium_override?: number | null;
           avg_premium_target?: number | null;
           created_at?: string | null;
           expense_ratio_target?: number | null;
@@ -14989,6 +14991,7 @@ export type Database = {
           achievements?: Json | null;
           annual_income_target?: number | null;
           annual_policies_target?: number | null;
+          avg_premium_override?: number | null;
           avg_premium_target?: number | null;
           created_at?: string | null;
           expense_ratio_target?: number | null;

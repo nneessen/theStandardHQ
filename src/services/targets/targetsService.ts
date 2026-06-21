@@ -405,6 +405,7 @@ class TargetsService {
     taxReserveRate: number;
     ntoBufferRate: number;
     premiumStatPreference: "mean" | "median";
+    avgPremiumOverride: number | null;
     achievements: Achievement[];
     lastMilestoneDate: string | null;
     createdAt: string;
@@ -427,6 +428,7 @@ class TargetsService {
       taxReserveRate: entity.taxReserveRate,
       ntoBufferRate: entity.ntoBufferRate,
       premiumStatPreference: entity.premiumStatPreference,
+      avgPremiumOverride: entity.avgPremiumOverride,
       achievements: entity.achievements,
       lastMilestoneDate: entity.lastMilestoneDate
         ? new Date(entity.lastMilestoneDate)

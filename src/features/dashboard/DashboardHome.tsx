@@ -21,7 +21,7 @@ import { useCurrentMonthChargebacks } from "../../hooks/commissions/useCurrentMo
 import { usePersistency } from "../../hooks/policies/usePersistency";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
-import { useCalculatedTargets } from "../../hooks/targets";
+import { useCalculatedTargets, useTargets } from "../../hooks/targets";
 import { useHistoricalAverages } from "../../hooks/targets/useHistoricalAverages";
 import { TimePeriod } from "../../utils/dateRange";
 import type { DateRange } from "../../utils/dateRange";
@@ -239,6 +239,8 @@ export const DashboardHome: React.FC = () => {
   // Realistic target plan — same source the Targets page tunes via Realism
   // Settings. Falls back to breakeven-based pace if no target set yet.
   const { calculated: calculatedTargets } = useCalculatedTargets();
+  // Per-agent avg-premium override (Targets page) for the Premium hero tile.
+  const { data: targets } = useTargets();
   // Historical averages exposes both agency-wide and personal premium stats.
   // Used below to compute the highest-available avg AP for the Premium target,
   // so the dashboard never anchors to whichever signal is lowest.
@@ -404,12 +406,15 @@ export const DashboardHome: React.FC = () => {
   const periodCommTotal =
     (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0);
   // Avg AP for the Premium hero target: a single, stable average premium
-  // (shared with the Analytics hero via resolveGoalAvgAP). This previously took
-  // the MAX of all signals to frame the goal "aspirationally", but that biased
-  // the goal high and made pace read "behind"; it now prefers the configured
-  // avgAP, then the agent's own median, then team figures. To restore the old
-  // aspirational framing, swap back to Math.max of the same signals.
-  const dashboardAvgAP = resolveGoalAvgAP(constants?.avgAP, historicalAverages);
+  // (shared with the Analytics hero via resolveGoalAvgAP). Prefers the agent's
+  // own avg-premium override (set on the Targets page) so this tile stays
+  // aligned with the realistic app-count target, then falls back to the agent's
+  // own median, then team figures. (Agency-wide `avgAP` no longer feeds this —
+  // per-agent-only model.) To restore aspirational framing, swap to Math.max.
+  const dashboardAvgAP = resolveGoalAvgAP(
+    targets?.avgPremiumOverride ?? undefined,
+    historicalAverages,
+  );
   const premiumTarget =
     dashboardAvgAP > 0 && policyTarget > 0 ? dashboardAvgAP * policyTarget : 0;
 
