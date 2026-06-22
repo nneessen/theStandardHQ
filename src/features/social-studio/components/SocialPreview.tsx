@@ -1,7 +1,7 @@
 // src/features/social-studio/components/SocialPreview.tsx
 // Live, client-side preview of the social card — pixel-exact because it mounts
 // the SAME components the app uses. Scaled to fit the pane; the forwarded ref
-// points at the UNSCALED card so html-to-image exports at full 1080px.
+// points at the UNSCALED card so the PNG export captures it at full 1080px.
 
 import type { RefObject } from "react";
 import {
@@ -158,7 +158,7 @@ export function SocialPreview({
         <div
           style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
         >
-          {/* Unscaled card — captured by html-to-image at full resolution. Width
+          {/* Unscaled card — captured by the PNG export at full resolution. Width
               comes from FORMAT_DIMS (single source of truth), never a literal. */}
           <div ref={cardRef} className={themeClass} style={{ width: naturalW }}>
             <SocialCardSwitch

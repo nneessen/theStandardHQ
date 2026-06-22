@@ -9,10 +9,12 @@ import {
   removeAgentPhoto,
   readFileAsDataUrl,
   generateSocialCaption,
+  generateProAotwImage,
   type CaptionContext,
+  type ProImageContext,
 } from "@/services/social-studio";
 
-export type { CaptionContext };
+export type { CaptionContext, ProImageContext };
 
 export function useSpotlightActions() {
   // The targets are module-level functions; memoize so the returned object identity
@@ -23,6 +25,7 @@ export function useSpotlightActions() {
       removeAgentPhoto,
       readFileAsDataUrl,
       generateCaption: generateSocialCaption,
+      generateProImage: generateProAotwImage,
     }),
     [],
   );

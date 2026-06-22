@@ -13,3 +13,7 @@ export {
   generateSocialCaption,
   type CaptionContext,
 } from "./socialCaptionService";
+export {
+  generateProAotwImage,
+  type ProImageContext,
+} from "./externalImageGenerationService";

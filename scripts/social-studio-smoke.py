@@ -237,6 +237,25 @@ def main() -> int:
                 print(f"   ⚠ export download failed: {ex}")
         checks.append(("AOTW exports a PNG (READ it to confirm the photo is in it)", photo_in_export))
 
+        # 5b-pro. "Generate pro graphic" (Creatomate render of the Aurora design) —
+        #         shown ONLY on Aurora (its backdrop-filter glass can't be captured by
+        #         the in-app download; Editorial/Noir download fine). Gated on live data
+        #         + a photo. We assert PRESENCE + enabled state; the render itself is
+        #         proven by scripts/creatomate/verify-edge-source.mjs (needs edge fn).
+        # The design loop left us on Noir → the Pro button must be ABSENT here.
+        checks.append((
+            "Pro graphic hidden on non-Aurora designs",
+            page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I)).count() == 0,
+        ))
+        aurora_for_pro = page.get_by_role("button", name=re.compile(r"^aurora$", re.I))
+        if aurora_for_pro.count():
+            aurora_for_pro.first.click()
+            page.wait_for_timeout(600)
+        pro_btn = page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I))
+        checks.append(("AOTW(Aurora) shows 'Generate pro graphic' button", pro_btn.count() > 0))
+        if pro_btn.count() and photo_uploaded and not sample:
+            checks.append(("Pro graphic ENABLED with live data + photo", pro_btn.first.is_enabled()))
+
         # 5c. "Remove" clears the photo (and deletes the storage object — handler
         #     calls storage.remove; the bucket-deletion itself is covered by the RLS
         #     check). Confirm the UI reverts to the upload control / monogram.
@@ -247,6 +266,10 @@ def main() -> int:
         checks.append(
             ("AOTW 'Remove' clears the photo", page.locator("img[alt='Agent']").count() == 0)
         )
+        # With the photo gone, the pro render must disable (its spotlight needs a face).
+        pro_btn_after = page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I))
+        if pro_btn_after.count():
+            checks.append(("Pro graphic DISABLED after photo removed", pro_btn_after.first.is_disabled()))
 
         # 5d. Step-3 STYLE controls (AOTW only): font dropdown, design-filtered
         #     background swatches, and the two size sliders. Still on the AOTW view;

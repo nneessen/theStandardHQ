@@ -25,7 +25,7 @@ export interface SocialStudioConfig {
   aowDesign: AowDesign;
   /**
    * Agent-of-the-Week photo SOURCE the card renders — a data: URL while editing,
-   * so the in-app preview AND the html-to-image export both capture it with zero
+   * so the in-app preview AND the PNG export both capture it with zero
    * cross-origin dependency (a remote URL silently drops from the PNG on a CORS
    * miss). Null → no photo (the spotlight renders without one). (aotw only.)
    */

@@ -10,7 +10,7 @@ const PHOTO_KEY = "aotw-photo";
 
 /**
  * Read a File as a data: URL — the card's render source. A data URL is what makes
- * the in-app preview AND the html-to-image PNG export capture the image with zero
+ * the in-app preview AND the PNG export capture the image with zero
  * cross-origin dependency (a remote URL silently drops from the export on a CORS
  * miss). Pure; shared by the photo upload and the (storage-free) background upload.
  */

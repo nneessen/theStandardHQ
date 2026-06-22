@@ -4,6 +4,7 @@
 // window.__READY__ once webfonts have loaded so the screenshotter can fire.
 
 import { createRoot } from "react-dom/client";
+import { domToPng } from "modern-screenshot";
 import "@/index.css";
 import {
   LeaderboardSocialCard,
@@ -18,6 +19,10 @@ import {
 declare global {
   interface Window {
     __READY__?: boolean;
+    // Exposes the REAL in-app download rasterizer (modern-screenshot) on the
+    // harness page so verify-rasterizer.mjs can compare its output against the
+    // ground-truth native browser screenshot of the same #card.
+    __domToPng?: () => Promise<string>;
   }
 }
 
@@ -163,6 +168,10 @@ function App() {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+// scale:1 → exactly 1080px, matching the in-app download (SocialStudioPage).
+window.__domToPng = () =>
+  domToPng(document.getElementById("card")!, { scale: 1 });
 
 async function ready() {
   if (document.fonts && document.fonts.ready) {

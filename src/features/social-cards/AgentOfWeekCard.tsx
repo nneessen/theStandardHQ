@@ -260,8 +260,7 @@ export function AgentOfWeekCard({
             </div>
             <div
               style={{
-                font: `400 ${168 * titleScale}px ${dispFont}`,
-                lineHeight: 0.92,
+                font: `400 ${168 * titleScale}px/0.92 ${dispFont}`,
                 color: "#1a1714",
                 letterSpacing: "-0.01em",
                 maxWidth: 560,
@@ -430,8 +429,7 @@ export function AgentOfWeekCard({
           </div>
           <div
             style={{
-              font: `800 ${132 * titleScale}px ${dispFont}`,
-              lineHeight: 0.94,
+              font: `800 ${132 * titleScale}px/0.94 ${dispFont}`,
               color: "#f7f3ea",
               letterSpacing: "-0.02em",
             }}
@@ -462,10 +460,9 @@ export function AgentOfWeekCard({
             </div>
             <div
               style={{
-                font: `800 84px ${dispFont}`,
+                font: `800 84px/1 ${dispFont}`,
                 color: "#e8b75a",
                 textShadow: "0 0 40px rgba(232,183,90,0.4)",
-                lineHeight: 1,
               }}
             >
               {usd(agent.ap)}
@@ -607,8 +604,7 @@ export function AgentOfWeekCard({
           </div>
           <div
             style={{
-              font: `800 ${104 * titleScale}px ${dispFont}`,
-              lineHeight: 0.88,
+              font: `800 ${104 * titleScale}px/0.88 ${dispFont}`,
               color: "#fff",
               letterSpacing: "-0.02em",
             }}
@@ -645,9 +641,8 @@ export function AgentOfWeekCard({
           </div>
           <div
             style={{
-              font: `800 92px ${dispFont}`,
+              font: `800 92px/1 ${dispFont}`,
               color: "#fff",
-              lineHeight: 1,
               letterSpacing: "-0.02em",
             }}
           >

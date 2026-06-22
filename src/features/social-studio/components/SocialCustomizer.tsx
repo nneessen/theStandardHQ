@@ -77,6 +77,13 @@ interface SocialCustomizerProps {
   onGenerateCaption: () => void;
   generatingCaption: boolean;
   canUseAi: boolean;
+  /** Render the premium Creatomate spotlight (AOTW only). */
+  onGeneratePro: () => void;
+  generatingPro: boolean;
+  /** Gate for the pro render: AI access + live data + an uploaded photo. */
+  canGeneratePro: boolean;
+  /** Tooltip explaining why the pro button is disabled (empty when enabled). */
+  proHint: string;
   samplePreview: boolean;
   /** True when there is no live data, so sample can't be toggled off. */
   sampleForced: boolean;
@@ -104,6 +111,10 @@ export function SocialCustomizer({
   onGenerateCaption,
   generatingCaption,
   canUseAi,
+  onGeneratePro,
+  generatingPro,
+  canGeneratePro,
+  proHint,
   samplePreview,
   sampleForced,
   onSamplePreviewChange,
@@ -247,6 +258,38 @@ export function SocialCustomizer({
               />
             </label>
           )}
+        </Field>
+      )}
+
+      {/* Pro render — Aurora only. Aurora's glassmorphism uses backdrop-filter, which
+          the in-app PNG download (a foreignObject rasterizer) can't capture, so it's
+          rendered server-side (Creatomate) at full fidelity. Editorial & Noir have no
+          backdrop-filter and download faithfully via the normal Download PNG. */}
+      {isAotw && config.aowDesign === "aurora" && (
+        <Field label="Pro graphic">
+          <Button
+            type="button"
+            size="sm"
+            className="w-full"
+            onClick={onGeneratePro}
+            disabled={!canGeneratePro || generatingPro}
+            title={proHint || "Render Aurora at full fidelity"}
+          >
+            {generatingPro ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Rendering…
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" /> Generate pro graphic
+              </>
+            )}
+          </Button>
+          <p className="pt-1 text-[10px] text-muted-foreground">
+            Renders Aurora's glass effects at full fidelity — the in-app
+            download can't capture them. Editorial & Noir download cleanly
+            as-is.
+          </p>
         </Field>
       )}
 

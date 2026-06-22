@@ -46,6 +46,9 @@ public/*.pdf
 # Parsed UW guide text dumps (proprietary carrier content)
 scripts/output/
 
+# Generated render artifacts from the card-render / creatomate harnesses (PNGs)
+scripts/**/out/
+
 # Auto-generated continuation prompts
 plans/continuation-prompts/
 
