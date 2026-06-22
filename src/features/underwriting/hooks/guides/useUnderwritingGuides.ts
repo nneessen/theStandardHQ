@@ -297,3 +297,26 @@ export async function openGuidePdf(storagePath: string): Promise<void> {
     throw err;
   }
 }
+
+/**
+ * Download a guide PDF to disk. Streams the file as a Blob (so the browser saves
+ * it rather than navigating), then triggers a same-document anchor click. The
+ * object URL is always revoked, even on the click path.
+ */
+export async function downloadGuidePdf(
+  storagePath: string,
+  fileName: string,
+): Promise<void> {
+  const blob = await guideStorageService.download(storagePath);
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName || "underwriting-guide.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}

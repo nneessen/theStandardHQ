@@ -4,7 +4,7 @@ This feature is organized by capability so it is easier to place new code in the
 
 - `components/Wizard`: end-user wizard flow and step UI.
 - `components/SessionHistory`: `WizardSessionHistory` (used by the wizard).
-- `components/UnderwritingGuidesPage.tsx` (+ `components/guides-library/`): Training-section carrier guide library at `/underwriting/guides`, backed by the `underwriting_guides` table. Guides grouped per carrier in a responsive grid (single-guide carriers fill the row), paginated by carrier; PDFs open in a new tab via on-demand signed URLs. Everyone in the IMO views; admins (`is_imo_admin`) upload/delete.
+- `components/UnderwritingGuidesPage.tsx` (+ `components/guides-library/`): Training-section carrier guide library at `/underwriting/guides`, backed by the `underwriting_guides` table. A 3-pane master–detail document browser — carrier rail (folder icons + counts, color-coded; never monogram tiles) · paginated document list (category badge, carrier dot, size/date) · preview pane (carrier-banded cover + facts + Open/Download). Filter by carrier or category, free-text search, client-side pagination (9/18/30). Category / product / carrier-color are DERIVED client-side in `guides-library/guideAttributes.ts` (no schema columns) — that file is the seam to promote them to real columns later. PDFs open in a new tab via on-demand signed URLs. Everyone in the IMO views; admins (`is_imo_admin`) upload/delete.
 - `admin/`: admin workflow at `/underwriting/admin` (carrier rail + guide upload/parse/extract/review on one page). Composes existing hooks via `useUnderwritingAdmin.ts`.
 - `hooks/wizard`: wizard-only orchestration hooks.
 - `hooks/sessions`: session history, save, and reload hooks.

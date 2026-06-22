@@ -2,10 +2,14 @@
 """
 Smoke for the Training → Underwriting Guides library (/underwriting/guides).
 
+The page is a 3-pane master–detail document browser (carrier rail · document
+list · preview pane).
+
 Default run is READ-ONLY and uses a throwaway demo agent (view-only):
 it logs in, loads the page, captures console + page errors, asserts the
-carrier-grouped library renders, confirms a plain agent sees NO upload/delete
-controls, and (best-effort) opens a guide PDF via a signed URL.
+browser chrome renders (heading + "All documents" rail entry), confirms a plain
+agent sees NO upload/delete controls, and (best-effort) opens a guide PDF via the
+preview's "Open PDF" action (signed URL).
 
 NEVER touches a real auth account — uses @epiclife-demo.test only.
 
@@ -103,21 +107,32 @@ def main() -> int:
         else:
             print("✓ agent: no upload controls (view-only, as expected)")
 
-        # Best-effort: open the first guide via signed URL (read-only).
-        view_btn = page.get_by_role("button", name="View").first
-        if view_btn.count() > 0:
+        # 3-pane browser chrome: the carrier rail's "All documents" entry is only
+        # present when the library has guides (otherwise the empty state shows).
+        has_browser = (
+            page.get_by_text("All documents", exact=False).first.count() > 0
+        )
+        if has_browser:
+            print("✓ agent: 3-pane browser rendered (rail 'All documents')")
+        else:
+            print("• agent: empty library (no 3-pane browser to assert)")
+
+        # Best-effort: open the auto-selected guide via the preview's Open PDF
+        # action (signed URL, read-only). Preview pane is visible at desktop width.
+        open_btn = page.get_by_role("button", name="Open PDF").first
+        if open_btn.count() > 0:
             try:
                 with ctx.expect_page(timeout=8000) as pop:
-                    view_btn.click()
+                    open_btn.click()
                 popup = pop.value
                 popup.wait_for_load_state("domcontentloaded", timeout=8000)
                 if popup.url and popup.url != "about:blank":
                     print(f"✓ agent: guide opened via signed URL ({popup.url[:60]}…)")
                 else:
-                    print("• agent: View clicked but popup URL empty (seed/RLS dependent)")
+                    print("• agent: Open clicked but popup URL empty (seed/RLS dependent)")
                 popup.close()
             except Exception as e:  # noqa: BLE001 - informational only
-                print(f"• agent: View open inconclusive ({e})")
+                print(f"• agent: Open PDF inconclusive ({e})")
         else:
             print("• agent: no guides present to open (empty library)")
 
