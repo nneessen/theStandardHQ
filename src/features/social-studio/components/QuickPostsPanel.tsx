@@ -77,12 +77,14 @@ export function QuickPostsPanel({
           );
         })}
       </div>
-      <p className="px-0.5 text-[11px] leading-snug text-muted-foreground">
+      {/* div (not p): <Cap> renders a <div>, which is invalid inside a <p> and
+          triggers a React hydration warning. */}
+      <div className="px-0.5 text-[11px] leading-snug text-muted-foreground">
         <Cap style={{ fontSize: 10, display: "inline" }}>Coming next</Cap> —
         AI-generated one-offs (recruiting / “we’re hiring”, new-recruit
         welcomes, production milestones, work anniversaries, motivational) land
         with the automation phase.
-      </p>
+      </div>
     </div>
   );
 }
