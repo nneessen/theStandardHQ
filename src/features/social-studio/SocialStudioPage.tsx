@@ -18,6 +18,7 @@ import {
 import { SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap } from "@/components/board";
 import { Button } from "@/components/ui/button";
+import { renderCardToPng } from "@/features/social-cards";
 import { useImo } from "@/contexts/ImoContext";
 import { useAgencyAgentLeaderboard } from "@/hooks/leaderboard";
 import { useAiAccess } from "@/hooks/subscription";
@@ -236,15 +237,15 @@ export function SocialStudioPage() {
     }
   }
 
-  // Render the (unscaled) card to a faithful 1080px PNG data URL. modern-screenshot
-  // embeds cross-origin webfonts + renders CSS gradients accurately; scale:1 → exactly
-  // 1080px (Instagram's native size). Shared by Download + Post to Instagram.
+  // Render the (unscaled) card to a faithful PNG data URL via the shared exporter
+  // (renderCardToPng): modern-screenshot embeds cross-origin webfonts + renders CSS
+  // gradients accurately, and explicit FORMAT_DIMS width/height pin the output to the
+  // format's native size. cardRef points at SocialPreview's OFF-SCREEN full-size copy,
+  // so the capture is never the scaled-down preview rect (the WI-1 crop bug). Shared
+  // by Download + Post to Instagram.
   async function renderCardPng(): Promise<string | null> {
     if (!cardRef.current) return null;
-    const { domToPng } = await import("modern-screenshot");
-    // A runtime font change can race the capture — wait for the webfont to load.
-    if (document.fonts?.ready) await document.fonts.ready;
-    return domToPng(cardRef.current, { scale: 1 });
+    return renderCardToPng(cardRef.current, config.format);
   }
 
   // Publish the current card straight to the agency's connected Instagram feed:

@@ -23,6 +23,8 @@ export type { MonthlyReportCardProps, ReportStat } from "./MonthlyReportCard";
 export { usd, toLastInitial, initials, FORMAT_DIMS } from "./socialFormat";
 export type { SocialFormat } from "./socialFormat";
 
+export { renderCardToPng } from "./exportCard";
+
 export {
   CARD_THEMES,
   CARD_THEME_LABEL,

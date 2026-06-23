@@ -195,6 +195,19 @@ export function SocialPreview({
       ? { ...data, photoPosition: dragPos }
       : data;
 
+  // One element description rendered in TWO places (React mounts an independent
+  // instance at each position): the scaled on-screen preview, and the off-screen
+  // full-size export source. Keeping it a single const guarantees they stay identical.
+  const cardInner = (
+    <SocialCardSwitch
+      data={liveData}
+      format={format}
+      agencyName={agencyName}
+      network={network}
+      showPolicies={showPolicies}
+    />
+  );
+
   return (
     <div
       data-testid="social-preview"
@@ -215,16 +228,13 @@ export function SocialPreview({
         <div
           style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
         >
-          {/* Unscaled card — captured by the PNG export at full resolution. Width
-              comes from FORMAT_DIMS (single source of truth), never a literal. */}
-          <div ref={cardRef} className={themeClass} style={{ width: naturalW }}>
-            <SocialCardSwitch
-              data={liveData}
-              format={format}
-              agencyName={agencyName}
-              network={network}
-              showPolicies={showPolicies}
-            />
+          {/* DISPLAY ONLY — scaled to fit the pane. The PNG export must NOT read this
+              node: modern-screenshot sizes its canvas from the transform-affected
+              bounding rect, so capturing here yields only the top-left fraction of the
+              card (the WI-1 "one eighth / too big" crop). The ref lives on the
+              off-screen full-size copy below instead. */}
+          <div className={themeClass} style={{ width: naturalW }}>
+            {cardInner}
           </div>
         </div>
 
@@ -265,6 +275,27 @@ export function SocialPreview({
             Loading live data…
           </div>
         )}
+      </div>
+
+      {/* Off-screen, UN-transformed, full-size export source. domToPng captures THIS
+          node (via cardRef) so the PNG is always exactly FORMAT_DIMS — its natural
+          bounding rect is 1080×H with no ancestor transform to shrink it. Positioned
+          far off-canvas (not display:none, which wouldn't lay out, and not
+          visibility:hidden, which the rasterizer would honor and emit blank); fixed +
+          z-index:-1 + pointer-events:none keep it invisible and inert. */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: -100000,
+          top: 0,
+          zIndex: -1,
+          pointerEvents: "none",
+        }}
+      >
+        <div ref={cardRef} className={themeClass} style={{ width: naturalW }}>
+          {cardInner}
+        </div>
       </div>
     </div>
   );

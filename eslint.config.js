@@ -168,6 +168,17 @@ export default tseslint.config(
       'no-restricted-imports': 'off',
     },
   },
+  // Dev-only tooling under scripts/ (render harnesses, smoke runners) is NOT app code
+  // and is excluded from the production build, so it isn't bound by the feature-barrel
+  // architecture — it legitimately reaches into feature internals to exercise them.
+  {
+    files: ['scripts/**/*.{ts,tsx,mjs}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-restricted-imports': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   // Exception: Hooks inside features CAN import from services (they're the data layer interface)
   {
     files: ['src/features/**/hooks/**/*.{ts,tsx}'],
