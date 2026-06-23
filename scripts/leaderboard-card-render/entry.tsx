@@ -12,7 +12,7 @@ import {
   AgentOfWeekCard,
   toLastInitial,
   normalizeCardTheme,
-  CARD_THEME_TOKENS,
+  cardThemeWrapperClass,
   type SocialAgentRow,
   type AowDesign,
   type SocialFormat,
@@ -74,8 +74,7 @@ const format: SocialFormat =
   fp === "story" ? "story" : fp === "square" ? "square" : "portrait";
 // Self-contained cards carry their own theme; the wrapper class only matters for
 // any card still reading the app theme-v2 tokens.
-const wrapperClass =
-  CARD_THEME_TOKENS[cardTheme].mode === "light" ? "theme-v2" : "theme-v2 dark";
+const wrapperClass = cardThemeWrapperClass(cardTheme);
 
 function Card() {
   if (view === "aotw") {

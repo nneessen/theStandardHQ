@@ -6,14 +6,15 @@ export {
 export {
   readFileAsDataUrl,
   uploadAgentPhoto,
+  uploadGeneratedPost,
   removeAgentPhoto,
   type UploadedAgentPhoto,
 } from "./spotlightAssetService";
 export {
+  publishToInstagram,
+  type PublishResult,
+} from "./instagramPublishService";
+export {
   generateSocialCaption,
   type CaptionContext,
 } from "./socialCaptionService";
-export {
-  generateProAotwImage,
-  type ProImageContext,
-} from "./externalImageGenerationService";

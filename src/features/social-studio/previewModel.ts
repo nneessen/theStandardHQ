@@ -232,6 +232,7 @@ export function buildPreviewData({
       kind: "aotw",
       periodLabel: `WEEK OF ${weekRange}`,
       design: AOW_DESIGN_FOR_THEME[config.cardTheme],
+      theme: config.cardTheme,
       agent,
       photoPosition: config.aowPhotoPosition,
       style: {

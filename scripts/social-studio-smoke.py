@@ -137,6 +137,12 @@ def main() -> int:
 
         # 4. Controls present.
         checks.append(("Download PNG button", page.get_by_role("button", name=re.compile(r"download png", re.I)).count() > 0))
+        # "Post to Instagram" publishes the rendered card to the connected IG feed;
+        # it is disabled in sample mode (no real numbers) and surfaces a connect prompt.
+        post_btn = page.get_by_role("button", name=re.compile(r"post to instagram", re.I))
+        checks.append(("'Post to Instagram' button present", post_btn.count() > 0))
+        if sample and post_btn.count():
+            checks.append(("Post to Instagram disabled in sample mode", post_btn.first.is_disabled()))
         checks.append(("Customize panel", page.get_by_text("Customize", exact=False).count() > 0))
         checks.append(("AI 'Generate with AI' caption button", page.get_by_role("button", name=re.compile(r"generate with ai", re.I)).count() > 0))
 

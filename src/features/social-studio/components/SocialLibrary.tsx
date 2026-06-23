@@ -12,13 +12,14 @@ import {
   FORMAT_DIMS,
   CARD_THEMES,
   CARD_THEME_LABEL,
-  CARD_THEME_TOKENS,
+  cardThemeWrapperClass,
 } from "@/features/social-cards";
 import { SocialCardSwitch } from "./SocialPreview";
 import { buildPreviewData } from "../previewModel";
 import {
   DEFAULT_CONFIG,
   toTemplateConfig,
+  resolveTemplateTheme,
   type SocialStudioConfig,
   type SocialTemplateConfig,
 } from "../types";
@@ -82,13 +83,16 @@ function TemplateThumb({
   agencyName: string;
   network?: string;
 }) {
-  const c: SocialStudioConfig = { ...DEFAULT_CONFIG, ...config };
+  const c: SocialStudioConfig = {
+    ...DEFAULT_CONFIG,
+    ...config,
+    // Migrate legacy saved templates (aowDesign/theme) → cardTheme so the thumbnail
+    // reflects the saved look, not the default.
+    cardTheme: resolveTemplateTheme(config),
+  };
   const dims = FORMAT_DIMS[c.format];
   const scale = THUMB_W / dims.w;
-  const themeClass =
-    CARD_THEME_TOKENS[c.cardTheme].mode === "light"
-      ? "theme-v2"
-      : "theme-v2 dark";
+  const themeClass = cardThemeWrapperClass(c.cardTheme);
   const data = buildPreviewData({
     config: c,
     producers: [],

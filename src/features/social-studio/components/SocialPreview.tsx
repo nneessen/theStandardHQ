@@ -9,7 +9,7 @@ import {
   MonthlyReportCard,
   AgentOfWeekCard,
   FORMAT_DIMS,
-  CARD_THEME_TOKENS,
+  cardThemeWrapperClass,
   type SocialAgentRow,
   type MonthlyReportCardProps,
   type AgentOfWeekCardProps,
@@ -32,6 +32,7 @@ export type PreviewData =
       kind: "aotw";
       periodLabel: string;
       design: AowDesign;
+      theme: CardTheme;
       agent: AgentOfWeekCardProps["agent"];
       photoPosition?: string;
       style?: AowStyle;
@@ -159,7 +160,9 @@ export function SocialPreview({
 
   // Drag-to-reposition the agent photo: pointer delta (in displayed px) shifts the
   // CSS object-position focal point. Grab-and-move feel → pointer right reveals the
-  // image's left (object-position x decreases). Pointer-captured so it tracks cleanly.
+  // image's left (object-position x decreases). The position is kept LOCAL during the
+  // drag (only this subtree re-renders, not the whole studio page) and committed to
+  // the config ONCE on release. Pointer-captured so it tracks cleanly.
   const drag = useRef<{
     sx: number;
     sy: number;
@@ -167,15 +170,30 @@ export function SocialPreview({
     by: number;
   } | null>(null);
   const [dragging, setDragging] = useState(false);
-  // The cards are self-contained (own palette); derive the wrapper mode from the
-  // card's theme purely so any legacy theme-v2 consumer renders sensibly.
-  const cardMode =
-    data.kind === "aotw"
-      ? data.design === "aurora"
-        ? "dark"
-        : "light"
-      : CARD_THEME_TOKENS[data.theme].mode;
-  const themeClass = cardMode === "dark" ? "theme-v2 dark" : "theme-v2";
+  const [dragPos, setDragPos] = useState<string | null>(null);
+
+  // Compute the final focal point from the release event + the captured base, commit
+  // it once, and clear the local override (batched, so no flicker). Shared by
+  // pointerup AND pointercancel so an OS-cancelled drag never leaves state stuck.
+  function endDrag(e: React.PointerEvent) {
+    const d = drag.current;
+    drag.current = null;
+    setDragging(false);
+    setDragPos(null);
+    if (!d || !onPhotoPositionChange) return;
+    const nx = clampPct(d.bx - ((e.clientX - d.sx) / dispW) * 100);
+    const ny = clampPct(d.by - ((e.clientY - d.sy) / dispH) * 100);
+    onPhotoPositionChange(`${Math.round(nx)}% ${Math.round(ny)}%`);
+  }
+
+  // The cards are self-contained (own palette); the wrapper mode is belt-and-suspenders
+  // for any legacy theme-v2 consumer. Every PreviewData kind now carries `theme`.
+  const themeClass = cardThemeWrapperClass(data.theme);
+  // Show the in-progress drag focal point live without touching the studio config.
+  const liveData =
+    dragPos !== null && data.kind === "aotw"
+      ? { ...data, photoPosition: dragPos }
+      : data;
 
   return (
     <div
@@ -201,7 +219,7 @@ export function SocialPreview({
               comes from FORMAT_DIMS (single source of truth), never a literal. */}
           <div ref={cardRef} className={themeClass} style={{ width: naturalW }}>
             <SocialCardSwitch
-              data={data}
+              data={liveData}
               format={format}
               agencyName={agencyName}
               network={network}
@@ -213,7 +231,7 @@ export function SocialPreview({
         {repositionable && onPhotoPositionChange && (
           <div
             onPointerDown={(e) => {
-              const [bx, by] = parsePos(photoPosition);
+              const [bx, by] = parsePos(dragPos ?? photoPosition);
               drag.current = { sx: e.clientX, sy: e.clientY, bx, by };
               (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
               setDragging(true);
@@ -223,12 +241,10 @@ export function SocialPreview({
               if (!d) return;
               const nx = clampPct(d.bx - ((e.clientX - d.sx) / dispW) * 100);
               const ny = clampPct(d.by - ((e.clientY - d.sy) / dispH) * 100);
-              onPhotoPositionChange(`${Math.round(nx)}% ${Math.round(ny)}%`);
+              setDragPos(`${Math.round(nx)}% ${Math.round(ny)}%`);
             }}
-            onPointerUp={() => {
-              drag.current = null;
-              setDragging(false);
-            }}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
             className="absolute inset-0 z-30"
             style={{
               cursor: dragging ? "grabbing" : "grab",

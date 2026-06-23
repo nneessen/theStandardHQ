@@ -7,6 +7,7 @@ import { supabase } from "../base/supabase";
 
 const BUCKET = "spotlight-assets";
 const PHOTO_KEY = "aotw-photo";
+const POST_KEY = "social-post";
 
 /**
  * Read a File as a data: URL — the card's render source. A data URL is what makes
@@ -55,6 +56,26 @@ export async function uploadAgentPhoto(
   // Cache-bust the stable URL so a later consumer (P2/P3 IG posting) fetches the
   // newest upload, not a CDN-cached prior image at the same key.
   return { dataUrl, storageUrl: `${pub.publicUrl}?v=${Date.now()}` };
+}
+
+/**
+ * Upload a RENDERED post image (a PNG data: URL from the in-app screenshot) to the
+ * public bucket so Instagram can fetch it (the Graph API requires a public https URL).
+ * Stable per-owner key + cache-busted URL → no orphan accumulation, and IG always
+ * fetches the newest render. Returns the public URL. (Used by "Post to Instagram".)
+ */
+export async function uploadGeneratedPost(dataUrl: string): Promise<string> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) throw new Error("not authenticated");
+  const blob = await (await fetch(dataUrl)).blob();
+  const path = `${uid}/${POST_KEY}.png`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: "image/png", upsert: true });
+  if (error) throw error;
+  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return `${pub.publicUrl}?v=${Date.now()}`;
 }
 
 /**

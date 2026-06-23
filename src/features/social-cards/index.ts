@@ -30,6 +30,7 @@ export {
   CARD_THEME_TOKENS,
   resolveCardTheme,
   normalizeCardTheme,
+  cardThemeWrapperClass,
   themePageBackground,
 } from "./themes";
 export type { CardTheme, CardThemeTokens } from "./themes";

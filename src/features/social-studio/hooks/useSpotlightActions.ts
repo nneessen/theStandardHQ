@@ -8,13 +8,13 @@ import {
   uploadAgentPhoto,
   removeAgentPhoto,
   readFileAsDataUrl,
+  uploadGeneratedPost,
+  publishToInstagram,
   generateSocialCaption,
-  generateProAotwImage,
   type CaptionContext,
-  type ProImageContext,
 } from "@/services/social-studio";
 
-export type { CaptionContext, ProImageContext };
+export type { CaptionContext };
 
 export function useSpotlightActions() {
   // The targets are module-level functions; memoize so the returned object identity
@@ -24,8 +24,9 @@ export function useSpotlightActions() {
       uploadAgentPhoto,
       removeAgentPhoto,
       readFileAsDataUrl,
+      uploadGeneratedPost,
+      publishToInstagram,
       generateCaption: generateSocialCaption,
-      generateProImage: generateProAotwImage,
     }),
     [],
   );

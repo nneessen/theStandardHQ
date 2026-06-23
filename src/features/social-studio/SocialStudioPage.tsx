@@ -6,20 +6,26 @@
 
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Download, Sparkles, Lock } from "lucide-react";
+import { Download, Send, Loader2, Sparkles, Lock } from "lucide-react";
 import { SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap } from "@/components/board";
 import { Button } from "@/components/ui/button";
 import { useImo } from "@/contexts/ImoContext";
 import { useAgencyAgentLeaderboard } from "@/hooks/leaderboard";
 import { useAiAccess } from "@/hooks/subscription";
+import { useInstagramIntegrations } from "@/hooks/instagram";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
 import { SocialPreview } from "./components/SocialPreview";
 import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
-import { DEFAULT_CONFIG, VIEW_META, type SocialStudioConfig } from "./types";
+import {
+  DEFAULT_CONFIG,
+  VIEW_META,
+  resolveTemplateTheme,
+  type SocialStudioConfig,
+} from "./types";
 import {
   resolveSampleState,
   buildPeriodLabels,
@@ -51,6 +57,11 @@ export function SocialStudioPage() {
   const [generatingCaption, setGeneratingCaption] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [posting, setPosting] = useState(false);
+  // Synchronous re-entrancy guard: a fast double-click can fire two handlers before
+  // the `posting` state flushes to disable the button → two publishes / a racing
+  // overwrite of the upload. The ref blocks the second call immediately.
+  const postingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const { hasAiAccess } = useAiAccess();
   const {
@@ -58,7 +69,14 @@ export function SocialStudioPage() {
     removeAgentPhoto,
     readFileAsDataUrl,
     generateCaption,
+    uploadGeneratedPost,
+    publishToInstagram,
   } = useSpotlightActions();
+  // The agency's connected Instagram account (Business/Creator) gates posting.
+  const { data: igIntegrations } = useInstagramIntegrations();
+  const igConnected = !!igIntegrations?.some(
+    (i) => i.connection_status === "connected" && i.is_active,
+  );
   const patch = (p: Partial<SocialStudioConfig>) =>
     setConfig((c) => ({ ...c, ...p }));
 
@@ -114,7 +132,12 @@ export function SocialStudioPage() {
       // Upload + data-URL read happen in the service (storage access stays out of
       // the UI); both land in config only on full success.
       const { dataUrl, storageUrl } = await uploadAgentPhoto(file);
-      patch({ aowPhotoUrl: dataUrl, aowPhotoStorageUrl: storageUrl });
+      // A new face starts centered — don't inherit the prior photo's focal point.
+      patch({
+        aowPhotoUrl: dataUrl,
+        aowPhotoStorageUrl: storageUrl,
+        aowPhotoPosition: "50% 50%",
+      });
       toast.success("Photo added");
     } catch (e) {
       console.error("Spotlight photo upload failed:", e);
@@ -132,7 +155,11 @@ export function SocialStudioPage() {
     } catch (e) {
       console.error("Spotlight photo delete failed:", e);
     } finally {
-      patch({ aowPhotoUrl: null, aowPhotoStorageUrl: null });
+      patch({
+        aowPhotoUrl: null,
+        aowPhotoStorageUrl: null,
+        aowPhotoPosition: "50% 50%",
+      });
     }
   }
 
@@ -176,22 +203,8 @@ export function SocialStudioPage() {
     // font-load + rasterization, which would otherwise mis-name the file.
     const filename = `${agencyName.toLowerCase().replace(/\s+/g, "-")}-${config.view}-${config.format}.png`;
     try {
-      // modern-screenshot is a more faithful html-to-image successor: it embeds
-      // cross-origin webfonts and renders CSS gradients far more accurately, so the
-      // downloaded PNG matches the on-screen preview (the old html-to-image path
-      // flattened fonts/gradients on the real download). NOTE: foreignObject-based
-      // rasterizers — including this one — still cannot capture `backdrop-filter`
-      // (the aurora "glass" blur); that design renders faithfully only via a real
-      // browser / the Creatomate pipeline.
-      const { domToPng } = await import("modern-screenshot");
-      // A runtime font change (the customizer dropdown) can race the download — wait
-      // for the selected webfont to finish loading or the PNG bakes in a fallback.
-      if (document.fonts?.ready) await document.fonts.ready;
-      // scale:1 → exactly 1080px (matches the "1080px PNG" copy + Instagram's native
-      // size); without it a retina screen exports at devicePixelRatio (e.g. 2160px).
-      const dataUrl = await domToPng(cardRef.current, {
-        scale: 1,
-      });
+      const dataUrl = await renderCardPng();
+      if (!dataUrl) return;
       const a = document.createElement("a");
       a.download = filename;
       a.href = dataUrl;
@@ -200,6 +213,54 @@ export function SocialStudioPage() {
     } catch (e) {
       console.error("Social card download failed:", e);
       toast.error("Couldn't generate the image. Please try again.");
+    }
+  }
+
+  // Render the (unscaled) card to a faithful 1080px PNG data URL. modern-screenshot
+  // embeds cross-origin webfonts + renders CSS gradients accurately; scale:1 → exactly
+  // 1080px (Instagram's native size). Shared by Download + Post to Instagram.
+  async function renderCardPng(): Promise<string | null> {
+    if (!cardRef.current) return null;
+    const { domToPng } = await import("modern-screenshot");
+    // A runtime font change can race the capture — wait for the webfont to load.
+    if (document.fonts?.ready) await document.fonts.ready;
+    return domToPng(cardRef.current, { scale: 1 });
+  }
+
+  // Publish the current card straight to the agency's connected Instagram feed:
+  // render → upload to the public bucket → instagram-publish-post edge fn.
+  async function handlePostNow() {
+    if (isSample) {
+      toast.error(
+        "Switch off 'Preview with sample data' to post your real numbers.",
+      );
+      return;
+    }
+    if (!igConnected) {
+      toast.error(
+        "Connect a Business Instagram account in Settings → Integrations first.",
+      );
+      return;
+    }
+    if (postingRef.current) return;
+    postingRef.current = true;
+    setPosting(true);
+    try {
+      const dataUrl = await renderCardPng();
+      if (!dataUrl) throw new Error("The card isn't ready yet.");
+      const imageUrl = await uploadGeneratedPost(dataUrl);
+      const { username } = await publishToInstagram(imageUrl, config.caption);
+      toast.success(
+        username ? `Posted to @${username}` : "Posted to Instagram",
+      );
+    } catch (e) {
+      console.error("Instagram post failed:", e);
+      toast.error(
+        e instanceof Error ? e.message : "Couldn't post to Instagram.",
+      );
+    } finally {
+      postingRef.current = false;
+      setPosting(false);
     }
   }
 
@@ -321,18 +382,40 @@ export function SocialStudioPage() {
           <Board pad={16} className="flex flex-col items-center gap-3">
             <div className="flex w-full items-center justify-between">
               <Cap>{VIEW_META[config.view].label}</Cap>
-              <Button
-                size="sm"
-                onClick={handleDownload}
-                disabled={isSample}
-                title={
-                  isSample
-                    ? "Sample preview can't be downloaded — switch to live data first"
-                    : "Download a 1080px PNG"
-                }
-              >
-                <Download className="h-4 w-4" /> Download PNG
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handlePostNow}
+                  disabled={isSample || posting || !igConnected}
+                  title={
+                    isSample
+                      ? "Switch to live data to post"
+                      : !igConnected
+                        ? "Connect Instagram in Settings → Integrations"
+                        : "Publish this graphic to your Instagram feed"
+                  }
+                >
+                  {posting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {posting ? "Posting…" : "Post to Instagram"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownload}
+                  disabled={isSample}
+                  title={
+                    isSample
+                      ? "Sample preview can't be downloaded — switch to live data first"
+                      : "Download a 1080px PNG"
+                  }
+                >
+                  <Download className="h-4 w-4" /> Download PNG
+                </Button>
+              </div>
             </div>
             <SocialPreview
               data={previewData}
@@ -384,14 +467,36 @@ export function SocialStudioPage() {
             </Board>
 
             <Board pad={16}>
-              <Cap style={{ marginBottom: 6 }}>Automation</Cap>
-              <p className="text-[11px] leading-snug text-muted-foreground">
-                Scheduling and auto-posting to Instagram (daily / weekly /
-                monthly, with on/off toggles) arrive next. Everything stays{" "}
-                <span className="font-medium text-foreground">off</span> until
-                you turn it on — your agency just started, so there's nothing to
-                post yet.
-              </p>
+              <Cap style={{ marginBottom: 6 }}>Instagram</Cap>
+              {igConnected ? (
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    Connected.
+                  </span>{" "}
+                  Use{" "}
+                  <span className="font-medium text-foreground">
+                    Post to Instagram
+                  </span>{" "}
+                  above to publish this graphic to your feed. Scheduled
+                  auto-posting (daily / weekly / monthly) arrives next.
+                </p>
+              ) : (
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  Connect a{" "}
+                  <span className="font-medium text-foreground">
+                    Business or Creator
+                  </span>{" "}
+                  Instagram account in{" "}
+                  <a
+                    href="/settings?tab=integrations"
+                    className="font-medium text-accent underline"
+                  >
+                    Settings → Integrations
+                  </a>{" "}
+                  to publish straight from here — a personal account can't post
+                  via the Instagram API. Scheduled auto-posting arrives next.
+                </p>
+              )}
             </Board>
           </div>
         </div>
@@ -406,7 +511,14 @@ export function SocialStudioPage() {
             // restores whatever the template DOES specify. Caption is left untouched
             // (it's stripped from templates entirely — never per-post-clobbered).
             onApply={(c) =>
-              patch({ aowBgImageUrl: null, title: undefined, ...c })
+              patch({
+                aowBgImageUrl: null,
+                title: undefined,
+                ...c,
+                // Migrate legacy templates (aowDesign/theme) → cardTheme on apply so an
+                // old saved template restores its look instead of keeping the current one.
+                cardTheme: resolveTemplateTheme(c),
+              })
             }
             agencyName={agencyName}
             network={network}

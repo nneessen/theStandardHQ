@@ -3,6 +3,7 @@
 // preview + download). Persistence (schedules/toggles) lands in Phase 2.
 
 // Single source of truth for the output dimensions (2026 Instagram sizes).
+import { normalizeCardTheme } from "@/features/social-cards";
 import type { CardTheme, SocialFormat } from "@/features/social-cards";
 export type { SocialFormat };
 
@@ -98,6 +99,19 @@ export function toTemplateConfig(c: SocialStudioConfig): SocialTemplateConfig {
   const clone: Partial<SocialStudioConfig> = { ...c };
   for (const key of TEMPLATE_OMIT_KEYS) delete clone[key];
   return clone as SocialTemplateConfig;
+}
+
+/** Resolve the theme for an applied template/preset, migrating legacy rows that
+ *  stored `aowDesign` / `theme` (saved before the unified `cardTheme`) so an old
+ *  template restores its intended look instead of silently keeping the current theme
+ *  — or worse, yielding `undefined` and crashing the wrapper-mode lookup. */
+export function resolveTemplateTheme(
+  c: Partial<SocialStudioConfig>,
+): CardTheme {
+  const legacy = c as Record<string, unknown>;
+  return normalizeCardTheme(
+    (c.cardTheme ?? legacy.aowDesign ?? legacy.theme) as string | undefined,
+  );
 }
 
 export const VIEW_META: Record<

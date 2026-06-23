@@ -171,6 +171,15 @@ export function resolveCardTheme(theme?: CardTheme | null): CardThemeTokens {
   return CARD_THEME_TOKENS[theme ?? "spotlight"] ?? CARD_THEME_TOKENS.spotlight;
 }
 
+/** The app theme-v2 wrapper class for a theme's mode. The cards are self-contained,
+ *  so this is only belt-and-suspenders for any legacy theme-v2 consumer of the
+ *  wrapper — kept in ONE place so the three render sites don't drift. */
+export function cardThemeWrapperClass(theme?: CardTheme | null): string {
+  return resolveCardTheme(theme).mode === "light"
+    ? "theme-v2"
+    : "theme-v2 dark";
+}
+
 // Legacy config values map onto the new themes (saved templates persisted
 // aowDesign aurora/editorial/noir and a leaderboard theme dark/light).
 export function normalizeCardTheme(v?: string | null): CardTheme {
