@@ -3,19 +3,21 @@
 // the SAME components the app uses. Scaled to fit the pane; the forwarded ref
 // points at the UNSCALED card so the PNG export captures it at full 1080px.
 
-import type { RefObject } from "react";
+import { useRef, useState, type RefObject } from "react";
 import {
   LeaderboardSocialCard,
   MonthlyReportCard,
   AgentOfWeekCard,
   FORMAT_DIMS,
+  CARD_THEME_TOKENS,
   type SocialAgentRow,
   type MonthlyReportCardProps,
   type AgentOfWeekCardProps,
   type AowDesign,
   type AowStyle,
+  type CardTheme,
 } from "@/features/social-cards";
-import type { SocialFormat, SocialTheme } from "../types";
+import type { SocialFormat } from "../types";
 
 export type PreviewData =
   | {
@@ -24,15 +26,17 @@ export type PreviewData =
       totalAp: number;
       periodLabel: string;
       title?: string;
+      theme: CardTheme;
     }
   | {
       kind: "aotw";
       periodLabel: string;
       design: AowDesign;
       agent: AgentOfWeekCardProps["agent"];
+      photoPosition?: string;
       style?: AowStyle;
     }
-  | ({ kind: "report"; monthLabel: string } & Pick<
+  | ({ kind: "report"; monthLabel: string; theme: CardTheme } & Pick<
       MonthlyReportCardProps,
       "totalAp" | "stats" | "topPerformer" | "top" | "growthLabel"
     >);
@@ -40,7 +44,6 @@ export type PreviewData =
 interface SocialPreviewProps {
   data: PreviewData;
   format: SocialFormat;
-  theme: SocialTheme;
   agencyName: string;
   network?: string;
   isSample: boolean;
@@ -48,7 +51,19 @@ interface SocialPreviewProps {
   showPolicies: boolean;
   /** Points at the unscaled card wrapper for full-res PNG export. */
   cardRef: RefObject<HTMLDivElement | null>;
+  /** AOTW only: enable drag-to-reposition of the agent photo (face → frame). */
+  repositionable?: boolean;
+  /** Current photo focal point ("x% y%"). */
+  photoPosition?: string;
+  /** Called with the new "x% y%" as the user drags the photo. */
+  onPhotoPositionChange?: (pos: string) => void;
 }
+
+function parsePos(p?: string): [number, number] {
+  const m = (p || "50% 50%").match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : [50, 50];
+}
+const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 
 /**
  * The single kind→component mapping for a PreviewData. Shared by the live preview
@@ -81,6 +96,7 @@ export function SocialCardSwitch({
           format={format}
           title={data.title}
           showPolicies={showPolicies}
+          theme={data.theme}
         />
       );
     case "aotw":
@@ -92,6 +108,7 @@ export function SocialCardSwitch({
           agent={data.agent}
           format={format}
           design={data.design}
+          photoPosition={data.photoPosition}
           style={data.style}
         />
       );
@@ -107,6 +124,7 @@ export function SocialCardSwitch({
           top={data.top}
           growthLabel={data.growthLabel}
           format={format}
+          theme={data.theme}
         />
       );
     default: {
@@ -124,19 +142,40 @@ const MAX_H = 560;
 export function SocialPreview({
   data,
   format,
-  theme,
   agencyName,
   network,
   isSample,
   isLoading,
   showPolicies,
   cardRef,
+  repositionable = false,
+  photoPosition,
+  onPhotoPositionChange,
 }: SocialPreviewProps) {
   const { w: naturalW, h: naturalH } = FORMAT_DIMS[format];
   const scale = Math.min(MAX_W / naturalW, MAX_H / naturalH);
   const dispW = Math.round(naturalW * scale);
   const dispH = Math.round(naturalH * scale);
-  const themeClass = theme === "dark" ? "theme-v2 dark" : "theme-v2";
+
+  // Drag-to-reposition the agent photo: pointer delta (in displayed px) shifts the
+  // CSS object-position focal point. Grab-and-move feel → pointer right reveals the
+  // image's left (object-position x decreases). Pointer-captured so it tracks cleanly.
+  const drag = useRef<{
+    sx: number;
+    sy: number;
+    bx: number;
+    by: number;
+  } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  // The cards are self-contained (own palette); derive the wrapper mode from the
+  // card's theme purely so any legacy theme-v2 consumer renders sensibly.
+  const cardMode =
+    data.kind === "aotw"
+      ? data.design === "aurora"
+        ? "dark"
+        : "light"
+      : CARD_THEME_TOKENS[data.theme].mode;
+  const themeClass = cardMode === "dark" ? "theme-v2 dark" : "theme-v2";
 
   return (
     <div
@@ -170,6 +209,40 @@ export function SocialPreview({
             />
           </div>
         </div>
+
+        {repositionable && onPhotoPositionChange && (
+          <div
+            onPointerDown={(e) => {
+              const [bx, by] = parsePos(photoPosition);
+              drag.current = { sx: e.clientX, sy: e.clientY, bx, by };
+              (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+              setDragging(true);
+            }}
+            onPointerMove={(e) => {
+              const d = drag.current;
+              if (!d) return;
+              const nx = clampPct(d.bx - ((e.clientX - d.sx) / dispW) * 100);
+              const ny = clampPct(d.by - ((e.clientY - d.sy) / dispH) * 100);
+              onPhotoPositionChange(`${Math.round(nx)}% ${Math.round(ny)}%`);
+            }}
+            onPointerUp={() => {
+              drag.current = null;
+              setDragging(false);
+            }}
+            className="absolute inset-0 z-30"
+            style={{
+              cursor: dragging ? "grabbing" : "grab",
+              touchAction: "none",
+            }}
+            title="Drag to reposition the photo"
+          >
+            {!dragging && (
+              <div className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-foreground/75 px-2.5 py-1 text-[10px] font-semibold text-background shadow">
+                ⠿ Drag to reposition photo
+              </div>
+            )}
+          </div>
+        )}
 
         {isLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/50 text-xs text-muted-foreground">

@@ -25,6 +25,7 @@ describe("toTemplateConfig", () => {
     expect(tpl).not.toHaveProperty("caption");
     expect(tpl).not.toHaveProperty("aowPhotoUrl");
     expect(tpl).not.toHaveProperty("aowPhotoStorageUrl");
+    expect(tpl).not.toHaveProperty("aowPhotoPosition");
     expect(tpl).not.toHaveProperty("aowBgImageUrl");
   });
 
@@ -42,6 +43,6 @@ describe("toTemplateConfig", () => {
     expect(tpl.aowTitleScale).toBe(1.2);
     expect(tpl.aowAgencyScale).toBe(1.5);
     expect(tpl.view).toBe(DEFAULT_CONFIG.view);
-    expect(tpl.aowDesign).toBe(DEFAULT_CONFIG.aowDesign);
+    expect(tpl.cardTheme).toBe(DEFAULT_CONFIG.cardTheme);
   });
 });

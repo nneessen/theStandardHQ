@@ -22,3 +22,14 @@ export type { MonthlyReportCardProps, ReportStat } from "./MonthlyReportCard";
 
 export { usd, toLastInitial, initials, FORMAT_DIMS } from "./socialFormat";
 export type { SocialFormat } from "./socialFormat";
+
+export {
+  CARD_THEMES,
+  CARD_THEME_LABEL,
+  CARD_THEME_BLURB,
+  CARD_THEME_TOKENS,
+  resolveCardTheme,
+  normalizeCardTheme,
+  themePageBackground,
+} from "./themes";
+export type { CardTheme, CardThemeTokens } from "./themes";

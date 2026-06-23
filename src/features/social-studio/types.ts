@@ -3,16 +3,17 @@
 // preview + download). Persistence (schedules/toggles) lands in Phase 2.
 
 // Single source of truth for the output dimensions (2026 Instagram sizes).
-import type { AowDesign, SocialFormat } from "@/features/social-cards";
+import type { CardTheme, SocialFormat } from "@/features/social-cards";
 export type { SocialFormat };
 
 export type SocialView = "daily" | "weekly" | "monthly" | "aotw";
-export type SocialTheme = "dark" | "light";
 
 export interface SocialStudioConfig {
   view: SocialView;
   format: SocialFormat;
-  theme: SocialTheme;
+  /** The shared brand theme (Spotlight / Editorial / Lift). Applies to EVERY card
+   *  type — one agency picks a theme and gets a consistent look across all posts. */
+  cardTheme: CardTheme;
   /** Requested rows; the card caps to 10 (post) / 15 (story) at render. */
   topN: number;
   /** Optional headline override; falls back to the card's default. */
@@ -21,8 +22,6 @@ export interface SocialStudioConfig {
   showPolicies: boolean;
   /** Instagram caption (copy/paste in P1; auto-attached when posting in P2). */
   caption: string;
-  /** Agent-of-the-Week design direction (only used when view === "aotw"). */
-  aowDesign: AowDesign;
   /**
    * Agent-of-the-Week photo SOURCE the card renders — a data: URL while editing,
    * so the in-app preview AND the PNG export both capture it with zero
@@ -36,6 +35,9 @@ export interface SocialStudioConfig {
    * data URL); NOT what the card renders in Phase 1.
    */
   aowPhotoStorageUrl: string | null;
+  /** Photo focal point as a CSS `object-position` ("x% y%") — set by dragging the
+   *  photo in the preview so the face fits the frame. Default "50% 50%". (aotw only.) */
+  aowPhotoPosition: string;
 
   // ── Agent-of-the-Week customization (Step 3) — only used when view === "aotw".
   /** CSS font-family override for the hero name; null → the design default
@@ -57,14 +59,14 @@ export interface SocialStudioConfig {
 export const DEFAULT_CONFIG: SocialStudioConfig = {
   view: "daily",
   format: "portrait",
-  theme: "dark",
+  cardTheme: "spotlight",
   topN: 10,
   title: undefined,
   showPolicies: true,
   caption: "",
-  aowDesign: "aurora",
   aowPhotoUrl: null,
   aowPhotoStorageUrl: null,
+  aowPhotoPosition: "50% 50%",
   aowFontDisplay: null,
   aowBackground: null,
   aowBgImageUrl: null,
@@ -79,6 +81,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
 const TEMPLATE_OMIT_KEYS = [
   "aowPhotoUrl",
   "aowPhotoStorageUrl",
+  "aowPhotoPosition",
   "aowBgImageUrl",
   "caption",
 ] as const satisfies readonly (keyof SocialStudioConfig)[];

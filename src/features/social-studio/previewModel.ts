@@ -6,8 +6,18 @@
 // label/data timezone disagreement) have regression tests with no React in the way.
 
 import { toLastInitial, usd } from "@/features/social-cards";
+import type { AowDesign, CardTheme } from "@/features/social-cards";
 import type { PreviewData } from "./components/SocialPreview";
 import type { SocialStudioConfig, SocialView } from "./types";
+
+// The shared theme maps onto the AOTW card's bespoke layout keys (its three layouts
+// already match each theme's character: dark Spotlight = aurora, b/w Editorial =
+// editorial, light Lift = noir). Leaderboard/report consume the theme directly.
+const AOW_DESIGN_FOR_THEME: Record<CardTheme, AowDesign> = {
+  spotlight: "aurora",
+  editorial: "editorial",
+  lift: "noir",
+};
 import {
   SAMPLE_DAILY,
   SAMPLE_WEEKLY,
@@ -192,9 +202,15 @@ export function buildPreviewData({
           name: toLastInitial(e.agentName),
           ap: e.apTotal,
         })),
+        theme: config.cardTheme,
       };
     }
-    return { kind: "report", monthLabel, ...SAMPLE_MONTHLY };
+    return {
+      kind: "report",
+      monthLabel,
+      theme: config.cardTheme,
+      ...SAMPLE_MONTHLY,
+    };
   }
 
   if (config.view === "aotw") {
@@ -215,8 +231,9 @@ export function buildPreviewData({
     return {
       kind: "aotw",
       periodLabel: `WEEK OF ${weekRange}`,
-      design: config.aowDesign,
+      design: AOW_DESIGN_FOR_THEME[config.cardTheme],
       agent,
+      photoPosition: config.aowPhotoPosition,
       style: {
         fontDisplay: config.aowFontDisplay,
         background: config.aowBackground,
@@ -246,6 +263,7 @@ export function buildPreviewData({
       totalAp: producers.reduce((s, e) => s + e.apTotal, 0),
       periodLabel,
       title: config.title,
+      theme: config.cardTheme,
     };
   }
 
@@ -258,5 +276,6 @@ export function buildPreviewData({
     totalAp: sampleTotal,
     periodLabel,
     title: config.title,
+    theme: config.cardTheme,
   };
 }

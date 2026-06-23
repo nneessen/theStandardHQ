@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CARD_THEMES, CARD_THEME_LABEL } from "@/features/social-cards";
 import type { SocialStudioConfig } from "../types";
 
 const CAPTION_TOKENS = [
@@ -115,12 +116,12 @@ export function SocialCustomizer({
 }: SocialCustomizerProps) {
   const isReport = config.view === "monthly";
   const isAotw = config.view === "aotw";
-  // Only the dark Spotlight (key "aurora") has light text, so only it may carry a
-  // photo background (with a legibility scrim). Editorial + Lift are dark-text on a
-  // light surface, so they get light "paper" presets and no photo background.
-  const allowsBgImage = config.aowDesign === "aurora";
+  // Only the dark Spotlight theme has light text, so only it may carry a photo
+  // background (with a legibility scrim). Editorial + Lift are dark-text on a light
+  // surface, so they get light "paper" presets and no photo background.
+  const allowsBgImage = config.cardTheme === "spotlight";
   const bgPresets =
-    config.aowDesign === "aurora" ? BG_PRESETS_DARK : BG_PRESETS_LIGHT;
+    config.cardTheme === "spotlight" ? BG_PRESETS_DARK : BG_PRESETS_LIGHT;
 
   return (
     <div className="space-y-4">
@@ -156,48 +157,27 @@ export function SocialCustomizer({
           ]}
         />
       </Field>
-      {/* The AOTW hero has self-contained palettes per design and ignores the app
-          theme, so the Dark/Light toggle is dead there — hide it. */}
-      {!isAotw && (
-        <Field label="Theme">
-          <PillNav
-            size="sm"
-            activeValue={config.theme}
-            onChange={(v) =>
-              onChange({ theme: v as SocialStudioConfig["theme"] })
-            }
-            items={[
-              { label: "Dark", value: "dark" },
-              { label: "Light", value: "light" },
-            ]}
-          />
-        </Field>
-      )}
-
-      {isAotw && (
-        <Field label="Design">
-          <PillNav
-            size="sm"
-            activeValue={config.aowDesign}
-            onChange={(v) =>
-              // Reset the background when switching design: a background is tied to
-              // the design's text-color regime (a dark preset picked on the light Lift
-              // would be illegible under its dark text). Font + sizes are regime-
-              // agnostic, so they persist.
-              onChange({
-                aowDesign: v as SocialStudioConfig["aowDesign"],
-                aowBackground: null,
-                aowBgImageUrl: null,
-              })
-            }
-            items={[
-              { label: "Spotlight", value: "aurora" },
-              { label: "Editorial", value: "editorial" },
-              { label: "Lift", value: "noir" },
-            ]}
-          />
-        </Field>
-      )}
+      {/* ONE shared brand theme drives EVERY card type — pick a look once and it
+          applies to daily / weekly / monthly / AOTW alike. Switching theme clears any
+          AOTW background tied to the old theme's text-color regime (a dark preset would
+          be illegible on the light themes); font + sizes are regime-agnostic, so persist. */}
+      <Field label="Theme">
+        <PillNav
+          size="sm"
+          activeValue={config.cardTheme}
+          onChange={(v) =>
+            onChange({
+              cardTheme: v as SocialStudioConfig["cardTheme"],
+              aowBackground: null,
+              aowBgImageUrl: null,
+            })
+          }
+          items={CARD_THEMES.map((th) => ({
+            label: CARD_THEME_LABEL[th],
+            value: th,
+          }))}
+        />
+      </Field>
 
       {isAotw && (
         <Field label="Agent photo">

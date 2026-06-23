@@ -1,16 +1,15 @@
-// src/features/leaderboard/social/LeaderboardSocialCard.tsx
-// "The Board" leaderboard rendered as a square/vertical social graphic.
-// Built from the REAL board primitives (Board / Cap / Num / T tokens) so it
-// matches the in-app Leaderboard exactly. Theme-reactive: render inside a
-// `.dark .theme-v2` wrapper for the dark departure-board look, or `.theme-v2`
-// for light — the T tokens resolve against the same CSS vars the app uses.
-//
-// Data is passed in (top-N agents already sorted by AP desc, agency-scoped).
-// This component is pure/presentational — no data fetching — so it can be both
-// rendered to PNG headlessly and dropped into the app later.
+// src/features/social-cards/LeaderboardSocialCard.tsx
+// Agency leaderboard as a social graphic, rendered in one of the shared brand THEMES
+// (Spotlight / Editorial / Lift — see themes.ts). Self-contained: it carries its own
+// theme palette + fonts (NOT the app theme-v2 tokens), so the in-browser PNG export is
+// pixel-faithful. Pure/presentational — top-N rows passed in, already sorted by AP.
 
-import { Board, Cap, Num, T } from "@/components/board";
 import { usd, initials, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
+import {
+  resolveCardTheme,
+  themePageBackground,
+  type CardTheme,
+} from "./themes";
 
 export interface SocialAgentRow {
   rank: number;
@@ -21,22 +20,17 @@ export interface SocialAgentRow {
 }
 
 export interface LeaderboardSocialCardProps {
-  /** Agency name shown in the eyebrow (this card is scoped to ONE agency). */
   agencyName: string;
-  /** Upline network shown top-right (e.g. "EPIC LIFE"). Optional. */
   network?: string;
-  /** e.g. "DAILY · JUN 20, 2026" or "WEEK OF JUN 14–20" or "JUNE 2026". */
+  /** e.g. "DAILY · JUN 20, 2026" or "WEEK OF JUN 14–20". */
   periodLabel: string;
-  /** Top-N rows, already sorted by AP descending and ranked 1..N. */
   rows: SocialAgentRow[];
-  /** Sum of AP across the agency for the period (the footer hero). */
   totalAp: number;
-  /** 4:5 portrait (default) / 1:1 square feed post / 9:16 story-reel. See FORMAT_DIMS. */
   format?: SocialFormat;
-  /** Headline; defaults to "TOP {n} AGENTS". */
   title?: string;
-  /** Show the per-agent policy-count column. Default true. */
   showPolicies?: boolean;
+  /** Brand theme (Spotlight / Editorial / Lift). Default Spotlight. */
+  theme?: CardTheme;
 }
 
 export function LeaderboardSocialCard({
@@ -48,36 +42,45 @@ export function LeaderboardSocialCard({
   format = "portrait",
   title,
   showPolicies = true,
+  theme = "spotlight",
 }: LeaderboardSocialCardProps) {
-  // `isStory` still governs the type SCALE (the tall 9:16 canvas gets larger type);
-  // portrait & square share the compact scale and differ only in HEIGHT.
+  const t = resolveCardTheme(theme);
   const isStory = format === "story";
   const { w: W, h: H } = FORMAT_DIMS[format];
   const PAD = isStory ? 72 : 56;
 
-  // Type scale shifts up for the taller story canvas.
   const sz = {
     eyebrow: isStory ? 17 : 14,
-    title: isStory ? 76 : 54,
-    sub: isStory ? 18 : 15,
+    title: isStory ? 84 : 60,
+    sub: isStory ? 17 : 14,
     name: isStory ? 30 : 23,
     agency: isStory ? 15 : 12,
-    ap: isStory ? 38 : 30,
     pol: isStory ? 16 : 13,
     rank: isStory ? 30 : 24,
-    footAp: isStory ? 48 : 38,
+    ap: isStory ? 38 : 30,
+    footAp: isStory ? 52 : 40,
   };
   const rowGap = isStory ? 6 : 2;
-
   const heroTitle = title ?? `TOP ${rows.length} AGENTS`;
 
-  // Past ~10 rows a single column gets cramped; split into two columns so a
-  // Top 20 fits without shrinking everything. Compact rows drop the avatar +
-  // policy column to stay readable at half width.
+  // Past ~10 rows a single column gets cramped → two columns (compact rows).
   const twoCol = rows.length > 10;
   const half = Math.ceil(rows.length / 2);
   const colA = twoCol ? rows.slice(0, half) : rows;
   const colB = twoCol ? rows.slice(half) : [];
+
+  const num = (text: string, color: string, size: number, weight = 700) => (
+    <span
+      style={{
+        font: `${weight} ${size}px ${t.disp}`,
+        color,
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "0.01em",
+      }}
+    >
+      {text}
+    </span>
+  );
 
   const renderRow = (r: SocialAgentRow, compact: boolean) => {
     const top3 = r.rank <= 3;
@@ -90,9 +93,9 @@ export function LeaderboardSocialCard({
           alignItems: "center",
           gap: compact ? (isStory ? 14 : 10) : isStory ? 22 : 16,
           padding: `${(compact ? 2 : rowGap) + (isStory ? 8 : 5)}px ${isStory ? 14 : 8}px`,
-          borderBottom: `1px solid ${T.line}`,
-          background: top3 ? "rgba(244,180,58,0.08)" : "transparent",
-          borderRadius: 8,
+          borderBottom: `1px solid ${t.hairline}`,
+          background: top3 ? t.rowTopTint : "transparent",
+          borderRadius: t.sharp ? 0 : 8,
         }}
       >
         {/* Rank */}
@@ -105,19 +108,17 @@ export function LeaderboardSocialCard({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            font: `800 ${compact ? (isStory ? 20 : 16) : sz.rank}px ${T.disp}`,
+            font: `700 ${compact ? (isStory ? 20 : 16) : sz.rank}px ${t.disp}`,
             fontVariantNumeric: "tabular-nums",
-            background: top3
-              ? "linear-gradient(135deg, #f6c64a, #d9921f)"
-              : "transparent",
-            color: top3 ? "#3a2a06" : T.mut,
-            border: top3 ? "none" : `1px solid ${T.line2}`,
+            background: top3 ? t.rankTopBg : t.rankBg,
+            color: top3 ? t.rankTopInk : t.rankInk,
+            border: top3 ? "none" : `1px solid ${t.hairline}`,
           }}
         >
           {r.rank}
         </div>
 
-        {/* Initials — single-column only (two-column has no room) */}
+        {/* Initials avatar — single-column only */}
         {!compact && (
           <div
             style={{
@@ -128,12 +129,10 @@ export function LeaderboardSocialCard({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              font: `700 ${isStory ? 20 : 16}px ${T.data}`,
-              // Theme-reactive (var) so the avatar fill stays visible in light
-              // mode — a hardcoded white@6% vanished on the light canvas.
-              background: T.surface4,
-              border: `1px solid ${T.line2}`,
-              color: T.ink,
+              font: `700 ${isStory ? 20 : 16}px ${t.sans}`,
+              background: t.accentSoft,
+              border: `1px solid ${t.hairline}`,
+              color: t.mode === "dark" ? t.ink : t.accentStrong,
             }}
           >
             {initials(r.name)}
@@ -144,8 +143,8 @@ export function LeaderboardSocialCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              font: `700 ${compact ? (isStory ? 22 : 17) : sz.name}px ${T.data}`,
-              color: top3 ? T.amber : T.ink,
+              font: `700 ${compact ? (isStory ? 22 : 17) : sz.name}px ${t.sans}`,
+              color: top3 ? t.topInk : t.ink,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -156,8 +155,8 @@ export function LeaderboardSocialCard({
           {!compact && r.agency ? (
             <div
               style={{
-                font: `400 ${sz.agency}px ${T.mono}`,
-                color: T.mut2,
+                font: `500 ${sz.agency}px ${t.sans}`,
+                color: t.inkSubtle,
                 letterSpacing: "0.04em",
                 marginTop: 2,
               }}
@@ -176,15 +175,11 @@ export function LeaderboardSocialCard({
               marginRight: isStory ? 10 : 6,
             }}
           >
-            <div
-              style={{ font: `700 ${sz.pol + 4}px ${T.data}`, color: T.mut }}
-            >
-              {r.policies}
-            </div>
+            {num(String(r.policies), t.inkMuted, sz.pol + 5)}
             <div
               style={{
-                font: `400 ${sz.pol - 2}px ${T.mono}`,
-                color: T.mut2,
+                font: `600 ${sz.pol - 2}px ${t.sans}`,
+                color: t.inkSubtle,
                 letterSpacing: "0.12em",
               }}
             >
@@ -193,7 +188,7 @@ export function LeaderboardSocialCard({
           </div>
         )}
 
-        {/* AP — the hero */}
+        {/* AP — the hero number */}
         <div
           style={{
             width: compact ? (isStory ? 150 : 108) : isStory ? 200 : 160,
@@ -201,11 +196,11 @@ export function LeaderboardSocialCard({
             flex: "none",
           }}
         >
-          <Num
-            text={usd(r.ap)}
-            color={T.amber}
-            style={{ fontSize: compact ? (isStory ? 28 : 20) : sz.ap }}
-          />
+          {num(
+            usd(r.ap),
+            top3 ? t.accentStrong : t.ink,
+            compact ? (isStory ? 28 : 20) : sz.ap,
+          )}
         </div>
       </div>
     );
@@ -216,19 +211,17 @@ export function LeaderboardSocialCard({
       style={{
         width: W,
         height: H,
-        background: T.bg,
-        // Subtle vignette so the panel reads as "lit" on the board canvas.
-        backgroundImage:
-          "radial-gradient(120% 80% at 50% -10%, rgba(91,155,255,0.10), transparent 60%)",
+        ...themePageBackground(t),
         padding: PAD,
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        fontFamily: T.data,
+        fontFamily: t.sans,
+        color: t.ink,
         overflow: "hidden",
       }}
     >
-      {/* ── Header ─────────────────────────────────────────── */}
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -236,36 +229,45 @@ export function LeaderboardSocialCard({
           justifyContent: "space-between",
         }}
       >
-        <Cap
+        <span
           style={{
-            fontSize: sz.eyebrow,
-            color: T.ink,
-            letterSpacing: "0.16em",
+            font: `800 ${sz.eyebrow + 6}px ${t.sans}`,
+            color: t.ink,
+            letterSpacing: "0.04em",
           }}
         >
           {agencyName}
-        </Cap>
+        </span>
         {network ? (
-          <Cap
+          <span
             style={{
-              fontSize: sz.eyebrow,
-              color: T.mut2,
+              font: `600 ${sz.eyebrow}px ${t.sans}`,
+              color: t.inkSubtle,
               letterSpacing: "0.22em",
+              textTransform: "uppercase",
             }}
           >
             {network}
-          </Cap>
+          </span>
         ) : null}
       </div>
+      <div
+        style={{
+          height: 1,
+          background: t.ruleStrong,
+          marginTop: 14,
+          opacity: 0.7,
+        }}
+      />
 
-      {/* ── Title block ────────────────────────────────────── */}
-      <div style={{ marginTop: isStory ? 28 : 16 }}>
+      {/* Title block */}
+      <div style={{ marginTop: isStory ? 26 : 16 }}>
         <div
           style={{
-            font: `800 ${sz.title}px ${T.disp}`,
-            color: T.ink,
-            lineHeight: 1.02,
-            letterSpacing: "-0.01em",
+            font: `700 ${sz.title}px ${t.disp}`,
+            color: t.ink,
+            lineHeight: 0.96,
+            letterSpacing: "0.005em",
           }}
         >
           {heroTitle}
@@ -273,25 +275,29 @@ export function LeaderboardSocialCard({
         <div
           style={{
             marginTop: isStory ? 14 : 9,
-            font: `700 ${sz.sub}px ${T.mono}`,
+            font: `700 ${sz.sub}px ${t.sans}`,
             letterSpacing: "0.16em",
-            color: T.amber,
+            color: t.accent,
             textTransform: "uppercase",
           }}
         >
-          BY ANNUAL PREMIUM&nbsp;&nbsp;·&nbsp;&nbsp;{periodLabel}
+          By Annual Premium&nbsp;&nbsp;·&nbsp;&nbsp;{periodLabel}
         </div>
       </div>
 
-      {/* ── The ranked board ───────────────────────────────── */}
-      <Board
-        pad={isStory ? 28 : 20}
+      {/* The ranked board */}
+      <div
         style={{
-          marginTop: isStory ? 36 : 22,
+          marginTop: isStory ? 34 : 22,
           flex: 1,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+          background: t.panelBg,
+          border: `1px solid ${t.panelBorder}`,
+          borderRadius: t.panelRadius,
+          boxShadow: t.panelShadow,
+          padding: isStory ? 28 : 20,
         }}
       >
         {twoCol ? (
@@ -322,9 +328,9 @@ export function LeaderboardSocialCard({
         ) : (
           rows.map((r) => renderRow(r, false))
         )}
-      </Board>
+      </div>
 
-      {/* ── Footer total ───────────────────────────────────── */}
+      {/* Footer total */}
       <div
         style={{
           marginTop: isStory ? 34 : 20,
@@ -334,26 +340,30 @@ export function LeaderboardSocialCard({
         }}
       >
         <div>
-          <Cap style={{ fontSize: sz.eyebrow, color: T.mut }}>
-            AGENCY TOTAL AP
-          </Cap>
+          <div
+            style={{
+              font: `600 ${sz.eyebrow}px ${t.sans}`,
+              color: t.inkMuted,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+            }}
+          >
+            Agency Total AP
+          </div>
           <div style={{ marginTop: 6 }}>
-            <Num
-              text={usd(totalAp)}
-              color={T.ink}
-              style={{ fontSize: sz.footAp }}
-            />
+            {num(usd(totalAp), t.ink, sz.footAp, 700)}
           </div>
         </div>
-        <Cap
+        <span
           style={{
-            fontSize: sz.eyebrow,
-            color: T.mut2,
-            letterSpacing: "0.16em",
+            font: `600 ${sz.eyebrow}px ${t.sans}`,
+            color: t.inkSubtle,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
           }}
         >
-          TOP {rows.length}&nbsp;·&nbsp;{periodLabel.split("·")[0].trim()}
-        </Cap>
+          Top {rows.length}&nbsp;·&nbsp;{periodLabel.split("·")[0].trim()}
+        </span>
       </div>
     </div>
   );

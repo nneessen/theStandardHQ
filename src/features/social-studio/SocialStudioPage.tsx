@@ -337,13 +337,15 @@ export function SocialStudioPage() {
             <SocialPreview
               data={previewData}
               format={config.format}
-              theme={config.theme}
               agencyName={agencyName}
               network={network}
               isSample={isSample}
               isLoading={isLoading}
               showPolicies={config.showPolicies}
               cardRef={cardRef}
+              repositionable={config.view === "aotw" && !!config.aowPhotoUrl}
+              photoPosition={config.aowPhotoPosition}
+              onPhotoPositionChange={(pos) => patch({ aowPhotoPosition: pos })}
             />
             {isSample && !isLoading && (
               <p className="text-center text-[11px] text-muted-foreground">

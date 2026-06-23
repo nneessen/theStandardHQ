@@ -53,6 +53,8 @@ export interface AgentOfWeekCardProps {
   };
   format?: SocialFormat;
   design?: AowDesign;
+  /** Photo focal point ("x% y%") — drag-to-reposition in the studio. Default centered. */
+  photoPosition?: string;
   style?: AowStyle;
 }
 
@@ -100,12 +102,15 @@ function Photo({
   w,
   h,
   radius,
+  objectPosition = "50% 50%",
   style,
 }: {
   url?: string | null;
   w: number | string;
   h: number | string;
   radius: number | string;
+  /** CSS object-position focal point ("x% y%") so the face can be dragged into frame. */
+  objectPosition?: string;
   style?: React.CSSProperties;
 }) {
   return (
@@ -128,6 +133,7 @@ function Photo({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            objectPosition,
             display: "block",
             filter: "contrast(1.04) saturate(1.05)",
           }}
@@ -144,6 +150,7 @@ export function AgentOfWeekCard({
   agent,
   format = "portrait",
   design = "aurora",
+  photoPosition = "50% 50%",
   style,
 }: AgentOfWeekCardProps) {
   const { w: W, h: H } = FORMAT_DIMS[format];
@@ -235,6 +242,7 @@ export function AgentOfWeekCard({
             w="100%"
             h="100%"
             radius={2}
+            objectPosition={photoPosition}
             style={
               {
                 position: "absolute",
@@ -443,6 +451,7 @@ export function AgentOfWeekCard({
               w={portraitW}
               h={portraitH}
               radius={24}
+              objectPosition={photoPosition}
               style={{
                 boxShadow:
                   "0 28px 52px rgba(15,23,42,0.18), inset 0 0 0 1px rgba(99,102,241,0.55)",
@@ -617,6 +626,7 @@ export function AgentOfWeekCard({
             w={portraitW}
             h={portraitH}
             radius={30}
+            objectPosition={photoPosition}
             style={{
               boxShadow:
                 "0 38px 80px rgba(0,0,0,0.62), 0 0 96px rgba(99,102,241,0.5), inset 0 0 0 2px rgba(129,140,248,0.85)",

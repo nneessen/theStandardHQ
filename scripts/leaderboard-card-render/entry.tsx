@@ -11,6 +11,8 @@ import {
   MonthlyReportCard,
   AgentOfWeekCard,
   toLastInitial,
+  normalizeCardTheme,
+  CARD_THEME_TOKENS,
   type SocialAgentRow,
   type AowDesign,
   type SocialFormat,
@@ -65,11 +67,15 @@ function rows(ap: number[], pol: number[]): SocialAgentRow[] {
 
 const params = new URLSearchParams(location.search);
 const view = params.get("view") || "daily";
-const theme = params.get("theme") === "light" ? "light" : "dark";
+// New brand theme (spotlight/editorial/lift); legacy dark/light map through.
+const cardTheme = normalizeCardTheme(params.get("theme"));
 const fp = params.get("format");
 const format: SocialFormat =
   fp === "story" ? "story" : fp === "square" ? "square" : "portrait";
-const wrapperClass = theme === "light" ? "theme-v2" : "theme-v2 dark";
+// Self-contained cards carry their own theme; the wrapper class only matters for
+// any card still reading the app theme-v2 tokens.
+const wrapperClass =
+  CARD_THEME_TOKENS[cardTheme].mode === "light" ? "theme-v2" : "theme-v2 dark";
 
 function Card() {
   if (view === "aotw") {
@@ -101,7 +107,16 @@ function Card() {
           photoUrl: "https://i.pravatar.cc/640?img=12",
         }}
         format={format}
-        design={(params.get("design") as AowDesign) || "aurora"}
+        design={
+          (params.get("design") as AowDesign) ||
+          (
+            {
+              spotlight: "aurora",
+              editorial: "editorial",
+              lift: "noir",
+            } as const
+          )[cardTheme]
+        }
         style={style}
       />
     );
@@ -133,6 +148,7 @@ function Card() {
         ]}
         growthLabel="+18% vs MAY"
         format={format}
+        theme={cardTheme}
       />
     );
   }
@@ -152,6 +168,7 @@ function Card() {
       rows={data}
       totalAp={totalAp}
       format={format}
+      theme={cardTheme}
     />
   );
 }

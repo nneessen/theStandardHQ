@@ -175,22 +175,22 @@ def main() -> int:
         if aotw_pill.count():
             aotw_pill.first.click()
             page.wait_for_timeout(900)
-        # The design picker (Spotlight/Editorial/Lift) appears ONLY on the AOTW view —
-        # proof the view switched AND the customizer adapted. (Underlying config keys
-        # stay aurora/editorial/noir for template back-compat; labels moved on.)
+        # The unified Theme picker (Spotlight/Editorial/Lift) drives EVERY view now —
+        # it's present on AOTW too. (Underlying config keys stay aurora/editorial/noir
+        # for AOTW template back-compat; the shared theme maps onto them.)
         spotlight_btn = page.get_by_role("button", name=re.compile(r"^spotlight$", re.I))
         editorial_btn = page.get_by_role("button", name=re.compile(r"^editorial$", re.I))
         lift_btn = page.get_by_role("button", name=re.compile(r"^lift$", re.I))
         checks.append((
-            "AOTW design picker (Spotlight/Editorial/Lift) present",
+            "Theme picker (Spotlight/Editorial/Lift) present on AOTW",
             spotlight_btn.count() > 0 and editorial_btn.count() > 0 and lift_btn.count() > 0,
         ))
         # Leaderboard-only controls must be hidden on AOTW (no top-N, no policy switch).
         checks.append(("AOTW hides Top-N control", page.get_by_role("button", name=re.compile(r"top 20", re.I)).count() == 0))
         checks.append(("AOTW hides 'Show policy count'", page.get_by_text(re.compile(r"show policy count", re.I)).count() == 0))
-        # The card has self-contained palettes per design and ignores the app theme,
-        # so the dead Dark/Light toggle is hidden on AOTW.
-        checks.append(("AOTW hides the (dead) Theme toggle", page.get_by_role("button", name=re.compile(r"^light$", re.I)).count() == 0))
+        # The legacy dark/light theme toggle was replaced by the shared Theme picker —
+        # there is no bare "Light"/"Dark" pill anywhere.
+        checks.append(("No legacy dark/light toggle", page.get_by_role("button", name=re.compile(r"^light$", re.I)).count() == 0))
         # The leaderboard card is replaced by the hero (its "BY ANNUAL PREMIUM" is gone).
         checks.append(("AOTW replaces the leaderboard card", preview.get_by_text(re.compile(r"by annual premium", re.I)).count() == 0))
         # Each design renders. On the AOTW view the ONLY source of "Annual Premium"
@@ -225,6 +225,24 @@ def main() -> int:
             ("AOTW card renders uploaded photo (data: img)", page.locator("img[src^='data:']").count() >= 1)
         )
         page.screenshot(path=str(OUT / "social-studio-aotw-photo.png"))
+        # Drag-to-reposition: dragging the photo overlay must change the card's CSS
+        # object-position (the face-fits-frame control). Verify the motion, not just
+        # that the overlay renders.
+        repositioned = False
+        overlay = page.locator('[title="Drag to reposition the photo"]')
+        img = page.locator('[data-testid="social-preview"] img[src^="data:"]')
+        if overlay.count() and img.count():
+            before = img.first.evaluate("el => getComputedStyle(el).objectPosition")
+            box = overlay.first.bounding_box()
+            cx, cy = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+            page.mouse.move(cx, cy)
+            page.mouse.down()
+            page.mouse.move(cx + 50, cy + 40, steps=10)
+            page.mouse.up()
+            page.wait_for_timeout(300)
+            after = img.first.evaluate("el => getComputedStyle(el).objectPosition")
+            repositioned = before != after
+        checks.append(("Drag-to-reposition changes the photo focal point", repositioned))
         # HARD GATE: download the export and (manually) read it to confirm the photo.
         # Download is intentionally disabled in SAMPLE mode (asserted in #4/#5 above), so
         # this real-export check only applies when the agency has live data. With no live

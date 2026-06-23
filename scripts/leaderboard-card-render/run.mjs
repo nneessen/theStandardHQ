@@ -18,17 +18,30 @@ await mkdir(outDir, { recursive: true });
 // Agent of the Week design directions (current showpiece). Cadence renders
 // (daily/weekly/monthly × dark/light × post/story) are produced by passing
 // RENDER_CADENCES=1; default run does the AOTW directions.
-const VARIANTS = process.env.RENDER_CADENCES
-  ? ["daily", "weekly", "monthly"].flatMap((view) =>
-      ["dark", "light"].flatMap((theme) =>
-        ["portrait", "story"].map((format) => ({ view, theme, format })),
-      ),
+// RENDER_THEMES=1 → the brand themes (spotlight/editorial/lift) across card types.
+// RENDER_VIEWS can scope which views (default daily,weekly,monthly,aotw).
+const THEME_VIEWS = (process.env.RENDER_VIEWS || "daily,weekly,monthly,aotw").split(
+  ",",
+);
+const VARIANTS = process.env.RENDER_THEMES
+  ? THEME_VIEWS.flatMap((view) =>
+      ["spotlight", "editorial", "lift"].map((theme) => ({
+        view,
+        theme,
+        format: "portrait",
+      })),
     )
-  : ["aurora", "editorial", "noir"].map((design) => ({
-      view: "aotw",
-      design,
-      format: "portrait",
-    }));
+  : process.env.RENDER_CADENCES
+    ? ["daily", "weekly", "monthly"].flatMap((view) =>
+        ["dark", "light"].flatMap((theme) =>
+          ["portrait", "story"].map((format) => ({ view, theme, format })),
+        ),
+      )
+    : ["aurora", "editorial", "noir"].map((design) => ({
+        view: "aotw",
+        design,
+        format: "portrait",
+      }));
 
 const server = await createServer({
   root,

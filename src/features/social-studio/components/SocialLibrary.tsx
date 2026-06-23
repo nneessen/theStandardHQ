@@ -8,7 +8,12 @@ import { Loader2, Trash2, Save } from "lucide-react";
 import { Cap } from "@/components/board";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FORMAT_DIMS } from "@/features/social-cards";
+import {
+  FORMAT_DIMS,
+  CARD_THEMES,
+  CARD_THEME_LABEL,
+  CARD_THEME_TOKENS,
+} from "@/features/social-cards";
 import { SocialCardSwitch } from "./SocialPreview";
 import { buildPreviewData } from "../previewModel";
 import {
@@ -34,44 +39,26 @@ const CLEAN_STYLE = {
   aowAgencyScale: 1,
 } as const;
 
+const VIEW_LABEL: Record<SocialStudioConfig["view"], string> = {
+  aotw: "Agent of Week",
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
+};
+
+// The library = every card type × every brand theme, so an agency can browse the
+// full set and pick a consistent look. Each starter resets the AOTW style to clean.
 const BUILTIN_PRESETS: {
   key: string;
   name: string;
   config: Partial<SocialStudioConfig>;
-}[] = [
-  {
-    // Stable keys are LEGACY ids (aurora/editorial/noir) so saved templates keep
-    // working; the rendered look + name have moved on to the new brand designs.
-    key: "aurora",
-    name: "Spotlight",
-    config: { view: "aotw", aowDesign: "aurora", ...CLEAN_STYLE },
-  },
-  {
-    key: "editorial",
-    name: "Editorial",
-    config: { view: "aotw", aowDesign: "editorial", ...CLEAN_STYLE },
-  },
-  {
-    key: "noir",
-    name: "Lift",
-    config: { view: "aotw", aowDesign: "noir", ...CLEAN_STYLE },
-  },
-  {
-    key: "daily",
-    name: "Daily Leaderboard",
-    config: { view: "daily", theme: "dark", ...CLEAN_STYLE },
-  },
-  {
-    key: "weekly",
-    name: "Weekly Leaderboard",
-    config: { view: "weekly", theme: "dark", ...CLEAN_STYLE },
-  },
-  {
-    key: "monthly",
-    name: "Monthly Report",
-    config: { view: "monthly", theme: "dark", ...CLEAN_STYLE },
-  },
-];
+}[] = (["aotw", "daily", "weekly", "monthly"] as const).flatMap((view) =>
+  CARD_THEMES.map((th) => ({
+    key: `${view}-${th}`,
+    name: `${VIEW_LABEL[view]} · ${CARD_THEME_LABEL[th]}`,
+    config: { view, cardTheme: th, ...CLEAN_STYLE },
+  })),
+);
 
 const THUMB_W = 150;
 
@@ -98,7 +85,10 @@ function TemplateThumb({
   const c: SocialStudioConfig = { ...DEFAULT_CONFIG, ...config };
   const dims = FORMAT_DIMS[c.format];
   const scale = THUMB_W / dims.w;
-  const themeClass = c.theme === "light" ? "theme-v2" : "theme-v2 dark";
+  const themeClass =
+    CARD_THEME_TOKENS[c.cardTheme].mode === "light"
+      ? "theme-v2"
+      : "theme-v2 dark";
   const data = buildPreviewData({
     config: c,
     producers: [],
