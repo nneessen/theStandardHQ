@@ -4,7 +4,7 @@
 // fonts), so the in-browser PNG export is pixel-faithful. Hero total AP + growth,
 // stat band, Agent of the Month, compact top-5.
 
-import { usd, initials, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
+import { usd, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
 import {
   resolveCardTheme,
   themePageBackground,
@@ -253,22 +253,6 @@ export function MonthlyReportCard({
           borderRadius: t.panelRadius,
         }}
       >
-        <div
-          style={{
-            width: isStory ? 96 : 72,
-            height: isStory ? 96 : 72,
-            flex: "none",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            font: `700 ${isStory ? 34 : 26}px ${t.disp}`,
-            background: t.rankTopBg,
-            color: t.rankTopInk,
-          }}
-        >
-          {initials(topPerformer.name)}
-        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{

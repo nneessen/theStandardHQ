@@ -4,7 +4,7 @@
 // theme palette + fonts (NOT the app theme-v2 tokens), so the in-browser PNG export is
 // pixel-faithful. Pure/presentational — top-N rows passed in, already sorted by AP.
 
-import { usd, initials, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
+import { usd, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
 import {
   resolveCardTheme,
   themePageBackground,
@@ -117,27 +117,6 @@ export function LeaderboardSocialCard({
         >
           {r.rank}
         </div>
-
-        {/* Initials avatar — single-column only */}
-        {!compact && (
-          <div
-            style={{
-              width: badge,
-              height: badge,
-              flex: "none",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              font: `700 ${isStory ? 20 : 16}px ${t.sans}`,
-              background: t.accentSoft,
-              border: `1px solid ${t.hairline}`,
-              color: t.mode === "dark" ? t.ink : t.accentStrong,
-            }}
-          >
-            {initials(r.name)}
-          </div>
-        )}
 
         {/* Name + agency */}
         <div style={{ flex: 1, minWidth: 0 }}>
