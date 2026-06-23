@@ -31,6 +31,7 @@ import {
   CardExportHost,
   type CardExportHandle,
 } from "./components/CardExportHost";
+import { PostConfirmDialog } from "./components/PostConfirmDialog";
 import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
@@ -73,6 +74,8 @@ export function SocialStudioPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [posting, setPosting] = useState(false);
+  // "Confirm before you post" dialog (WI-5) — Post Now opens it; doPost runs on confirm.
+  const [confirmOpen, setConfirmOpen] = useState(false);
   // Synchronous re-entrancy guard: a fast double-click can fire two handlers before
   // the `posting` state flushes to disable the button → two publishes / a racing
   // overwrite of the upload. The ref blocks the second call immediately.
@@ -267,9 +270,10 @@ export function SocialStudioPage() {
     return (await exportHostRef.current?.exportOne(shownIndex)) ?? null;
   }
 
-  // Publish the current card straight to the agency's connected Instagram feed:
-  // render → upload to the public bucket → instagram-publish-post edge fn.
-  async function handlePostNow() {
+  // "Post to Instagram" now opens a confirm-before-post dialog (after the sample /
+  // connection guards) so the user previews the graphic in Instagram chrome and
+  // confirms. The actual publish runs in doPost() on confirm.
+  function handlePostNow() {
     if (isSample) {
       toast.error(
         "Switch off 'Preview with sample data' to post your real numbers.",
@@ -282,6 +286,13 @@ export function SocialStudioPage() {
       );
       return;
     }
+    setConfirmOpen(true);
+  }
+
+  // Publish to the agency's connected Instagram account: render → upload to the public
+  // bucket → instagram-publish-post edge fn. (Multi-slide carousel + Story-endpoint
+  // routing land in Phase B; for now this posts the previewed slide.)
+  async function doPost() {
     if (postingRef.current) return;
     postingRef.current = true;
     setPosting(true);
@@ -293,6 +304,7 @@ export function SocialStudioPage() {
       toast.success(
         username ? `Posted to @${username}` : "Posted to Instagram",
       );
+      setConfirmOpen(false);
     } catch (e) {
       console.error("Instagram post failed:", e);
       toast.error(
@@ -601,6 +613,21 @@ export function SocialStudioPage() {
               agencyName={agencyName}
               network={network}
               showPolicies={config.showPolicies}
+            />
+            <PostConfirmDialog
+              open={confirmOpen}
+              onOpenChange={setConfirmOpen}
+              postType={config.postType}
+              format={config.format}
+              data={shownPage}
+              agencyName={agencyName}
+              network={network}
+              showPolicies={config.showPolicies}
+              handle={connectedIntegration?.instagram_username ?? undefined}
+              caption={config.caption}
+              slideCount={pageCount}
+              posting={posting}
+              onConfirm={doPost}
             />
             {/* Carousel slide navigation — only when the roster spans multiple cards. */}
             {pageCount > 1 && (

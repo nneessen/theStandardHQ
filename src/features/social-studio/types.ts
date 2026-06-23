@@ -9,9 +9,19 @@ export type { SocialFormat };
 
 export type SocialView = "daily" | "weekly" | "monthly" | "aotw";
 
+/** Where the graphic gets posted on Instagram (the user picks "post it as a post, a
+ *  story, or a reel"). Drives the canvas aspect AND the publish endpoint:
+ *   • post  → feed (portrait 4:5 or square 1:1), feed/carousel endpoint
+ *   • story → 9:16, Stories endpoint
+ *   • reel  → video-only via the IG API; disabled in the UI (no static-image reels).
+ */
+export type SocialPostType = "post" | "story" | "reel";
+
 export interface SocialStudioConfig {
   view: SocialView;
   format: SocialFormat;
+  /** Instagram destination — see SocialPostType. */
+  postType: SocialPostType;
   /** The shared brand theme (Spotlight / Editorial / Lift). Applies to EVERY card
    *  type — one agency picks a theme and gets a consistent look across all posts. */
   cardTheme: CardTheme;
@@ -63,6 +73,7 @@ export interface SocialStudioConfig {
 export const DEFAULT_CONFIG: SocialStudioConfig = {
   view: "daily",
   format: "portrait",
+  postType: "post",
   cardTheme: "spotlight",
   topN: 10,
   title: undefined,

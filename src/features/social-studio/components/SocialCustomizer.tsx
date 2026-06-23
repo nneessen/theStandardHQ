@@ -143,20 +143,69 @@ export function SocialCustomizer({
           onCheckedChange={onSamplePreviewChange}
         />
       </div>
-      <Field label="Format">
-        <PillNav
-          size="sm"
-          activeValue={config.format}
-          onChange={(v) =>
-            onChange({ format: v as SocialStudioConfig["format"] })
-          }
-          items={[
-            { label: "Portrait 4:5", value: "portrait" },
-            { label: "Square 1:1", value: "square" },
-            { label: "Story / Reel 9:16", value: "story" },
-          ]}
-        />
+      {/* How it posts to Instagram — Post (feed), Story, or Reel. Reels are video-only
+          via the IG API, so a static graphic can't post as one (disabled). Choosing
+          Story locks the canvas to 9:16; Post exposes the feed shape sub-control. */}
+      <Field label="Post type">
+        <div className="flex gap-1">
+          {(
+            [
+              { v: "post", label: "Post" },
+              { v: "story", label: "Story" },
+              { v: "reel", label: "Reel" },
+            ] as const
+          ).map((o) => {
+            const active = config.postType === o.v;
+            const disabled = o.v === "reel";
+            return (
+              <Button
+                key={o.v}
+                type="button"
+                size="sm"
+                variant={active ? "default" : "outline"}
+                disabled={disabled}
+                title={
+                  disabled
+                    ? "Reels need a video — a static graphic can't post as a reel"
+                    : undefined
+                }
+                className="flex-1"
+                onClick={() =>
+                  onChange(
+                    o.v === "story"
+                      ? { postType: "story", format: "story" }
+                      : {
+                          postType: "post",
+                          format:
+                            config.format === "story"
+                              ? "portrait"
+                              : config.format,
+                        },
+                  )
+                }
+              >
+                {o.label}
+              </Button>
+            );
+          })}
+        </div>
       </Field>
+
+      {config.postType === "post" && (
+        <Field label="Shape">
+          <PillNav
+            size="sm"
+            activeValue={config.format}
+            onChange={(v) =>
+              onChange({ format: v as SocialStudioConfig["format"] })
+            }
+            items={[
+              { label: "Portrait 4:5", value: "portrait" },
+              { label: "Square 1:1", value: "square" },
+            ]}
+          />
+        </Field>
+      )}
       {/* ONE shared brand theme drives EVERY card type — pick a look once and it
           applies to daily / weekly / monthly / AOTW alike. Switching theme clears any
           AOTW background tied to the old theme's text-color regime (a dark preset would
