@@ -11,6 +11,7 @@ import {
   Sparkles,
   Loader2,
   ChevronRight,
+  MessageSquareQuote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,13 +76,23 @@ export function ScriptsLibraryPage() {
             </p>
           </div>
         </div>
-        <Link
-          to="/call-reviews"
-          className="inline-flex items-center gap-1 text-[11px] text-v2-ink-muted hover:text-v2-ink"
-        >
-          <Headphones className="h-3.5 w-3.5" />
-          Call Reviews
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/analytics"
+            search={{ tab: "coaching" }}
+            className="inline-flex items-center gap-1 text-[11px] text-v2-ink-muted hover:text-v2-ink"
+          >
+            <MessageSquareQuote className="h-3.5 w-3.5" />
+            Manage word tracks →
+          </Link>
+          <Link
+            to="/call-reviews"
+            className="inline-flex items-center gap-1 text-[11px] text-v2-ink-muted hover:text-v2-ink"
+          >
+            <Headphones className="h-3.5 w-3.5" />
+            Call Reviews
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-xl border border-v2-ring bg-v2-card shadow-sm overflow-hidden">

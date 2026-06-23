@@ -86,12 +86,8 @@ import { TemplateEditorPage } from "./features/marketing/components/templates/Te
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
 
 // Close KPIs + AI Template Builder RETIRED — their routes now redirect to the
-// dashboard, so the page components are no longer imported here.
-const KpiPage = lazy(() =>
-  import("./features/kpi").then((m) => ({
-    default: m.KpiPage,
-  })),
-);
+// dashboard, so the page components are no longer imported here. Call KPIs (/kpi)
+// merged into /analytics; its route now redirects to the Inbound tab.
 const CallReviewsPage = lazy(() =>
   import("./features/call-reviews").then((m) => ({
     default: m.CallReviewsPage,
@@ -222,17 +218,27 @@ const policiesRoute = createRoute({
 const analyticsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "analytics",
-  component: () => (
+  // Optional ?tab= deep-links the 5-tab dashboard (overview | production | team
+  // | inbound | coaching). /kpi redirects here with tab=inbound.
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
+  component: AnalyticsRouteComponent,
+});
+
+function AnalyticsRouteComponent() {
+  const { tab } = analyticsRoute.useSearch();
+  return (
     <RouteGuard
       permission="nav.dashboard"
       noRecruits
       noStaffRoles
       subscriptionFeature="dashboard"
     >
-      <AnalyticsDashboard />
+      <AnalyticsDashboard initialTab={tab} />
     </RouteGuard>
-  ),
-});
+  );
+}
 
 // Leaderboard route - always-on for every approved agent (recruits excluded).
 // Previously gated by the paid "leaderboard" subscription feature; made
@@ -738,15 +744,14 @@ const closeKpiRoute = createRoute({
   component: () => <Navigate to="/dashboard" replace />,
 });
 
-// Call KPIs - inbound-call KPI workspace (Phase 1). Epic-Life-only during
-// rollout (super-admins bypass), mirroring the Command Center email gate.
+// Call KPIs — MERGED into /analytics (5-tab redesign: the inbound-call
+// workspace is now the Inbound + Coaching tabs, open to all analytics users).
+// Route kept registered so old links + bookmarks land on the Inbound tab.
 const kpiRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "kpi",
   component: () => (
-    <RouteGuard noRecruits requireEmailIncludes="epiclife">
-      <KpiPage />
-    </RouteGuard>
+    <Navigate to="/analytics" search={{ tab: "inbound" }} replace />
   ),
 });
 

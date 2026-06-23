@@ -2,6 +2,7 @@
 // Lists the agent's active word tracks with inline edit + delete.
 
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,11 @@ interface EditState {
   scope: WordTrackScope;
 }
 
-const WordTrackItem: React.FC<{ track: WordTrackRow }> = ({ track }) => {
+const WordTrackItem: React.FC<{
+  track: WordTrackRow;
+  showScripts: boolean;
+  scriptCount: number;
+}> = ({ track, showScripts, scriptCount }) => {
   const upsert = useUpsertWordTrack();
   const remove = useDeleteWordTrack();
   const [editing, setEditing] = useState(false);
@@ -199,6 +204,7 @@ const WordTrackItem: React.FC<{ track: WordTrackRow }> = ({ track }) => {
             </SelectContent>
           </Select>
         </td>
+        {showScripts && <td className="px-2 py-1.5" />}
         <td className="px-2 py-1.5">
           <div className="flex items-center gap-1.5">
             <button
@@ -244,6 +250,25 @@ const WordTrackItem: React.FC<{ track: WordTrackRow }> = ({ track }) => {
           {track.scope}
         </Badge>
       </td>
+      {showScripts && (
+        <td className="px-2 py-1.5">
+          {scriptCount > 0 ? (
+            <Link
+              to="/call-reviews/scripts"
+              className="inline-flex"
+              title={`Used in ${scriptCount} Sales Script${
+                scriptCount === 1 ? "" : "s"
+              }`}
+            >
+              <Badge className="h-4 bg-primary/15 px-1.5 text-[9px] font-medium text-primary hover:bg-primary/25">
+                {scriptCount}
+              </Badge>
+            </Link>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </td>
+      )}
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-1.5">
           <button
@@ -273,8 +298,13 @@ const WordTrackItem: React.FC<{ track: WordTrackRow }> = ({ track }) => {
   );
 };
 
-export const WordTrackLibrary: React.FC = () => {
+export const WordTrackLibrary: React.FC<{
+  /** word_track_id → number of Sales Scripts citing it. When provided, a
+   *  "Scripts" column is shown badging each track with its usage count. */
+  scriptUsage?: Map<string, number>;
+}> = ({ scriptUsage }) => {
   const { data: tracks, isLoading, isError, error } = useWordTracks();
+  const showScripts = scriptUsage != null;
 
   if (isLoading) {
     return (
@@ -309,12 +339,20 @@ export const WordTrackLibrary: React.FC = () => {
             <th className="px-2 py-1.5 font-medium">Match</th>
             <th className="px-2 py-1.5 font-medium">Timing</th>
             <th className="px-2 py-1.5 font-medium">Scope</th>
+            {showScripts && (
+              <th className="px-2 py-1.5 font-medium">Scripts</th>
+            )}
             <th className="px-2 py-1.5 font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
           {tracks.map((t) => (
-            <WordTrackItem key={t.id} track={t} />
+            <WordTrackItem
+              key={t.id}
+              track={t}
+              showScripts={showScripts}
+              scriptCount={scriptUsage?.get(t.id) ?? 0}
+            />
           ))}
         </tbody>
       </table>

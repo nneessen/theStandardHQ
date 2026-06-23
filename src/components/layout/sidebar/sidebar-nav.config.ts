@@ -24,7 +24,7 @@ import {
   GraduationCap,
   Headphones,
   // PhoneCall,
-  PhoneIncoming,
+  // PhoneIncoming, (KPIs nav item removed — /kpi merged into Analytics)
   Sparkles,
   // IdCard,
   FileCheck,
@@ -285,16 +285,8 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
       //   allowedAgencyId: THE_STANDARD_AGENCY_ID,
       // },
       // Close KPIs + AI Template Builder RETIRED (Close CRM abandoned) — removed.
-      {
-        icon: PhoneIncoming,
-        label: "KPIs",
-        href: "/kpi",
-        // TODO: this should be merged and built within the Analytics page instead. This is not a tool.
-        // Limited to Epic Life during rollout (super-admins bypass). Mirrors the
-        // /kpi RouteGuard requireEmailIncludes gate.
-        public: true,
-        requireEmailIncludes: "epiclife",
-      },
+      // Call KPIs (/kpi) MERGED into Analytics (Inbound + Coaching tabs) — its
+      // nav item was removed; /kpi now redirects to /analytics?tab=inbound.
     ],
   },
   {

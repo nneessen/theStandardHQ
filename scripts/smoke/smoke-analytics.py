@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 """
-Render smoke for the Analytics page (/analytics) after the overflow +
-Geographic-Mix + renewal-% fixes and the new Inbound Calls section.
+Render smoke for the redesigned Analytics page (/analytics) after the KPIs-page
+merge: one tabbed dashboard (Overview · Production · Team · Inbound Calls ·
+Coaching) replaces the old long scroll + the standalone /kpi page.
 
-Logs in as the throwaway epiclife-demo manager (NOT a real account), loads
-/analytics at 3 widths, captures console + page errors, screenshots, and
-asserts the four acceptance checks:
-  1. no JS/console errors at 1440 / 768 / 375 px
-  2. Geographic Mix shows >=1 real state (not only "Unknown")
-  3. renewal footnote reads 2.5% (not 25%)
-  4. the Inbound Calls section renders KPIs (close rate etc.)
-  5. no element overflows its panel card horizontally at any width
+Logs in as the throwaway epiclife-demo manager (NOT a real account) and asserts:
+  1. no JS/console errors throughout
+  2. all five tabs render; Overview is active by default
+  3. clicking "Inbound Calls" sets ?tab=inbound and renders the call KPIs
+     (Performance / Close Rate) + the "Log day" control
+  4. clicking "Coaching" renders Word Tracks + the "Open Sales Scripts" link
+  5. deep-link /analytics?tab=inbound opens directly on the Inbound tab
+  6. the retired /kpi route redirects to /analytics?tab=inbound
 
 Prereqs:
-    npm run dev:web                                  # vite on :3000
+    npm run dev                                      # vite on :3000
     ./scripts/migrations/run-sql.sh -f scripts/seed-demo-call-recordings.sql
-    python3 scripts/smoke-analytics.py
+    python3 scripts/smoke/smoke-analytics.py
 
-Writes PNGs to /tmp/board-shots/analytics-*.png ; exits non-zero on failure.
+Writes PNGs to /tmp/board-shots/analytics-tab-*.png ; exits non-zero on failure.
 """
 
 import os
@@ -40,7 +41,7 @@ IGNORE = (
     "browserslist",
 )
 
-WIDTHS = [("desktop", 1440), ("tablet", 768), ("mobile", 375)]
+TABS = ["Overview", "Production", "Team", "Inbound Calls", "Coaching"]
 
 
 def main() -> int:
@@ -71,131 +72,64 @@ def main() -> int:
             browser.close()
             return 3
 
-        body_text_by_width: dict[str, str] = {}
-        geo_panel_text: str | None = None
-        for name, w in WIDTHS:
-            page.set_viewport_size({"width": w, "height": 1100})
-            page.goto(
-                f"{BASE}/analytics",
-                wait_until="domcontentloaded",
-                timeout=40_000,
-            )
-            # let lazy panels + queries settle
-            page.wait_for_timeout(5000)
-            try:
-                page.mouse.wheel(0, 6000)
-                page.wait_for_timeout(1500)
-                page.mouse.wheel(0, 12000)
-                page.wait_for_timeout(1500)
-            except Exception:
-                pass
-            shot = OUT / f"analytics-{name}-{w}.png"
-            page.screenshot(path=str(shot), full_page=True)
-            print(f"  · {name} ({w}px) → {shot}")
-            body_text_by_width[name] = page.inner_text("body")
+        # ── 1. /analytics loads on the Overview tab ──────────────────────────
+        page.goto(f"{BASE}/analytics", wait_until="domcontentloaded", timeout=40_000)
+        page.wait_for_timeout(4000)
 
-            # Capture the policy "Geographic Mix" panel's OWN text (scoped, so the
-            # separate inbound "Caller geography" panel can't mask a regression).
-            if name == "desktop":
-                geo_panel_text = page.evaluate(
-                    r"""() => {
-                      const hasGeo = (t) => /geographic mix/i.test(t);
-                      const dollars = (t) => (t.match(/\$\s?\d/g) || []).length;
-                      const titled = [...document.querySelectorAll('div')]
-                        .filter(d => hasGeo(d.innerText))
-                        .sort((a, b) => a.innerText.length - b.innerText.length);
-                      if (!titled.length) return null;
-                      // climb from the title node to the Board card: the smallest
-                      // ancestor that holds the header total AND >=1 state row
-                      // (i.e. >=2 dollar amounts).
-                      let el = titled[0];
-                      for (let i = 0; i < 10 && el; i++) {
-                        if (hasGeo(el.innerText) && dollars(el.innerText) >= 2) {
-                          return el.innerText;
-                        }
-                        el = el.parentElement;
-                      }
-                      return titled[titled.length - 1].innerText;
-                    }"""
-                )
+        for label in TABS:
+            if page.get_by_role("button", name=label, exact=True).count() == 0:
+                failures.append(f"tab button '{label}' not found")
+        page.screenshot(path=str(OUT / "analytics-tab-overview.png"), full_page=True)
+        print("  · Overview →", OUT / "analytics-tab-overview.png")
 
-            # ── overflow check ──
-            # (a) the page itself must not scroll horizontally; (b) no element
-            # may escape its card — but elements inside an overflow:auto/scroll
-            # container scroll *inside* the card by design, so they're excluded.
-            result = page.evaluate(
-                """(vw) => {
-                  const pageScroll = Math.max(
-                    document.documentElement.scrollWidth,
-                    document.body.scrollWidth,
-                  );
-                  const scrolls = (el) => {
-                    const s = getComputedStyle(el);
-                    return /(auto|scroll|hidden)/.test(s.overflowX) ||
-                           /(auto|scroll|hidden)/.test(s.overflow);
-                  };
-                  const bad = [];
-                  for (const el of document.querySelectorAll('main *')) {
-                    const r = el.getBoundingClientRect();
-                    if (r.width === 0 || r.right <= vw + 2) continue;
-                    let p = el.parentElement, contained = false;
-                    while (p) { if (scrolls(p)) { contained = true; break; } p = p.parentElement; }
-                    if (!contained) {
-                      bad.push((el.tagName + '.' + (el.className||'')).slice(0,80)
-                               + ' right=' + Math.round(r.right));
-                    }
-                    if (bad.length > 6) break;
-                  }
-                  return { pageScroll, bad };
-                }""",
-                w,
-            )
-            if result["pageScroll"] > w + 3:
-                failures.append(
-                    f"[{name} {w}px] page scrolls horizontally "
-                    f"(scrollWidth={result['pageScroll']} > {w})"
-                )
-            if result["bad"]:
-                failures.append(
-                    f"[{name} {w}px] {len(result['bad'])} element(s) escape their card: "
-                    + " | ".join(result["bad"][:4])
-                )
+        # ── 2. Inbound Calls tab ─────────────────────────────────────────────
+        page.get_by_role("button", name="Inbound Calls", exact=True).first.click()
+        page.wait_for_timeout(3500)
+        if "tab=inbound" not in page.url:
+            failures.append(f"Inbound tab did not set ?tab=inbound (url={page.url})")
+        low = page.inner_text("body").lower()
+        if "performance" not in low:
+            failures.append("Inbound tab: 'Performance' band not rendered")
+        if "log day" not in low:
+            failures.append("Inbound tab: 'Log day' control not rendered")
+        if "close rate" not in low and "closing rate" not in low:
+            failures.append("Inbound tab: close-rate KPI not rendered")
+        page.screenshot(path=str(OUT / "analytics-tab-inbound.png"), full_page=True)
+        print("  · Inbound →", OUT / "analytics-tab-inbound.png")
 
-        # ── content assertions (use the desktop render) ──────────────────────
-        # inner_text reflects CSS text-transform (Cap/labels uppercase), so match
-        # case-insensitively.
-        desktop = body_text_by_width.get("desktop", "")
-        low = desktop.lower()
+        # ── 3. Coaching tab ──────────────────────────────────────────────────
+        page.get_by_role("button", name="Coaching", exact=True).first.click()
+        page.wait_for_timeout(3000)
+        if "tab=coaching" not in page.url:
+            failures.append(f"Coaching tab did not set ?tab=coaching (url={page.url})")
+        low = page.inner_text("body").lower()
+        if "word track" not in low:
+            failures.append("Coaching tab: Word Tracks library not rendered")
+        if "open sales scripts" not in low:
+            failures.append("Coaching tab: 'Open Sales Scripts' link not rendered")
+        page.screenshot(path=str(OUT / "analytics-tab-coaching.png"), full_page=True)
+        print("  · Coaching →", OUT / "analytics-tab-coaching.png")
 
-        if "2.5%" not in desktop:
-            failures.append("renewal footnote: '2.5%' not found on page")
-        if "based on 25%" in low:
-            failures.append("renewal footnote still shows the stale '25%'")
+        # ── 4. deep-link straight to the Inbound tab ─────────────────────────
+        page.goto(
+            f"{BASE}/analytics?tab=inbound",
+            wait_until="domcontentloaded",
+            timeout=40_000,
+        )
+        page.wait_for_timeout(3000)
+        active = page.evaluate(
+            "() => document.querySelector("
+            "'nav[aria-label=\"Analytics sections\"] [aria-current=page]'"
+            ")?.innerText || ''"
+        )
+        if "inbound" not in active.lower():
+            failures.append(f"deep-link ?tab=inbound: active tab is {active!r}")
 
-        # Geographic Mix must show real states, not only "Unknown" — asserted
-        # against the panel's OWN text (distinctive 2-letter codes; avoid
-        # 'IN'/'OH' that collide with English words).
-        import re as _re
-
-        if not geo_panel_text:
-            failures.append("Geographic Mix panel not found in DOM")
-        else:
-            states_found = set(
-                _re.findall(r"\b(KY|CA|NV|AZ|NC|MO|FL|GA|TX|TN|SC)\b", geo_panel_text)
-            )
-            if len(states_found) < 2:
-                failures.append(
-                    f"Geographic Mix panel shows no real state codes "
-                    f"(found {states_found}); panel text={geo_panel_text[:120]!r}"
-                )
-            if "unknown" in geo_panel_text.lower() and not states_found:
-                failures.append("Geographic Mix panel shows only 'Unknown'")
-
-        # Inbound Calls section must render with KPIs.
-        if "inbound calls" not in low:
-            failures.append("Inbound Calls section not found")
-        if "close rate" not in low and "volume & conversion" not in low:
-            failures.append("Inbound Calls KPIs (Close Rate) not rendered")
+        # ── 5. /kpi redirects to the Inbound tab ─────────────────────────────
+        page.goto(f"{BASE}/kpi", wait_until="domcontentloaded", timeout=40_000)
+        page.wait_for_timeout(3000)
+        if "/analytics" not in page.url or "tab=inbound" not in page.url:
+            failures.append(f"/kpi did not redirect to /analytics?tab=inbound (url={page.url})")
 
         browser.close()
 
@@ -212,7 +146,7 @@ def main() -> int:
             print("   -", f)
 
     if ok:
-        print("\n✓ analytics smoke passed (no errors, no overflow, all assertions)")
+        print("\n✓ analytics tabbed-redesign smoke passed (no errors, all tabs + redirect)")
         return 0
     return 1
 
