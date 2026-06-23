@@ -31,6 +31,13 @@ export type ScheduledMessageStatus =
   | "cancelled"
   | "failed"
   | "expired";
+// Social Studio scheduled FEED posts. No "cancelled" — cancel is a hard delete (it
+// also GCs the image). "expired" = a terminal can't-deliver state set by the worker.
+export type ScheduledPostStatus =
+  | "pending"
+  | "published"
+  | "failed"
+  | "expired";
 
 // Prospect types for template categorization
 export type ProspectType =
@@ -243,6 +250,25 @@ export interface InstagramScheduledMessageRow {
   updated_at: string;
 }
 
+export interface InstagramScheduledPostRow {
+  id: string;
+  integration_id: string | null;
+  imo_id: string;
+  image_url: string;
+  caption: string | null;
+  view: string | null;
+  card_theme: string | null;
+  scheduled_for: string;
+  scheduled_by: string;
+  status: ScheduledPostStatus;
+  published_at: string | null;
+  published_media_id: string | null;
+  retry_count: number;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface InstagramMessageTemplateRow {
   id: string;
   imo_id: string;
@@ -318,6 +344,19 @@ export type InstagramScheduledMessageInsert = Omit<
   | "retry_count"
 >;
 
+// What the client supplies to schedule_instagram_post. imo_id + scheduled_by are
+// derived server-side from auth.uid(); the client supplies its own row id so it can
+// name the Storage image object before the row exists.
+export interface InstagramScheduledPostInsert {
+  id: string;
+  integration_id: string | null;
+  image_url: string;
+  caption: string | null;
+  view: string | null;
+  card_theme: string | null;
+  scheduled_for: string;
+}
+
 export type InstagramMessageTemplateInsert = Omit<
   InstagramMessageTemplateRow,
   "id" | "created_at" | "updated_at" | "use_count" | "last_used_at"
@@ -370,6 +409,11 @@ export interface InstagramScheduledMessage extends InstagramScheduledMessageRow 
   isPastDue: boolean;
   /** Computed: is window expired */
   isWindowExpired: boolean;
+}
+
+export interface InstagramScheduledPost extends InstagramScheduledPostRow {
+  /** Computed: scheduled time has already passed (worker hasn't fired it yet) */
+  isPastDue: boolean;
 }
 
 export type InstagramMessageTemplate = InstagramMessageTemplateRow;
@@ -597,6 +641,10 @@ export const instagramKeys = {
     [...instagramKeys.all, "scheduled", conversationId] as const,
   allScheduled: (integrationId: string) =>
     [...instagramKeys.all, "allScheduled", integrationId] as const,
+
+  // Scheduled feed posts (Social Studio), keyed by agency
+  scheduledPosts: (imoId: string) =>
+    [...instagramKeys.all, "scheduledPosts", imoId] as const,
 
   // Templates (legacy IMO-based)
   templates: (imoId: string) =>

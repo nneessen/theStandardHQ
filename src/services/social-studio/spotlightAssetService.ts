@@ -8,6 +8,7 @@ import { supabase } from "../base/supabase";
 const BUCKET = "spotlight-assets";
 const PHOTO_KEY = "aotw-photo";
 const POST_KEY = "social-post";
+const SCHEDULED_PREFIX = "scheduled";
 
 /**
  * Read a File as a data: URL — the card's render source. A data URL is what makes
@@ -76,6 +77,47 @@ export async function uploadGeneratedPost(dataUrl: string): Promise<string> {
   if (error) throw error;
   const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return `${pub.publicUrl}?v=${Date.now()}`;
+}
+
+/**
+ * Upload a rendered post image for a SCHEDULED post under a UNIQUE per-post key
+ * ({uid}/scheduled/{postId}.png). Unlike uploadGeneratedPost's stable key (which the
+ * next "Post Now" overwrites), each scheduled image must survive untouched until the
+ * cron worker fires it — so the key is the row id. The worker (on publish) or a Cancel
+ * GCs the object afterward. Returns the stable public URL stored on the row (NOT
+ * cache-busted: the object never changes).
+ */
+export async function uploadScheduledPost(
+  dataUrl: string,
+  postId: string,
+): Promise<string> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) throw new Error("not authenticated");
+  const blob = await (await fetch(dataUrl)).blob();
+  const path = `${uid}/${SCHEDULED_PREFIX}/${postId}.png`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: "image/png", upsert: true });
+  if (error) throw error;
+  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return pub.publicUrl;
+}
+
+/**
+ * Delete a scheduled post's image (on Cancel) — mirrors the worker's post-publish GC so
+ * a cancelled post doesn't leave a world-readable image behind. Best-effort: the row is
+ * already removed and the local Storage emulator 400s on object DELETE (prod removes
+ * cleanly), so the caller never blocks on this.
+ */
+export async function removeScheduledPost(postId: string): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (uid) {
+    await supabase.storage
+      .from(BUCKET)
+      .remove([`${uid}/${SCHEDULED_PREFIX}/${postId}.png`]);
+  }
 }
 
 /**

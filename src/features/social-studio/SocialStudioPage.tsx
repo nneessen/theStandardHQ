@@ -1,25 +1,34 @@
 // src/features/social-studio/SocialStudioPage.tsx
-// Social Studio — owner-only. Phase 1: live, agency-scoped preview of the
-// leaderboard / report social cards (with a labeled sample fallback when the
-// agency has no metrics yet), full customization, and client-side PNG download.
-// Scheduling + auto-post to Instagram + AI one-off generation land in Phase 2/3.
+// Social Studio — owner-only. Live, agency-scoped preview of the leaderboard /
+// report / AOTW social cards (with a labeled sample fallback when the agency has no
+// metrics yet), full customization, client-side PNG download, one-tap "Post to
+// Instagram", and scheduled auto-posting to the connected account (cron worker).
 
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Download, Send, Loader2, Sparkles, Lock } from "lucide-react";
+import {
+  Download,
+  Send,
+  Loader2,
+  Sparkles,
+  Lock,
+  CalendarClock,
+  X,
+} from "lucide-react";
 import { SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap } from "@/components/board";
 import { Button } from "@/components/ui/button";
 import { useImo } from "@/contexts/ImoContext";
 import { useAgencyAgentLeaderboard } from "@/hooks/leaderboard";
 import { useAiAccess } from "@/hooks/subscription";
-import { useInstagramIntegrations } from "@/hooks/instagram";
+import { useInstagramIntegrations, useSchedulePost } from "@/hooks/instagram";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
 import { SocialPreview } from "./components/SocialPreview";
 import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
+import { ScheduledPostsPanel } from "./components/ScheduledPostsPanel";
 import {
   DEFAULT_CONFIG,
   VIEW_META,
@@ -62,6 +71,10 @@ export function SocialStudioPage() {
   // the `posting` state flushes to disable the button → two publishes / a racing
   // overwrite of the upload. The ref blocks the second call immediately.
   const postingRef = useRef(false);
+  // Scheduling UI: the inline date/time picker + a matching re-entrancy guard.
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
+  const schedulingRef = useRef(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const { hasAiAccess } = useAiAccess();
   const {
@@ -72,11 +85,18 @@ export function SocialStudioPage() {
     uploadGeneratedPost,
     publishToInstagram,
   } = useSpotlightActions();
-  // The agency's connected Instagram account (Business/Creator) gates posting.
+  // The agency's connected Instagram account (Business/Creator) gates posting +
+  // scheduling, and supplies the integration id we attach to a scheduled row.
   const { data: igIntegrations } = useInstagramIntegrations();
-  const igConnected = !!igIntegrations?.some(
+  const connectedIntegration = igIntegrations?.find(
     (i) => i.connection_status === "connected" && i.is_active,
   );
+  const igConnected = !!connectedIntegration;
+  // Scheduled posts belong to the agency that owns the connected account; the schedule
+  // RPC derives imo_id from the caller's profile, which is the same imo the integration
+  // is fetched under — so key the list + invalidation off it (not the acting imo).
+  const postsImoId = connectedIntegration?.imo_id ?? imoId ?? null;
+  const schedulePostMut = useSchedulePost(postsImoId ?? undefined);
   const patch = (p: Partial<SocialStudioConfig>) =>
     setConfig((c) => ({ ...c, ...p }));
 
@@ -264,6 +284,73 @@ export function SocialStudioPage() {
     }
   }
 
+  // Format a Date as a datetime-local input value in LOCAL time (no tz suffix).
+  function toLocalInputValue(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function openSchedule() {
+    // Default the picker to an hour out so the prefilled value is always future-valid.
+    setScheduleAt(toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000)));
+    setScheduleOpen((o) => !o);
+  }
+
+  // Render the current card and queue it to publish at the chosen future time. The
+  // image is uploaded under the post's own key (survives until the cron fires it),
+  // then a queue row is created via the SECURITY DEFINER RPC (future-only enforced).
+  async function handleSchedule() {
+    if (isSample) {
+      toast.error(
+        "Switch off 'Preview with sample data' to schedule your real numbers.",
+      );
+      return;
+    }
+    if (!igConnected) {
+      toast.error(
+        "Connect a Business Instagram account in Settings → Integrations first.",
+      );
+      return;
+    }
+    const when = scheduleAt ? new Date(scheduleAt) : null;
+    if (!when || isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+      toast.error("Pick a future date and time.");
+      return;
+    }
+    if (schedulingRef.current) return;
+    schedulingRef.current = true;
+    try {
+      const dataUrl = await renderCardPng();
+      if (!dataUrl) throw new Error("The card isn't ready yet.");
+      await schedulePostMut.mutateAsync({
+        postId: crypto.randomUUID(),
+        integrationId: connectedIntegration?.id ?? null,
+        dataUrl,
+        caption: config.caption,
+        view: config.view,
+        cardTheme: config.cardTheme,
+        scheduledFor: when,
+      });
+      toast.success(
+        `Scheduled for ${when.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })}`,
+      );
+      setScheduleOpen(false);
+      setScheduleAt("");
+    } catch (e) {
+      console.error("Schedule failed:", e);
+      toast.error(
+        e instanceof Error ? e.message : "Couldn't schedule the post.",
+      );
+    } finally {
+      schedulingRef.current = false;
+    }
+  }
+
   async function handleCopyCaption() {
     try {
       await navigator.clipboard.writeText(config.caption);
@@ -405,6 +492,21 @@ export function SocialStudioPage() {
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={openSchedule}
+                  disabled={isSample || !igConnected}
+                  title={
+                    isSample
+                      ? "Switch to live data to schedule"
+                      : !igConnected
+                        ? "Connect Instagram in Settings → Integrations"
+                        : "Schedule this graphic to auto-post later"
+                  }
+                >
+                  <CalendarClock className="h-4 w-4" /> Schedule
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={handleDownload}
                   disabled={isSample}
                   title={
@@ -417,6 +519,48 @@ export function SocialStudioPage() {
                 </Button>
               </div>
             </div>
+            {scheduleOpen && (
+              <div className="flex w-full flex-wrap items-center gap-2 rounded-md border border-border bg-secondary/40 p-2">
+                <label
+                  htmlFor="scheduleAt"
+                  className="text-xs font-medium text-foreground"
+                >
+                  Publish at
+                </label>
+                <input
+                  id="scheduleAt"
+                  type="datetime-local"
+                  value={scheduleAt}
+                  min={toLocalInputValue(new Date())}
+                  onChange={(e) => setScheduleAt(e.target.value)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSchedule}
+                  disabled={schedulePostMut.isPending}
+                >
+                  {schedulePostMut.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CalendarClock className="h-4 w-4" />
+                  )}
+                  {schedulePostMut.isPending ? "Scheduling…" : "Schedule post"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="px-2"
+                  onClick={() => setScheduleOpen(false)}
+                  title="Close"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <span className="text-[11px] text-muted-foreground">
+                  Your local time — it auto-posts to your connected account.
+                </span>
+              </div>
+            )}
             <SocialPreview
               data={previewData}
               format={config.format}
@@ -469,17 +613,26 @@ export function SocialStudioPage() {
             <Board pad={16}>
               <Cap style={{ marginBottom: 6 }}>Instagram</Cap>
               {igConnected ? (
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  <span className="font-medium text-foreground">
-                    Connected.
-                  </span>{" "}
-                  Use{" "}
-                  <span className="font-medium text-foreground">
-                    Post to Instagram
-                  </span>{" "}
-                  above to publish this graphic to your feed. Scheduled
-                  auto-posting (daily / weekly / monthly) arrives next.
-                </p>
+                <>
+                  <p className="text-[11px] leading-snug text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      Connected
+                      {connectedIntegration?.instagram_username
+                        ? ` · @${connectedIntegration.instagram_username}`
+                        : "."}
+                    </span>{" "}
+                    <span className="font-medium text-foreground">Post</span>{" "}
+                    publishes now;{" "}
+                    <span className="font-medium text-foreground">
+                      Schedule
+                    </span>{" "}
+                    queues this graphic to auto-post at a time you pick.
+                  </p>
+                  <div className="mt-3 border-t border-border pt-3">
+                    <Cap style={{ marginBottom: 8 }}>Scheduled posts</Cap>
+                    <ScheduledPostsPanel imoId={postsImoId} />
+                  </div>
+                </>
               ) : (
                 <p className="text-[11px] leading-snug text-muted-foreground">
                   Connect a{" "}
@@ -493,8 +646,8 @@ export function SocialStudioPage() {
                   >
                     Settings → Integrations
                   </a>{" "}
-                  to publish straight from here — a personal account can't post
-                  via the Instagram API. Scheduled auto-posting arrives next.
+                  to publish or schedule straight from here — a personal account
+                  can't post via the Instagram API.
                 </p>
               )}
             </Board>

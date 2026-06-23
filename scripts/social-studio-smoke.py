@@ -350,6 +350,18 @@ def main() -> int:
         ))
         page.screenshot(path=str(OUT / "social-studio-aotw-quickpost.png"))
 
+        # 6b. The "Schedule" action sits beside Post/Download and is sample-gated the
+        #     same way (you can't schedule fabricated sample numbers). Locally the agency
+        #     has no live metrics → sample is forced → Schedule is present but disabled.
+        #     The full write path (schedule → list → cancel) is exercised under real auth
+        #     by scripts/social-studio-schedule-authcheck.py (it needs no live data).
+        sched_btn = page.get_by_role("button", name=re.compile(r"^schedule$", re.I))
+        checks.append(("'Schedule' button present", sched_btn.count() > 0))
+        if sample and sched_btn.count():
+            checks.append(
+                ("Schedule disabled in sample mode (gated like Post)", sched_btn.first.is_disabled())
+            )
+
         # 7. Console errors.
         checks.append((f"no console errors ({len(console_errors)})", len(console_errors) == 0))
 

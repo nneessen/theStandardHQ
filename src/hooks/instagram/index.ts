@@ -49,3 +49,10 @@ export {
   useInstagramRealtime,
   useInstagramUnreadCount,
 } from "./useInstagramRealtime";
+
+// Social Studio scheduled-post hooks
+export {
+  useScheduledPosts,
+  useSchedulePost,
+  useCancelScheduledPost,
+} from "./useInstagramScheduledPosts";

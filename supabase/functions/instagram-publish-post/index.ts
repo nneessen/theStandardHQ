@@ -24,16 +24,12 @@ import {
   updateIntegrationToken,
   markIntegrationExpired,
 } from "../_shared/instagram-token-refresh.ts";
+import {
+  runInstagramPublishFlow,
+  type MetaError,
+} from "../_shared/instagram-publish.ts";
 
-const GRAPH = "https://graph.instagram.com/v21.0";
 const CAPTION_MAX = 2200;
-
-interface MetaError {
-  message: string;
-  type?: string;
-  code: number;
-  error_subcode?: number;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return corsResponse(req);
@@ -50,7 +46,11 @@ serve(async (req) => {
     if (!SUPABASE_URL || !SERVICE_KEY) {
       return json({ ok: false, error: "Server configuration error" }, 500);
     }
-    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+    // Cast to the shared token-refresh helpers' client type (createClient infers a
+    // stricter schema generic than they declare — friction shared across edge fns).
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY) as ReturnType<
+      typeof createClient
+    >;
 
     // ── Auth ──────────────────────────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
@@ -204,65 +204,52 @@ serve(async (req) => {
       );
     };
 
-    const withTimeout = (ms: number) => {
-      const c = new AbortController();
-      const id = setTimeout(() => c.abort(), ms);
-      return { signal: c.signal, done: () => clearTimeout(id) };
-    };
+    // ── Run the shared 3-step publish flow; map its result to our HTTP responses ─
+    const result = await runInstagramPublishFlow({
+      igUserId,
+      accessToken,
+      imageUrl,
+      caption,
+    });
 
-    // ── 1. Create the media container ──────────────────────────────────────────
-    const t1 = withTimeout(20000);
-    let containerData: { id?: string; error?: MetaError };
-    try {
-      const res = await fetch(`${GRAPH}/${igUserId}/media`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          caption,
-          access_token: accessToken,
-        }),
-        signal: t1.signal,
-      });
-      containerData = await res.json();
-    } catch (e) {
-      t1.done();
-      const aborted = e instanceof Error && e.name === "AbortError";
+    if (result.ok) {
+      console.log(
+        `[instagram-publish-post] Published media ${result.mediaId} to @${integration.instagram_username}`,
+      );
       return json(
         {
-          ok: false,
-          error: aborted
-            ? "Instagram request timed out."
-            : "Network error creating the post.",
+          ok: true,
+          mediaId: result.mediaId,
+          username: integration.instagram_username,
         },
-        aborted ? 504 : 502,
-      );
-    }
-    t1.done();
-    if (containerData.error)
-      return handleMetaError(containerData.error, "container");
-    const creationId = containerData.id;
-    if (!creationId) {
-      return json(
-        { ok: false, error: "Instagram did not return a media container." },
-        502,
+        200,
       );
     }
 
-    // ── 2. Wait for the container to finish processing (images are usually fast) ─
-    let ready = false;
-    for (let i = 0; i < 6; i++) {
-      const s = await fetch(
-        `${GRAPH}/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`,
-      )
-        .then((r) => r.json())
-        .catch(() => null);
-      const code = s?.status_code as string | undefined;
-      if (code === "FINISHED") {
-        ready = true;
-        break;
-      }
-      if (code === "ERROR" || code === "EXPIRED") {
+    switch (result.reason) {
+      case "meta_error":
+        return handleMetaError(result.metaError, result.stage);
+      case "transport":
+        return json(
+          {
+            ok: false,
+            error:
+              result.stage === "container"
+                ? result.aborted
+                  ? "Instagram request timed out."
+                  : "Network error creating the post."
+                : result.aborted
+                  ? "Instagram publish timed out."
+                  : "Network error publishing the post.",
+          },
+          result.aborted ? 504 : 502,
+        );
+      case "no_container":
+        return json(
+          { ok: false, error: "Instagram did not return a media container." },
+          502,
+        );
+      case "media_error":
         return json(
           {
             ok: false,
@@ -271,69 +258,24 @@ serve(async (req) => {
           },
           400,
         );
-      }
-      await new Promise((r) => setTimeout(r, 1500));
+      case "processing":
+        return json(
+          {
+            ok: false,
+            error:
+              "Instagram is still processing the image — please try again in a moment.",
+            code: "PROCESSING",
+          },
+          504,
+        );
+      case "no_publish_id":
+        return json(
+          { ok: false, error: "Instagram did not confirm the post." },
+          502,
+        );
+      default:
+        return json({ ok: false, error: "Unexpected publish state." }, 500);
     }
-    // Don't publish a container that never finished — that errors confusingly.
-    if (!ready) {
-      return json(
-        {
-          ok: false,
-          error:
-            "Instagram is still processing the image — please try again in a moment.",
-          code: "PROCESSING",
-        },
-        504,
-      );
-    }
-
-    // ── 3. Publish ─────────────────────────────────────────────────────────────
-    const t2 = withTimeout(20000);
-    let publishData: { id?: string; error?: MetaError };
-    try {
-      const res = await fetch(`${GRAPH}/${igUserId}/media_publish`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          creation_id: creationId,
-          access_token: accessToken,
-        }),
-        signal: t2.signal,
-      });
-      publishData = await res.json();
-    } catch (e) {
-      t2.done();
-      const aborted = e instanceof Error && e.name === "AbortError";
-      return json(
-        {
-          ok: false,
-          error: aborted
-            ? "Instagram publish timed out."
-            : "Network error publishing the post.",
-        },
-        aborted ? 504 : 502,
-      );
-    }
-    t2.done();
-    if (publishData.error) return handleMetaError(publishData.error, "publish");
-    if (!publishData.id) {
-      return json(
-        { ok: false, error: "Instagram did not confirm the post." },
-        502,
-      );
-    }
-
-    console.log(
-      `[instagram-publish-post] Published media ${publishData.id} to @${integration.instagram_username}`,
-    );
-    return json(
-      {
-        ok: true,
-        mediaId: publishData.id,
-        username: integration.instagram_username,
-      },
-      200,
-    );
   } catch (err) {
     console.error("[instagram-publish-post] Error:", err);
     return json(
