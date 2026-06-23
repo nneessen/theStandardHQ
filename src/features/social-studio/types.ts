@@ -38,15 +38,15 @@ export interface SocialStudioConfig {
   aowPhotoStorageUrl: string | null;
 
   // ── Agent-of-the-Week customization (Step 3) — only used when view === "aotw".
-  /** CSS font-family override for the hero display type; null → the design's
-   *  signature font (aurora=Unbounded, editorial=Instrument Serif, noir=Syne). */
+  /** CSS font-family override for the hero name; null → the design default
+   *  (Big Shoulders Display). The small supporting labels stay Inter. */
   aowFontDisplay: string | null;
   /** CSS `background` override (a solid/gradient preset); null → design default.
    *  Mutually exclusive with aowBgImageUrl (setting one clears the other). */
   aowBackground: string | null;
-  /** Uploaded background image as a data: URL (aurora/noir only — they use light
-   *  text, so a scrim keeps it legible). Baked into the export, so it stays a data
-   *  URL (no Storage round-trip needed, unlike the agent photo). Null → none. */
+  /** Uploaded background image as a data: URL (Spotlight / key "aurora" only — it has
+   *  light text, so a scrim keeps it legible). Baked into the export, so it stays a
+   *  data URL (no Storage round-trip needed, unlike the agent photo). Null → none. */
   aowBgImageUrl: string | null;
   /** Multiplier on the agent-name size (the "size" control). Default 1. */
   aowTitleScale: number;

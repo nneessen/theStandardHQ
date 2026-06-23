@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { useImo } from "@/contexts/ImoContext";
 import { useAgencyAgentLeaderboard } from "@/hooks/leaderboard";
 import { useAiAccess } from "@/hooks/subscription";
-import { usd } from "@/features/social-cards";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
 import { SocialPreview } from "./components/SocialPreview";
@@ -50,8 +49,6 @@ export function SocialStudioPage() {
 
   const [config, setConfig] = useState<SocialStudioConfig>(DEFAULT_CONFIG);
   const [generatingCaption, setGeneratingCaption] = useState(false);
-  const [generatingPro, setGeneratingPro] = useState(false);
-  const [proImageUrl, setProImageUrl] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +58,6 @@ export function SocialStudioPage() {
     removeAgentPhoto,
     readFileAsDataUrl,
     generateCaption,
-    generateProImage,
   } = useSpotlightActions();
   const patch = (p: Partial<SocialStudioConfig>) =>
     setConfig((c) => ({ ...c, ...p }));
@@ -119,8 +115,6 @@ export function SocialStudioPage() {
       // the UI); both land in config only on full success.
       const { dataUrl, storageUrl } = await uploadAgentPhoto(file);
       patch({ aowPhotoUrl: dataUrl, aowPhotoStorageUrl: storageUrl });
-      // A new face invalidates any previously rendered pro graphic.
-      setProImageUrl(null);
       toast.success("Photo added");
     } catch (e) {
       console.error("Spotlight photo upload failed:", e);
@@ -139,7 +133,6 @@ export function SocialStudioPage() {
       console.error("Spotlight photo delete failed:", e);
     } finally {
       patch({ aowPhotoUrl: null, aowPhotoStorageUrl: null });
-      setProImageUrl(null);
     }
   }
 
@@ -276,78 +269,6 @@ export function SocialStudioPage() {
     }
   }
 
-  // Render the premium AOTW graphic server-side (Creatomate). Same guards as the
-  // caption path (real data only) + a photo is required for the spotlight.
-  async function handleGeneratePro() {
-    if (previewData.kind !== "aotw") return;
-    if (!hasAiAccess) {
-      toast.error("AI features aren't enabled for this account.");
-      return;
-    }
-    if (isSample) {
-      toast.error(
-        "This is a sample preview — switch off 'Preview with sample data' to render your real numbers.",
-      );
-      return;
-    }
-    const photoUrl = config.aowPhotoStorageUrl;
-    if (!photoUrl) {
-      toast.error("Upload an agent photo first.");
-      return;
-    }
-    setGeneratingPro(true);
-    try {
-      const url = await generateProImage({
-        agentName: previewData.agent.name,
-        premium: usd(previewData.agent.ap),
-        policies: String(previewData.agent.policies),
-        periodLabel: previewData.periodLabel,
-        agencyName,
-        network,
-        photoUrl,
-      });
-      setProImageUrl(url);
-      toast.success("Pro graphic ready");
-    } catch (e) {
-      console.error("Pro image generation failed:", e);
-      toast.error("Couldn't render the pro graphic. Please try again.");
-    } finally {
-      setGeneratingPro(false);
-    }
-  }
-
-  // Force a download of the (cross-origin CDN) render. Fetch→blob so the download
-  // attribute is honored; fall back to opening it if the CDN blocks the fetch.
-  async function handleDownloadPro() {
-    if (!proImageUrl) return;
-    const filename = `${agencyName.toLowerCase().replace(/\s+/g, "-")}-agent-of-week-pro.png`;
-    try {
-      const res = await fetch(proImageUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.download = filename;
-      a.href = url;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error("Pro image download failed:", e);
-      window.open(proImageUrl, "_blank", "noopener");
-    }
-  }
-
-  // The pro render is gated like the caption (AI + live data) plus a photo for the
-  // spotlight; the customizer only shows the button on the AOTW view.
-  const hasProPhoto = !!config.aowPhotoStorageUrl;
-  const canGeneratePro = hasAiAccess && !isSample && hasProPhoto;
-  const proHint = !hasAiAccess
-    ? "AI features aren't enabled for this account"
-    : isSample
-      ? "Switch off sample preview to render your real numbers"
-      : !hasProPhoto
-        ? "Upload an agent photo first"
-        : "";
-
   return (
     <SectionShell className="dashboard-canvas">
       <div className="mx-auto w-full max-w-[1400px] px-4 py-5 lg:py-6">
@@ -431,32 +352,6 @@ export function SocialStudioPage() {
                   : "No live metrics yet — showing a sample layout. Real numbers appear automatically once policies are logged."}
               </p>
             )}
-
-            {/* Pro render result — the finished, downloadable spotlight (AOTW). */}
-            {config.view === "aotw" && proImageUrl && (
-              <div className="w-full space-y-2 border-t border-border pt-3">
-                <div className="flex items-center justify-between">
-                  <Cap>Pro graphic</Cap>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={handleDownloadPro}>
-                      <Download className="h-4 w-4" /> Download
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setProImageUrl(null)}
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </div>
-                <img
-                  src={proImageUrl}
-                  alt="Agent of the Week — pro graphic"
-                  className="mx-auto w-full max-w-[420px] rounded-lg border border-border"
-                />
-              </div>
-            )}
           </Board>
 
           {/* Controls column */}
@@ -470,10 +365,6 @@ export function SocialStudioPage() {
                 onGenerateCaption={handleGenerateCaption}
                 generatingCaption={generatingCaption}
                 canUseAi={hasAiAccess}
-                onGeneratePro={handleGeneratePro}
-                generatingPro={generatingPro}
-                canGeneratePro={canGeneratePro}
-                proHint={proHint}
                 samplePreview={isSample}
                 sampleForced={sampleForced}
                 onSamplePreviewChange={setSampleOverride}

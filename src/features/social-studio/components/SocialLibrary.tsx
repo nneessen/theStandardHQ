@@ -40,18 +40,20 @@ const BUILTIN_PRESETS: {
   config: Partial<SocialStudioConfig>;
 }[] = [
   {
+    // Stable keys are LEGACY ids (aurora/editorial/noir) so saved templates keep
+    // working; the rendered look + name have moved on to the new brand designs.
     key: "aurora",
-    name: "Aurora Spotlight",
+    name: "Spotlight",
     config: { view: "aotw", aowDesign: "aurora", ...CLEAN_STYLE },
   },
   {
     key: "editorial",
-    name: "Editorial Spotlight",
+    name: "Editorial",
     config: { view: "aotw", aowDesign: "editorial", ...CLEAN_STYLE },
   },
   {
     key: "noir",
-    name: "Noir Spotlight",
+    name: "Lift",
     config: { view: "aotw", aowDesign: "noir", ...CLEAN_STYLE },
   },
   {

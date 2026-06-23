@@ -52,7 +52,7 @@ const FONT_OPTIONS: { label: string; value: string }[] = [
 
 // Background presets are filtered by the active design's text-color regime so a
 // preset can never make the text illegible: dark/saturated for the light-text
-// designs (aurora, noir); light "paper" tones for editorial (dark text on cream).
+// Spotlight (key "aurora"); light "paper" tones for the dark-text Editorial + Lift.
 const BG_PRESETS_DARK: { label: string; value: string }[] = [
   { label: "Indigo", value: "linear-gradient(150deg,#1e1b4b,#4c1d95,#831843)" },
   { label: "Sunset", value: "linear-gradient(150deg,#7c2d12,#9f1239,#4c1d95)" },
@@ -77,13 +77,6 @@ interface SocialCustomizerProps {
   onGenerateCaption: () => void;
   generatingCaption: boolean;
   canUseAi: boolean;
-  /** Render the premium Creatomate spotlight (AOTW only). */
-  onGeneratePro: () => void;
-  generatingPro: boolean;
-  /** Gate for the pro render: AI access + live data + an uploaded photo. */
-  canGeneratePro: boolean;
-  /** Tooltip explaining why the pro button is disabled (empty when enabled). */
-  proHint: string;
   samplePreview: boolean;
   /** True when there is no live data, so sample can't be toggled off. */
   sampleForced: boolean;
@@ -111,10 +104,6 @@ export function SocialCustomizer({
   onGenerateCaption,
   generatingCaption,
   canUseAi,
-  onGeneratePro,
-  generatingPro,
-  canGeneratePro,
-  proHint,
   samplePreview,
   sampleForced,
   onSamplePreviewChange,
@@ -126,11 +115,12 @@ export function SocialCustomizer({
 }: SocialCustomizerProps) {
   const isReport = config.view === "monthly";
   const isAotw = config.view === "aotw";
-  // Editorial is dark-text-on-cream, so only the light-text designs may carry a
-  // photo background; their swatch sets differ for the same reason.
-  const allowsBgImage = config.aowDesign !== "editorial";
+  // Only the dark Spotlight (key "aurora") has light text, so only it may carry a
+  // photo background (with a legibility scrim). Editorial + Lift are dark-text on a
+  // light surface, so they get light "paper" presets and no photo background.
+  const allowsBgImage = config.aowDesign === "aurora";
   const bgPresets =
-    config.aowDesign === "editorial" ? BG_PRESETS_LIGHT : BG_PRESETS_DARK;
+    config.aowDesign === "aurora" ? BG_PRESETS_DARK : BG_PRESETS_LIGHT;
 
   return (
     <div className="space-y-4">
@@ -191,8 +181,8 @@ export function SocialCustomizer({
             activeValue={config.aowDesign}
             onChange={(v) =>
               // Reset the background when switching design: a background is tied to
-              // the design's text-color regime (a dark preset picked on noir would be
-              // illegible under editorial's dark text). Font + sizes are regime-
+              // the design's text-color regime (a dark preset picked on the light Lift
+              // would be illegible under its dark text). Font + sizes are regime-
               // agnostic, so they persist.
               onChange({
                 aowDesign: v as SocialStudioConfig["aowDesign"],
@@ -201,9 +191,9 @@ export function SocialCustomizer({
               })
             }
             items={[
-              { label: "Aurora", value: "aurora" },
+              { label: "Spotlight", value: "aurora" },
               { label: "Editorial", value: "editorial" },
-              { label: "Noir", value: "noir" },
+              { label: "Lift", value: "noir" },
             ]}
           />
         </Field>
@@ -258,38 +248,6 @@ export function SocialCustomizer({
               />
             </label>
           )}
-        </Field>
-      )}
-
-      {/* Pro render — Aurora only. Aurora's glassmorphism uses backdrop-filter, which
-          the in-app PNG download (a foreignObject rasterizer) can't capture, so it's
-          rendered server-side (Creatomate) at full fidelity. Editorial & Noir have no
-          backdrop-filter and download faithfully via the normal Download PNG. */}
-      {isAotw && config.aowDesign === "aurora" && (
-        <Field label="Pro graphic">
-          <Button
-            type="button"
-            size="sm"
-            className="w-full"
-            onClick={onGeneratePro}
-            disabled={!canGeneratePro || generatingPro}
-            title={proHint || "Render Aurora at full fidelity"}
-          >
-            {generatingPro ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Rendering…
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-3.5 w-3.5" /> Generate pro graphic
-              </>
-            )}
-          </Button>
-          <p className="pt-1 text-[10px] text-muted-foreground">
-            Renders Aurora's glass effects at full fidelity — the in-app
-            download can't capture them. Editorial & Noir download cleanly
-            as-is.
-          </p>
         </Field>
       )}
 

@@ -175,14 +175,15 @@ def main() -> int:
         if aotw_pill.count():
             aotw_pill.first.click()
             page.wait_for_timeout(900)
-        # The design picker (Aurora/Editorial/Noir) appears ONLY on the AOTW view —
-        # proof the view switched AND the customizer adapted.
-        aurora_btn = page.get_by_role("button", name=re.compile(r"^aurora$", re.I))
+        # The design picker (Spotlight/Editorial/Lift) appears ONLY on the AOTW view —
+        # proof the view switched AND the customizer adapted. (Underlying config keys
+        # stay aurora/editorial/noir for template back-compat; labels moved on.)
+        spotlight_btn = page.get_by_role("button", name=re.compile(r"^spotlight$", re.I))
         editorial_btn = page.get_by_role("button", name=re.compile(r"^editorial$", re.I))
-        noir_btn = page.get_by_role("button", name=re.compile(r"^noir$", re.I))
+        lift_btn = page.get_by_role("button", name=re.compile(r"^lift$", re.I))
         checks.append((
-            "AOTW design picker (Aurora/Editorial/Noir) present",
-            aurora_btn.count() > 0 and editorial_btn.count() > 0 and noir_btn.count() > 0,
+            "AOTW design picker (Spotlight/Editorial/Lift) present",
+            spotlight_btn.count() > 0 and editorial_btn.count() > 0 and lift_btn.count() > 0,
         ))
         # Leaderboard-only controls must be hidden on AOTW (no top-N, no policy switch).
         checks.append(("AOTW hides Top-N control", page.get_by_role("button", name=re.compile(r"top 20", re.I)).count() == 0))
@@ -195,7 +196,7 @@ def main() -> int:
         # Each design renders. On the AOTW view the ONLY source of "Annual Premium"
         # text is the hero's stat panel (leaderboard card is gone), so its presence
         # confirms the card mounted for that design.
-        for design, btn in (("aurora", aurora_btn), ("editorial", editorial_btn), ("noir", noir_btn)):
+        for design, btn in (("spotlight", spotlight_btn), ("editorial", editorial_btn), ("lift", lift_btn)):
             if btn.count():
                 btn.first.click()
                 page.wait_for_timeout(800)
@@ -225,36 +226,27 @@ def main() -> int:
         )
         page.screenshot(path=str(OUT / "social-studio-aotw-photo.png"))
         # HARD GATE: download the export and (manually) read it to confirm the photo.
+        # Download is intentionally disabled in SAMPLE mode (asserted in #4/#5 above), so
+        # this real-export check only applies when the agency has live data. With no live
+        # producers locally the preview is forced to sample → skip rather than false-fail.
         dl_btn = page.get_by_role("button", name=re.compile(r"download png", re.I))
-        photo_in_export = False
-        if photo_uploaded and dl_btn.count() and dl_btn.first.is_enabled():
-            try:
-                with page.expect_download(timeout=20000) as dl:
-                    dl_btn.first.click()
-                dl.value.save_as(str(OUT / "social-studio-aotw-export.png"))
-                photo_in_export = True
-            except Exception as ex:
-                print(f"   ⚠ export download failed: {ex}")
-        checks.append(("AOTW exports a PNG (READ it to confirm the photo is in it)", photo_in_export))
+        if sample:
+            print("   ℹ skipping real-export check — sample mode forces Download disabled (no live data locally)")
+        else:
+            photo_in_export = False
+            if photo_uploaded and dl_btn.count() and dl_btn.first.is_enabled():
+                try:
+                    with page.expect_download(timeout=20000) as dl:
+                        dl_btn.first.click()
+                    dl.value.save_as(str(OUT / "social-studio-aotw-export.png"))
+                    photo_in_export = True
+                except Exception as ex:
+                    print(f"   ⚠ export download failed: {ex}")
+            checks.append(("AOTW exports a PNG (READ it to confirm the photo is in it)", photo_in_export))
 
-        # 5b-pro. "Generate pro graphic" (Creatomate render of the Aurora design) —
-        #         shown ONLY on Aurora (its backdrop-filter glass can't be captured by
-        #         the in-app download; Editorial/Noir download fine). Gated on live data
-        #         + a photo. We assert PRESENCE + enabled state; the render itself is
-        #         proven by scripts/creatomate/verify-edge-source.mjs (needs edge fn).
-        # The design loop left us on Noir → the Pro button must be ABSENT here.
-        checks.append((
-            "Pro graphic hidden on non-Aurora designs",
-            page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I)).count() == 0,
-        ))
-        aurora_for_pro = page.get_by_role("button", name=re.compile(r"^aurora$", re.I))
-        if aurora_for_pro.count():
-            aurora_for_pro.first.click()
-            page.wait_for_timeout(600)
-        pro_btn = page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I))
-        checks.append(("AOTW(Aurora) shows 'Generate pro graphic' button", pro_btn.count() > 0))
-        if pro_btn.count() and photo_uploaded and not sample:
-            checks.append(("Pro graphic ENABLED with live data + photo", pro_btn.first.is_enabled()))
+        # NOTE: every design now renders + downloads in-browser (modern-screenshot),
+        # so there is no separate Creatomate "Generate pro graphic" button anymore —
+        # the normal Download PNG is the full-fidelity export for all three.
 
         # 5c. "Remove" clears the photo (and deletes the storage object — handler
         #     calls storage.remove; the bucket-deletion itself is covered by the RLS
@@ -266,20 +258,21 @@ def main() -> int:
         checks.append(
             ("AOTW 'Remove' clears the photo", page.locator("img[alt='Agent']").count() == 0)
         )
-        # With the photo gone, the pro render must disable (its spotlight needs a face).
-        pro_btn_after = page.get_by_role("button", name=re.compile(r"generate pro graphic", re.I))
-        if pro_btn_after.count():
-            checks.append(("Pro graphic DISABLED after photo removed", pro_btn_after.first.is_disabled()))
 
-        # 5d. Step-3 STYLE controls (AOTW only): font dropdown, design-filtered
-        #     background swatches, and the two size sliders. Still on the AOTW view;
-        #     the design loop left us on noir (a light-text design → dark presets +
-        #     a background-image upload tile).
+        # 5d. Style controls (AOTW only): font dropdown, design-filtered background
+        #     swatches, and the two size sliders. The design loop left us on Lift (a
+        #     dark-text, light-surface design → light "paper" presets, no bg image).
         checks.append(("AOTW Style: Name size slider labeled", page.get_by_text(re.compile(r"name size", re.I)).count() > 0))
         checks.append(("AOTW Style: Agency name size slider labeled", page.get_by_text(re.compile(r"agency name size", re.I)).count() > 0))
         checks.append(("AOTW Style: sliders rendered (>=2)", page.get_by_role("slider").count() >= 2))
-        checks.append(("AOTW Style: noir shows a dark bg preset", page.locator('button[title="Indigo"]').count() > 0))
-        checks.append(("AOTW Style: light-text design offers a bg-image upload", page.locator('label[title="Upload a background image"]').count() > 0))
+        checks.append(("AOTW Style: Lift shows a light bg preset", page.locator('button[title="Off-white"]').count() > 0))
+        checks.append(("AOTW Style: Lift hides the bg-image upload", page.locator('label[title="Upload a background image"]').count() == 0))
+        # Switch to Spotlight (the only light-text design) → dark presets + bg-image upload.
+        if spotlight_btn.count():
+            spotlight_btn.first.click()
+            page.wait_for_timeout(500)
+        checks.append(("AOTW Style: Spotlight shows a dark bg preset", page.locator('button[title="Indigo"]').count() > 0))
+        checks.append(("AOTW Style: Spotlight offers a bg-image upload", page.locator('label[title="Upload a background image"]').count() > 0))
         # Font dropdown — pick a custom font and confirm the trigger reflects it. The
         # super-admin header has its OWN combobox, so target the FONT one by its
         # initial value ("Design default"), never .first.
@@ -329,7 +322,7 @@ def main() -> int:
             page.wait_for_timeout(800)
         checks.append((
             "'Agent of the Week' quick post → AOTW view",
-            page.get_by_role("button", name=re.compile(r"^aurora$", re.I)).count() > 0,
+            page.get_by_role("button", name=re.compile(r"^spotlight$", re.I)).count() > 0,
         ))
         page.screenshot(path=str(OUT / "social-studio-aotw-quickpost.png"))
 
