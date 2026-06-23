@@ -383,25 +383,39 @@ export function SocialCustomizer({
         </div>
       )}
 
+      {/* Show-top applies to every ranked view INCLUDING the monthly report (its roster
+          paginates across continuation slides). "All" posts the whole agency. */}
+      {!isAotw && (
+        <Field label="Show top">
+          <PillNav
+            size="sm"
+            activeValue={
+              typeof config.topN === "number" ? String(config.topN) : "all"
+            }
+            onChange={(v) =>
+              onChange({ topN: v === "all" ? "all" : Number(v) })
+            }
+            items={[
+              { label: "Top 5", value: "5" },
+              { label: "Top 10", value: "10" },
+              { label: "Top 20", value: "20" },
+              { label: "Top 50", value: "50" },
+              { label: "All", value: "all" },
+            ]}
+          />
+        </Field>
+      )}
+
       {!isReport && !isAotw && (
         <>
-          <Field label="Show top">
-            <PillNav
-              size="sm"
-              activeValue={String(config.topN)}
-              onChange={(v) => onChange({ topN: Number(v) })}
-              items={[
-                { label: "Top 5", value: "5" },
-                { label: "Top 10", value: "10" },
-                { label: "Top 20", value: "20" },
-              ]}
-            />
-          </Field>
-
           <Field label="Headline">
             <Input
               value={config.title ?? ""}
-              placeholder={`TOP ${config.topN} AGENTS`}
+              placeholder={
+                config.topN === "all"
+                  ? "AGENCY LEADERBOARD"
+                  : `TOP ${config.topN} AGENTS`
+              }
               onChange={(e) => onChange({ title: e.target.value || undefined })}
             />
           </Field>

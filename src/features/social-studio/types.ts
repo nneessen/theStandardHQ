@@ -15,8 +15,11 @@ export interface SocialStudioConfig {
   /** The shared brand theme (Spotlight / Editorial / Lift). Applies to EVERY card
    *  type — one agency picks a theme and gets a consistent look across all posts. */
   cardTheme: CardTheme;
-  /** Requested rows; the card caps to 10 (post) / 15 (story) at render. */
-  topN: number;
+  /** How many producers to include. A number (5/10/20/50) or "all" for the whole
+   *  agency. The roster is paginated across multiple cards at render (see
+   *  buildPreviewPages) — "all" is JSON-safe for template persistence (unlike a
+   *  numeric Infinity/0 sentinel). */
+  topN: number | "all";
   /** Optional headline override; falls back to the card's default. */
   title?: string;
   /** Show the policy-count column on leaderboard cards. */

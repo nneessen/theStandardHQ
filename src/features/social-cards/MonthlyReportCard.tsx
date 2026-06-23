@@ -4,7 +4,12 @@
 // fonts), so the in-browser PNG export is pixel-faithful. Hero total AP + growth,
 // stat band, Agent of the Month, compact top-5.
 
-import { usd, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
+import {
+  usd,
+  FORMAT_DIMS,
+  type SocialFormat,
+  type CardPageInfo,
+} from "./socialFormat";
 import {
   resolveCardTheme,
   themePageBackground,
@@ -30,6 +35,8 @@ export interface MonthlyReportCardProps {
   format?: SocialFormat;
   /** Brand theme (Spotlight / Editorial / Lift). Default Spotlight. */
   theme?: CardTheme;
+  /** Carousel position — this recap is slide 1 when the full roster spans more cards. */
+  page?: CardPageInfo;
 }
 
 // Growth = positive trend → the brand success green (--success in index.css),
@@ -48,23 +55,26 @@ export function MonthlyReportCard({
   growthLabel,
   format = "portrait",
   theme = "spotlight",
+  page,
 }: MonthlyReportCardProps) {
   const t = resolveCardTheme(theme);
   const isStory = format === "story";
   const { w: W, h: H } = FORMAT_DIMS[format];
   const PAD = isStory ? 72 : 56;
+  const paginated = !!page && page.total > 1;
 
+  // Phone-readable sizes for a 1080-wide canvas (the prior scale was too small).
   const sz = {
-    eyebrow: isStory ? 17 : 14,
-    title: isStory ? 88 : 62,
-    sub: isStory ? 18 : 14,
-    hero: isStory ? 116 : 84,
-    stat: isStory ? 40 : 30,
-    statCap: isStory ? 14 : 11,
-    name: isStory ? 34 : 26,
-    aotmAp: isStory ? 46 : 34,
-    rowName: isStory ? 26 : 20,
-    rowAp: isStory ? 30 : 23,
+    eyebrow: isStory ? 22 : 18,
+    title: isStory ? 96 : 68,
+    sub: isStory ? 20 : 16,
+    hero: isStory ? 124 : 92,
+    stat: isStory ? 48 : 38,
+    statCap: isStory ? 17 : 14,
+    name: isStory ? 42 : 34,
+    aotmAp: isStory ? 54 : 42,
+    rowName: isStory ? 34 : 28,
+    rowAp: isStory ? 38 : 32,
   };
 
   const num = (text: string, color: string, size: number, glow = false) => (
@@ -303,14 +313,34 @@ export function MonthlyReportCard({
       >
         <div
           style={{
-            font: `600 ${sz.statCap}px ${t.sans}`,
-            color: t.inkMuted,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
             marginBottom: isStory ? 10 : 6,
           }}
         >
-          Top Producers
+          <div
+            style={{
+              font: `600 ${sz.statCap}px ${t.sans}`,
+              color: t.inkMuted,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            Top Producers
+          </div>
+          {paginated ? (
+            <div
+              style={{
+                font: `700 ${sz.statCap}px ${t.sans}`,
+                color: t.accent,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+              }}
+            >
+              Page {page.index} / {page.total} · full roster →
+            </div>
+          ) : null}
         </div>
         <div
           style={{

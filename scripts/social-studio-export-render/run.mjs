@@ -1,28 +1,28 @@
 // scripts/social-studio-export-render/run.mjs
 //
 // Drives the FAITHFUL export harness (entry.tsx): boots Vite with the project's own
-// config (so `@` alias + Tailwind + index.css + fonts all apply), mounts the REAL
-// <SocialPreview>, calls the in-app domToPng() export, decodes the resulting PNG, and
-// asserts its pixel dimensions equal FORMAT_DIMS. This is the ONLY harness that
-// reproduces the WI-1 transform-crop bug — leaderboard-card-render cannot, because it
-// has no transform ancestor and screenshots natively.
+// config, mounts the REAL CardExportHost, calls the REAL exportAll(), decodes every
+// slide's PNG, and asserts each one's pixel dimensions equal FORMAT_DIMS. This is the
+// only harness that exercises the app's actual Download/Post export path AND the
+// multi-page pagination.
 //
 // Usage:
 //   node scripts/social-studio-export-render/run.mjs
-//   RENDER_VIEWS=daily,monthly,aotw RENDER_FORMATS=portrait,square,story TOPN=10 \
-//     node scripts/social-studio-export-render/run.mjs
+//   RENDER_VIEWS=daily,monthly,aotw RENDER_FORMATS=portrait,square,story \
+//     TOPN=all N=47 THEME=spotlight node scripts/social-studio-export-render/run.mjs
 //
-// Then READ the PNGs in ./out/ as images — right dimensions with blank/clipped
-// content is still a fail.
+// Then READ the slide PNGs in ./out/ — right dimensions with a clipped last row or
+// blank fonts is still a fail (overflow:hidden hides a clip from the dims check).
 import { createServer } from "vite";
 import { chromium } from "playwright";
 import path from "node:path";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const outDir = path.join(here, "out");
+await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
 
 const FORMAT_DIMS = {
@@ -39,7 +39,8 @@ function pngDims(buf) {
 const VIEWS = (process.env.RENDER_VIEWS || "daily,monthly,aotw").split(",");
 const FORMATS = (process.env.RENDER_FORMATS || "portrait").split(",");
 const THEME = process.env.THEME || "spotlight";
-const topN = process.env.TOPN || "10";
+const TOPN = process.env.TOPN || "all";
+const N = process.env.N || "47";
 
 const server = await createServer({
   root,
@@ -57,29 +58,33 @@ for (const view of VIEWS) {
     const page = await browser.newPage({ deviceScaleFactor: 1 });
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    const key = `${view}-${format}`;
-    const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${topN}`;
+    const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${TOPN}&n=${N}`;
     const url = `http://localhost:5197/scripts/social-studio-export-render/index.html?${qp}`;
     try {
       await page.goto(url, { waitUntil: "load", timeout: 60000 });
       await page.waitForFunction(() => window.__READY__ === true, {
         timeout: 30000,
       });
-      const dataUrl = await page.evaluate(() => window.__exportPng());
-      const buf = Buffer.from(dataUrl.split(",")[1], "base64");
-      const file = path.join(outDir, `${key}.png`);
-      await writeFile(file, buf);
-      const got = pngDims(buf);
+      const urls = await page.evaluate(() => window.__exportAll());
       const want = FORMAT_DIMS[format];
-      const dimsOk = got.w === want.w && got.h === want.h;
-      if (!dimsOk || errors.length) ok = false;
-      const status = dimsOk && errors.length === 0 ? "✅" : "❌";
-      console.log(
-        `${status} ${key.padEnd(18)} export=${got.w}×${got.h}  want=${want.w}×${want.h}  → ${path.relative(root, file)}${errors.length ? "  errors: " + errors.join("; ") : ""}`,
-      );
+      for (let i = 0; i < urls.length; i++) {
+        const buf = Buffer.from(urls[i].split(",")[1], "base64");
+        const file = path.join(outDir, `${view}-${format}-p${i + 1}.png`);
+        await writeFile(file, buf);
+        const got = pngDims(buf);
+        const dimsOk = got.w === want.w && got.h === want.h;
+        if (!dimsOk) ok = false;
+        console.log(
+          `${dimsOk ? "✅" : "❌"} ${`${view}-${format}`.padEnd(16)} slide ${i + 1}/${urls.length}  ${got.w}×${got.h}  → ${path.relative(root, file)}`,
+        );
+      }
+      if (errors.length) {
+        ok = false;
+        console.log(`   ⚠️  page errors: ${errors.join("; ")}`);
+      }
     } catch (e) {
       ok = false;
-      console.log(`❌ ${key} FAILED: ${e?.message || e}`);
+      console.log(`❌ ${view}-${format} FAILED: ${e?.message || e}`);
     }
     await page.close();
   }
@@ -89,7 +94,7 @@ await browser.close();
 await server.close();
 console.log(
   ok
-    ? "\nAll exports match FORMAT_DIMS. Now READ the PNGs to confirm content."
-    : "\n❌ At least one export does NOT match FORMAT_DIMS (or errored).",
+    ? "\nAll slides match FORMAT_DIMS. Now READ them to confirm content + pagination."
+    : "\n❌ At least one slide does NOT match FORMAT_DIMS (or errored).",
 );
 process.exit(ok ? 0 : 1);

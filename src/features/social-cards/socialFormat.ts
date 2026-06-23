@@ -13,6 +13,13 @@
  */
 export type SocialFormat = "portrait" | "square" | "story";
 
+/** One slide's position in a multi-card carousel (1-based). Present on a card only
+ *  when the roster spills past a single page, so the card can stamp "PAGE X / N". */
+export interface CardPageInfo {
+  index: number;
+  total: number;
+}
+
 export const FORMAT_DIMS: Record<SocialFormat, { w: number; h: number }> = {
   portrait: { w: 1080, h: 1350 },
   square: { w: 1080, h: 1080 },

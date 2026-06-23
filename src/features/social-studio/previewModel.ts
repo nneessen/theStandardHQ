@@ -6,7 +6,13 @@
 // label/data timezone disagreement) have regression tests with no React in the way.
 
 import { toLastInitial, usd } from "@/features/social-cards";
-import type { AowDesign, CardTheme } from "@/features/social-cards";
+import type {
+  AowDesign,
+  CardTheme,
+  CardPageInfo,
+  SocialAgentRow,
+  SocialFormat,
+} from "@/features/social-cards";
 import type { PreviewData } from "./components/SocialPreview";
 import type { SocialStudioConfig, SocialView } from "./types";
 
@@ -163,27 +169,140 @@ export interface BuildPreviewArgs {
   labels: PeriodLabels;
 }
 
-export function buildPreviewData({
+// Rows per leaderboard / roster-continuation page, per format. Pinned so a FULL
+// page's last row sits fully inside the 1080×H frame — overflow:hidden hides a clip,
+// so these are verified by rendering, not guessed (see scripts/social-studio-export-render).
+const ROWS_PER_PAGE: Record<SocialFormat, number> = {
+  portrait: 10,
+  square: 7,
+  // 15 clipped the last row (overflow:hidden hides it from the dims check) — 14 is the
+  // verified max that keeps the bottom row fully inside the 1080×1920 frame.
+  story: 14,
+};
+
+// Producers listed on the monthly RECAP page (page 1). It also carries the hero
+// total, stat band, and Agent of the Month, so it holds fewer rows than a pure
+// roster page; the remainder spills to roster-continuation pages.
+const MONTHLY_PAGE1_ROWS: Record<SocialFormat, number> = {
+  portrait: 5,
+  square: 4,
+  story: 8,
+};
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  if (arr.length === 0) return [];
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+/** The selected slice of a roster: a number caps to the top-N, "all" keeps the whole
+ *  agency. */
+function selectN<T>(items: T[], topN: number | "all"): T[] {
+  return topN === "all" ? items : items.slice(0, Math.max(1, topN));
+}
+
+/**
+ * Build the carousel of PreviewData "slides" for the current config + roster. One
+ * card always; more when the selected roster (Top-N / "all") spills past a single
+ * page at the current format.
+ *
+ *   • aotw      → one hero slide, never paginated.
+ *   • monthly   → slide 1 = recap (hero/stats/AOTM) + top producers; slides 2+ =
+ *                 roster continuation rendered as leaderboard cards.
+ *   • daily/wk  → slides = the ranked roster chunked into pages.
+ *
+ * Every slide carries the SAME agency total AP and a `page` stamp ("PAGE X / N") when
+ * there's more than one. Ranks are absolute and contiguous across the page boundary —
+ * the lead slide's title reflects the SELECTED total (e.g. "TOP 20 AGENTS"), not the
+ * per-page row count.
+ */
+export function buildPreviewPages({
   config,
   producers,
   isSample,
   labels,
-}: BuildPreviewArgs): PreviewData {
-  // Defense-in-depth: only take the live path when sample is off AND we actually
-  // have producers. With resolveSampleState, !isSample already implies producers
-  // exist, but guarding here makes every producers[0] access crash-proof
-  // regardless of how isSample was derived.
+}: BuildPreviewArgs): PreviewData[] {
+  // Defense-in-depth: only take the live path when sample is off AND we actually have
+  // producers (every producers[0] access stays crash-proof regardless of isSample).
   const useLive = !isSample && producers.length > 0;
   const { dateLabel, monthLabel, weekRange } = labels;
+  const format = config.format;
+  const theme = config.cardTheme;
+  const perPage = ROWS_PER_PAGE[format];
 
+  const leaderboardPage = (
+    rows: SocialAgentRow[],
+    totalAp: number,
+    periodLabel: string,
+    title: string | undefined,
+    page: CardPageInfo | undefined,
+  ): PreviewData => ({
+    kind: "leaderboard",
+    rows,
+    totalAp,
+    periodLabel,
+    title,
+    theme,
+    page,
+  });
+
+  // ── AOTW: single hero, never paginated ──
+  if (config.view === "aotw") {
+    const top = useLive ? producers[0] : undefined;
+    const photoUrl = config.aowPhotoUrl;
+    const agent = top
+      ? {
+          name: toLastInitial(top.agentName),
+          ap: top.apTotal,
+          policies: policyCountFor(top),
+          photoUrl,
+        }
+      : { ...SAMPLE_AOTW, photoUrl };
+    return [
+      {
+        kind: "aotw",
+        periodLabel: `WEEK OF ${weekRange}`,
+        design: AOW_DESIGN_FOR_THEME[theme],
+        theme,
+        agent,
+        photoPosition: config.aowPhotoPosition,
+        style: {
+          fontDisplay: config.aowFontDisplay,
+          background: config.aowBackground,
+          backgroundImageUrl: config.aowBgImageUrl,
+          titleScale: config.aowTitleScale,
+          agencyScale: config.aowAgencyScale,
+        },
+      },
+    ];
+  }
+
+  // ── MONTHLY: recap page + roster-continuation pages ──
   if (config.view === "monthly") {
-    if (useLive) {
-      const totalAp = producers.reduce((s, e) => s + e.apTotal, 0);
-      const totalPol = producers.reduce((s, e) => s + policyCountFor(e), 0);
-      const agents = producers.length;
-      const avg = agents ? Math.round(totalAp / agents) : 0;
-      const tp = producers[0];
-      return {
+    if (!useLive) {
+      return [{ kind: "report", monthLabel, theme, ...SAMPLE_MONTHLY }];
+    }
+    const totalAp = producers.reduce((s, e) => s + e.apTotal, 0);
+    const totalPol = producers.reduce((s, e) => s + policyCountFor(e), 0);
+    const agents = producers.length;
+    const avg = agents ? Math.round(totalAp / agents) : 0;
+    const tp = producers[0];
+    const rows: SocialAgentRow[] = selectN(producers, config.topN).map(
+      (e, i) => ({
+        rank: i + 1,
+        name: toLastInitial(e.agentName),
+        agency: null,
+        ap: e.apTotal,
+        policies: policyCountFor(e),
+      }),
+    );
+    const recapRows = rows.slice(0, MONTHLY_PAGE1_ROWS[format]);
+    const cont = chunk(rows.slice(MONTHLY_PAGE1_ROWS[format]), perPage);
+    const total = 1 + cont.length;
+    const periodLabel = `MONTHLY · ${monthLabel}`;
+    const pages: PreviewData[] = [
+      {
         kind: "report",
         monthLabel,
         totalAp,
@@ -197,86 +316,65 @@ export function buildPreviewData({
           ap: tp.apTotal,
           policies: policyCountFor(tp),
         },
-        top: producers.slice(0, 5).map((e, i) => ({
-          rank: i + 1,
-          name: toLastInitial(e.agentName),
-          ap: e.apTotal,
-        })),
-        theme: config.cardTheme,
-      };
-    }
-    return {
-      kind: "report",
-      monthLabel,
-      theme: config.cardTheme,
-      ...SAMPLE_MONTHLY,
-    };
-  }
-
-  if (config.view === "aotw") {
-    // The week's #1 producer = the top of the (weekly-scoped) leaderboard. Fall
-    // back to the sample agent when previewing sample OR when there are no real
-    // producers yet (the latter can't happen under resolveSampleState, but the
-    // guard keeps this independent of that).
-    const top = useLive ? producers[0] : undefined;
-    const photoUrl = config.aowPhotoUrl;
-    const agent = top
-      ? {
-          name: toLastInitial(top.agentName),
-          ap: top.apTotal,
-          policies: policyCountFor(top),
-          photoUrl,
-        }
-      : { ...SAMPLE_AOTW, photoUrl };
-    return {
-      kind: "aotw",
-      periodLabel: `WEEK OF ${weekRange}`,
-      design: AOW_DESIGN_FOR_THEME[config.cardTheme],
-      theme: config.cardTheme,
-      agent,
-      photoPosition: config.aowPhotoPosition,
-      style: {
-        fontDisplay: config.aowFontDisplay,
-        background: config.aowBackground,
-        backgroundImageUrl: config.aowBgImageUrl,
-        titleScale: config.aowTitleScale,
-        agencyScale: config.aowAgencyScale,
+        top: recapRows.map((r) => ({ rank: r.rank, name: r.name, ap: r.ap })),
+        theme,
+        page: total > 1 ? { index: 1, total } : undefined,
       },
-    };
+    ];
+    cont.forEach((slice, i) =>
+      pages.push(
+        leaderboardPage(
+          slice,
+          totalAp,
+          periodLabel,
+          `RANKS ${slice[0].rank}–${slice[slice.length - 1].rank}`,
+          { index: i + 2, total },
+        ),
+      ),
+    );
+    return pages;
   }
 
-  // daily / weekly leaderboard
+  // ── DAILY / WEEKLY leaderboard: ranked roster chunked into pages ──
   const periodLabel =
     config.view === "weekly" ? `WEEKLY · ${weekRange}` : `DAILY · ${dateLabel}`;
-  // Card splits >10 rows into two columns, so 20 fits — no format-based clamp.
-  const cap = Math.min(config.topN, 20);
-
-  if (useLive) {
-    return {
-      kind: "leaderboard",
-      rows: producers.slice(0, cap).map((e, i) => ({
+  const rows: SocialAgentRow[] = useLive
+    ? selectN(producers, config.topN).map((e, i) => ({
         rank: i + 1,
         name: toLastInitial(e.agentName),
         agency: null,
         ap: e.apTotal,
         policies: policyCountFor(e),
-      })),
-      totalAp: producers.reduce((s, e) => s + e.apTotal, 0),
-      periodLabel,
-      title: config.title,
-      theme: config.cardTheme,
-    };
-  }
+      }))
+    : selectN(
+        config.view === "weekly" ? SAMPLE_WEEKLY : SAMPLE_DAILY,
+        config.topN,
+      );
+  const totalAp = useLive
+    ? producers.reduce((s, e) => s + e.apTotal, 0)
+    : config.view === "weekly"
+      ? SAMPLE_TOTAL_WEEKLY
+      : SAMPLE_TOTAL_DAILY;
 
-  const sample = config.view === "weekly" ? SAMPLE_WEEKLY : SAMPLE_DAILY;
-  const sampleTotal =
-    config.view === "weekly" ? SAMPLE_TOTAL_WEEKLY : SAMPLE_TOTAL_DAILY;
-  return {
-    kind: "leaderboard",
-    rows: sample.slice(0, cap),
-    totalAp: sampleTotal,
-    periodLabel,
-    title: config.title,
-    theme: config.cardTheme,
-  };
+  const chunks = chunk(rows, perPage);
+  const total = Math.max(1, chunks.length);
+  // Lead title reflects the SELECTED total, not the per-page slice length.
+  const firstTitle = config.title ?? `TOP ${rows.length} AGENTS`;
+  return chunks.map((slice, i) =>
+    leaderboardPage(
+      slice,
+      totalAp,
+      periodLabel,
+      i === 0
+        ? firstTitle
+        : `RANKS ${slice[0].rank}–${slice[slice.length - 1].rank}`,
+      total > 1 ? { index: i + 1, total } : undefined,
+    ),
+  );
+}
+
+/** Single-card preview = page 1 of the carousel. Kept for callers (and tests) that
+ *  only need the lead slide. */
+export function buildPreviewData(args: BuildPreviewArgs): PreviewData {
+  return buildPreviewPages(args)[0];
 }

@@ -3,7 +3,7 @@
 // the SAME components the app uses. Scaled to fit the pane; the forwarded ref
 // points at the UNSCALED card so the PNG export captures it at full 1080px.
 
-import { useRef, useState, type RefObject } from "react";
+import { useRef, useState } from "react";
 import {
   LeaderboardSocialCard,
   MonthlyReportCard,
@@ -16,6 +16,7 @@ import {
   type AowDesign,
   type AowStyle,
   type CardTheme,
+  type CardPageInfo,
 } from "@/features/social-cards";
 import type { SocialFormat } from "../types";
 
@@ -27,6 +28,7 @@ export type PreviewData =
       periodLabel: string;
       title?: string;
       theme: CardTheme;
+      page?: CardPageInfo;
     }
   | {
       kind: "aotw";
@@ -37,7 +39,12 @@ export type PreviewData =
       photoPosition?: string;
       style?: AowStyle;
     }
-  | ({ kind: "report"; monthLabel: string; theme: CardTheme } & Pick<
+  | ({
+      kind: "report";
+      monthLabel: string;
+      theme: CardTheme;
+      page?: CardPageInfo;
+    } & Pick<
       MonthlyReportCardProps,
       "totalAp" | "stats" | "topPerformer" | "top" | "growthLabel"
     >);
@@ -50,8 +57,6 @@ interface SocialPreviewProps {
   isSample: boolean;
   isLoading: boolean;
   showPolicies: boolean;
-  /** Points at the unscaled card wrapper for full-res PNG export. */
-  cardRef: RefObject<HTMLDivElement | null>;
   /** AOTW only: enable drag-to-reposition of the agent photo (face → frame). */
   repositionable?: boolean;
   /** Current photo focal point ("x% y%"). */
@@ -98,6 +103,7 @@ export function SocialCardSwitch({
           title={data.title}
           showPolicies={showPolicies}
           theme={data.theme}
+          page={data.page}
         />
       );
     case "aotw":
@@ -126,6 +132,7 @@ export function SocialCardSwitch({
           growthLabel={data.growthLabel}
           format={format}
           theme={data.theme}
+          page={data.page}
         />
       );
     default: {
@@ -148,7 +155,6 @@ export function SocialPreview({
   isSample,
   isLoading,
   showPolicies,
-  cardRef,
   repositionable = false,
   photoPosition,
   onPhotoPositionChange,
@@ -275,27 +281,6 @@ export function SocialPreview({
             Loading live data…
           </div>
         )}
-      </div>
-
-      {/* Off-screen, UN-transformed, full-size export source. domToPng captures THIS
-          node (via cardRef) so the PNG is always exactly FORMAT_DIMS — its natural
-          bounding rect is 1080×H with no ancestor transform to shrink it. Positioned
-          far off-canvas (not display:none, which wouldn't lay out, and not
-          visibility:hidden, which the rasterizer would honor and emit blank); fixed +
-          z-index:-1 + pointer-events:none keep it invisible and inert. */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          left: -100000,
-          top: 0,
-          zIndex: -1,
-          pointerEvents: "none",
-        }}
-      >
-        <div ref={cardRef} className={themeClass} style={{ width: naturalW }}>
-          {cardInner}
-        </div>
       </div>
     </div>
   );

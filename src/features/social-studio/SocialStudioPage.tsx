@@ -14,11 +14,12 @@ import {
   Lock,
   CalendarClock,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { SectionShell, PillNav } from "@/components/v2";
 import { Board, Cap } from "@/components/board";
 import { Button } from "@/components/ui/button";
-import { renderCardToPng } from "@/features/social-cards";
 import { useImo } from "@/contexts/ImoContext";
 import { useAgencyAgentLeaderboard } from "@/hooks/leaderboard";
 import { useAiAccess } from "@/hooks/subscription";
@@ -26,6 +27,10 @@ import { useInstagramIntegrations, useSchedulePost } from "@/hooks/instagram";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
 import { SocialPreview } from "./components/SocialPreview";
+import {
+  CardExportHost,
+  type CardExportHandle,
+} from "./components/CardExportHost";
 import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
@@ -39,7 +44,7 @@ import {
 import {
   resolveSampleState,
   buildPeriodLabels,
-  buildPreviewData,
+  buildPreviewPages,
 } from "./previewModel";
 
 // Formats the spotlight-assets bucket accepts AND a browser <img> can render. iPhone
@@ -76,7 +81,7 @@ export function SocialStudioPage() {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
   const schedulingRef = useRef(false);
-  const cardRef = useRef<HTMLDivElement | null>(null);
+  const exportHostRef = useRef<CardExportHandle>(null);
   const { hasAiAccess } = useAiAccess();
   const {
     uploadAgentPhoto,
@@ -132,10 +137,18 @@ export function SocialStudioPage() {
   // the printed stamp can't disagree with the data. Computed once per mount.
   const labels = useMemo(() => buildPeriodLabels(), []);
 
-  const previewData = useMemo(
-    () => buildPreviewData({ config, producers, isSample, labels }),
+  // The carousel of slides for the current config. One card always; more when the
+  // selected roster (Top-N / "all") spills past a page at the current format.
+  const previewPages = useMemo(
+    () => buildPreviewPages({ config, producers, isSample, labels }),
     [config, producers, isSample, labels],
   );
+  // Lead slide drives the caption context; the shown slide drives the on-screen preview.
+  const previewData = previewPages[0];
+  const pageCount = previewPages.length;
+  const [pageIndex, setPageIndex] = useState(0);
+  const shownIndex = Math.min(pageIndex, pageCount - 1);
+  const shownPage = previewPages[shownIndex];
 
   async function handleUploadPhoto(file: File) {
     if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
@@ -212,40 +225,46 @@ export function SocialStudioPage() {
     }
   }
 
+  // Download every slide of the carousel (one PNG per page). A single-card post is
+  // just one file.
   async function handleDownload() {
-    if (!cardRef.current) return;
     if (isSample) {
       toast.error(
         "This is a sample preview — switch off 'Preview with sample data' (once you have real production) to download a real post.",
       );
       return;
     }
-    // Capture the filename BEFORE the awaits — the user could switch view/format during
-    // font-load + rasterization, which would otherwise mis-name the file.
-    const filename = `${agencyName.toLowerCase().replace(/\s+/g, "-")}-${config.view}-${config.format}.png`;
+    // Capture the base name BEFORE the awaits — the user could switch view/format during
+    // font-load + rasterization, which would otherwise mis-name the files.
+    const base = `${agencyName.toLowerCase().replace(/\s+/g, "-")}-${config.view}-${config.format}`;
     try {
-      const dataUrl = await renderCardPng();
-      if (!dataUrl) return;
-      const a = document.createElement("a");
-      a.download = filename;
-      a.href = dataUrl;
-      a.click();
-      toast.success("Image downloaded");
+      const urls = await exportHostRef.current?.exportAll();
+      if (!urls || urls.length === 0) return;
+      const multi = urls.length > 1;
+      for (let i = 0; i < urls.length; i++) {
+        const a = document.createElement("a");
+        a.download = multi ? `${base}-slide-${i + 1}.png` : `${base}.png`;
+        a.href = urls[i];
+        a.click();
+        // Browsers throttle rapid programmatic downloads — a small gap so each lands.
+        if (multi && i < urls.length - 1)
+          await new Promise((r) => setTimeout(r, 350));
+      }
+      toast.success(
+        multi ? `Downloaded ${urls.length} slides` : "Image downloaded",
+      );
     } catch (e) {
       console.error("Social card download failed:", e);
       toast.error("Couldn't generate the image. Please try again.");
     }
   }
 
-  // Render the (unscaled) card to a faithful PNG data URL via the shared exporter
-  // (renderCardToPng): modern-screenshot embeds cross-origin webfonts + renders CSS
-  // gradients accurately, and explicit FORMAT_DIMS width/height pin the output to the
-  // format's native size. cardRef points at SocialPreview's OFF-SCREEN full-size copy,
-  // so the capture is never the scaled-down preview rect (the WI-1 crop bug). Shared
-  // by Download + Post to Instagram.
+  // Rasterize the CURRENTLY-PREVIEWED slide (Post Now / Schedule). The off-screen
+  // CardExportHost mounts every slide at full 1080×H via the shared renderCardToPng
+  // exporter (explicit FORMAT_DIMS pin + un-transformed node = no WI-1 crop);
+  // exportOne captures the shown one. (Carousel multi-slide posting lands in Phase B.)
   async function renderCardPng(): Promise<string | null> {
-    if (!cardRef.current) return null;
-    return renderCardToPng(cardRef.current, config.format);
+    return (await exportHostRef.current?.exportOne(shownIndex)) ?? null;
   }
 
   // Publish the current card straight to the agency's connected Instagram feed:
@@ -563,18 +582,54 @@ export function SocialStudioPage() {
               </div>
             )}
             <SocialPreview
-              data={previewData}
+              data={shownPage}
               format={config.format}
               agencyName={agencyName}
               network={network}
               isSample={isSample}
               isLoading={isLoading}
               showPolicies={config.showPolicies}
-              cardRef={cardRef}
               repositionable={config.view === "aotw" && !!config.aowPhotoUrl}
               photoPosition={config.aowPhotoPosition}
               onPhotoPositionChange={(pos) => patch({ aowPhotoPosition: pos })}
             />
+            {/* Off-screen exporter — mounts EVERY slide at full 1080×H for Download/Post. */}
+            <CardExportHost
+              ref={exportHostRef}
+              pages={previewPages}
+              format={config.format}
+              agencyName={agencyName}
+              network={network}
+              showPolicies={config.showPolicies}
+            />
+            {/* Carousel slide navigation — only when the roster spans multiple cards. */}
+            {pageCount > 1 && (
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={shownIndex === 0}
+                  onClick={() => setPageIndex(Math.max(0, shownIndex - 1))}
+                  title="Previous slide"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </Button>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Slide {shownIndex + 1} of {pageCount}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={shownIndex === pageCount - 1}
+                  onClick={() =>
+                    setPageIndex(Math.min(pageCount - 1, shownIndex + 1))
+                  }
+                  title="Next slide"
+                >
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
             {isSample && !isLoading && (
               <p className="text-center text-[11px] text-muted-foreground">
                 {hasLive

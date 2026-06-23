@@ -8,6 +8,7 @@ import {
   resolveSampleState,
   buildPeriodLabels,
   buildPreviewData,
+  buildPreviewPages,
   type ProducerRow,
 } from "../previewModel";
 import { DEFAULT_CONFIG, type SocialStudioConfig } from "../types";
@@ -221,5 +222,90 @@ describe("buildPreviewData", () => {
       labels: LABELS,
     });
     if (data.kind === "leaderboard") expect(data.rows).toHaveLength(5);
+  });
+});
+
+describe("buildPreviewPages (pagination — WI-4)", () => {
+  const makeProducers = (n: number): ProducerRow[] =>
+    Array.from({ length: n }, (_, i) => ({
+      agentName: `Agent ${String(i).padStart(2, "0")}`,
+      apTotal: 10000 - i,
+      policyCount: 1,
+    }));
+  const ranksOf = (pages: ReturnType<typeof buildPreviewPages>): number[] =>
+    pages.flatMap((p) =>
+      p.kind === "leaderboard" ? p.rows.map((r) => r.rank) : [],
+    );
+
+  it("paginates the whole agency into contiguous, gap-free pages", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "daily", format: "portrait", topN: "all" }),
+      producers: makeProducers(25),
+      isSample: false,
+      labels: LABELS,
+    });
+    // 25 rows / 10 per portrait page = 3 pages (10, 10, 5).
+    expect(pages).toHaveLength(3);
+    expect(ranksOf(pages)).toEqual(Array.from({ length: 25 }, (_, i) => i + 1));
+    // Every page stamped index/total and carries the SAME agency total AP.
+    const expectedTotal = 250000 - (24 * 25) / 2; // sum(10000-i, i=0..24)
+    pages.forEach((p, i) => {
+      // All daily pages are leaderboard cards (narrowed for `page`/`totalAp`).
+      if (p.kind === "leaderboard") {
+        expect(p.page).toEqual({ index: i + 1, total: 3 });
+        expect(p.totalAp).toBe(expectedTotal);
+      }
+    });
+    // Lead title reflects the SELECTED total, not the per-page slice length.
+    if (pages[0].kind === "leaderboard")
+      expect(pages[0].title).toBe("TOP 25 AGENTS");
+  });
+
+  it("honors a numeric Top-N cap before paginating", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "daily", format: "portrait", topN: 20 }),
+      producers: makeProducers(50),
+      isSample: false,
+      labels: LABELS,
+    });
+    expect(pages).toHaveLength(2); // 20 selected / 10
+    expect(ranksOf(pages)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
+  });
+
+  it("leaves a single page UNstamped (no PAGE x/N on a one-card post)", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "daily", format: "portrait", topN: 5 }),
+      producers: makeProducers(25),
+      isSample: false,
+      labels: LABELS,
+    });
+    expect(pages).toHaveLength(1);
+    if (pages[0].kind === "leaderboard") expect(pages[0].page).toBeUndefined();
+  });
+
+  it("monthly: recap slide 1, then contiguous leaderboard continuation", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "monthly", format: "portrait", topN: "all" }),
+      producers: makeProducers(20),
+      isSample: false,
+      labels: LABELS,
+    });
+    // recap holds 5; remaining 15 / 10 = 2 cont pages → 3 total.
+    expect(pages).toHaveLength(3);
+    expect(pages[0].kind).toBe("report");
+    expect(pages[1].kind).toBe("leaderboard");
+    if (pages[1].kind === "leaderboard") expect(pages[1].rows[0].rank).toBe(6); // continues after the recap's top 5
+    if (pages[2].kind === "leaderboard") expect(pages[2].rows[0].rank).toBe(16);
+  });
+
+  it("aotw is always a single hero slide", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "aotw", topN: "all" }),
+      producers: makeProducers(40),
+      isSample: false,
+      labels: LABELS,
+    });
+    expect(pages).toHaveLength(1);
+    expect(pages[0].kind).toBe("aotw");
   });
 });
