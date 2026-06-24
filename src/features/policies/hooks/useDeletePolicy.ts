@@ -56,6 +56,9 @@ export function useDeletePolicy() {
       queryClient.invalidateQueries({ queryKey: policyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: policyKeys.count() });
       queryClient.invalidateQueries({ queryKey: policyKeys.metrics() });
+      queryClient.invalidateQueries({
+        queryKey: policyKeys.dashboardMetrics(),
+      });
 
       // Remove from detail cache
       queryClient.removeQueries({ queryKey: policyKeys.detail(deletedId) });

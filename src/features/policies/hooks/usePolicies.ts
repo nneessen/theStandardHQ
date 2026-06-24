@@ -80,7 +80,9 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
         enabled,
       },
       {
-        ...policyQueries.metrics(filters),
+        // Server-side aggregate (counts + premium + YTD + earned/pending
+        // commission) — replaces client-side loading of all commissions/policies.
+        ...policyQueries.dashboardMetrics(filters),
         enabled,
       },
     ],

@@ -205,6 +205,25 @@ export interface PolicySortConfig {
   direction: "asc" | "desc";
 }
 
+/**
+ * Aggregated metrics for the Policies page band. Computed server-side by the
+ * `get_policy_dashboard_metrics` RPC (one row) instead of loading every policy
+ * and commission into the browser.
+ */
+export interface PolicyDashboardMetrics {
+  totalPolicies: number;
+  activePolicies: number;
+  pendingPolicies: number;
+  lapsedPolicies: number;
+  cancelledPolicies: number;
+  totalPremium: number;
+  avgPremium: number;
+  ytdPolicies: number;
+  ytdPremium: number;
+  earnedCommission: number;
+  pendingCommission: number;
+}
+
 // =============================================================================
 // ANALYTICS TYPES
 // =============================================================================

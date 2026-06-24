@@ -5648,6 +5648,78 @@ export type Database = {
           },
         ];
       };
+      instagram_scheduled_posts: {
+        Row: {
+          caption: string | null;
+          card_theme: string | null;
+          created_at: string | null;
+          id: string;
+          image_url: string;
+          imo_id: string;
+          integration_id: string | null;
+          last_error: string | null;
+          published_at: string | null;
+          published_media_id: string | null;
+          retry_count: number;
+          scheduled_by: string;
+          scheduled_for: string;
+          status: Database["public"]["Enums"]["scheduled_post_status"];
+          updated_at: string | null;
+          view: string | null;
+        };
+        Insert: {
+          caption?: string | null;
+          card_theme?: string | null;
+          created_at?: string | null;
+          id?: string;
+          image_url: string;
+          imo_id: string;
+          integration_id?: string | null;
+          last_error?: string | null;
+          published_at?: string | null;
+          published_media_id?: string | null;
+          retry_count?: number;
+          scheduled_by: string;
+          scheduled_for: string;
+          status?: Database["public"]["Enums"]["scheduled_post_status"];
+          updated_at?: string | null;
+          view?: string | null;
+        };
+        Update: {
+          caption?: string | null;
+          card_theme?: string | null;
+          created_at?: string | null;
+          id?: string;
+          image_url?: string;
+          imo_id?: string;
+          integration_id?: string | null;
+          last_error?: string | null;
+          published_at?: string | null;
+          published_media_id?: string | null;
+          retry_count?: number;
+          scheduled_by?: string;
+          scheduled_for?: string;
+          status?: Database["public"]["Enums"]["scheduled_post_status"];
+          updated_at?: string | null;
+          view?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "instagram_scheduled_posts_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "instagram_scheduled_posts_integration_id_fkey";
+            columns: ["integration_id"];
+            isOneToOne: false;
+            referencedRelation: "instagram_integrations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       instagram_template_categories: {
         Row: {
           created_at: string | null;
@@ -16918,6 +16990,33 @@ export type Database = {
         Args: { p_recipient_id?: string; p_workflow_id: string };
         Returns: boolean;
       };
+      cancel_instagram_scheduled_post: {
+        Args: { p_id: string };
+        Returns: {
+          caption: string | null;
+          card_theme: string | null;
+          created_at: string | null;
+          id: string;
+          image_url: string;
+          imo_id: string;
+          integration_id: string | null;
+          last_error: string | null;
+          published_at: string | null;
+          published_media_id: string | null;
+          retry_count: number;
+          scheduled_by: string;
+          scheduled_for: string;
+          status: Database["public"]["Enums"]["scheduled_post_status"];
+          updated_at: string | null;
+          view: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "instagram_scheduled_posts";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       cancel_recruit_invitation: {
         Args: { p_invitation_id: string };
         Returns: Json;
@@ -18934,6 +19033,31 @@ export type Database = {
           policy_count: number;
         }[];
       };
+      get_policy_dashboard_metrics: {
+        Args: {
+          p_carrier_id?: string;
+          p_date_field?: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_lifecycle_status?: string;
+          p_product?: string;
+          p_search?: string;
+          p_status?: string;
+        };
+        Returns: {
+          active_policies: number;
+          avg_premium: number;
+          cancelled_policies: number;
+          earned_commission: number;
+          lapsed_policies: number;
+          pending_commission: number;
+          pending_policies: number;
+          total_policies: number;
+          total_premium: number;
+          ytd_policies: number;
+          ytd_premium: number;
+        }[];
+      };
       get_premium_matrices_for_imo: {
         Args: { p_imo_id: string; p_limit?: number; p_offset?: number };
         Returns: {
@@ -20201,6 +20325,41 @@ export type Database = {
         Args: { p_workflow_id: string };
         Returns: string;
       };
+      schedule_instagram_post: {
+        Args: {
+          p_caption: string;
+          p_card_theme: string;
+          p_id: string;
+          p_image_url: string;
+          p_integration_id: string;
+          p_scheduled_for: string;
+          p_view: string;
+        };
+        Returns: {
+          caption: string | null;
+          card_theme: string | null;
+          created_at: string | null;
+          id: string;
+          image_url: string;
+          imo_id: string;
+          integration_id: string | null;
+          last_error: string | null;
+          published_at: string | null;
+          published_media_id: string | null;
+          retry_count: number;
+          scheduled_by: string;
+          scheduled_for: string;
+          status: Database["public"]["Enums"]["scheduled_post_status"];
+          updated_at: string | null;
+          view: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "instagram_scheduled_posts";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       search_users_for_assignment: {
         Args: {
           p_approval_status?: string;
@@ -20752,6 +20911,7 @@ export type Database = {
         | "cancelled"
         | "failed"
         | "expired";
+      scheduled_post_status: "pending" | "published" | "failed" | "expired";
       table_rating:
         | "none"
         | "A"
@@ -21077,6 +21237,7 @@ export const Constants = {
         "failed",
         "expired",
       ],
+      scheduled_post_status: ["pending", "published", "failed", "expired"],
       table_rating: [
         "none",
         "A",

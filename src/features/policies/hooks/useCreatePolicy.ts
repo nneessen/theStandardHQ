@@ -29,6 +29,9 @@ export function useCreatePolicy() {
       queryClient.invalidateQueries({ queryKey: policyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: policyKeys.count() });
       queryClient.invalidateQueries({ queryKey: policyKeys.metrics() });
+      queryClient.invalidateQueries({
+        queryKey: policyKeys.dashboardMetrics(),
+      });
       // Also invalidate commissions (policy creation may create commission)
       queryClient.invalidateQueries({ queryKey: ["commissions"] });
       // Set the new policy in detail cache

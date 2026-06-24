@@ -168,6 +168,9 @@ export function useUpdatePolicy() {
       queryClient.invalidateQueries({ queryKey: policyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: policyKeys.count() });
       queryClient.invalidateQueries({ queryKey: policyKeys.metrics() });
+      queryClient.invalidateQueries({
+        queryKey: policyKeys.dashboardMetrics(),
+      });
 
       // Update detail cache
       queryClient.setQueryData(

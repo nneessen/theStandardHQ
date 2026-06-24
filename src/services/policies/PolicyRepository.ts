@@ -5,6 +5,7 @@ import {
   Policy,
   CreatePolicyData,
   UpdatePolicyData,
+  PolicyDashboardMetrics,
 } from "../../types/policy.types";
 import { formatDateForDB, parseLocalDate } from "../../lib/date";
 
@@ -1109,6 +1110,58 @@ export class PolicyRepository extends BaseRepository<
       console.error("PolicyRepository.getAggregateMetrics error:", error);
       throw error;
     }
+  }
+
+  /**
+   * Server-side aggregate for the Policies page metrics band. Returns a single
+   * row (counts, premium, YTD, earned/pending commission) computed in Postgres,
+   * instead of loading every policy + commission into the browser. Scoped to the
+   * caller's own policies via auth.uid() inside the RPC.
+   */
+  async getDashboardMetrics(filters?: {
+    status?: string;
+    carrierId?: string;
+    product?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    dateField?: "submit_date" | "effective_date";
+    searchTerm?: string;
+    lifecycleStatus?: string;
+  }): Promise<PolicyDashboardMetrics> {
+    const { data, error } = await this.client.rpc(
+      "get_policy_dashboard_metrics",
+      {
+        p_status: filters?.status ?? undefined,
+        p_lifecycle_status: filters?.lifecycleStatus ?? undefined,
+        p_carrier_id: filters?.carrierId ?? undefined,
+        p_product: filters?.product ?? undefined,
+        p_date_from: filters?.dateFrom ?? undefined,
+        p_date_to: filters?.dateTo ?? undefined,
+        p_date_field: filters?.dateField ?? "submit_date",
+        p_search: filters?.searchTerm ?? undefined,
+      },
+    );
+
+    if (error) {
+      console.error("PolicyRepository.getDashboardMetrics error:", error);
+      throw error;
+    }
+
+    // RETURNS TABLE → one-row array.
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      totalPolicies: Number(row?.total_policies ?? 0),
+      activePolicies: Number(row?.active_policies ?? 0),
+      pendingPolicies: Number(row?.pending_policies ?? 0),
+      lapsedPolicies: Number(row?.lapsed_policies ?? 0),
+      cancelledPolicies: Number(row?.cancelled_policies ?? 0),
+      totalPremium: Number(row?.total_premium ?? 0),
+      avgPremium: Number(row?.avg_premium ?? 0),
+      ytdPolicies: Number(row?.ytd_policies ?? 0),
+      ytdPremium: Number(row?.ytd_premium ?? 0),
+      earnedCommission: Number(row?.earned_commission ?? 0),
+      pendingCommission: Number(row?.pending_commission ?? 0),
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema

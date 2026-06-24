@@ -78,7 +78,7 @@ import {
 import { ProductType } from "../../types/product.types";
 import { formatCurrency, formatDate } from "../../lib/format";
 import { LeadPurchaseLinkDialog } from "./components/LeadPurchaseLinkDialog";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { policyQueries } from "./queries";
 import { toast } from "sonner";
 import {
@@ -241,36 +241,12 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     [commissions],
   );
 
-  // When filters are active, fetch all matching policy IDs to scope commission metrics
-  const hasActiveFilters = filterCount > 0;
-  const { data: allFilteredPolicies } = useQuery({
-    // Use queryFilters (carries the selected dateField) so the metric-scoping
-    // set matches the visible paginated table, not a different date column.
-    ...policyQueries.list(queryFilters),
-    enabled: hasActiveFilters,
-  });
-
-  // Scope commissions to filtered policies when filters are active
-  const filteredPolicyIds =
-    hasActiveFilters && allFilteredPolicies
-      ? new Set(allFilteredPolicies.map((p) => p.id))
-      : null;
-  const commissionsForMetrics = filteredPolicyIds
-    ? commissions.filter((c) => c.policyId && filteredPolicyIds.has(c.policyId))
-    : commissions;
-
-  // Commission metrics scoped to current filter selection
-  // Only count commissions that have actually been paid out (advanced to agent)
-  const paidCommissions = commissionsForMetrics.filter(
-    (c) => c.status === "paid",
-  );
-  const earnedCommission = paidCommissions.reduce(
-    (sum, c) => sum + (c.earnedAmount || 0),
-    0,
-  );
-  const pendingCommission = commissionsForMetrics
-    .filter((c) => c.status === "pending")
-    .reduce((sum, c) => sum + (c.amount || 0), 0);
+  // Earned/pending commission totals come from the server-side metrics aggregate
+  // (metrics.earnedCommission / metrics.pendingCommission) — see usePoliciesPaginated.
+  // We no longer fetch every filtered policy + every commission into the browser
+  // just to sum them; the RPC scopes by the same filters as the visible table.
+  const earnedCommission = metrics?.earnedCommission ?? 0;
+  const pendingCommission = metrics?.pendingCommission ?? 0;
 
   // Handle search with debounce
   useEffect(() => {

@@ -43,6 +43,8 @@ export const policyKeys = {
     [...policyKeys.all, "count", filters] as const,
   metrics: (filters: PolicyFilters = {}) =>
     [...policyKeys.all, "metrics", filters] as const,
+  dashboardMetrics: (filters: PolicyFilters = {}) =>
+    [...policyKeys.all, "dashboard-metrics", filters] as const,
   byLeadPurchase: (leadPurchaseId: string) =>
     [...policyKeys.all, "by-lead-purchase", leadPurchaseId] as const,
   unlinkedRecent: (userId: string) =>
@@ -88,6 +90,15 @@ export const policyQueries = {
     queryOptions({
       queryKey: policyKeys.metrics(filters),
       queryFn: () => policyService.getAggregateMetrics(filters),
+      staleTime: POLICY_STALE_TIME,
+    }),
+
+  // Server-side aggregate for the policies metrics band (counts + premium + YTD
+  // + earned/pending commission), one round-trip via the get_policy_dashboard_metrics RPC.
+  dashboardMetrics: (filters: PolicyFilters = {}) =>
+    queryOptions({
+      queryKey: policyKeys.dashboardMetrics(filters),
+      queryFn: () => policyService.getDashboardMetrics(filters),
       staleTime: POLICY_STALE_TIME,
     }),
 

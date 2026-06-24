@@ -3,6 +3,7 @@ import {
   PolicyFilters,
   CreatePolicyData,
   LeadSourceType,
+  PolicyDashboardMetrics,
 } from "../../types/policy.types";
 import { PolicyRepository } from "./PolicyRepository";
 import { supabase } from "../base/supabase";
@@ -551,6 +552,31 @@ class PolicyService {
       repoFilters,
       userId || undefined,
     );
+  }
+
+  /**
+   * Server-side dashboard metrics for the Policies page (counts, premium, YTD,
+   * earned/pending commission) in ONE aggregated round-trip. Replaces loading
+   * all commissions + all filtered policies into the browser. Scoped to the
+   * caller's own policies by the RPC (auth.uid()).
+   */
+  async getDashboardMetrics(
+    filters?: PolicyFilters,
+  ): Promise<PolicyDashboardMetrics> {
+    const repoFilters = filters
+      ? {
+          status: filters.status,
+          carrierId: filters.carrierId,
+          product: filters.product,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+          dateField: filters.dateField,
+          searchTerm: filters.searchTerm,
+          lifecycleStatus: filters.lifecycleStatus,
+        }
+      : undefined;
+
+    return this.repository.getDashboardMetrics(repoFilters);
   }
 
   /**
