@@ -112,6 +112,26 @@ const dataPages = buildPreviewPages({
   labels,
 });
 
+// A canvas-drawn gradient stands in for an uploaded photo so we can Read the custom
+// variant's image path (dark scrim + forced-light ink) without embedding a huge data URL.
+function gradientDataUrl(): string {
+  const c = document.createElement("canvas");
+  c.width = 600;
+  c.height = 600;
+  const g = c.getContext("2d");
+  if (!g) return "";
+  const grad = g.createLinearGradient(0, 0, 600, 600);
+  grad.addColorStop(0, "#1e3a8a");
+  grad.addColorStop(1, "#9333ea");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 600, 600);
+  g.fillStyle = "rgba(255,255,255,0.14)";
+  g.beginPath();
+  g.arc(430, 160, 200, 0, Math.PI * 2);
+  g.fill();
+  return c.toDataURL("image/png");
+}
+
 // ?deck=1 → a MIXED carousel (#8): the leaderboard lead card + every marketing variant,
 // page-stamped, so we can Read each marketing card AND confirm a mixed deck is cohesive.
 const wantDeck = params.get("deck") === "1";
@@ -143,6 +163,7 @@ const marketing: PreviewData[] = [
     theme: cardTheme,
     headline: "A $1,000,000 month",
     body: "Our biggest month yet — thank you to every producer who made it happen.",
+    imageDataUrl: gradientDataUrl(),
   },
 ];
 const pages: PreviewData[] = wantDeck
