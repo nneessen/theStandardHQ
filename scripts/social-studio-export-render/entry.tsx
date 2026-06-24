@@ -27,6 +27,7 @@ import {
   type SocialView,
 } from "@/features/social-studio/types";
 import { normalizeCardTheme, type SocialFormat } from "@/features/social-cards";
+import type { PreviewData } from "@/features/social-studio/components/SocialPreview";
 
 declare global {
   interface Window {
@@ -104,7 +105,53 @@ const producers: ProducerRow[] = Array.from({ length: n }, (_, i) => ({
 
 const config = { ...DEFAULT_CONFIG, view, format, cardTheme, topN };
 const labels = buildPeriodLabels(new Date("2026-06-20T12:00:00Z"));
-const pages = buildPreviewPages({ config, producers, isSample: false, labels });
+const dataPages = buildPreviewPages({
+  config,
+  producers,
+  isSample: false,
+  labels,
+});
+
+// ?deck=1 → a MIXED carousel (#8): the leaderboard lead card + every marketing variant,
+// page-stamped, so we can Read each marketing card AND confirm a mixed deck is cohesive.
+const wantDeck = params.get("deck") === "1";
+const marketing: PreviewData[] = [
+  {
+    kind: "marketing",
+    variant: "quote",
+    theme: cardTheme,
+    text: "Protect what matters most — your family's future starts with one honest conversation.",
+    attribution: "The Standard",
+  },
+  {
+    kind: "marketing",
+    variant: "tip",
+    theme: cardTheme,
+    headline: "Lead with the why",
+    body: "Open every call by asking what they're protecting. The product follows the purpose, never the other way around.",
+  },
+  {
+    kind: "marketing",
+    variant: "cta",
+    theme: cardTheme,
+    headline: "Join our team",
+    body: "We're growing across the region. Build a career helping families protect their future.",
+  },
+  {
+    kind: "marketing",
+    variant: "custom",
+    theme: cardTheme,
+    headline: "A $1,000,000 month",
+    body: "Our biggest month yet — thank you to every producer who made it happen.",
+  },
+];
+const pages: PreviewData[] = wantDeck
+  ? [dataPages[0], ...marketing].map((p, i, arr) =>
+      p.kind === "aotw"
+        ? p
+        : { ...p, page: { index: i + 1, total: arr.length } },
+    )
+  : dataPages;
 
 function App() {
   const hostRef = useRef<CardExportHandle>(null);

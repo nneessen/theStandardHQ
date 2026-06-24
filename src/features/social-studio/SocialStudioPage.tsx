@@ -35,6 +35,7 @@ import { PostConfirmDialog } from "./components/PostConfirmDialog";
 import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
+import { CarouselBuilder } from "./components/CarouselBuilder";
 import { ScheduledPostsPanel } from "./components/ScheduledPostsPanel";
 import {
   DEFAULT_CONFIG,
@@ -70,6 +71,8 @@ export function SocialStudioPage() {
   const tenantMissing = !tenantLoading && (!agencyId || !imoId);
 
   const [config, setConfig] = useState<SocialStudioConfig>(DEFAULT_CONFIG);
+  // Single-card flow (default) vs the multi-slide carousel builder (#8).
+  const [mode, setMode] = useState<"single" | "builder">("single");
   const [generatingCaption, setGeneratingCaption] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
@@ -473,14 +476,24 @@ export function SocialStudioPage() {
                 totalAP: previewData.agent.ap,
                 policies: previewData.agent.policies,
               }
-            : {
-                view: config.view,
-                agencyName,
-                network,
-                periodLabel: previewData.periodLabel,
-                topAgent: previewData.rows[0]?.name,
-                totalAP: previewData.totalAp,
-              };
+            : previewData.kind === "leaderboard"
+              ? {
+                  view: config.view,
+                  agencyName,
+                  network,
+                  periodLabel: previewData.periodLabel,
+                  topAgent: previewData.rows[0]?.name,
+                  totalAP: previewData.totalAp,
+                }
+              : {
+                  // Marketing slides carry no data context — they aren't produced by
+                  // buildPreviewPages in the single-card flow; defensive for the
+                  // broadened PreviewData union so the exhaustive types stay honest.
+                  view: config.view,
+                  agencyName,
+                  network,
+                  periodLabel: "",
+                };
       const caption = await generateCaption(ctx);
       patch({ caption });
       toast.success("Caption generated");
@@ -538,8 +551,47 @@ export function SocialStudioPage() {
           </div>
         )}
 
-        {/* Body: preview + controls */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
+        {/* Mode toggle: a single card, or the multi-slide carousel builder. */}
+        <div className="mb-3 inline-flex rounded-lg border border-border bg-card/40 p-0.5 text-xs">
+          <button
+            className={`rounded-md px-3 py-1 font-medium transition-colors ${
+              mode === "single"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setMode("single")}
+          >
+            Single card
+          </button>
+          <button
+            className={`rounded-md px-3 py-1 font-medium transition-colors ${
+              mode === "builder"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setMode("builder")}
+          >
+            Carousel builder
+          </button>
+        </div>
+
+        {mode === "builder" && (
+          <CarouselBuilder
+            config={config}
+            producers={producers}
+            isSample={isSample}
+            labels={labels}
+            agencyName={agencyName}
+            network={network}
+            igConnected={igConnected}
+            selectedIntegration={selectedIntegration}
+          />
+        )}
+
+        {/* Body: preview + controls (single-card mode) */}
+        <div
+          className={`${mode === "single" ? "grid" : "hidden"} grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]`}
+        >
           {/* Preview column */}
           <Board pad={16} className="flex flex-col items-center gap-3">
             <div className="flex w-full items-center justify-between">

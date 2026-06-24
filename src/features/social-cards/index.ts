@@ -20,6 +20,9 @@ export type {
 export { MonthlyReportCard } from "./MonthlyReportCard";
 export type { MonthlyReportCardProps, ReportStat } from "./MonthlyReportCard";
 
+export { MarketingCard } from "./MarketingCard";
+export type { MarketingCardProps, MarketingVariant } from "./MarketingCard";
+
 export { usd, toLastInitial, initials, FORMAT_DIMS } from "./socialFormat";
 export type { SocialFormat, CardPageInfo } from "./socialFormat";
 

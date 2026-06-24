@@ -8,6 +8,7 @@ import {
   LeaderboardSocialCard,
   MonthlyReportCard,
   AgentOfWeekCard,
+  MarketingCard,
   FORMAT_DIMS,
   cardThemeWrapperClass,
   type SocialAgentRow,
@@ -17,6 +18,7 @@ import {
   type AowStyle,
   type CardTheme,
   type CardPageInfo,
+  type MarketingVariant,
 } from "@/features/social-cards";
 import type { SocialFormat } from "../types";
 
@@ -47,7 +49,20 @@ export type PreviewData =
     } & Pick<
       MonthlyReportCardProps,
       "totalAp" | "stats" | "topPerformer" | "top" | "growthLabel"
-    >);
+    >)
+  // Marketing slide for the carousel builder (#8) — non-data copy (quote/tip/recruiting
+  // CTA/custom). One member with a `variant`; which content fields apply depends on it.
+  | {
+      kind: "marketing";
+      variant: MarketingVariant;
+      theme: CardTheme;
+      page?: CardPageInfo;
+      text?: string;
+      attribution?: string;
+      headline?: string;
+      body?: string;
+      imageDataUrl?: string;
+    };
 
 interface SocialPreviewProps {
   data: PreviewData;
@@ -133,6 +148,22 @@ export function SocialCardSwitch({
           format={format}
           theme={data.theme}
           page={data.page}
+        />
+      );
+    case "marketing":
+      return (
+        <MarketingCard
+          variant={data.variant}
+          agencyName={agencyName}
+          network={network}
+          format={format}
+          theme={data.theme}
+          page={data.page}
+          text={data.text}
+          attribution={data.attribution}
+          headline={data.headline}
+          body={data.body}
+          imageDataUrl={data.imageDataUrl}
         />
       );
     default: {
