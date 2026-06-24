@@ -57,6 +57,7 @@ import {
   type CallLibraryFilters,
   type CallLibraryRow,
 } from "../hooks/useCallLibrary";
+import { formatDateForDisplay } from "@/lib/date";
 import { callReviewKeys } from "../hooks/callReviewKeys";
 import { useMyLikedRecordingIds, useToggleLike } from "../hooks/useCallLikes";
 import { useMyListenedRecordingIds } from "../hooks/useCallListens";
@@ -356,7 +357,11 @@ export function CallReviewsPage() {
                     </div>
                     <div className="text-v2-ink-muted text-[13px] tabular-nums">
                       {r.call_at
-                        ? new Date(r.call_at).toLocaleDateString()
+                        ? formatDateForDisplay(r.call_at, {
+                            month: "numeric",
+                            day: "numeric",
+                            year: "numeric",
+                          })
                         : "—"}
                     </div>
                     <div className="text-v2-ink-muted text-[13px] font-mono tabular-nums">
