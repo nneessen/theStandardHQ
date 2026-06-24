@@ -137,13 +137,20 @@ async function pollUntilFinished(
   accessToken: string,
   attempts: number,
   intervalMs: number,
+  timeoutMs: number,
 ): Promise<PublishFlowResult | null> {
   for (let i = 0; i < attempts; i++) {
+    // Bound each status GET like the create/publish POSTs — a hung status
+    // endpoint must not block the poll loop indefinitely (only the platform
+    // hard timeout would otherwise stop it).
+    const t = withTimeout(timeoutMs);
     const s = await fetch(
       `${graph}/${creationId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`,
+      { signal: t.signal },
     )
       .then((r) => r.json())
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => t.done());
     const code = s?.status_code as string | undefined;
     if (code === "FINISHED") return null;
     if (code === "ERROR" || code === "EXPIRED") {
@@ -238,6 +245,7 @@ export async function runInstagramPublishFlow(
     accessToken,
     pollAttempts,
     pollIntervalMs,
+    timeoutMs,
   );
   if (pollErr) return pollErr;
 
@@ -275,26 +283,35 @@ export async function runInstagramCarouselPublishFlow(
     });
   }
 
-  // ── 1. Create + finish every child container (caption goes on the PARENT only) ─
-  const childIds: string[] = [];
-  for (const url of imageUrls) {
-    const child = await createContainer(
-      graph,
-      igUserId,
-      { image_url: url, is_carousel_item: true, access_token: accessToken },
-      timeoutMs,
-    );
-    if ("ok" in child) return child;
-    const childPollErr = await pollUntilFinished(
-      graph,
-      child.id,
-      accessToken,
-      pollAttempts,
-      pollIntervalMs,
-    );
-    if (childPollErr) return childPollErr;
-    childIds.push(child.id);
-  }
+  // ── 1. Create + finish every child container concurrently ───────────────────
+  //   The children are independent (caption goes on the PARENT only), so create
+  //   and poll them in parallel — a serial loop makes wall-time scale linearly
+  //   with slide count (~8s/child) and a full 10-slide deck can exceed the
+  //   function/invoke timeout. Order is preserved by index for the parent.
+  const children = await Promise.all(
+    imageUrls.map(async (url): Promise<{ id: string } | PublishFlowResult> => {
+      const child = await createContainer(
+        graph,
+        igUserId,
+        { image_url: url, is_carousel_item: true, access_token: accessToken },
+        timeoutMs,
+      );
+      if ("ok" in child) return child;
+      const childPollErr = await pollUntilFinished(
+        graph,
+        child.id,
+        accessToken,
+        pollAttempts,
+        pollIntervalMs,
+        timeoutMs,
+      );
+      if (childPollErr) return childPollErr;
+      return child;
+    }),
+  );
+  const failed = children.find((c): c is PublishFlowResult => "ok" in c);
+  if (failed) return failed;
+  const childIds = (children as { id: string }[]).map((c) => c.id);
 
   // ── 2. Create + finish the CAROUSEL parent (children + caption) ─────────────
   const parent = await createContainer(
@@ -315,6 +332,7 @@ export async function runInstagramCarouselPublishFlow(
     accessToken,
     pollAttempts,
     pollIntervalMs,
+    timeoutMs,
   );
   if (parentPollErr) return parentPollErr;
 

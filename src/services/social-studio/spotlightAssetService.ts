@@ -81,12 +81,14 @@ export async function uploadGeneratedPost(dataUrl: string): Promise<string> {
 }
 
 /**
- * Upload N rendered carousel slides, each under a UNIQUE per-index key
- * ({uid}/carousel/{i}.png) — a carousel needs N DISTINCT public URLs. (uploadGeneratedPost's
- * single stable key would make every slide overwrite the last, so Instagram would fetch
- * N copies of the final image.) Each URL is cache-busted so IG's server-side fetch gets
- * THIS render, not a CDN-cached prior post at the same index key. The caller caps the count
- * at Instagram's 10-slide carousel limit. Returns the public URLs in slide order.
+ * Upload N rendered carousel slides, each under a UNIQUE per-publish key
+ * ({uid}/carousel/{batchId}/{i}.png) — a carousel needs N DISTINCT public URLs.
+ * The key is namespaced by a fresh batch id PER CALL (not a stable per-index key):
+ * if two posts (or a publish retry) ran concurrently, stable keys would overwrite
+ * the in-flight post's slides while Instagram is still fetching them server-side,
+ * publishing a mixed-content carousel. Unique immutable keys make each publish own
+ * its own slots, so no cache-bust is needed. Slides upload concurrently; the caller
+ * caps the count at Instagram's 10-slide limit. Returns the public URLs in slide order.
  */
 export async function uploadCarouselSlides(
   dataUrls: string[],
@@ -94,18 +96,19 @@ export async function uploadCarouselSlides(
   const { data: u } = await supabase.auth.getUser();
   const uid = u.user?.id;
   if (!uid) throw new Error("not authenticated");
-  const urls: string[] = [];
-  for (let i = 0; i < dataUrls.length; i++) {
-    const blob = await (await fetch(dataUrls[i])).blob();
-    const path = `${uid}/${CAROUSEL_PREFIX}/${i}.png`;
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, blob, { contentType: "image/png", upsert: true });
-    if (error) throw error;
-    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    urls.push(`${pub.publicUrl}?v=${Date.now()}`);
-  }
-  return urls;
+  const batchId = crypto.randomUUID();
+  return Promise.all(
+    dataUrls.map(async (dataUrl, i) => {
+      const blob = await (await fetch(dataUrl)).blob();
+      const path = `${uid}/${CAROUSEL_PREFIX}/${batchId}/${i}.png`;
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, blob, { contentType: "image/png", upsert: true });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      return pub.publicUrl;
+    }),
+  );
 }
 
 /**

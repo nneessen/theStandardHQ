@@ -97,6 +97,11 @@ serve(async (req) => {
         400,
       );
     }
+    // A Story posts a single frame. Reject a multi-image Story explicitly rather
+    // than silently publishing only imageUrls[0] and dropping the rest.
+    if (mediaType === "STORIES" && imageUrls.length > 1) {
+      return json({ ok: false, error: "A Story accepts a single image." }, 400);
+    }
     if (caption.length > CAPTION_MAX) {
       return json(
         {
