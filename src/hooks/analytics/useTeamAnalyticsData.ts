@@ -167,11 +167,7 @@ export function useTeamAnalyticsData(
     : null;
 
   const policyStatus = rawData
-    ? teamAnalyticsService.calculatePolicyStatusBreakdown(
-        rawData,
-        startDate,
-        endDate,
-      )
+    ? teamAnalyticsService.calculatePolicyStatusBreakdown(rawData)
     : null;
 
   const geographicBreakdown = rawData

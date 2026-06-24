@@ -1,15 +1,13 @@
 // src/features/policies/hooks/usePolicies.ts
 // Hook for fetching policy lists with optional pagination/filtering
 
-import {useQuery, useQueries, keepPreviousData} from '@tanstack/react-query';
-import {policyKeys, policyQueries} from '../queries';
-import {policyService} from '@/services/policies/policyService';
-import type {PolicyFilters} from '@/types/policy.types';
+import { useQuery, useQueries, keepPreviousData } from "@tanstack/react-query";
+import { policyKeys, policyQueries } from "../queries";
+import { policyService } from "@/services/policies/policyService";
+import type { PolicyFilters, PolicySortConfig } from "@/types/policy.types";
 
-export interface SortConfig {
-  field: string;
-  direction: 'asc' | 'desc';
-}
+/** Alias kept so existing imports keep working; canonical type lives in policy.types. */
+export type SortConfig = PolicySortConfig;
 
 export interface UsePoliciesOptions {
   filters?: PolicyFilters;
@@ -62,7 +60,7 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
     page,
     pageSize,
     filters = {},
-    sortConfig = { field: 'created_at', direction: 'desc' },
+    sortConfig = { field: "created_at", direction: "desc" },
     enabled = true,
   } = options;
 
@@ -70,8 +68,9 @@ export function usePoliciesPaginated(options: UsePoliciesPaginatedOptions) {
   const [dataQuery, countQuery, metricsQuery] = useQueries({
     queries: [
       {
-        queryKey: [...policyKeys.list(filters), 'paginated', page, pageSize, sortConfig] as const,
-        queryFn: () => policyService.getPaginated(page, pageSize, filters, sortConfig),
+        queryKey: policyKeys.paginated(page, pageSize, filters, sortConfig),
+        queryFn: () =>
+          policyService.getPaginated(page, pageSize, filters, sortConfig),
         staleTime: 1000 * 60 * 5,
         placeholderData: keepPreviousData,
         enabled,

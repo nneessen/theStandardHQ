@@ -3,6 +3,7 @@
 import { Policy } from "../../types";
 import { parseLocalDate } from "../../lib/date";
 import { differenceInMonths } from "date-fns";
+import { isCollectibleCommissionStatus } from "../../types/commission.types";
 
 /**
  * Client Segmentation Service
@@ -242,10 +243,13 @@ export function calculatePolicyChargebackRisk(
   // Group commissions by policy ID for efficient lookup
   const policyCommissionsMap = new Map<string, CommissionForChargebackRisk[]>();
   commissions.forEach((commission) => {
+    // Only collectible commissions can still be charged back. Terminal rows
+    // (charged_back/clawback/reversed/disputed) are NOT at-risk. The old denylist
+    // only excluded charged_back (and a dead "cancelled"), leaking clawback/
+    // reversed/disputed into the at-risk set.
     if (
       commission.policyId &&
-      commission.status !== "charged_back" &&
-      commission.status !== "cancelled"
+      isCollectibleCommissionStatus(commission.status)
     ) {
       const existing = policyCommissionsMap.get(commission.policyId) || [];
       existing.push(commission);

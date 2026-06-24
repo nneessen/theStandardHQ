@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { segmentClientsByValue } from "../segmentationService";
+import {
+  segmentClientsByValue,
+  calculatePolicyChargebackRisk,
+  type CommissionForChargebackRisk,
+} from "../segmentationService";
 import type { Policy } from "@/types";
 
 function policy(p: {
@@ -56,5 +60,57 @@ describe("segmentClientsByValue", () => {
     // Per-client average = 4000 / 1 = 4000 (the old double-average gave 2000:
     // the client's own per-policy average of (1000+3000)/2).
     expect(result.avgPremiumByTier.low).toBe(4000);
+  });
+});
+
+describe("calculatePolicyChargebackRisk — terminal commissions are not at-risk", () => {
+  // A recently-effective active policy, well inside the contestability window,
+  // with unearned commission still outstanding.
+  const recentEffectiveDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
+  const activePolicy = {
+    id: "pol-1",
+    status: "approved",
+    lifecycleStatus: "active",
+    effectiveDate: recentEffectiveDate,
+    annualPremium: 1200,
+    product: "term_life",
+    client: { id: "c1", name: "Risk Client", state: "TX", age: 45 },
+  } as unknown as Policy;
+
+  const commission = (status: string): CommissionForChargebackRisk => ({
+    policyId: "pol-1",
+    amount: 900,
+    advanceMonths: 9,
+    status,
+  });
+
+  it("includes a policy whose commission is collectible (paid)", () => {
+    const risk = calculatePolicyChargebackRisk(
+      [activePolicy],
+      [commission("paid")],
+    );
+    expect(risk.map((r) => r.policyId)).toContain("pol-1");
+  });
+
+  it("excludes a policy whose only commission is terminal (clawback)", () => {
+    const risk = calculatePolicyChargebackRisk(
+      [activePolicy],
+      [commission("clawback")],
+    );
+    // clawback is terminal → not collectible → not chargeback-risk. The old
+    // denylist (status !== 'charged_back' && !== 'cancelled') leaked it in.
+    expect(risk).toHaveLength(0);
+  });
+
+  it("excludes reversed and disputed commissions too", () => {
+    expect(
+      calculatePolicyChargebackRisk([activePolicy], [commission("reversed")]),
+    ).toHaveLength(0);
+    expect(
+      calculatePolicyChargebackRisk([activePolicy], [commission("disputed")]),
+    ).toHaveLength(0);
   });
 });

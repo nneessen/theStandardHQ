@@ -68,7 +68,7 @@ import {
   usePoliciesPaginated,
   useCheckSharedClient,
 } from "../../hooks/policies";
-import type { SortConfig } from "./hooks/usePolicies";
+import type { PolicySortConfig, PolicySortField } from "@/types/policy.types";
 import {
   Policy,
   PolicyFilters,
@@ -86,6 +86,8 @@ import {
   exportPoliciesToCSV,
   exportPoliciesToExcel,
 } from "./utils/policyExport";
+import { selectPrimaryCommissionsByPolicy } from "./utils/policyCommissionSelection";
+import { getPaginationRange } from "./utils/policyPagination";
 import type { Commission } from "@/types/commission.types";
 import { useFeatureAccess } from "@/hooks/subscription";
 
@@ -118,7 +120,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSizeState] = useState(10);
   const [filters, setFiltersState] = useState<PolicyFilters>({});
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
+  const [sortConfig, setSortConfig] = useState<PolicySortConfig>({
     field: "created_at",
     direction: "desc",
   });
@@ -186,10 +188,15 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     setCurrentPage(1);
   }, []);
   const clearFilters = useCallback(() => {
+    // Clear the search box too — otherwise the debounce effect re-injects the
+    // old searchTerm into `filters` ~300ms after the user clicks Clear.
+    // Changing searchTerm here also re-runs that effect, whose cleanup cancels
+    // any in-flight timer carrying the stale term.
+    setSearchTerm("");
     setFiltersState({});
     setCurrentPage(1);
   }, []);
-  const toggleSort = useCallback((field: string) => {
+  const toggleSort = useCallback((field: PolicySortField) => {
     setSortConfig((prev) => ({
       field,
       direction:
@@ -200,6 +207,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const filterCount = Object.entries(filters).filter(
     ([_, value]) => value !== undefined && value !== null && value !== "",
   ).length;
+  const { firstItem, lastItem } = getPaginationRange(
+    currentPage,
+    pageSize,
+    totalItems,
+  );
 
   const queryClient = useQueryClient();
   const { data: carriers = [] } = useCarriers();
@@ -220,45 +232,21 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const [policyToLink, setPolicyToLink] = useState<Policy | null>(null);
   const [exporting, setExporting] = useState(false);
 
-  // Create a map of policy_id -> commission for quick lookup
-  // Priority: active/earned/pending commissions over cancelled ones
-  // If multiple active commissions exist, keep the one with the highest amount
-  const commissionsByPolicy = commissions.reduce(
-    (acc, commission) => {
-      if (!commission.policyId) return acc;
-
-      const existing = acc[commission.policyId];
-      const isActiveStatus = (status: string) =>
-        status !== "cancelled" && status !== "chargedback";
-
-      if (!existing) {
-        // No commission for this policy yet, add it
-        acc[commission.policyId] = commission;
-      } else {
-        // Compare: prefer active over cancelled, then prefer higher amount
-        const existingIsActive = isActiveStatus(existing.status);
-        const currentIsActive = isActiveStatus(commission.status);
-
-        if (currentIsActive && !existingIsActive) {
-          // Current is active, existing is cancelled - use current
-          acc[commission.policyId] = commission;
-        } else if (currentIsActive && existingIsActive) {
-          // Both active - use the one with higher amount
-          if ((commission.amount || 0) > (existing.amount || 0)) {
-            acc[commission.policyId] = commission;
-          }
-        }
-        // If existing is active and current is cancelled, keep existing (do nothing)
-      }
-      return acc;
-    },
-    {} as Record<string, (typeof commissions)[0]>,
+  // policy_id -> primary commission, via the canonical selector (collectible
+  // status beats terminal charged_back/clawback/reversed/disputed, then highest
+  // amount). Display, mobile, and export all use this same map so they never
+  // disagree on which commission represents a policy.
+  const commissionsByPolicy = useMemo(
+    () => selectPrimaryCommissionsByPolicy(commissions),
+    [commissions],
   );
 
   // When filters are active, fetch all matching policy IDs to scope commission metrics
   const hasActiveFilters = filterCount > 0;
   const { data: allFilteredPolicies } = useQuery({
-    ...policyQueries.list(filters),
+    // Use queryFilters (carries the selected dateField) so the metric-scoping
+    // set matches the visible paginated table, not a different date column.
+    ...policyQueries.list(queryFilters),
     enabled: hasActiveFilters,
   });
 
@@ -283,11 +271,6 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const pendingCommission = commissionsForMetrics
     .filter((c) => c.status === "pending")
     .reduce((sum, c) => sum + (c.amount || 0), 0);
-  // TODO:  _totalAdvances Is declared but its value was never read.
-  const _totalAdvances = paidCommissions.reduce(
-    (sum, c) => sum + (c.amount || 0),
-    0,
-  );
 
   // Handle search with debounce
   useEffect(() => {
@@ -418,17 +401,16 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     setExporting(true);
     try {
       const allPolicies = await queryClient.fetchQuery(
-        policyQueries.list(filters),
+        // queryFilters (with dateField) so the export matches the visible table.
+        policyQueries.list(queryFilters),
       );
       const carrierMap: Record<string, string> = Object.fromEntries(
         carriers.map((c) => [c.id, c.name]),
       );
-      const commissionMap: Record<string, Commission> = {};
-      for (const c of commissions) {
-        if (c.policyId && !commissionMap[c.policyId]) {
-          commissionMap[c.policyId] = c;
-        }
-      }
+      // Reuse the SAME memoized selection the table renders from, so the export
+      // can't drift from what's on screen (and we don't recompute it).
+      const commissionMap: Record<string, Commission> =
+        Object.fromEntries(commissionsByPolicy);
       const rows = flattenPoliciesForExport(
         allPolicies,
         carrierMap,
@@ -907,7 +889,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
               ) : (
                 policies.map((policy) => {
                   const carrier = getCarrierById(policy.carrierId);
-                  const policyCommission = commissionsByPolicy[policy.id];
+                  const policyCommission = commissionsByPolicy.get(policy.id);
                   // Use actual commission amount from database (includes contract level multiplier)
                   // Fallback to 0 if no commission record exists
                   const commission = policyCommission?.amount || 0;
@@ -978,8 +960,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                   // Clear lifecycle status when changing to non-approved
                                   ...(value !== "approved"
                                     ? {
-                                        lifecycleStatus:
-                                          null as unknown as PolicyLifecycleStatus,
+                                        lifecycleStatus: null,
                                       }
                                     : {}),
                                 },
@@ -1290,7 +1271,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
             <div className="px-2 py-1.5 space-y-1.5">
               {policies.map((policy) => {
                 const carrier = getCarrierById(policy.carrierId);
-                const policyCommission = commissionsByPolicy[policy.id];
+                const policyCommission = commissionsByPolicy.get(policy.id);
                 const commission = policyCommission?.amount || 0;
                 return (
                   <div
@@ -1462,11 +1443,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           <div className="flex items-center gap-3 text-[13px]">
             <span className="text-muted-foreground dark:text-muted-foreground">
               <span className="font-medium text-foreground dark:text-foreground">
-                {(currentPage - 1) * pageSize + 1}
+                {firstItem}
               </span>
               -
               <span className="font-medium text-foreground dark:text-foreground">
-                {Math.min(currentPage * pageSize, totalItems)}
+                {lastItem}
               </span>{" "}
               of{" "}
               <span className="font-medium text-foreground dark:text-foreground">

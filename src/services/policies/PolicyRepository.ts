@@ -801,6 +801,7 @@ export class PolicyRepository extends BaseRepository<
       dateTo?: string; // YYYY-MM-DD format
       dateField?: "submit_date" | "effective_date";
       searchTerm?: string;
+      lifecycleStatus?: string;
     },
     currentUserId?: string,
   ): Promise<number> {
@@ -823,6 +824,8 @@ export class PolicyRepository extends BaseRepository<
           query = query.eq("product_id", filters.productId);
         if (filters.product) query = query.eq("product", filters.product);
         if (filters.userId) query = query.eq("user_id", filters.userId);
+        if (filters.lifecycleStatus)
+          query = query.eq("lifecycle_status", filters.lifecycleStatus);
 
         // Date range filters — target column chosen by caller (default submit_date)
         const dateColumn: "submit_date" | "effective_date" =
@@ -1018,6 +1021,7 @@ export class PolicyRepository extends BaseRepository<
               status: "status",
               carrierId: "carrier_id",
               product: "product",
+              lifecycleStatus: "lifecycle_status",
             };
             const column = columnMap[key] || key;
             query = query.eq(column, value);

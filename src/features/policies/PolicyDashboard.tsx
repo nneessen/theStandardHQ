@@ -121,8 +121,12 @@ export const PolicyDashboard: React.FC = () => {
 
         {canTrackLeadSource && pendingLeadSource && (
           <LeadSourceDialog
-            open={true}
-            onOpenChange={() => {}}
+            open={pendingLeadSource !== null}
+            onOpenChange={(open) => {
+              // Allow dismissing (overlay click / Escape) instead of trapping
+              // the user until they attribute a lead source.
+              if (!open) setPendingLeadSource(null);
+            }}
             policyId={pendingLeadSource.policyId}
             policyNumber={pendingLeadSource.policyNumber}
             onComplete={() => {
@@ -210,19 +214,22 @@ export const PolicyDashboard: React.FC = () => {
                 return result;
               }
             } catch (error) {
+              // Workflow owns error NORMALIZATION + field-error extraction; the
+              // form (executeSubmission) owns the single user-facing toast. Do
+              // not toast here too, or the user sees the same error twice.
               const errorMessage =
                 error instanceof Error ? error.message : String(error);
 
-              // Detect network errors and show friendly message
+              // Detect network errors and surface a friendly message by throwing
+              // it (the form toasts whatever message reaches it).
               if (
                 errorMessage.toLowerCase().includes("failed to fetch") ||
                 errorMessage.toLowerCase().includes("network")
               ) {
-                toast.error(
+                setFormErrors({});
+                throw new Error(
                   "Network error occurred. Please check your connection and try again.",
-                  { duration: 5000 },
                 );
-                throw error;
               }
 
               // Extract field-level errors from ValidationError
@@ -237,7 +244,6 @@ export const PolicyDashboard: React.FC = () => {
                 setFormErrors({});
               }
 
-              toast.error(errorMessage);
               throw error;
             }
           }}

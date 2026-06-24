@@ -185,6 +185,26 @@ export interface PolicyFilters {
   maxPremium?: number;
 }
 
+/**
+ * Columns the policy list can be sorted by. These are the DB column names (plus
+ * the virtual "client" sort) the table headers toggle and the service maps to an
+ * `order by`. Keeping this a finite union means a typo'd sort field is a compile
+ * error instead of a silently ignored `order by`.
+ */
+export type PolicySortField =
+  | "created_at"
+  | "policy_number"
+  | "client"
+  | "status"
+  | "annual_premium"
+  | "submit_date"
+  | "effective_date";
+
+export interface PolicySortConfig {
+  field: PolicySortField;
+  direction: "asc" | "desc";
+}
+
 // =============================================================================
 // ANALYTICS TYPES
 // =============================================================================

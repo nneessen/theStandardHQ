@@ -35,6 +35,17 @@ interface TeamAnalyticsRPCResponse {
 }
 
 /**
+ * Lifecycle statuses that count as an *issued* policy (the in-force book). Used
+ * to keep the policy-status buckets mutually exclusive. Module-scoped Set so it
+ * is allocated once and looked up in O(1), not rebuilt on every call.
+ */
+const ISSUED_LIFECYCLE_STATUSES = new Set<string>([
+  "active",
+  "lapsed",
+  "cancelled",
+]);
+
+/**
  * Team Analytics Service
  *
  * Provides server-side aggregation of team data for analytics dashboards.
@@ -369,82 +380,56 @@ class TeamAnalyticsService {
   }
 
   /**
-   * Calculate team policy status breakdown for the selected date range
+   * Current composition of the team's book by policy status.
    *
-   * Uses allPolicies with date-appropriate filtering per status:
-   * - Active: lifecycle_status='active' AND effective_date in range
-   * - Pending: status='pending' AND submit_date in range
-   * - Cancelled: lifecycle_status='cancelled' AND (cancellation_date || updated_at) in range
-   * - Lapsed: lifecycle_status='lapsed' AND updated_at in range
-   * Persistency uses all-time data: active / (active + lapsed + cancelled).
+   * Point-in-time snapshot of the WHOLE in-force book (own + downline) — NOT
+   * date-range scoped. The panel's label ("X total policies") and its
+   * persistency badge are both book-wide, so the per-status counts must be too.
+   *
+   * Previously each status was filtered by a *different* date field within the
+   * selected period (active by effective_date, pending by submit_date, cancelled
+   * by cancellation_date/updated_at, lapsed by updated_at). That silently dropped
+   * any policy whose relevant date fell outside the period — e.g. a policy
+   * cancelled in a prior period vanished from the cancelled count entirely —
+   * producing incoherent totals and badly under-counting cancellations/lapses.
+   * We now count current lifecycle/status across all-time `allPolicies`, matching
+   * getPolicyStatusSnapshot() on the per-agent Analytics page.
+   *
+   * Issued policies bucket by lifecycle_status; applications still in
+   * underwriting (status='pending', null lifecycle) surface as pending. Terminal
+   * non-issued applications (withdrawn/denied) are excluded — they belong to the
+   * conversion funnel, not the in-force book.
    */
   calculatePolicyStatusBreakdown(
     rawData: TeamAnalyticsRawData,
-    startDate: Date,
-    endDate: Date,
   ): TeamPolicyStatusBreakdown {
-    const toDateStr = (val: string | null | undefined): string | null => {
-      if (!val) return null;
-      if (val.length > 10) {
-        const d = new Date(val);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
-      }
-      return val;
-    };
-
-    const rangeStart = toDateStr(startDate.toISOString())!;
-    const rangeEnd = toDateStr(endDate.toISOString())!;
-
-    const inRange = (dateVal: string | null | undefined): boolean => {
-      const normalized = toDateStr(dateVal);
-      if (!normalized) return false;
-      return normalized >= rangeStart && normalized <= rangeEnd;
-    };
-
     const allPolicies = rawData.allPolicies;
 
-    // Active: lifecycle_status='active' AND effective_date in range
-    const active = allPolicies.filter(
-      (p) => p.lifecycle_status === "active" && inRange(p.effective_date),
-    );
-
-    // Pending: status='pending' AND submit_date in range
-    const pending = allPolicies.filter(
-      (p) => p.status === "pending" && inRange(p.submit_date),
-    );
-
-    // Cancelled: lifecycle_status='cancelled' AND (cancellation_date OR updated_at) in range
+    const active = allPolicies.filter((p) => p.lifecycle_status === "active");
+    const lapsed = allPolicies.filter((p) => p.lifecycle_status === "lapsed");
     const cancelled = allPolicies.filter(
-      (p) =>
-        p.lifecycle_status === "cancelled" &&
-        inRange(p.cancellation_date ?? p.updated_at),
+      (p) => p.lifecycle_status === "cancelled",
     );
-
-    // Lapsed: lifecycle_status='lapsed' AND updated_at in range
-    const lapsed = allPolicies.filter(
-      (p) => p.lifecycle_status === "lapsed" && inRange(p.updated_at),
+    // Keep the buckets mutually exclusive. Pending applications carry
+    // lifecycle_status 'pending' or null (verified in prod), so we can't gate on
+    // "null lifecycle" — that would drop the bulk of pending rows. Instead we
+    // exclude only the lifecycle values already counted above, so an issued
+    // policy whose `status` still reads 'pending' (approval-state drift) is
+    // counted once by its lifecycle bucket, not double-counted in totals.
+    const pending = allPolicies.filter(
+      (p) =>
+        p.status === "pending" &&
+        !ISSUED_LIFECYCLE_STATUSES.has(p.lifecycle_status ?? ""),
     );
 
     const sumPremium = (policies: TeamPolicyRow[]) =>
       policies.reduce((sum, p) => sum + (p.annual_premium || 0), 0);
 
-    // Persistency uses ALL-TIME data (not date-filtered)
-    // active / issued (active + lapsed + cancelled)
-    const allActive = allPolicies.filter(
-      (p) => p.lifecycle_status === "active",
-    ).length;
-    const allLapsed = allPolicies.filter(
-      (p) => p.lifecycle_status === "lapsed",
-    ).length;
-    const allCancelled = allPolicies.filter(
-      (p) => p.lifecycle_status === "cancelled",
-    ).length;
-    const issuedPolicies = allActive + allLapsed + allCancelled;
+    // Persistency = active / issued (active + lapsed + cancelled). Pending
+    // applications aren't "issued" yet, so they're excluded from the rate.
+    const issuedPolicies = active.length + lapsed.length + cancelled.length;
     const persistencyRate =
-      issuedPolicies > 0 ? (allActive / issuedPolicies) * 100 : 100;
+      issuedPolicies > 0 ? (active.length / issuedPolicies) * 100 : 100;
 
     const totalCount =
       active.length + pending.length + cancelled.length + lapsed.length;

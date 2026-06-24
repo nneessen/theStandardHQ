@@ -1,6 +1,6 @@
 // src/features/policies/PolicyForm.tsx
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCarriers } from "../../hooks/carriers";
 import { useProducts } from "../../hooks/products/useProducts";
@@ -51,11 +51,11 @@ interface PolicyFormProps {
 const STEPS = ["Client", "Product & Policy", "Premium & Comp", "Review"];
 
 /** Required fields gated per step when advancing (Review runs the full check). */
-const STEP_FIELDS: string[][] = [
+const STEP_FIELDS = [
   ["clientName", "clientState", "clientDOB"],
   ["carrierId", "productId", "termLength", "submitDate", "effectiveDate"],
   ["premium", "commissionPercentage"],
-];
+] as const satisfies readonly (readonly (keyof NewPolicyForm)[])[];
 
 export const PolicyForm: React.FC<PolicyFormProps> = ({
   policyId,
@@ -182,15 +182,29 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     ),
   );
 
+  // Initialize the edit form from `policy` exactly ONCE per policy id. `policy`
+  // is a TanStack Query result, so a background refetch (e.g. window refocus,
+  // cache invalidation) hands us a NEW object reference with identical data —
+  // without this guard the effect would re-run and overwrite the agent's
+  // in-progress edits mid-session. We reset the guard when the dialog closes
+  // (policyId falsy) so reopening the same policy re-initializes cleanly.
+  const initializedPolicyIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!policyId || !policy) {
+    if (!policyId) {
+      initializedPolicyIdRef.current = null;
       return;
     }
+    if (!policy) return; // data still loading — wait without resetting the guard
+    if (initializedPolicyIdRef.current === policyId) return;
 
+    initializedPolicyIdRef.current = policyId;
     const newFormData = createInitialFormData(policyId, policy);
     setFormData(newFormData);
     setInitialProductId(policy.productId || null);
-  }, [policyId, policy, carriers.length, setFormData, setInitialProductId]);
+    // NOTE: `carriers` is intentionally NOT a dependency — createInitialFormData
+    // reads `policy.carrierId`, not the carriers list, so carrier loading must
+    // not re-trigger initialization.
+  }, [policyId, policy, setFormData, setInitialProductId]);
 
   useEffect(() => {
     if (!policyId || carrierProducts.length === 0) return;

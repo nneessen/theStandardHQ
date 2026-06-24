@@ -119,6 +119,34 @@ export type CommissionStatus =
   | "charged_back";
 
 /**
+ * Collectible (non-terminal) commission statuses — money still pending, owed, or
+ * paid. The terminal statuses (`reversed`, `disputed`, `clawback`,
+ * `charged_back`) are set automatically by DB triggers when a policy lapses/
+ * cancels and represent money that is gone.
+ *
+ * This is the SINGLE canonical partition of CommissionStatus. It lives next to
+ * the union (not in a feature folder) so services AND features share it without
+ * a layering violation. Defined as a positive ALLOWLIST so a new terminal status
+ * added to the union can never silently leak through as "active" — the exact bug
+ * that the stale `status !== "chargedback"` / `!== "cancelled"` denylists caused.
+ */
+export const COLLECTIBLE_COMMISSION_STATUSES = new Set<CommissionStatus>([
+  "pending",
+  "unpaid",
+  "paid",
+]);
+
+/**
+ * True when a commission status is collectible (not terminal). Accepts a plain
+ * `string` so callers holding a loose status (e.g. minimal projection rows) can
+ * use it too; an unrecognized status returns `false` — the safe direction, since
+ * it then will NOT be treated as active money.
+ */
+export function isCollectibleCommissionStatus(status: string): boolean {
+  return (COLLECTIBLE_COMMISSION_STATUSES as Set<string>).has(status);
+}
+
+/**
  * Commission — maps 1:1 to the `commissions` DB table.
  *
  * Fields that belong to the *Policy* (client, carrier, product, premium, etc.)

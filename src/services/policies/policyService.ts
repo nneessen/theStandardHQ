@@ -470,6 +470,7 @@ class PolicyService {
           dateTo: filters.dateTo,
           dateField: filters.dateField,
           searchTerm: filters.searchTerm,
+          lifecycleStatus: filters.lifecycleStatus,
         }
       : undefined;
 
@@ -504,6 +505,7 @@ class PolicyService {
           dateTo: filters.dateTo,
           dateField: filters.dateField,
           searchTerm: filters.searchTerm,
+          lifecycleStatus: filters.lifecycleStatus,
         }
       : undefined;
 
@@ -541,6 +543,7 @@ class PolicyService {
           dateTo: filters.dateTo,
           dateField: filters.dateField,
           searchTerm: filters.searchTerm,
+          lifecycleStatus: filters.lifecycleStatus,
         }
       : undefined;
 
@@ -657,6 +660,11 @@ class PolicyService {
         .from("policies")
         .update({
           lifecycle_status: "cancelled",
+          // Persist the cancellation date + reason to their own columns so
+          // reporting/audit can rely on them (notes is a free-text fallback,
+          // not a queryable source of truth).
+          cancellation_date: cancelDate.toISOString().split("T")[0],
+          cancellation_reason: reason,
           lead_purchase_id: null,
           lead_source_type: null,
           notes: policy.notes

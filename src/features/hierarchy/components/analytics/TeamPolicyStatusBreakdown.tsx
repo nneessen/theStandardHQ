@@ -113,7 +113,7 @@ export function TeamPolicyStatusBreakdown({
         <div>
           <Cap>Team Policy Status</Cap>
           <div className="text-[11px] text-v2-ink-subtle">
-            {data.total.count} total policies
+            {data.total.count} total policies · current book (all-time)
           </div>
         </div>
         <div

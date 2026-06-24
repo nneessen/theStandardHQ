@@ -2,6 +2,7 @@
 // Handles commission calculations using comp guide
 
 import { Commission } from "../../types/commission.types";
+import { isCollectibleCommissionStatus } from "../../types/commission.types";
 import { logger } from "../base/logger";
 import type { CreateCommissionData } from "./CommissionCRUDService";
 import { commissionCRUDService } from "./CommissionCRUDService";
@@ -576,14 +577,14 @@ class CommissionCalculationService {
         return null;
       }
 
-      // Get the active commission (not cancelled/chargedback) - prioritize by status then amount
-      const isActiveStatus = (status: string) =>
-        status !== "cancelled" && status !== "chargedback";
-
-      // Sort: active statuses first, then by amount descending
+      // Pick the collectible commission (not a terminal charged_back/clawback/
+      // reversed/disputed row) to recalculate from — prioritize by status then
+      // amount. Uses the canonical allowlist; the old denylist tested the
+      // non-existent literals "cancelled"/"chargedback" (missing underscore), so
+      // EVERY terminal row was wrongly treated as active.
       const sortedCommissions = [...commissions].sort((a, b) => {
-        const aActive = isActiveStatus(a.status);
-        const bActive = isActiveStatus(b.status);
+        const aActive = isCollectibleCommissionStatus(a.status);
+        const bActive = isCollectibleCommissionStatus(b.status);
         if (aActive && !bActive) return -1;
         if (!aActive && bActive) return 1;
         return (b.amount || 0) - (a.amount || 0);
