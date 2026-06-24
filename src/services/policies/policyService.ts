@@ -514,47 +514,6 @@ class PolicyService {
   }
 
   /**
-   * Get aggregate metrics for policies matching filters
-   * CRITICAL: Filters to only current user's policies
-   * Returns totals across ALL matching policies (not just current page)
-   * @param filters - Optional filters to apply
-   * @returns Aggregate metrics including counts, premiums, and YTD data
-   */
-  async getAggregateMetrics(filters?: PolicyFilters): Promise<{
-    totalPolicies: number;
-    activePolicies: number;
-    pendingPolicies: number;
-    lapsedPolicies: number;
-    cancelledPolicies: number;
-    totalPremium: number;
-    avgPremium: number;
-    ytdPolicies: number;
-    ytdPremium: number;
-  }> {
-    // Get current user ID to filter policies
-    const userId = await getCurrentUserId();
-
-    // Convert PolicyFilters to repository filter format
-    const repoFilters = filters
-      ? {
-          status: filters.status,
-          carrierId: filters.carrierId,
-          product: filters.product,
-          dateFrom: filters.dateFrom,
-          dateTo: filters.dateTo,
-          dateField: filters.dateField,
-          searchTerm: filters.searchTerm,
-          lifecycleStatus: filters.lifecycleStatus,
-        }
-      : undefined;
-
-    return this.repository.getAggregateMetrics(
-      repoFilters,
-      userId || undefined,
-    );
-  }
-
-  /**
    * Server-side dashboard metrics for the Policies page (counts, premium, YTD,
    * earned/pending commission) in ONE aggregated round-trip. Replaces loading
    * all commissions + all filtered policies into the browser. Scoped to the

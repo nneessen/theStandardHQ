@@ -48,6 +48,10 @@ class CommissionService {
     return commissionCRUDService.getByPolicyId(policyId);
   }
 
+  async getByPolicyIds(policyIds: string[]): Promise<Commission[]> {
+    return commissionCRUDService.getByPolicyIds(policyIds);
+  }
+
   async getCommissionsByUser(userId: string): Promise<Commission[]> {
     return commissionCRUDService.getCommissionsByUser(userId);
   }

@@ -167,7 +167,6 @@ export function useUpdatePolicy() {
       // Always invalidate list and metrics
       queryClient.invalidateQueries({ queryKey: policyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: policyKeys.count() });
-      queryClient.invalidateQueries({ queryKey: policyKeys.metrics() });
       queryClient.invalidateQueries({
         queryKey: policyKeys.dashboardMetrics(),
       });

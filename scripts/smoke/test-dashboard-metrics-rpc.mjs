@@ -35,9 +35,8 @@ const { data, error } = await supabase.rpc("get_policy_dashboard_metrics", {
   p_date_field: "submit_date",
 });
 
-await supabase.auth.signOut();
-
 if (error) {
+  await supabase.auth.signOut();
   console.error("RPC error:", error);
   process.exit(1);
 }
@@ -52,3 +51,29 @@ const total = Number(row?.total_policies ?? 0);
 console.log(
   `\nSummary: total=${total} earned=$${earned.toFixed(2)} pending=$${pending.toFixed(2)}`,
 );
+
+// Page-scoped commission fetch (mirrors CommissionRepository.findByPolicyIds /
+// useCommissionsByPolicyIds) — the policies list now loads commissions only for
+// the visible page instead of the whole book.
+const { data: pagePols } = await supabase
+  .from("policies")
+  .select("id")
+  .limit(5);
+const pageIds = (pagePols ?? []).map((p) => p.id);
+const { data: pageComms, error: commErr } = await supabase
+  .from("commissions")
+  .select(
+    "*, policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)",
+  )
+  .in("policy_id", pageIds)
+  .order("created_at", { ascending: false });
+if (commErr) {
+  await supabase.auth.signOut();
+  console.error("by-policy-ids query error:", commErr);
+  process.exit(1);
+}
+console.log(
+  `\nPage-scoped: ${pageIds.length} policy ids → ${pageComms?.length ?? 0} commissions (RLS-scoped).`,
+);
+
+await supabase.auth.signOut();

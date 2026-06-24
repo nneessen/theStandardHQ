@@ -60,7 +60,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCarriers } from "../../hooks/carriers";
-import { useCommissions } from "../../hooks/commissions/useCommissions";
+import {
+  useCommissionsByPolicyIds,
+  commissionsByPolicyIdsQuery,
+} from "../../hooks/commissions/useCommissionsByPolicyIds";
 import { useUpdateCommissionStatus } from "../../hooks/commissions/useUpdateCommissionStatus";
 import {
   useUpdatePolicy,
@@ -215,7 +218,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
 
   const queryClient = useQueryClient();
   const { data: carriers = [] } = useCarriers();
-  const { data: commissions = [] } = useCommissions();
+  // Commissions for ONLY the visible page (not the agent's whole book) — drives
+  // the per-row commission display. The metrics band uses the server-side
+  // aggregate, and the export fetches its own full-set commissions on demand.
+  const pagePolicyIds = useMemo(() => policies.map((p) => p.id), [policies]);
+  const { data: commissions = [] } = useCommissionsByPolicyIds(pagePolicyIds);
   const { mutate: updateCommissionStatus } = useUpdateCommissionStatus();
   const { mutate: updatePolicy } = useUpdatePolicy();
   const { mutate: deletePolicy, isPending: isDeleting } = useDeletePolicy();
@@ -383,10 +390,15 @@ export const PolicyList: React.FC<PolicyListProps> = ({
       const carrierMap: Record<string, string> = Object.fromEntries(
         carriers.map((c) => [c.id, c.name]),
       );
-      // Reuse the SAME memoized selection the table renders from, so the export
-      // can't drift from what's on screen (and we don't recompute it).
-      const commissionMap: Record<string, Commission> =
-        Object.fromEntries(commissionsByPolicy);
+      // The on-screen table only loads commissions for the current page, so the
+      // export fetches commissions for the FULL exported set on demand, then runs
+      // the same canonical per-policy selection the table uses.
+      const exportCommissions = await queryClient.fetchQuery(
+        commissionsByPolicyIdsQuery(allPolicies.map((p) => p.id)),
+      );
+      const commissionMap: Record<string, Commission> = Object.fromEntries(
+        selectPrimaryCommissionsByPolicy(exportCommissions),
+      );
       const rows = flattenPoliciesForExport(
         allPolicies,
         carrierMap,

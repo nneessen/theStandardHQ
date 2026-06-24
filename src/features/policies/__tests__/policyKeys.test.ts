@@ -28,15 +28,15 @@ describe("policyKeys", () => {
     ]);
   });
 
-  it("count/metrics carry their filters", () => {
+  it("count/dashboardMetrics carry their filters", () => {
     expect(policyKeys.count(activeFilter)).toEqual([
       "policies",
       "count",
       activeFilter,
     ]);
-    expect(policyKeys.metrics(activeFilter)).toEqual([
+    expect(policyKeys.dashboardMetrics(activeFilter)).toEqual([
       "policies",
-      "metrics",
+      "dashboard-metrics",
       activeFilter,
     ]);
   });
@@ -51,8 +51,10 @@ describe("policyKeys", () => {
       // count() invalidation can't partial-match the {}-keyed query.
       expect(policyKeys.count()[2]).toEqual({});
     });
-    it("metrics() === metrics({})", () => {
-      expect(policyKeys.metrics()).toEqual(policyKeys.metrics({}));
+    it("dashboardMetrics() === dashboardMetrics({})", () => {
+      expect(policyKeys.dashboardMetrics()).toEqual(
+        policyKeys.dashboardMetrics({}),
+      );
     });
     it("paginated(1,10) === paginated(1,10,{})", () => {
       expect(policyKeys.paginated(1, 10)).toEqual(

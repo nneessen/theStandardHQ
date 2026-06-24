@@ -41,8 +41,6 @@ export const policyKeys = {
   // `undefined` third element does NOT partial-match an object one.
   count: (filters: PolicyFilters = {}) =>
     [...policyKeys.all, "count", filters] as const,
-  metrics: (filters: PolicyFilters = {}) =>
-    [...policyKeys.all, "metrics", filters] as const,
   dashboardMetrics: (filters: PolicyFilters = {}) =>
     [...policyKeys.all, "dashboard-metrics", filters] as const,
   byLeadPurchase: (leadPurchaseId: string) =>
@@ -83,13 +81,6 @@ export const policyQueries = {
     queryOptions({
       queryKey: policyKeys.count(filters),
       queryFn: () => policyService.getCount(filters),
-      staleTime: POLICY_STALE_TIME,
-    }),
-
-  metrics: (filters: PolicyFilters = {}) =>
-    queryOptions({
-      queryKey: policyKeys.metrics(filters),
-      queryFn: () => policyService.getAggregateMetrics(filters),
       staleTime: POLICY_STALE_TIME,
     }),
 

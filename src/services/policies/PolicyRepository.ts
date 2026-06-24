@@ -7,7 +7,7 @@ import {
   UpdatePolicyData,
   PolicyDashboardMetrics,
 } from "../../types/policy.types";
-import { formatDateForDB, parseLocalDate } from "../../lib/date";
+import { formatDateForDB } from "../../lib/date";
 
 // ---------------------------------------------------------------------------
 // Type definitions for lightweight metric queries
@@ -670,7 +670,7 @@ export class PolicyRepository extends BaseRepository<
         .select("annual_premium")
         .eq("carrier_id", carrierId)
         // "active" is a lifecycle_status, not a status value (which only holds
-        // approved/pending/withdrawn/denied). See getAggregateMetrics.
+        // approved/pending/withdrawn/denied).
         .eq("lifecycle_status", "active");
 
       if (error) {
@@ -965,150 +965,6 @@ export class PolicyRepository extends BaseRepository<
       };
     } catch (error) {
       throw this.wrapError(error, "getMonthlyMetrics");
-    }
-  }
-
-  /**
-   * Get aggregate metrics for policies matching filters
-   * Returns totals across ALL matching policies (not just current page)
-   * @param filters - Optional filters to apply
-   * @param currentUserId - CRITICAL: Current user's ID to filter to only their policies
-   */
-  async getAggregateMetrics(
-    filters?: {
-      status?: string;
-      carrierId?: string;
-      product?: string;
-      dateFrom?: string;
-      dateTo?: string;
-      dateField?: "submit_date" | "effective_date";
-      searchTerm?: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
-      [key: string]: any;
-    },
-    currentUserId?: string,
-  ): Promise<{
-    totalPolicies: number;
-    activePolicies: number;
-    pendingPolicies: number;
-    lapsedPolicies: number;
-    cancelledPolicies: number;
-    totalPremium: number;
-    avgPremium: number;
-    ytdPolicies: number;
-    ytdPremium: number;
-  }> {
-    try {
-      // Build base query with filters
-      let query = this.client
-        .from(this.tableName)
-        .select("status, lifecycle_status, annual_premium, effective_date", {
-          count: "exact",
-        });
-
-      // CRITICAL: Filter by current user ID when specified
-      if (currentUserId) {
-        query = query.eq("user_id", currentUserId);
-      }
-
-      // Apply filters (same logic as findAll)
-      if (filters) {
-        const { dateFrom, dateTo, dateField, searchTerm, ...equalityFilters } =
-          filters;
-
-        Object.entries(equalityFilters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            const columnMap: { [key: string]: string } = {
-              status: "status",
-              carrierId: "carrier_id",
-              product: "product",
-              lifecycleStatus: "lifecycle_status",
-            };
-            const column = columnMap[key] || key;
-            query = query.eq(column, value);
-          }
-        });
-
-        // Date range filters — target column chosen by caller (default submit_date)
-        const dateColumn: "submit_date" | "effective_date" =
-          dateField === "effective_date" ? "effective_date" : "submit_date";
-        if (dateFrom) {
-          query = query.gte(dateColumn, dateFrom);
-        }
-        if (dateTo) {
-          query = query.lte(dateColumn, dateTo);
-        }
-
-        // Apply search term filter (searches policy_number and client name)
-        const searchFilter = await this.buildSearchFilter(
-          searchTerm,
-          currentUserId,
-        );
-        if (searchFilter) {
-          query = query.or(searchFilter);
-        }
-      }
-
-      const { data, count, error } = await query;
-
-      if (error) {
-        console.error("PolicyRepository.getAggregateMetrics error:", error);
-        throw error;
-      }
-
-      // Calculate aggregates from returned data
-      const currentYear = new Date().getFullYear();
-      const policies = data || [];
-
-      // Use lifecycle_status for active/lapsed/cancelled (issued policy lifecycle)
-      // Use status for pending (application outcome)
-      const activePolicies = policies.filter(
-        (p) => p.lifecycle_status === "active",
-      ).length;
-      const pendingPolicies = policies.filter(
-        (p) => p.status === "pending",
-      ).length;
-      const lapsedPolicies = policies.filter(
-        (p) => p.lifecycle_status === "lapsed",
-      ).length;
-      const cancelledPolicies = policies.filter(
-        (p) => p.lifecycle_status === "cancelled",
-      ).length;
-
-      const totalPremium = policies.reduce(
-        (sum, p) => sum + (parseFloat(p.annual_premium) || 0),
-        0,
-      );
-      const avgPremium =
-        policies.length > 0 ? totalPremium / policies.length : 0;
-
-      const ytdPolicies = policies.filter(
-        (p) =>
-          p.effective_date &&
-          parseLocalDate(p.effective_date).getFullYear() === currentYear,
-      ).length;
-      const ytdPremium = policies
-        .filter(
-          (p) =>
-            p.effective_date &&
-            parseLocalDate(p.effective_date).getFullYear() === currentYear,
-        )
-        .reduce((sum, p) => sum + (parseFloat(p.annual_premium) || 0), 0);
-
-      return {
-        totalPolicies: count || 0,
-        activePolicies,
-        pendingPolicies,
-        lapsedPolicies,
-        cancelledPolicies,
-        totalPremium,
-        avgPremium,
-        ytdPolicies,
-        ytdPremium,
-      };
-    } catch (error) {
-      console.error("PolicyRepository.getAggregateMetrics error:", error);
-      throw error;
     }
   }
 

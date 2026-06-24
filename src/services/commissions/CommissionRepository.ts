@@ -193,6 +193,40 @@ export class CommissionRepository extends BaseRepository<
     );
   }
 
+  /**
+   * Fetch commissions for a SET of policies in one query. Used by the policies
+   * list to load commissions only for the visible page (and the export to load
+   * them for the exported set) instead of every commission the agent owns.
+   */
+  async findByPolicyIds(policyIds: string[]): Promise<Commission[]> {
+    if (policyIds.length === 0) return [];
+
+    try {
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select(
+          `
+          *,
+          policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)
+        `,
+        )
+        .in("policy_id", policyIds)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw this.handleError(error, "findByPolicyIds");
+      }
+
+      return (
+        (data as CommissionWithPolicy[])?.map((item) =>
+          this.transformFromDBWithPolicy(item),
+        ) || []
+      );
+    } catch (error) {
+      throw this.wrapError(error, "findByPolicyIds");
+    }
+  }
+
   async findByAgent(userId: string): Promise<Commission[]> {
     try {
       const { data, error } = await this.client

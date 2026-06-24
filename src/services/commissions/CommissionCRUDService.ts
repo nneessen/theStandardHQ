@@ -142,6 +142,14 @@ class CommissionCRUDService {
     }
   }
 
+  async getByPolicyIds(policyIds: string[]): Promise<Commission[]> {
+    try {
+      return await this.repository.findByPolicyIds(policyIds);
+    } catch (error) {
+      throw this.handleError(error, "getByPolicyIds");
+    }
+  }
+
   async getCommissionsByUser(userId: string): Promise<Commission[]> {
     try {
       return await this.repository.findByAgent(userId);
