@@ -34,8 +34,11 @@ interface PostConfirmDialogProps {
   /** Connected IG @username (without the @). */
   handle?: string;
   caption: string;
-  /** Total slides that will post (carousel size). */
+  /** Total slides in the deck (carousel size). */
   slideCount: number;
+  /** Whether multi-slide carousel POSTING is wired yet. Until Phase B (#7) lands, Post
+   *  publishes only the previewed slide, so the chrome must not over-claim a carousel. */
+  carouselReady?: boolean;
   posting: boolean;
   onConfirm: () => void;
 }
@@ -97,12 +100,15 @@ export function PostConfirmDialog({
   handle,
   caption,
   slideCount,
+  carouselReady = true,
   posting,
   onConfirm,
 }: PostConfirmDialogProps) {
   const isStory = postType === "story";
   const handleLabel = handle ? `@${handle}` : "your account";
-  const carousel = slideCount > 1;
+  const multiPage = slideCount > 1;
+  // Only present carousel chrome/claims once carousel posting is actually wired.
+  const carousel = carouselReady && multiPage;
   // IG carousels cap at 10; surface the truncation rather than silently dropping.
   const postedSlides = Math.min(slideCount, 10);
   const card = (
@@ -215,6 +221,14 @@ export function PostConfirmDialog({
               </>
             )}
           </div>
+          {!carouselReady && multiPage && (
+            <p className="rounded-md bg-secondary/60 px-3 py-2 text-center text-[11px] text-muted-foreground">
+              Posts the previewed slide for now — one-tap multi-slide posting (
+              {slideCount} slides) is coming. Use{" "}
+              <span className="font-medium text-foreground">Download</span> to
+              grab all {slideCount} now.
+            </p>
+          )}
         </div>
 
         <DialogFooter>

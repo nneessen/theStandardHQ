@@ -626,6 +626,7 @@ export function SocialStudioPage() {
               handle={connectedIntegration?.instagram_username ?? undefined}
               caption={config.caption}
               slideCount={pageCount}
+              carouselReady={false}
               posting={posting}
               onConfirm={doPost}
             />
