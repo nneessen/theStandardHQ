@@ -110,42 +110,38 @@ serve(async (req) => {
       return jsonResponse({ success: true, result });
     }
 
-    // Group by agency — one connected account + one token decrypt per agency.
-    const byImo = new Map<string, DuePost[]>();
+    // Group by the account each post should publish FROM: the specific integration the
+    // user scheduled with (post.integration_id) when set, else a per-agency fallback
+    // bucket. Honors per-post account selection (WI-6) while keeping the original "one
+    // account lookup + one token decrypt per account" efficiency.
+    const byKey = new Map<string, DuePost[]>();
     for (const p of posts as unknown as DuePost[]) {
-      const list = byImo.get(p.imo_id) ?? [];
+      const key = p.integration_id ?? `imo:${p.imo_id}`;
+      const list = byKey.get(key) ?? [];
       list.push(p);
-      byImo.set(p.imo_id, list);
+      byKey.set(key, list);
     }
 
-    for (const [imoId, imoPosts] of byImo) {
-      // Resolve the agency's CURRENT connected account (mirrors instagram-publish-post),
-      // so a reconnect since scheduling still works.
-      const { data: integration } = await supabase
-        .from("instagram_integrations")
-        .select(
-          "id, instagram_user_id, instagram_username, access_token_encrypted, token_expires_at",
-        )
-        .eq("imo_id", imoId)
-        .eq("is_active", true)
-        .eq("connection_status", "connected")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    for (const [key, keyPosts] of byKey) {
+      const imoId = keyPosts[0].imo_id;
+      const namedIntegrationId = key.startsWith("imo:") ? null : key;
 
-      if (!integration) {
-        // No connected account right now — likely a transient disconnect or a reconnect
-        // in progress. Leave these PENDING (like the DM worker) so they fire on a later
-        // tick once an account is connected, rather than terminally killing a post that
-        // would publish fine a minute later. The owner can cancel stale ones in the UI.
+      // A NAMED account is pinned by id AND validated to belong to this agency (the
+      // imo_id filter IS the ownership check). A NULL integration_id (legacy/single-
+      // account posts) falls back to the agency's most-recent connected account.
+      const integ = await resolveAccount(supabase, imoId, namedIntegrationId);
+
+      if (!integ) {
+        // Named-but-gone (the chosen account was disconnected/deleted since scheduling)
+        // OR no connected account at all. EITHER WAY leave the posts PENDING — never
+        // silently republish from a DIFFERENT account (wrong brand/audience). They fire
+        // on reconnect, or the owner cancels them. (Mirrors the DM worker.)
         console.log(
-          `[instagram-process-scheduled-posts] No connected account for imo ${imoId}; leaving ${imoPosts.length} pending`,
+          `[instagram-process-scheduled-posts] No usable account for ${key}; leaving ${keyPosts.length} pending`,
         );
-        result.skipped += imoPosts.length;
+        result.skipped += keyPosts.length;
         continue;
       }
-
-      const integ = integration as unknown as IntegrationRow;
 
       // Decrypt once; proactively refresh a token nearing expiry (same as the
       // synchronous publish fn). A decrypt failure means the stored token is
@@ -170,7 +166,7 @@ serve(async (req) => {
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Token decrypt failed";
         await markIntegrationExpired(supabase, integ.id, msg);
-        for (const post of imoPosts) {
+        for (const post of keyPosts) {
           await expirePost(supabase, post, `Token unavailable: ${msg}`, now);
           result.expired++;
         }
@@ -179,7 +175,7 @@ serve(async (req) => {
 
       // Publish this agency's posts with a small concurrency cap (rate-limit safety).
       const outcomes = await processWithConcurrency(
-        imoPosts,
+        keyPosts,
         (post) => publishOne(supabase, integ, accessToken, post, now),
         5,
       );
@@ -193,7 +189,7 @@ serve(async (req) => {
         } else {
           result.failed++;
           result.errors.push(
-            `Post ${imoPosts[i].id}: ${o.reason?.message ?? "unknown error"}`,
+            `Post ${keyPosts[i].id}: ${o.reason?.message ?? "unknown error"}`,
           );
         }
       }
@@ -214,6 +210,36 @@ function jsonResponse(body: unknown, status = 200): Response {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Resolve the connected Instagram account a group of posts should publish from: a
+ * specific integration when one was named (validated to belong to `imoId` + be active and
+ * connected), else the agency's most-recent connected account (legacy/single-account
+ * posts). Returns null when none is usable — the caller leaves those posts pending rather
+ * than publish from the wrong account. The cast sidesteps the untyped client's row
+ * inference (same pattern as the rest of this worker).
+ */
+async function resolveAccount(
+  supabase: ReturnType<typeof createClient>,
+  imoId: string,
+  namedIntegrationId: string | null,
+): Promise<IntegrationRow | null> {
+  const sel = supabase
+    .from("instagram_integrations")
+    .select(
+      "id, instagram_user_id, instagram_username, access_token_encrypted, token_expires_at",
+    )
+    .eq("imo_id", imoId)
+    .eq("is_active", true)
+    .eq("connection_status", "connected");
+  const { data } = namedIntegrationId
+    ? await sel.eq("id", namedIntegrationId).limit(1).maybeSingle()
+    : await sel
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+  return (data as unknown as IntegrationRow) ?? null;
 }
 
 /**
