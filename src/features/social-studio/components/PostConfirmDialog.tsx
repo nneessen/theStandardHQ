@@ -36,9 +36,6 @@ interface PostConfirmDialogProps {
   caption: string;
   /** Total slides in the deck (carousel size). */
   slideCount: number;
-  /** Whether multi-slide carousel POSTING is wired yet. Until Phase B (#7) lands, Post
-   *  publishes only the previewed slide, so the chrome must not over-claim a carousel. */
-  carouselReady?: boolean;
   posting: boolean;
   onConfirm: () => void;
 }
@@ -100,15 +97,15 @@ export function PostConfirmDialog({
   handle,
   caption,
   slideCount,
-  carouselReady = true,
   posting,
   onConfirm,
 }: PostConfirmDialogProps) {
   const isStory = postType === "story";
   const handleLabel = handle ? `@${handle}` : "your account";
   const multiPage = slideCount > 1;
-  // Only present carousel chrome/claims once carousel posting is actually wired.
-  const carousel = carouselReady && multiPage;
+  // Carousel chrome is for the FEED multi-slide path only. A Story posts a single frame
+  // regardless of how many slides the deck has, so it must never show carousel claims.
+  const carousel = multiPage && !isStory;
   // IG carousels cap at 10; surface the truncation rather than silently dropping.
   const postedSlides = Math.min(slideCount, 10);
   const card = (
@@ -138,18 +135,10 @@ export function PostConfirmDialog({
               style={{ width: FRAME_W }}
             >
               <div className="flex gap-1 px-2 pt-2">
-                {Array.from({ length: Math.max(1, postedSlides) }).map(
-                  (_, i) => (
-                    <div
-                      key={i}
-                      className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/40"
-                    >
-                      {i === 0 && (
-                        <div className="h-full w-1/3 rounded-full bg-white" />
-                      )}
-                    </div>
-                  ),
-                )}
+                {/* A Story posts ONE frame — a single progress segment, honestly. */}
+                <div className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/40">
+                  <div className="h-full w-1/3 rounded-full bg-white" />
+                </div>
               </div>
               <div className="flex items-center gap-2 px-3 py-2">
                 <div className="h-7 w-7 rounded-full bg-gradient-to-br from-fuchsia-500 to-amber-400" />
@@ -221,12 +210,13 @@ export function PostConfirmDialog({
               </>
             )}
           </div>
-          {!carouselReady && multiPage && (
+          {isStory && multiPage && (
             <p className="rounded-md bg-secondary/60 px-3 py-2 text-center text-[11px] text-muted-foreground">
-              Posts the previewed slide for now — one-tap multi-slide posting (
-              {slideCount} slides) is coming. Use{" "}
-              <span className="font-medium text-foreground">Download</span> to
-              grab all {slideCount} now.
+              Stories post the{" "}
+              <span className="font-medium text-foreground">shown slide</span>{" "}
+              only. Switch to{" "}
+              <span className="font-medium text-foreground">Post</span> to share
+              all {slideCount} slides as a carousel.
             </p>
           )}
         </div>

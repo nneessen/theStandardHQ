@@ -8,6 +8,7 @@ import { supabase } from "../base/supabase";
 const BUCKET = "spotlight-assets";
 const PHOTO_KEY = "aotw-photo";
 const POST_KEY = "social-post";
+const CAROUSEL_PREFIX = "carousel";
 const SCHEDULED_PREFIX = "scheduled";
 
 /**
@@ -77,6 +78,34 @@ export async function uploadGeneratedPost(dataUrl: string): Promise<string> {
   if (error) throw error;
   const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return `${pub.publicUrl}?v=${Date.now()}`;
+}
+
+/**
+ * Upload N rendered carousel slides, each under a UNIQUE per-index key
+ * ({uid}/carousel/{i}.png) — a carousel needs N DISTINCT public URLs. (uploadGeneratedPost's
+ * single stable key would make every slide overwrite the last, so Instagram would fetch
+ * N copies of the final image.) Each URL is cache-busted so IG's server-side fetch gets
+ * THIS render, not a CDN-cached prior post at the same index key. The caller caps the count
+ * at Instagram's 10-slide carousel limit. Returns the public URLs in slide order.
+ */
+export async function uploadCarouselSlides(
+  dataUrls: string[],
+): Promise<string[]> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) throw new Error("not authenticated");
+  const urls: string[] = [];
+  for (let i = 0; i < dataUrls.length; i++) {
+    const blob = await (await fetch(dataUrls[i])).blob();
+    const path = `${uid}/${CAROUSEL_PREFIX}/${i}.png`;
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, blob, { contentType: "image/png", upsert: true });
+    if (error) throw error;
+    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    urls.push(`${pub.publicUrl}?v=${Date.now()}`);
+  }
+  return urls;
 }
 
 /**

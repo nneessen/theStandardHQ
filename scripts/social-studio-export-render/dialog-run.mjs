@@ -24,6 +24,9 @@ const VARIANTS = [
   { postType: "post", slides: "1", key: "confirm-feed-single" },
   { postType: "post", slides: "6", key: "confirm-feed-carousel" },
   { postType: "story", slides: "1", key: "confirm-story" },
+  // Multi-slide STORY: must show ONE progress segment (story posts a single frame) and
+  // the "switch to Post for a carousel" note — the honesty fix for carousel publishing.
+  { postType: "story", slides: "6", key: "confirm-story-multi" },
 ];
 let ok = true;
 for (const v of VARIANTS) {

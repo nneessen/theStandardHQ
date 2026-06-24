@@ -7,6 +7,7 @@ export {
   readFileAsDataUrl,
   uploadAgentPhoto,
   uploadGeneratedPost,
+  uploadCarouselSlides,
   uploadScheduledPost,
   removeScheduledPost,
   removeAgentPhoto,
@@ -15,6 +16,8 @@ export {
 export {
   publishToInstagram,
   type PublishResult,
+  type PublishMediaType,
+  type PublishOptions,
 } from "./instagramPublishService";
 export {
   schedulePost,

@@ -1,9 +1,12 @@
 // supabase/functions/instagram-publish-post/index.ts
-// Publishes a single IMAGE post to the agency's connected Instagram feed (the Social
-// Studio graphics). Two-step Instagram Content Publishing API (graph.instagram.com):
-//   1. POST /{ig-user-id}/media        { image_url, caption }   → creation container
-//   2. (poll the container until FINISHED)
-//   3. POST /{ig-user-id}/media_publish { creation_id }         → live media id
+// Publishes a Social Studio graphic to the agency's connected Instagram account via the
+// Instagram Content Publishing API (graph.instagram.com). Accepts imageUrls[] + mediaType
+// and routes (mechanics live in ../_shared/instagram-publish.ts):
+//   • STORIES            → single Story image, no caption
+//   • FEED, 1 image      → single feed post
+//   • FEED, 2–10 images  → carousel (per-child containers → CAROUSEL parent → publish)
+// An optional integrationId pins WHICH connected account to post to (multi-account);
+// it is validated against the caller's agency before use.
 //
 // Reuses the existing Instagram integration (instagram_integrations): the long-lived
 // token (AES-256-GCM encrypted) already carries `instagram_business_content_publish`
@@ -26,8 +29,11 @@ import {
 } from "../_shared/instagram-token-refresh.ts";
 import {
   runInstagramPublishFlow,
+  runInstagramCarouselPublishFlow,
   type MetaError,
 } from "../_shared/instagram-publish.ts";
+
+const IG_CAROUSEL_MAX = 10;
 
 const CAPTION_MAX = 2200;
 
@@ -66,10 +72,26 @@ serve(async (req) => {
     }
 
     // ── Body ──────────────────────────────────────────────────────────────────
+    // New shape: imageUrls[] + mediaType ("FEED"|"STORIES") + optional integrationId.
+    // Back-compat: a lone `imageUrl` is accepted as a single-element feed post.
     const body = await req.json().catch(() => null);
-    const imageUrl: string = body?.imageUrl ?? "";
+    const rawUrls: unknown = Array.isArray(body?.imageUrls)
+      ? body.imageUrls
+      : body?.imageUrl
+        ? [body.imageUrl]
+        : [];
+    const imageUrls: string[] = (rawUrls as unknown[])
+      .filter((u): u is string => typeof u === "string")
+      .slice(0, IG_CAROUSEL_MAX);
     const caption: string = body?.caption ?? "";
-    if (!/^https:\/\//i.test(imageUrl)) {
+    const mediaType: "FEED" | "STORIES" =
+      body?.mediaType === "STORIES" ? "STORIES" : "FEED";
+    const integrationId: string | undefined =
+      typeof body?.integrationId === "string" ? body.integrationId : undefined;
+    if (
+      imageUrls.length === 0 ||
+      !imageUrls.every((u) => /^https:\/\//i.test(u))
+    ) {
       return json(
         { ok: false, error: "A public https image URL is required." },
         400,
@@ -99,14 +121,26 @@ serve(async (req) => {
       );
     }
 
-    const { data: integration } = await supabase
-      .from("instagram_integrations")
-      .select(
-        "id, instagram_user_id, instagram_username, access_token_encrypted, connection_status, is_active, token_expires_at",
-      )
-      .eq("imo_id", imoId)
-      .eq("is_active", true)
-      .eq("connection_status", "connected")
+    // Base query: only the caller's agency, active + connected accounts. When the
+    // client names an integrationId we additionally pin to THAT row — the extra
+    // imo_id/is_active/connected filters are the ownership check (a foreign or
+    // disconnected id simply yields no row → NOT_CONNECTED, never another agency's
+    // account). With no id we keep the historical most-recent fallback. A factory
+    // (not a reassigned `let`) keeps PostgREST's result-type inference intact.
+    const baseIntegrationQuery = () =>
+      supabase
+        .from("instagram_integrations")
+        .select(
+          "id, instagram_user_id, instagram_username, access_token_encrypted, token_expires_at",
+        )
+        .eq("imo_id", imoId)
+        .eq("is_active", true)
+        .eq("connection_status", "connected");
+    const { data: integration } = await (
+      integrationId
+        ? baseIntegrationQuery().eq("id", integrationId)
+        : baseIntegrationQuery()
+    )
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -204,13 +238,31 @@ serve(async (req) => {
       );
     };
 
-    // ── Run the shared 3-step publish flow; map its result to our HTTP responses ─
-    const result = await runInstagramPublishFlow({
-      igUserId,
-      accessToken,
-      imageUrl,
-      caption,
-    });
+    // ── Run the right shared flow; map its result to our HTTP responses ─────────
+    //   STORIES → single Story image (no caption); >1 feed image → carousel; else
+    //   the single-image feed flow. All three return the same PublishFlowResult union.
+    const result =
+      mediaType === "STORIES"
+        ? await runInstagramPublishFlow({
+            igUserId,
+            accessToken,
+            imageUrl: imageUrls[0],
+            caption: "",
+            mediaType: "STORIES",
+          })
+        : imageUrls.length > 1
+          ? await runInstagramCarouselPublishFlow({
+              igUserId,
+              accessToken,
+              imageUrls,
+              caption,
+            })
+          : await runInstagramPublishFlow({
+              igUserId,
+              accessToken,
+              imageUrl: imageUrls[0],
+              caption,
+            });
 
     if (result.ok) {
       console.log(

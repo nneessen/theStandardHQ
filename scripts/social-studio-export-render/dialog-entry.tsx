@@ -60,7 +60,6 @@ function App() {
       handle="thestandard.agency"
       caption="June was massive 🔥 47 producers, $560K AP this month. So proud of this team — let's run it back."
       slideCount={slideCount}
-      carouselReady={false}
       posting={false}
       onConfirm={() => {}}
     />

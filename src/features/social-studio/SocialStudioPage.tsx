@@ -91,7 +91,7 @@ export function SocialStudioPage() {
     removeAgentPhoto,
     readFileAsDataUrl,
     generateCaption,
-    uploadGeneratedPost,
+    uploadCarouselSlides,
     publishToInstagram,
   } = useSpotlightActions();
   // The agency's connected Instagram account (Business/Creator) gates posting +
@@ -262,10 +262,10 @@ export function SocialStudioPage() {
     }
   }
 
-  // Rasterize the CURRENTLY-PREVIEWED slide (Post Now / Schedule). The off-screen
-  // CardExportHost mounts every slide at full 1080×H via the shared renderCardToPng
-  // exporter (explicit FORMAT_DIMS pin + un-transformed node = no WI-1 crop);
-  // exportOne captures the shown one. (Carousel multi-slide posting lands in Phase B.)
+  // Rasterize the CURRENTLY-PREVIEWED slide (Story post / Schedule — both single-image).
+  // The off-screen CardExportHost mounts every slide at full 1080×H via the shared
+  // renderCardToPng exporter (explicit FORMAT_DIMS pin + un-transformed node = no WI-1
+  // crop); exportOne captures the shown one. Feed posts use exportAll() for the carousel.
   async function renderCardPng(): Promise<string | null> {
     return (await exportHostRef.current?.exportOne(shownIndex)) ?? null;
   }
@@ -290,20 +290,50 @@ export function SocialStudioPage() {
   }
 
   // Publish to the agency's connected Instagram account: render → upload to the public
-  // bucket → instagram-publish-post edge fn. (Multi-slide carousel + Story-endpoint
-  // routing land in Phase B; for now this posts the previewed slide.)
+  // bucket → instagram-publish-post edge fn, which routes by media type:
+  //   • Story  → the previewed slide only (Stories are a single frame).
+  //   • Feed   → every slide; 1 slide = a single post, 2–10 = a carousel (IG caps at
+  //              10, so we post the first 10 and tell the user to Download the rest).
   async function doPost() {
     if (postingRef.current) return;
     postingRef.current = true;
     setPosting(true);
     try {
-      const dataUrl = await renderCardPng();
-      if (!dataUrl) throw new Error("The card isn't ready yet.");
-      const imageUrl = await uploadGeneratedPost(dataUrl);
-      const { username } = await publishToInstagram(imageUrl, config.caption);
-      toast.success(
-        username ? `Posted to @${username}` : "Posted to Instagram",
-      );
+      const integrationId = connectedIntegration?.id;
+      if (config.postType === "story") {
+        const dataUrl = await renderCardPng();
+        if (!dataUrl) throw new Error("The card isn't ready yet.");
+        const [url] = await uploadCarouselSlides([dataUrl]);
+        const { username } = await publishToInstagram([url], "", {
+          mediaType: "STORIES",
+          integrationId,
+        });
+        toast.success(
+          username ? `Posted Story to @${username}` : "Posted to your Story",
+        );
+      } else {
+        const slides = await exportHostRef.current?.exportAll();
+        if (!slides || slides.length === 0)
+          throw new Error("The card isn't ready yet.");
+        const capped = slides.slice(0, 10);
+        if (slides.length > 10) {
+          toast.message(
+            `Posting the first 10 of ${slides.length} slides (Instagram's carousel limit) — use Download for all.`,
+          );
+        }
+        const urls = await uploadCarouselSlides(capped);
+        const { username } = await publishToInstagram(urls, config.caption, {
+          mediaType: "FEED",
+          integrationId,
+        });
+        const what =
+          urls.length > 1 ? `carousel (${urls.length} slides)` : "post";
+        toast.success(
+          username
+            ? `Posted ${what} to @${username}`
+            : `Posted ${what} to Instagram`,
+        );
+      }
       setConfirmOpen(false);
     } catch (e) {
       console.error("Instagram post failed:", e);
@@ -626,7 +656,6 @@ export function SocialStudioPage() {
               handle={connectedIntegration?.instagram_username ?? undefined}
               caption={config.caption}
               slideCount={pageCount}
-              carouselReady={false}
               posting={posting}
               onConfirm={doPost}
             />
