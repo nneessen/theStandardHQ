@@ -1,5 +1,8 @@
 // src/features/settings/integrations/components/instagram/InstagramIntegrationCard.tsx
-// Instagram DM integration card for settings page
+// Instagram integration card — lists EVERY Instagram account connected for the agency
+// (WI-6 multi-account) with per-row status + Reconnect/Disconnect, plus a "Connect
+// another account" action. Accounts are agency-scoped: any one can be posted from in
+// Social Studio, and DMs route to the original (oldest) account.
 
 import { useState } from "react";
 import {
@@ -9,6 +12,7 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,66 +27,49 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  useActiveInstagramIntegration,
+  useInstagramIntegrations,
   useConnectInstagram,
   useDisconnectInstagram,
 } from "@/hooks/instagram";
 import { useCurrentUserProfile } from "@/hooks/admin";
+import type { InstagramIntegration } from "@/types/instagram.types";
 
 export function InstagramIntegrationCard() {
-  const { data: integration, isLoading } = useActiveInstagramIntegration();
+  const { data: integrations = [], isLoading } = useInstagramIntegrations();
   const { data: profile, isLoading: isProfileLoading } =
     useCurrentUserProfile();
   const connectInstagram = useConnectInstagram();
   const disconnectInstagram = useDisconnectInstagram();
 
-  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  // The account targeted by the (shared) disconnect confirmation dialog.
+  const [disconnectTarget, setDisconnectTarget] =
+    useState<InstagramIntegration | null>(null);
 
-  const isConnected = integration?.connection_status === "connected";
-  const isExpired = integration?.connection_status === "expired";
-  const hasError = integration?.connection_status === "error";
-  const hasIntegration = !!integration;
-
-  // Check if we're ready to connect (profile must be loaded with imo_id)
+  const hasAccounts = integrations.length > 0;
   const canConnect = !!profile?.imo_id && !isProfileLoading;
 
   const handleConnect = async () => {
-    console.log("[InstagramIntegrationCard] handleConnect called", {
-      canConnect,
-      profileImoId: profile?.imo_id,
-      isProfileLoading,
-    });
-
     if (!canConnect) {
-      toast.error("Please wait while your profile loads...");
+      toast.error("Please wait while your profile loads…");
       return;
     }
     try {
       const returnUrl = `${window.location.origin}/settings?tab=integrations`;
-      console.log(
-        "[InstagramIntegrationCard] Calling mutateAsync with returnUrl:",
-        returnUrl,
-      );
       await connectInstagram.mutateAsync(returnUrl);
-      console.log(
-        "[InstagramIntegrationCard] mutateAsync completed (should have redirected)",
-      );
     } catch (err) {
-      console.error("[InstagramIntegrationCard] Error in handleConnect:", err);
-      const message =
+      toast.error(
         err instanceof Error
           ? err.message
-          : "Failed to initiate Instagram connection";
-      toast.error(message);
+          : "Failed to initiate Instagram connection",
+      );
     }
   };
 
   const handleDisconnect = async () => {
-    if (!integration?.id) return;
-
+    if (!disconnectTarget?.id) return;
     try {
-      await disconnectInstagram.mutateAsync(integration.id);
-      setShowDisconnectDialog(false);
+      await disconnectInstagram.mutateAsync(disconnectTarget.id);
+      setDisconnectTarget(null);
       toast.success("Instagram account disconnected");
     } catch {
       toast.error("Failed to disconnect Instagram account");
@@ -99,163 +86,152 @@ export function InstagramIntegrationCard() {
 
   return (
     <div className="space-y-3">
-      {/* Header Card */}
+      {/* Header card */}
       <div className="bg-card rounded-lg border border-border p-3">
         <div className="flex items-start gap-3">
-          {/* Icon */}
           <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 dark:from-purple-900/30 dark:to-pink-900/30">
             <Instagram className="h-5 w-5 text-info" />
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-foreground">
-                Instagram DM
+                Instagram
               </h3>
-              {isConnected ? (
-                <Badge
-                  variant="default"
-                  className="text-[9px] h-4 px-1.5 bg-success"
-                >
-                  <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
-                  Connected
-                </Badge>
-              ) : isExpired ? (
-                <Badge
-                  variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
-                >
-                  <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
-                  Expired
-                </Badge>
-              ) : hasError ? (
-                <Badge
-                  variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive dark:bg-destructive/50 dark:text-destructive"
-                >
-                  <XCircle className="h-2.5 w-2.5 mr-0.5" />
-                  Error
-                </Badge>
-              ) : (
+              {hasAccounts && (
                 <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                  <XCircle className="h-2.5 w-2.5 mr-0.5" />
-                  Not Connected
+                  {integrations.length} connected
                 </Badge>
               )}
             </div>
-
             <p className="text-[10px] text-muted-foreground mt-1">
-              {hasIntegration
-                ? "Manage Instagram DM conversations and recruiting leads."
-                : "Connect your Instagram Business account to manage DMs and recruiting."}
+              {hasAccounts
+                ? "Connect multiple Business/Creator accounts to post from any of them in Social Studio. DMs route to your first connected account."
+                : "Connect your Instagram Business account to manage DMs, recruiting, and post from Social Studio."}
             </p>
           </div>
 
-          {/* Connect Button - shown when not connected */}
-          {!hasIntegration && (
-            <Button
-              size="sm"
-              className="h-7 px-3 text-[10px]"
-              onClick={handleConnect}
-              disabled={connectInstagram.isPending || !canConnect}
-            >
-              {connectInstagram.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              ) : (
-                <Instagram className="h-3 w-3 mr-1" />
-              )}
-              Connect Instagram
-            </Button>
-          )}
+          {/* Connect (first account OR another) */}
+          <Button
+            size="sm"
+            className="h-7 px-3 text-[10px] shrink-0"
+            onClick={handleConnect}
+            disabled={connectInstagram.isPending || !canConnect}
+          >
+            {connectInstagram.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : hasAccounts ? (
+              <Plus className="h-3 w-3 mr-1" />
+            ) : (
+              <Instagram className="h-3 w-3 mr-1" />
+            )}
+            {hasAccounts ? "Connect another" : "Connect Instagram"}
+          </Button>
         </div>
       </div>
 
-      {/* Connected Account Card */}
-      {hasIntegration && (
-        <div className="bg-card rounded-lg border border-border p-3 space-y-3">
+      {/* Connected accounts list */}
+      {hasAccounts && (
+        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
           <h4 className="text-[11px] font-semibold text-foreground">
-            Connected Account
+            Connected Accounts
           </h4>
-
-          <div className="flex items-center gap-3 p-2.5 bg-background rounded-lg">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={integration.instagram_profile_picture_url || undefined}
-                alt={integration.instagram_username || "Instagram"}
-              />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs">
-                {integration.instagram_username?.charAt(0).toUpperCase() ||
-                  "IG"}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-foreground">
-                {integration.instagram_name || integration.instagram_username}
-              </p>
-              <p className="text-[10px] text-muted-foreground">
-                @{integration.instagram_username}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Reconnect button if expired or error */}
-              {(isExpired || hasError) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-[9px]"
-                  onClick={handleConnect}
-                  disabled={connectInstagram.isPending || !canConnect}
-                >
-                  {connectInstagram.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  ) : (
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                  )}
-                  Reconnect
-                </Button>
-              )}
-
-              {/* Disconnect button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-[9px] text-destructive hover:text-destructive"
-                onClick={() => setShowDisconnectDialog(true)}
-                disabled={disconnectInstagram.isPending}
+          {integrations.map((integration) => {
+            const isExpired = integration.connection_status === "expired";
+            const hasError = integration.connection_status === "error";
+            const isConnected =
+              integration.connection_status === "connected" &&
+              integration.is_active;
+            return (
+              <div
+                key={integration.id}
+                className="flex items-center gap-3 p-2.5 bg-background rounded-lg"
               >
-                Disconnect
-              </Button>
-            </div>
-          </div>
+                <Avatar className="h-9 w-9">
+                  <AvatarImage
+                    src={integration.instagram_profile_picture_url || undefined}
+                    alt={integration.instagram_username || "Instagram"}
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs">
+                    {integration.instagram_username?.charAt(0).toUpperCase() ||
+                      "IG"}
+                  </AvatarFallback>
+                </Avatar>
 
-          {/* Warning message for expired/error state */}
-          {(isExpired || hasError) && (
-            <div className="p-2.5 rounded-lg bg-warning/10 border border-warning/30">
-              <p className="text-[10px] text-warning">
-                {isExpired
-                  ? "Your Instagram connection has expired. Please reconnect to continue using Instagram DM features."
-                  : "There was an error with your Instagram connection. Please try reconnecting."}
-              </p>
-            </div>
-          )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-medium text-foreground truncate">
+                    {integration.instagram_name ||
+                      integration.instagram_username}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    @{integration.instagram_username}
+                  </p>
+                </div>
 
-          {/* Info note for connected state */}
-          {isConnected && (
-            <p className="text-[9px] text-muted-foreground">
-              Access Instagram DMs from the Messages page. Templates can be
-              managed in Messages → Settings → Templates.
-            </p>
-          )}
+                {isConnected ? (
+                  <Badge
+                    variant="default"
+                    className="text-[9px] h-4 px-1.5 bg-success"
+                  >
+                    <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+                    Connected
+                  </Badge>
+                ) : isExpired ? (
+                  <Badge
+                    variant="secondary"
+                    className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning/50"
+                  >
+                    <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
+                    Expired
+                  </Badge>
+                ) : hasError ? (
+                  <Badge
+                    variant="secondary"
+                    className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive dark:bg-destructive/50"
+                  >
+                    <XCircle className="h-2.5 w-2.5 mr-0.5" />
+                    Error
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                    <XCircle className="h-2.5 w-2.5 mr-0.5" />
+                    Disconnected
+                  </Badge>
+                )}
+
+                <div className="flex items-center gap-1">
+                  {(isExpired || hasError) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-[9px]"
+                      onClick={handleConnect}
+                      disabled={connectInstagram.isPending || !canConnect}
+                      title="Reconnect"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[9px] text-destructive hover:text-destructive"
+                    onClick={() => setDisconnectTarget(integration)}
+                    disabled={disconnectInstagram.isPending}
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Disconnect Confirmation Dialog */}
+      {/* Disconnect confirmation dialog */}
       <Dialog
-        open={showDisconnectDialog}
-        onOpenChange={setShowDisconnectDialog}
+        open={!!disconnectTarget}
+        onOpenChange={(open) => !open && setDisconnectTarget(null)}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -264,7 +240,7 @@ export function InstagramIntegrationCard() {
               Disconnect Instagram
             </DialogTitle>
             <DialogDescription className="text-[11px]">
-              Are you sure you want to disconnect your Instagram account?
+              Are you sure you want to disconnect this Instagram account?
             </DialogDescription>
           </DialogHeader>
 
@@ -272,29 +248,32 @@ export function InstagramIntegrationCard() {
             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
               <Avatar className="h-8 w-8">
                 <AvatarImage
-                  src={integration?.instagram_profile_picture_url || undefined}
-                  alt={integration?.instagram_username || "Instagram"}
+                  src={
+                    disconnectTarget?.instagram_profile_picture_url || undefined
+                  }
+                  alt={disconnectTarget?.instagram_username || "Instagram"}
                 />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-[10px]">
-                  {integration?.instagram_username?.charAt(0).toUpperCase() ||
-                    "IG"}
+                  {disconnectTarget?.instagram_username
+                    ?.charAt(0)
+                    .toUpperCase() || "IG"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-[11px] font-medium text-foreground">
-                  @{integration?.instagram_username}
+                  @{disconnectTarget?.instagram_username}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {integration?.instagram_name}
+                  {disconnectTarget?.instagram_name}
                 </p>
               </div>
             </div>
 
             <div className="mt-3 p-2.5 rounded-lg bg-warning/10 border border-warning/30">
               <p className="text-[10px] text-warning">
-                This will stop all Instagram DM features. Your conversation
-                history will be preserved, but you won't be able to send or
-                receive messages until you reconnect.
+                This stops Instagram DM and Social Studio posting for this
+                account. Conversation history is preserved, but you won't be
+                able to send/receive or post from it until you reconnect.
               </p>
             </div>
           </div>
@@ -303,7 +282,7 @@ export function InstagramIntegrationCard() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowDisconnectDialog(false)}
+              onClick={() => setDisconnectTarget(null)}
               className="h-7 text-[10px]"
             >
               Cancel

@@ -297,32 +297,24 @@ serve(async (req) => {
     // =========================================================================
     const encryptedAccessToken = await encrypt(accessToken);
 
-    // Check if integration already exists for this user/IMO or Instagram account
-    // The unique constraint is on (user_id, imo_id), so check both cases:
-    // 1. Same user reconnecting (possibly with different Instagram account)
-    // 2. Same Instagram account being reconnected
-    const { data: existingByUser } = await supabase
-      .from("instagram_integrations")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("imo_id", imoId)
-      .maybeSingle();
-
-    // instagram_user_id is GLOBALLY unique (instagram_integrations_ig_user_unique):
-    // the IGSID routes inbound webhooks, so one Instagram account maps to exactly one
-    // row platform-wide. Look it up WITHOUT an imo filter — otherwise reconnecting an
-    // account that was previously connected under a different IMO/user (e.g. a user
-    // whose IMO moved FFG -> Epic Life) finds nothing here, falls through to INSERT,
-    // and violates the unique constraint -> "save_failed". Matching the constraint
-    // makes it UPDATE (reassign) the existing row to the re-authenticating user.
+    // WI-6 multi-account: key the upsert ONLY on the Instagram account
+    // (instagram_user_id), which is globally unique (instagram_integrations_ig_user_unique
+    // — the IGSID also routes inbound DM webhooks, so one IG account = exactly one row
+    // platform-wide). Reconnecting the SAME account UPDATEs its row (refresh the token;
+    // reassign to the re-authenticating user/imo, e.g. after an IMO move FFG -> Epic Life);
+    // a DIFFERENT account INSERTs a new row, so one user/agency can hold MULTIPLE accounts.
+    //
+    // Previously we ALSO matched on (user_id, imo_id) and PREFERRED it — that overwrote the
+    // user's existing account on every new connect, which is exactly what capped an agency
+    // at a single account. The (user_id, imo_id) UNIQUE constraint that forced this was
+    // dropped in migration 20260623195723, so the INSERT path is now safe.
     const { data: existingByInstagram } = await supabase
       .from("instagram_integrations")
       .select("id")
       .eq("instagram_user_id", instagramBusinessAccountId)
       .maybeSingle();
 
-    // Prefer user match (to handle reconnecting with different Instagram account)
-    const existingIntegration = existingByUser || existingByInstagram;
+    const existingIntegration = existingByInstagram;
 
     const integrationData = {
       imo_id: imoId,

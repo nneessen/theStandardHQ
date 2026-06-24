@@ -94,17 +94,30 @@ export function SocialStudioPage() {
     uploadCarouselSlides,
     publishToInstagram,
   } = useSpotlightActions();
-  // The agency's connected Instagram account (Business/Creator) gates posting +
-  // scheduling, and supplies the integration id we attach to a scheduled row.
+  // The agency's connected Instagram accounts (Business/Creator). Posting + scheduling are
+  // gated on having at least one; the SELECTED account supplies the integration id we post
+  // with / attach to a scheduled row (WI-6 multi-account).
   const { data: igIntegrations } = useInstagramIntegrations();
-  const connectedIntegration = igIntegrations?.find(
-    (i) => i.connection_status === "connected" && i.is_active,
+  const connectedIntegrations = useMemo(
+    () =>
+      (igIntegrations ?? []).filter(
+        (i) => i.connection_status === "connected" && i.is_active,
+      ),
+    [igIntegrations],
   );
-  const igConnected = !!connectedIntegration;
+  const [selectedIntegrationId, setSelectedIntegrationId] = useState<
+    string | undefined
+  >(undefined);
+  // Derived (no effect needed): the chosen account, defaulting to the first connected one
+  // until the user picks another — and self-healing if that account later disconnects.
+  const selectedIntegration =
+    connectedIntegrations.find((i) => i.id === selectedIntegrationId) ??
+    connectedIntegrations[0];
+  const igConnected = connectedIntegrations.length > 0;
   // Scheduled posts belong to the agency that owns the connected account; the schedule
   // RPC derives imo_id from the caller's profile, which is the same imo the integration
   // is fetched under — so key the list + invalidation off it (not the acting imo).
-  const postsImoId = connectedIntegration?.imo_id ?? imoId ?? null;
+  const postsImoId = selectedIntegration?.imo_id ?? imoId ?? null;
   const schedulePostMut = useSchedulePost(postsImoId ?? undefined);
   const patch = (p: Partial<SocialStudioConfig>) =>
     setConfig((c) => ({ ...c, ...p }));
@@ -299,7 +312,7 @@ export function SocialStudioPage() {
     postingRef.current = true;
     setPosting(true);
     try {
-      const integrationId = connectedIntegration?.id;
+      const integrationId = selectedIntegration?.id;
       if (config.postType === "story") {
         const dataUrl = await renderCardPng();
         if (!dataUrl) throw new Error("The card isn't ready yet.");
@@ -386,7 +399,7 @@ export function SocialStudioPage() {
       if (!dataUrl) throw new Error("The card isn't ready yet.");
       await schedulePostMut.mutateAsync({
         postId: crypto.randomUUID(),
-        integrationId: connectedIntegration?.id ?? null,
+        integrationId: selectedIntegration?.id ?? null,
         dataUrl,
         caption: config.caption,
         view: config.view,
@@ -532,6 +545,23 @@ export function SocialStudioPage() {
             <div className="flex w-full items-center justify-between">
               <Cap>{VIEW_META[config.view].label}</Cap>
               <div className="flex items-center gap-2">
+                {/* Account picker — only when the agency has 2+ connected accounts. */}
+                {connectedIntegrations.length > 1 && (
+                  <select
+                    value={selectedIntegration?.id ?? ""}
+                    onChange={(e) => setSelectedIntegrationId(e.target.value)}
+                    disabled={isSample || posting}
+                    className="h-8 max-w-[150px] truncate rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                    title="Which Instagram account to post from"
+                    aria-label="Instagram account to post from"
+                  >
+                    {connectedIntegrations.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        @{i.instagram_username}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <Button
                   size="sm"
                   onClick={handlePostNow}
@@ -653,7 +683,7 @@ export function SocialStudioPage() {
               agencyName={agencyName}
               network={network}
               showPolicies={config.showPolicies}
-              handle={connectedIntegration?.instagram_username ?? undefined}
+              handle={selectedIntegration?.instagram_username ?? undefined}
               caption={config.caption}
               slideCount={pageCount}
               posting={posting}
@@ -729,9 +759,11 @@ export function SocialStudioPage() {
                 <>
                   <p className="text-[11px] leading-snug text-muted-foreground">
                     <span className="font-medium text-foreground">
-                      Connected
-                      {connectedIntegration?.instagram_username
-                        ? ` · @${connectedIntegration.instagram_username}`
+                      {connectedIntegrations.length > 1
+                        ? `${connectedIntegrations.length} accounts connected`
+                        : "Connected"}
+                      {selectedIntegration?.instagram_username
+                        ? ` · posting as @${selectedIntegration.instagram_username}`
                         : "."}
                     </span>{" "}
                     <span className="font-medium text-foreground">Post</span>{" "}
@@ -740,6 +772,9 @@ export function SocialStudioPage() {
                       Schedule
                     </span>{" "}
                     queues this graphic to auto-post at a time you pick.
+                    {connectedIntegrations.length > 1
+                      ? " Pick which account with the selector by Post."
+                      : ""}
                   </p>
                   <div className="mt-3 border-t border-border pt-3">
                     <Cap style={{ marginBottom: 8 }}>Scheduled posts</Cap>
