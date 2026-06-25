@@ -11,7 +11,27 @@ export interface UseCommissionsOptions {
 }
 
 /**
- * Fetch commissions for the current user using TanStack Query
+ * Fetch commissions for the current user using TanStack Query.
+ *
+ * SCOPE / SCALABILITY (assessed 2026-06-24): this loads the signed-in agent's
+ * ENTIRE commission history (commissionService.getCommissionsByUser ->
+ * repository.findByAgent). The analytics/KPI hooks that consume it
+ * (useMetrics, useMetricsWithDateRange, useAnalyticsData, IncomeGoalTracker)
+ * are genuinely row-level — they join each commission to its policy in JS for
+ * by-carrier/by-product/by-state, segmentation, ROI, chargeback risk, YoY,
+ * rolling 12-month trends, etc. — so they cannot be collapsed to a single
+ * server-side aggregate the way the policies dashboard band was.
+ *
+ * Deliberately NOT optimized: the set is per-AGENT (not team/downline/org) and
+ * bounded by one agent's lifetime production. Measured on prod: 254 total
+ * commission rows across 8 agents, heaviest agent = 65 rows. At this scale a
+ * server-side rewrite would only add risk to money math for no real benefit.
+ *
+ * TRIPWIRE — revisit (date-bound the fetch per-consumer to each metric's
+ * required window, preserving all-time fallbacks; or build targeted RPCs) only
+ * if a single agent's commission row count climbs into the low thousands
+ * (~2,000+). Check with:
+ *   SELECT user_id, count(*) FROM commissions GROUP BY user_id ORDER BY 2 DESC;
  *
  * @param options Optional configuration for the query
  * @returns TanStack Query result with commissions data
