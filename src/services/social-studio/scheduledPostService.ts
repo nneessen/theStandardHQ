@@ -68,18 +68,21 @@ export interface ScheduleCarouselInput {
 
 /**
  * Schedule a CAROUSEL: upload every slide under the post's folder first, then insert the
- * queue row via the carousel RPC (which stores image_urls + image_url=image_urls[0]). If
- * the insert fails, the just-uploaded slides are GC'd so we don't orphan them.
+ * queue row via the carousel RPC (which stores image_urls + derives image_url=image_urls[1]).
+ * The UPLOAD is inside the try (review #5): if any slide upload fails mid-batch — or the row
+ * insert fails — every already-uploaded slide is GC'd so we never orphan world-readable PNGs.
  */
 export async function scheduleCarousel(
   input: ScheduleCarouselInput,
 ): Promise<InstagramScheduledPost> {
-  const imageUrls = await uploadScheduledCarousel(input.dataUrls, input.postId);
   try {
+    const imageUrls = await uploadScheduledCarousel(
+      input.dataUrls,
+      input.postId,
+    );
     return await repo.scheduleCarousel({
       id: input.postId,
       integration_id: input.integrationId,
-      image_url: imageUrls[0],
       image_urls: imageUrls,
       caption: input.caption || null,
       view: input.view || null,
@@ -87,15 +90,23 @@ export async function scheduleCarousel(
       scheduled_for: input.scheduledFor.toISOString(),
     });
   } catch (e) {
-    await removeScheduledPost(input.postId).catch(() => {});
+    // Intended slide count (some may not have uploaded) — removing a key that doesn't exist
+    // is a no-op, so passing the full count cleans up any partial upload deterministically.
+    await removeScheduledPost(input.postId, input.dataUrls.length).catch(
+      () => {},
+    );
     throw e;
   }
 }
 
-/** Cancel a pending post (hard-delete via RPC) and GC its image. */
+/** Cancel a pending post (hard-delete via RPC) and GC its image(s). */
 export async function cancelScheduledPost(id: string): Promise<void> {
-  await repo.cancel(id);
-  await removeScheduledPost(id).catch(() => {});
+  // cancel() returns the removed row, so we know the exact shape (carousel slide count vs
+  // single image) and can GC deterministically without a Storage list() (review #6).
+  const removed = await repo.cancel(id);
+  await removeScheduledPost(id, removed.image_urls?.length ?? 0).catch(
+    () => {},
+  );
 }
 
 /** All scheduled posts for an agency (RLS-scoped), soonest first. */

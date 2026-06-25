@@ -27,6 +27,7 @@ import {
   type SocialView,
 } from "@/features/social-studio/types";
 import { normalizeCardTheme, type SocialFormat } from "@/features/social-cards";
+import { MARKETING_COPY_CAPS } from "@/features/social-studio/marketingCopyCaps";
 import type { PreviewData } from "@/features/social-studio/components/SocialPreview";
 
 declare global {
@@ -140,7 +141,8 @@ function gradientDataUrl(): string {
 // overflow:hidden hides a clip — caps must hold at the boundary, not just for short copy).
 const wantDeck = params.get("deck") === "1";
 const wantStress = params.get("stress") === "1";
-const COPY_CAPS = { text: 140, attribution: 40, headline: 40, body: 160 };
+// Shared with the editor + the server-authoritative edge fn (review #14).
+const COPY_CAPS = MARKETING_COPY_CAPS;
 const STRESS_WORDS =
   "protecting families with honest guidance and steady commitment every single day builds lasting trust that compounds over time and quietly changes lives across our whole community".split(
     " ",

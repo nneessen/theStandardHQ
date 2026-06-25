@@ -10,6 +10,7 @@ const PHOTO_KEY = "aotw-photo";
 const POST_KEY = "social-post";
 const CAROUSEL_PREFIX = "carousel";
 const SCHEDULED_PREFIX = "scheduled";
+const DECK_PREFIX = "decks";
 
 /**
  * Read a File as a data: URL — the card's render source. A data URL is what makes
@@ -165,22 +166,69 @@ export async function uploadScheduledCarousel(
 }
 
 /**
- * Delete a scheduled post's image(s) (on Cancel) — mirrors the worker's post-publish GC so
- * a cancelled post doesn't leave world-readable images behind. Handles BOTH shapes: the
- * single-image key ({postId}.png) AND a carousel folder ({postId}/*). Best-effort: the row
- * is already removed and the local Storage emulator 400s on object DELETE (prod removes
- * cleanly), so the caller never blocks on this.
+ * Delete a scheduled post's image(s) (on Cancel or a failed schedule rollback) — mirrors the
+ * worker's post-publish GC so a cancelled post doesn't leave world-readable images behind.
+ * Keys are deterministic, so NO Storage list() is needed (review #6): pass `slideCount` (>1)
+ * for a carousel and the slides at {postId}/{i}.png (i = 0..slideCount-1) are removed; omit it
+ * (or 0/1) for a single image at {postId}.png. Removing a missing key is a no-op, so over-
+ * specifying the count (e.g. on a partial-upload rollback) is safe. Best-effort: the row is
+ * already removed and the local Storage emulator 400s on object DELETE (prod removes cleanly),
+ * so the caller never blocks on this.
  */
-export async function removeScheduledPost(postId: string): Promise<void> {
+export async function removeScheduledPost(
+  postId: string,
+  slideCount = 0,
+): Promise<void> {
   const { data: u } = await supabase.auth.getUser();
   const uid = u.user?.id;
   if (!uid) return;
   const folder = `${uid}/${SCHEDULED_PREFIX}/${postId}`;
-  const keys = [`${folder}.png`];
-  // List + add any carousel slide objects under the post's folder.
-  const { data: listed } = await supabase.storage.from(BUCKET).list(folder);
-  if (listed?.length) keys.push(...listed.map((o) => `${folder}/${o.name}`));
+  const keys =
+    slideCount > 1
+      ? Array.from({ length: slideCount }, (_, i) => `${folder}/${i}.png`)
+      : [`${folder}.png`];
   await supabase.storage.from(BUCKET).remove(keys);
+}
+
+/**
+ * Upload one marketing-slide image (a data: URL) for a SAVED DECK under a per-deck folder
+ * ({uid}/decks/{deckId}/{slideIndex}.png) and return its public URL. Lets a saved deck persist
+ * a small Storage URL instead of a multi-MB base64 blob inside the row's jsonb (review #7).
+ */
+export async function uploadDeckImage(
+  deckId: string,
+  slideIndex: number,
+  dataUrl: string,
+): Promise<string> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) throw new Error("not authenticated");
+  const blob = await (await fetch(dataUrl)).blob();
+  const path = `${uid}/${DECK_PREFIX}/${deckId}/${slideIndex}.png`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: "image/png", upsert: true });
+  if (error) throw error;
+  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return pub.publicUrl;
+}
+
+/**
+ * Best-effort GC of a deck's stored slide images (on delete or save-rollback). The caller
+ * doesn't track the object names, so this lists then removes — deck save/delete is a rare,
+ * deliberate action, so the extra round-trip is acceptable here.
+ */
+export async function removeDeckImages(deckId: string): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) return;
+  const folder = `${uid}/${DECK_PREFIX}/${deckId}`;
+  const { data: listed } = await supabase.storage.from(BUCKET).list(folder);
+  if (listed?.length) {
+    await supabase.storage
+      .from(BUCKET)
+      .remove(listed.map((o) => `${folder}/${o.name}`));
+  }
 }
 
 /**

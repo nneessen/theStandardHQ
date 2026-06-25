@@ -82,9 +82,13 @@ URLS = ["https://x/0.png", "https://x/1.png", "https://x/2.png"]
 
 
 def cleanup():
+    # Scope the teardown to ONLY the rows this harness created (review #15): every test row
+    # references the seeded integration, so delete by that — never wipe the test account's
+    # entire scheduled-post queue (it may hold real, unrelated pending posts). Scheduled posts
+    # go first (they FK the integration).
     run_sql(
-        "DELETE FROM instagram_scheduled_posts WHERE scheduled_by IN "
-        f"(SELECT id FROM auth.users WHERE email='{EMAIL}'); "
+        "DELETE FROM instagram_scheduled_posts WHERE integration_id IN "
+        f"(SELECT id FROM instagram_integrations WHERE instagram_user_id='{SEED}'); "
         f"DELETE FROM instagram_integrations WHERE instagram_user_id='{SEED}';"
     )
 

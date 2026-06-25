@@ -48,9 +48,15 @@ export class InstagramScheduledPostRepository extends BaseRepository<
     return this.transformFromDB(data as Record<string, unknown>);
   }
 
-  /** Schedule a multi-slide CAROUSEL via the SECURITY DEFINER RPC (the only write path). */
+  /**
+   * Schedule a multi-slide CAROUSEL via the SECURITY DEFINER RPC (the only write path).
+   * No `image_url` here: the RPC derives the mirror column from p_image_urls[1] itself,
+   * so the caller supplies only the ordered array (review #10).
+   */
   async scheduleCarousel(
-    input: InstagramScheduledPostInsert & { image_urls: string[] },
+    input: Omit<InstagramScheduledPostInsert, "image_url"> & {
+      image_urls: string[];
+    },
   ): Promise<InstagramScheduledPost> {
     const { data, error } = await this.client.rpc(
       "schedule_instagram_carousel",

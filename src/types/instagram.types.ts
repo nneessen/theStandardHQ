@@ -267,6 +267,10 @@ export interface InstagramScheduledPostRow {
   published_media_id: string | null;
   retry_count: number;
   last_error: string | null;
+  /** Per-cron-run claim token (atomic publish claim); null = unclaimed. */
+  claim_token: string | null;
+  /** When the row was last claimed by a worker run; null = unclaimed. */
+  claimed_at: string | null;
   created_at: string;
   updated_at: string;
 }

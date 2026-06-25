@@ -38,7 +38,10 @@ const MAX_TOKENS = 512;
 type Variant = "quote" | "tip" | "cta" | "custom";
 
 // Hard caps so a draft always fits the card frame (MarketingCard.tsx font sizes). Trimmed
-// at a word boundary, never mid-word.
+// at a word boundary, never mid-word. These are the SERVER-AUTHORITATIVE numbers (truncation
+// happens here). The frontend mirrors them in src/features/social-studio/marketingCopyCaps.ts
+// (component maxLength + the export harness) — keep the two in sync; the Deno/Vite runtime
+// split prevents a single literal shared import (review #14).
 const CAPS = { text: 140, attribution: 40, headline: 40, body: 160 } as const;
 
 const SYSTEM_PROMPT = `You are a social-media copywriter for an insurance sales agency. You write the copy for ONE slide of an Instagram carousel. The slide is one of four types and you write ONLY for the type requested.
@@ -126,10 +129,7 @@ serve(async (req) => {
     variant !== "cta" &&
     variant !== "custom"
   ) {
-    return json(
-      { error: "variant must be quote, tip, cta, or custom." },
-      400,
-    );
+    return json({ error: "variant must be quote, tip, cta, or custom." }, 400);
   }
 
   // ── 2. Authenticate ──────────────────────────────────────────────────────────
@@ -194,13 +194,17 @@ serve(async (req) => {
   let copy: Record<string, string>;
   if (variant === "quote") {
     const t = capWords(clean(parsed.text), CAPS.text);
-    if (!t) return json({ error: "AI returned an empty draft. Try again." }, 502);
+    if (!t)
+      return json({ error: "AI returned an empty draft. Try again." }, 502);
     // attribution forced empty — never let the model fabricate a source.
     copy = { text: t, attribution: "" };
   } else {
     const headline = capWords(clean(parsed.headline), CAPS.headline);
     const bodyText = capWords(clean(parsed.body), CAPS.body);
-    if (!headline && !bodyText)
+    // BOTH fields are required for these variants. Returning a draft with an empty headline
+    // would blank the user's existing headline via onPatch (review #4) — so treat a missing
+    // headline OR body as a generation failure, not just both-empty.
+    if (!headline || !bodyText)
       return json({ error: "AI returned an empty draft. Try again." }, 502);
     copy = { headline, body: bodyText };
   }

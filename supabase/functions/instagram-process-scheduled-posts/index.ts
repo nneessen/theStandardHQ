@@ -25,6 +25,12 @@ const corsHeaders = {
 };
 
 const MAX_RETRIES = 3;
+// Atomic-claim batch size. Deliberately small: a carousel can take minutes to publish
+// (per-slide container creation + 1.5s polling), so a small batch keeps one run far under
+// the claim staleness window (45 min, see claim_due_instagram_posts) — that margin is what
+// stops an overlapping cron tick from re-claiming and double-publishing. Backlogs simply
+// drain across successive 5-minute ticks.
+const CLAIM_LIMIT = 10;
 const BUCKET = "spotlight-assets";
 
 interface DuePost {
@@ -98,20 +104,20 @@ serve(async (req) => {
     ) as ReturnType<typeof createClient>;
     const now = new Date().toISOString();
 
-    // Due, still-pending posts that haven't burned through their retries.
-    const { data: posts, error } = await supabase
-      .from("instagram_scheduled_posts")
-      .select(
-        "id, imo_id, integration_id, image_url, image_urls, caption, scheduled_by, retry_count",
-      )
-      .eq("status", "pending")
-      .lte("scheduled_for", now)
-      .lt("retry_count", MAX_RETRIES)
-      .order("scheduled_for", { ascending: true })
-      .limit(50);
+    // ATOMIC CLAIM (review #1): stamp a per-run token on up to CLAIM_LIMIT due rows via
+    // FOR UPDATE SKIP LOCKED, and process ONLY the rows we claimed. A row another tick is
+    // still publishing stays invisible (its claim is fresh), so two overlapping ticks can
+    // never publish the same post twice. Every terminal update below CAS-guards on runToken.
+    const runToken = crypto.randomUUID();
+    const { data, error } = await supabase.rpc("claim_due_instagram_posts", {
+      p_claim_token: runToken,
+      p_limit: CLAIM_LIMIT,
+    });
 
     if (error) throw error;
-    if (!posts || posts.length === 0) {
+    // The untyped service client returns the RPC payload as {}; cast to our row shape.
+    const posts = (data as unknown as DuePost[] | null) ?? [];
+    if (posts.length === 0) {
       return jsonResponse({ success: true, result });
     }
 
@@ -120,7 +126,7 @@ serve(async (req) => {
     // bucket. Honors per-post account selection (WI-6) while keeping the original "one
     // account lookup + one token decrypt per account" efficiency.
     const byKey = new Map<string, DuePost[]>();
-    for (const p of posts as unknown as DuePost[]) {
+    for (const p of posts) {
       const key = p.integration_id ?? `imo:${p.imo_id}`;
       const list = byKey.get(key) ?? [];
       list.push(p);
@@ -139,10 +145,12 @@ serve(async (req) => {
       if (!integ) {
         // Named-but-gone (the chosen account was disconnected/deleted since scheduling)
         // OR no connected account at all. EITHER WAY leave the posts PENDING — never
-        // silently republish from a DIFFERENT account (wrong brand/audience). They fire
-        // on reconnect, or the owner cancels them. (Mirrors the DM worker.)
+        // silently republish from a DIFFERENT account (wrong brand/audience). RELEASE the
+        // claim so they retry on the NEXT 5-min tick (fire on reconnect) instead of being
+        // invisible for the full stale window; never published here, so no double-post risk.
+        await releaseClaims(supabase, keyPosts, runToken);
         console.log(
-          `[instagram-process-scheduled-posts] No usable account for ${key}; leaving ${keyPosts.length} pending`,
+          `[instagram-process-scheduled-posts] No usable account for ${key}; releasing claim on ${keyPosts.length} pending`,
         );
         result.skipped += keyPosts.length;
         continue;
@@ -172,7 +180,13 @@ serve(async (req) => {
         const msg = err instanceof Error ? err.message : "Token decrypt failed";
         await markIntegrationExpired(supabase, integ.id, msg);
         for (const post of keyPosts) {
-          await expirePost(supabase, post, `Token unavailable: ${msg}`, now);
+          await expirePost(
+            supabase,
+            post,
+            `Token unavailable: ${msg}`,
+            now,
+            runToken,
+          );
           result.expired++;
         }
         continue;
@@ -181,7 +195,7 @@ serve(async (req) => {
       // Publish this agency's posts with a small concurrency cap (rate-limit safety).
       const outcomes = await processWithConcurrency(
         keyPosts,
-        (post) => publishOne(supabase, integ, accessToken, post, now),
+        (post) => publishOne(supabase, integ, accessToken, post, now, runToken),
         5,
       );
       for (let i = 0; i < outcomes.length; i++) {
@@ -192,10 +206,22 @@ serve(async (req) => {
           else if (o.value === "failed") result.failed++;
           else if (o.value === "retrying") result.retrying++;
         } else {
+          // publishOne only throws on an UNEXPECTED exception (it returns a disposition for
+          // every expected error). Mark such a post terminally FAILED — never leave it claimed
+          // with status='pending', or it would be reclaimed after the stale window and could
+          // double-post if the throw happened AFTER a successful Instagram publish. failPost
+          // CAS-guards on runToken and releases the row from the pending set.
+          const msg = o.reason?.message ?? "unknown error";
+          await failPost(
+            supabase,
+            keyPosts[i],
+            `Unexpected error: ${msg}`,
+            now,
+            /* terminal */ true,
+            runToken,
+          ).catch(() => {});
           result.failed++;
-          result.errors.push(
-            `Post ${keyPosts[i].id}: ${o.reason?.message ?? "unknown error"}`,
-          );
+          result.errors.push(`Post ${keyPosts[i].id}: ${msg}`);
         }
       }
     }
@@ -257,6 +283,7 @@ async function publishOne(
   accessToken: string,
   post: DuePost,
   now: string,
+  runToken: string,
 ): Promise<"published" | "failed" | "expired" | "retrying"> {
   // Back-compat discriminator: old rows have only image_url; carousel rows carry the
   // full ordered array. >1 URL → carousel flow (same one Post-Now already proved), else
@@ -265,6 +292,14 @@ async function publishOne(
     post.image_urls && post.image_urls.length > 0
       ? post.image_urls
       : [post.image_url];
+  // Defence-in-depth (review #12): the RPC blocks a carousel of <2 URLs, so a non-null
+  // image_urls of length 1 is an invariant violation. Publish it as a single image (the
+  // safe interpretation) but surface it loudly rather than silently.
+  if (post.image_urls && post.image_urls.length === 1) {
+    console.warn(
+      `[instagram-process-scheduled-posts] Post ${post.id} has a 1-element image_urls (carousel expects >=2); publishing as a single image.`,
+    );
+  }
   const flow =
     urls.length > 1
       ? await runInstagramCarouselPublishFlow({
@@ -290,7 +325,8 @@ async function publishOne(
         last_error: null,
         updated_at: now,
       })
-      .eq("id", post.id);
+      .eq("id", post.id)
+      .eq("claim_token", runToken);
     await gcImage(supabase, post);
     console.log(
       `[instagram-process-scheduled-posts] Published ${post.id} → media ${flow.mediaId} (@${integration.instagram_username})`,
@@ -306,7 +342,7 @@ async function publishOne(
       integration.id,
       flow.metaError.message,
     );
-    await expirePost(supabase, post, "Instagram token expired", now);
+    await expirePost(supabase, post, "Instagram token expired", now, runToken);
     return "expired";
   }
 
@@ -318,6 +354,7 @@ async function publishOne(
       "Instagram rejected the image (must be a public JPG/PNG, 4:5–1.91:1)",
       now,
       /* terminal */ true,
+      runToken,
     );
     return "failed";
   }
@@ -335,7 +372,14 @@ async function publishOne(
         : flow.reason === "processing"
           ? "Instagram still processing the image"
           : flow.reason;
-  const becameFailed = await failPost(supabase, post, errLabel, now, false);
+  const becameFailed = await failPost(
+    supabase,
+    post,
+    errLabel,
+    now,
+    false,
+    runToken,
+  );
   return becameFailed ? "failed" : "retrying";
 }
 
@@ -349,6 +393,7 @@ async function failPost(
   errorMessage: string,
   now: string,
   terminal: boolean,
+  runToken: string,
 ): Promise<boolean> {
   const newRetry = post.retry_count + 1;
   const isFailed = terminal || newRetry >= MAX_RETRIES;
@@ -359,8 +404,14 @@ async function failPost(
       retry_count: newRetry,
       last_error: errorMessage,
       updated_at: now,
+      // On a transient retry, release the claim so the NEXT tick can re-claim immediately
+      // (don't make it wait out the stale window). A terminal row moves to status='failed',
+      // which claim_due_instagram_posts never re-claims (it only takes status='pending'), so
+      // the leftover token on a failed row is harmless.
+      ...(isFailed ? {} : { claim_token: null, claimed_at: null }),
     })
-    .eq("id", post.id);
+    .eq("id", post.id)
+    .eq("claim_token", runToken);
   if (isFailed) await gcImage(supabase, post);
   return isFailed;
 }
@@ -371,6 +422,7 @@ async function expirePost(
   post: DuePost,
   errorMessage: string,
   now: string,
+  runToken: string,
 ): Promise<void> {
   await supabase
     .from("instagram_scheduled_posts")
@@ -379,13 +431,37 @@ async function expirePost(
       last_error: errorMessage,
       updated_at: now,
     })
-    .eq("id", post.id);
+    .eq("id", post.id)
+    .eq("claim_token", runToken);
   await gcImage(supabase, post);
 }
 
 /**
- * Best-effort delete of the post's Storage image(s) — keys are deterministic. Handles both
- * shapes: the single-image key ({id}.png) AND a carousel folder ({id}/*). Only ever called
+ * Release this run's claim on a set of posts WITHOUT changing their status — they stay
+ * 'pending' and become re-claimable on the next tick. Used when a post can't be acted on
+ * this run for a NON-failure reason (no usable account yet) so it isn't stranded for the full
+ * stale window. CAS-guarded on runToken so we only ever release what we claimed.
+ */
+async function releaseClaims(
+  supabase: ReturnType<typeof createClient>,
+  posts: DuePost[],
+  runToken: string,
+): Promise<void> {
+  if (posts.length === 0) return;
+  await supabase
+    .from("instagram_scheduled_posts")
+    .update({ claim_token: null, claimed_at: null })
+    .in(
+      "id",
+      posts.map((p) => p.id),
+    )
+    .eq("claim_token", runToken);
+}
+
+/**
+ * Best-effort delete of the post's Storage image(s) — keys are fully deterministic, so no
+ * Storage list() is needed (review #6). A carousel's slides live at {uid}/scheduled/{id}/{i}.png
+ * (i = 0..n-1, the upload index), a single image at {uid}/scheduled/{id}.png. Only ever called
  * on a TERMINAL state (published / failed / expired) — never when a post is left pending.
  */
 async function gcImage(
@@ -394,9 +470,10 @@ async function gcImage(
 ): Promise<void> {
   try {
     const folder = `${post.scheduled_by}/scheduled/${post.id}`;
-    const keys = [`${folder}.png`];
-    const { data: listed } = await supabase.storage.from(BUCKET).list(folder);
-    if (listed?.length) keys.push(...listed.map((o) => `${folder}/${o.name}`));
+    const isCarousel = !!post.image_urls && post.image_urls.length > 1;
+    const keys = isCarousel
+      ? post.image_urls!.map((_, i) => `${folder}/${i}.png`)
+      : [`${folder}.png`];
     await supabase.storage.from(BUCKET).remove(keys);
   } catch (err) {
     console.warn(

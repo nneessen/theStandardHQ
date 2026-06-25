@@ -56,6 +56,7 @@ import {
   type DeckSlideSpec,
 } from "../hooks/useSocialDecks";
 import type { SocialStudioConfig, SocialView } from "../types";
+import { MARKETING_COPY_CAPS } from "../marketingCopyCaps";
 import { toast } from "sonner";
 
 const IG_CAROUSEL_MAX = 10;
@@ -76,6 +77,12 @@ interface CarouselBuilderProps {
   onConfigChange: (p: Partial<SocialStudioConfig>) => void;
   /** Current IMO — the tenant a saved deck is filed under. */
   imoId: string | null;
+  /**
+   * The IMO key the ScheduledPostsPanel subscribes to (selectedIntegration.imo_id ?? imoId).
+   * The carousel-schedule mutation must invalidate THIS key, not imoId, or the panel goes
+   * stale after scheduling in a multi-account (WI-6) setup (review #2).
+   */
+  postsImoId: string | null;
   producers: ProducerRow[];
   isSample: boolean;
   labels: PeriodLabels;
@@ -123,6 +130,7 @@ export function CarouselBuilder({
   config,
   onConfigChange,
   imoId,
+  postsImoId,
   producers,
   isSample,
   labels,
@@ -141,7 +149,8 @@ export function CarouselBuilder({
   const [scheduledFor, setScheduledFor] = useState("");
   const [scheduling, setScheduling] = useState(false);
   const schedulingRef = useRef(false);
-  const scheduleCarouselMut = useScheduleCarousel(imoId ?? undefined);
+  // Invalidate the SAME key the panel reads (postsImoId), not imoId (review #2).
+  const scheduleCarouselMut = useScheduleCarousel(postsImoId ?? undefined);
   const exportRef = useRef<CardExportHandle>(null);
   const { hasAiAccess } = useAiAccess();
   const draftMarketingCopy = useMarketingCopyDraft();
@@ -262,10 +271,13 @@ export function CarouselBuilder({
           ? loaded.format
           : "portrait"
       ) as SocialFormat;
+      const expected = loaded.spec.slides.length;
       const next: DeckSlide[] = [];
-      for (const spec of loaded.spec?.slides ?? []) {
+      for (const spec of loaded.spec.slides) {
         if (spec.t === "data") {
           const lead = buildDataLead(spec.view, fmt, theme);
+          // A data slide whose live metric is unavailable (e.g. sample mode off) can't be
+          // rebuilt; it's counted and reported below, not silently dropped (review #3/#10).
           if (lead)
             next.push({ id: crypto.randomUUID(), data: lead, view: spec.view });
         } else {
@@ -289,7 +301,15 @@ export function CarouselBuilder({
       const capped = next.slice(0, IG_CAROUSEL_MAX);
       setDeck(capped);
       setSelectedId(capped[0]?.id ?? null);
-      toast.success(`Loaded "${loaded.name}".`);
+      const dropped = expected - next.length;
+      if (dropped > 0) {
+        toast.warning(
+          `Loaded "${loaded.name}" — ${next.length} of ${expected} slides. ` +
+            `${dropped} data slide${dropped > 1 ? "s" : ""} couldn't be rebuilt (live metrics unavailable).`,
+        );
+      } else {
+        toast.success(`Loaded "${loaded.name}".`);
+      }
     } catch {
       /* error toast handled by the mutation's onError */
     }
@@ -418,13 +438,24 @@ export function CarouselBuilder({
       toast.error("Connect a Business Instagram account first.");
       return;
     }
+    if (!postsImoId) {
+      toast.error("No agency context — reload and try again.");
+      return;
+    }
     if (deck.length < 2) {
       toast.error("A carousel needs at least 2 slides.");
       return;
     }
     const when = new Date(scheduledFor);
-    if (!scheduledFor || isNaN(when.getTime()) || when <= new Date()) {
-      toast.error("Pick a future date and time.");
+    // Require a small lead so the slide export + upload (which run before the RPC) can't push
+    // `now()` past the chosen time and trip the server's future-only guard (review #11).
+    const MIN_LEAD_MS = 2 * 60 * 1000;
+    if (
+      !scheduledFor ||
+      isNaN(when.getTime()) ||
+      when.getTime() <= Date.now() + MIN_LEAD_MS
+    ) {
+      toast.error("Pick a time at least a couple of minutes from now.");
       return;
     }
     schedulingRef.current = true;
@@ -896,14 +927,14 @@ function MarketingEditor({
           <textarea
             className={`${input} resize-none`}
             rows={3}
-            maxLength={140}
+            maxLength={MARKETING_COPY_CAPS.text}
             placeholder="Quote text…"
             value={data.text ?? ""}
             onChange={(e) => onPatch({ text: e.target.value })}
           />
           <input
             className={input}
-            maxLength={40}
+            maxLength={MARKETING_COPY_CAPS.attribution}
             placeholder="Attribution (optional)"
             value={data.attribution ?? ""}
             onChange={(e) => onPatch({ attribution: e.target.value })}
@@ -913,7 +944,7 @@ function MarketingEditor({
         <>
           <input
             className={input}
-            maxLength={40}
+            maxLength={MARKETING_COPY_CAPS.headline}
             placeholder="Headline"
             value={data.headline ?? ""}
             onChange={(e) => onPatch({ headline: e.target.value })}
@@ -921,7 +952,7 @@ function MarketingEditor({
           <textarea
             className={`${input} resize-none`}
             rows={3}
-            maxLength={160}
+            maxLength={MARKETING_COPY_CAPS.body}
             placeholder="Body text…"
             value={data.body ?? ""}
             onChange={(e) => onPatch({ body: e.target.value })}

@@ -580,6 +580,7 @@ export function SocialStudioPage() {
             config={config}
             onConfigChange={patch}
             imoId={imoId}
+            postsImoId={postsImoId}
             producers={producers}
             isSample={isSample}
             labels={labels}
