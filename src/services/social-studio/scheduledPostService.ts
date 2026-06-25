@@ -6,6 +6,7 @@
 import { InstagramScheduledPostRepository } from "@/services/instagram/repositories";
 import {
   uploadScheduledPost,
+  uploadScheduledCarousel,
   removeScheduledPost,
 } from "./spotlightAssetService";
 import type {
@@ -47,6 +48,44 @@ export async function schedulePost(
   };
   try {
     return await repo.schedule(payload);
+  } catch (e) {
+    await removeScheduledPost(input.postId).catch(() => {});
+    throw e;
+  }
+}
+
+export interface ScheduleCarouselInput {
+  /** Client-generated uuid — also the Storage folder key, so it must exist before upload. */
+  postId: string;
+  integrationId: string | null;
+  /** Rendered slide PNGs as data: URLs, in order (2-10). */
+  dataUrls: string[];
+  caption: string;
+  view: string;
+  cardTheme: string;
+  scheduledFor: Date;
+}
+
+/**
+ * Schedule a CAROUSEL: upload every slide under the post's folder first, then insert the
+ * queue row via the carousel RPC (which stores image_urls + image_url=image_urls[0]). If
+ * the insert fails, the just-uploaded slides are GC'd so we don't orphan them.
+ */
+export async function scheduleCarousel(
+  input: ScheduleCarouselInput,
+): Promise<InstagramScheduledPost> {
+  const imageUrls = await uploadScheduledCarousel(input.dataUrls, input.postId);
+  try {
+    return await repo.scheduleCarousel({
+      id: input.postId,
+      integration_id: input.integrationId,
+      image_url: imageUrls[0],
+      image_urls: imageUrls,
+      caption: input.caption || null,
+      view: input.view || null,
+      card_theme: input.cardTheme || null,
+      scheduled_for: input.scheduledFor.toISOString(),
+    });
   } catch (e) {
     await removeScheduledPost(input.postId).catch(() => {});
     throw e;

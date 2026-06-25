@@ -4,9 +4,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   schedulePost,
+  scheduleCarousel,
   cancelScheduledPost,
   getScheduledPosts,
   type SchedulePostInput,
+  type ScheduleCarouselInput,
 } from "@/services/social-studio";
 import { instagramKeys } from "@/types/instagram.types";
 import type { InstagramScheduledPost } from "@/types/instagram.types";
@@ -29,6 +31,21 @@ export function useSchedulePost(imoId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: SchedulePostInput) => schedulePost(input),
+    onSuccess: () => {
+      if (imoId) {
+        queryClient.invalidateQueries({
+          queryKey: instagramKeys.scheduledPosts(imoId),
+        });
+      }
+    },
+  });
+}
+
+/** Schedule the current deck as a CAROUSEL for a future time. */
+export function useScheduleCarousel(imoId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ScheduleCarouselInput) => scheduleCarousel(input),
     onSuccess: () => {
       if (imoId) {
         queryClient.invalidateQueries({

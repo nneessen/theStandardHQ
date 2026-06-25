@@ -137,19 +137,50 @@ export async function uploadScheduledPost(
 }
 
 /**
- * Delete a scheduled post's image (on Cancel) — mirrors the worker's post-publish GC so
- * a cancelled post doesn't leave a world-readable image behind. Best-effort: the row is
- * already removed and the local Storage emulator 400s on object DELETE (prod removes
+ * Upload a rendered CAROUSEL's slides for a SCHEDULED post under a per-post folder
+ * ({uid}/scheduled/{postId}/{i}.png). Like uploadScheduledPost the key is derived from the
+ * row id (so images survive untouched until the cron worker fires), but a carousel keeps
+ * every slide under the post's own folder so the worker / Cancel can GC the whole set by
+ * prefix. Slides upload concurrently; returns the public URLs in slide order.
+ */
+export async function uploadScheduledCarousel(
+  dataUrls: string[],
+  postId: string,
+): Promise<string[]> {
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u.user?.id;
+  if (!uid) throw new Error("not authenticated");
+  return Promise.all(
+    dataUrls.map(async (dataUrl, i) => {
+      const blob = await (await fetch(dataUrl)).blob();
+      const path = `${uid}/${SCHEDULED_PREFIX}/${postId}/${i}.png`;
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, blob, { contentType: "image/png", upsert: true });
+      if (error) throw error;
+      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+      return pub.publicUrl;
+    }),
+  );
+}
+
+/**
+ * Delete a scheduled post's image(s) (on Cancel) — mirrors the worker's post-publish GC so
+ * a cancelled post doesn't leave world-readable images behind. Handles BOTH shapes: the
+ * single-image key ({postId}.png) AND a carousel folder ({postId}/*). Best-effort: the row
+ * is already removed and the local Storage emulator 400s on object DELETE (prod removes
  * cleanly), so the caller never blocks on this.
  */
 export async function removeScheduledPost(postId: string): Promise<void> {
   const { data: u } = await supabase.auth.getUser();
   const uid = u.user?.id;
-  if (uid) {
-    await supabase.storage
-      .from(BUCKET)
-      .remove([`${uid}/${SCHEDULED_PREFIX}/${postId}.png`]);
-  }
+  if (!uid) return;
+  const folder = `${uid}/${SCHEDULED_PREFIX}/${postId}`;
+  const keys = [`${folder}.png`];
+  // List + add any carousel slide objects under the post's folder.
+  const { data: listed } = await supabase.storage.from(BUCKET).list(folder);
+  if (listed?.length) keys.push(...listed.map((o) => `${folder}/${o.name}`));
+  await supabase.storage.from(BUCKET).remove(keys);
 }
 
 /**

@@ -48,6 +48,26 @@ export class InstagramScheduledPostRepository extends BaseRepository<
     return this.transformFromDB(data as Record<string, unknown>);
   }
 
+  /** Schedule a multi-slide CAROUSEL via the SECURITY DEFINER RPC (the only write path). */
+  async scheduleCarousel(
+    input: InstagramScheduledPostInsert & { image_urls: string[] },
+  ): Promise<InstagramScheduledPost> {
+    const { data, error } = await this.client.rpc(
+      "schedule_instagram_carousel",
+      {
+        p_id: input.id,
+        p_integration_id: input.integration_id,
+        p_image_urls: input.image_urls,
+        p_caption: input.caption,
+        p_view: input.view,
+        p_card_theme: input.card_theme,
+        p_scheduled_for: input.scheduled_for,
+      },
+    );
+    if (error) throw this.handleError(error, "scheduleCarousel");
+    return this.transformFromDB(data as Record<string, unknown>);
+  }
+
   /**
    * Cancel (hard-delete) a pending post via RPC. Returns the removed row so the caller
    * can GC its Storage image.

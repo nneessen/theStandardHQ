@@ -54,5 +54,6 @@ export {
 export {
   useScheduledPosts,
   useSchedulePost,
+  useScheduleCarousel,
   useCancelScheduledPost,
 } from "./useInstagramScheduledPosts";

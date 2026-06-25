@@ -255,6 +255,8 @@ export interface InstagramScheduledPostRow {
   integration_id: string | null;
   imo_id: string;
   image_url: string;
+  /** Ordered carousel slide URLs (2-10). null/empty = single image (use image_url). */
+  image_urls: string[] | null;
   caption: string | null;
   view: string | null;
   card_theme: string | null;
@@ -351,6 +353,8 @@ export interface InstagramScheduledPostInsert {
   id: string;
   integration_id: string | null;
   image_url: string;
+  /** Carousel slides (2-10 https URLs). Omit for a single-image post. */
+  image_urls?: string[];
   caption: string | null;
   view: string | null;
   card_theme: string | null;

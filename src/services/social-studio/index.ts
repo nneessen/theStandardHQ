@@ -9,6 +9,7 @@ export {
   uploadGeneratedPost,
   uploadCarouselSlides,
   uploadScheduledPost,
+  uploadScheduledCarousel,
   removeScheduledPost,
   removeAgentPhoto,
   type UploadedAgentPhoto,
@@ -21,9 +22,11 @@ export {
 } from "./instagramPublishService";
 export {
   schedulePost,
+  scheduleCarousel,
   cancelScheduledPost,
   getScheduledPosts,
   type SchedulePostInput,
+  type ScheduleCarouselInput,
 } from "./scheduledPostService";
 export {
   generateSocialCaption,

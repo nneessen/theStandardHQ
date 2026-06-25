@@ -14,7 +14,10 @@ import {
   updateIntegrationToken,
   markIntegrationExpired,
 } from "../_shared/instagram-token-refresh.ts";
-import { runInstagramPublishFlow } from "../_shared/instagram-publish.ts";
+import {
+  runInstagramPublishFlow,
+  runInstagramCarouselPublishFlow,
+} from "../_shared/instagram-publish.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +32,8 @@ interface DuePost {
   imo_id: string;
   integration_id: string | null;
   image_url: string;
+  /** Carousel slides (2-10). null/empty → single image at image_url. */
+  image_urls: string[] | null;
   caption: string | null;
   scheduled_by: string;
   retry_count: number;
@@ -97,7 +102,7 @@ serve(async (req) => {
     const { data: posts, error } = await supabase
       .from("instagram_scheduled_posts")
       .select(
-        "id, imo_id, integration_id, image_url, caption, scheduled_by, retry_count",
+        "id, imo_id, integration_id, image_url, image_urls, caption, scheduled_by, retry_count",
       )
       .eq("status", "pending")
       .lte("scheduled_for", now)
@@ -253,12 +258,27 @@ async function publishOne(
   post: DuePost,
   now: string,
 ): Promise<"published" | "failed" | "expired" | "retrying"> {
-  const flow = await runInstagramPublishFlow({
-    igUserId: integration.instagram_user_id,
-    accessToken,
-    imageUrl: post.image_url,
-    caption: post.caption ?? "",
-  });
+  // Back-compat discriminator: old rows have only image_url; carousel rows carry the
+  // full ordered array. >1 URL → carousel flow (same one Post-Now already proved), else
+  // the original single-image flow. Both return the same PublishFlowResult shape.
+  const urls =
+    post.image_urls && post.image_urls.length > 0
+      ? post.image_urls
+      : [post.image_url];
+  const flow =
+    urls.length > 1
+      ? await runInstagramCarouselPublishFlow({
+          igUserId: integration.instagram_user_id,
+          accessToken,
+          imageUrls: urls,
+          caption: post.caption ?? "",
+        })
+      : await runInstagramPublishFlow({
+          igUserId: integration.instagram_user_id,
+          accessToken,
+          imageUrl: urls[0],
+          caption: post.caption ?? "",
+        });
 
   if (flow.ok) {
     await supabase
@@ -363,15 +383,21 @@ async function expirePost(
   await gcImage(supabase, post);
 }
 
-/** Best-effort delete of the post's Storage image — the key is deterministic. */
+/**
+ * Best-effort delete of the post's Storage image(s) — keys are deterministic. Handles both
+ * shapes: the single-image key ({id}.png) AND a carousel folder ({id}/*). Only ever called
+ * on a TERMINAL state (published / failed / expired) — never when a post is left pending.
+ */
 async function gcImage(
   supabase: ReturnType<typeof createClient>,
   post: DuePost,
 ): Promise<void> {
   try {
-    await supabase.storage
-      .from(BUCKET)
-      .remove([`${post.scheduled_by}/scheduled/${post.id}.png`]);
+    const folder = `${post.scheduled_by}/scheduled/${post.id}`;
+    const keys = [`${folder}.png`];
+    const { data: listed } = await supabase.storage.from(BUCKET).list(folder);
+    if (listed?.length) keys.push(...listed.map((o) => `${folder}/${o.name}`));
+    await supabase.storage.from(BUCKET).remove(keys);
   } catch (err) {
     console.warn(
       `[instagram-process-scheduled-posts] image GC failed for ${post.id}:`,

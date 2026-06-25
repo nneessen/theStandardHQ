@@ -21,6 +21,7 @@ import {
   Sparkles,
   Save,
   FolderOpen,
+  CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAiAccess } from "@/hooks/subscription";
@@ -40,6 +41,7 @@ import {
   type PeriodLabels,
 } from "../previewModel";
 import { useSpotlightActions } from "../hooks/useSpotlightActions";
+import { useScheduleCarousel } from "@/hooks/instagram";
 import {
   useMarketingCopyDraft,
   type MarketingCopyRequest,
@@ -136,6 +138,10 @@ export function CarouselBuilder({
   const [caption, setCaption] = useState("");
   const [posting, setPosting] = useState(false);
   const postingRef = useRef(false);
+  const [scheduledFor, setScheduledFor] = useState("");
+  const [scheduling, setScheduling] = useState(false);
+  const schedulingRef = useRef(false);
+  const scheduleCarouselMut = useScheduleCarousel(imoId ?? undefined);
   const exportRef = useRef<CardExportHandle>(null);
   const { hasAiAccess } = useAiAccess();
   const draftMarketingCopy = useMarketingCopyDraft();
@@ -400,6 +406,58 @@ export function CarouselBuilder({
     }
   }
 
+  // Schedule the whole deck as a carousel for a future time. Uploads every slide under the
+  // row's folder, then inserts the queue row via the carousel RPC; the cron worker fires it.
+  async function scheduleAll() {
+    if (schedulingRef.current) return;
+    if (isSample) {
+      toast.error("Switch off sample data to schedule your deck.");
+      return;
+    }
+    if (!igConnected) {
+      toast.error("Connect a Business Instagram account first.");
+      return;
+    }
+    if (deck.length < 2) {
+      toast.error("A carousel needs at least 2 slides.");
+      return;
+    }
+    const when = new Date(scheduledFor);
+    if (!scheduledFor || isNaN(when.getTime()) || when <= new Date()) {
+      toast.error("Pick a future date and time.");
+      return;
+    }
+    schedulingRef.current = true;
+    setScheduling(true);
+    try {
+      const slides = await exportRef.current?.exportAll();
+      if (!slides || slides.length === 0)
+        throw new Error("The slides aren't ready yet.");
+      const capped = slides.slice(0, IG_CAROUSEL_MAX);
+      await scheduleCarouselMut.mutateAsync({
+        postId: crypto.randomUUID(),
+        integrationId: selectedIntegration?.id ?? null,
+        dataUrls: capped,
+        caption,
+        view: config.view,
+        cardTheme: config.cardTheme,
+        scheduledFor: when,
+      });
+      toast.success(
+        `Scheduled a ${capped.length}-slide carousel for ${when.toLocaleString()}`,
+      );
+      setScheduledFor("");
+    } catch (e) {
+      console.error("Carousel schedule failed:", e);
+      toast.error(
+        e instanceof Error ? e.message : "Couldn't schedule the carousel.",
+      );
+    } finally {
+      schedulingRef.current = false;
+      setScheduling(false);
+    }
+  }
+
   async function downloadAll() {
     try {
       const slides = await exportRef.current?.exportAll();
@@ -550,6 +608,48 @@ export function CarouselBuilder({
                   <Send className="h-4 w-4" />
                 )}
                 {posting ? "Posting…" : "Post carousel"}
+              </Button>
+            </div>
+
+            {/* Schedule the deck as a carousel for a future time (Phase 3B). */}
+            <div className="flex w-full items-center justify-end gap-2">
+              <CalendarClock className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                type="datetime-local"
+                value={scheduledFor}
+                onChange={(e) => setScheduledFor(e.target.value)}
+                className="rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+                title="Pick a future date and time to auto-post this carousel"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={scheduleAll}
+                disabled={
+                  isSample ||
+                  scheduling ||
+                  !igConnected ||
+                  deck.length < 2 ||
+                  !scheduledFor
+                }
+                title={
+                  isSample
+                    ? "Switch to live data to schedule"
+                    : !igConnected
+                      ? "Connect Instagram in Settings → Integrations"
+                      : deck.length < 2
+                        ? "Add at least 2 slides for a carousel"
+                        : !scheduledFor
+                          ? "Pick a future date and time"
+                          : `Schedule the ${deck.length}-slide carousel to ${handleLabel}`
+                }
+              >
+                {scheduling ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CalendarClock className="h-4 w-4" />
+                )}
+                {scheduling ? "Scheduling…" : "Schedule"}
               </Button>
             </div>
           </>

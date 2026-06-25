@@ -3,7 +3,7 @@
 // useScheduledPosts; pending rows can be cancelled (deletes the row + GCs the image).
 // Rendered only when an Instagram account is connected.
 
-import { Trash2 } from "lucide-react";
+import { Trash2, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useScheduledPosts, useCancelScheduledPost } from "@/hooks/instagram";
@@ -75,11 +75,22 @@ export function ScheduledPostsPanel({ imoId }: { imoId: string | null }) {
             data-status={p.status}
             className="flex items-center gap-2 rounded-md border border-border bg-secondary/40 p-2"
           >
-            <img
-              src={p.image_url}
-              alt=""
-              className="h-12 w-12 flex-none rounded object-cover"
-            />
+            <div className="relative h-12 w-12 flex-none">
+              <img
+                src={p.image_url}
+                alt=""
+                className="h-12 w-12 rounded object-cover"
+              />
+              {p.image_urls && p.image_urls.length > 1 ? (
+                <span
+                  className="absolute right-0.5 top-0.5 flex items-center gap-0.5 rounded bg-black/70 px-1 py-0 text-[9px] font-medium text-white"
+                  title={`Carousel · ${p.image_urls.length} slides`}
+                >
+                  <Layers className="h-2.5 w-2.5" />
+                  {p.image_urls.length}
+                </span>
+              ) : null}
+            </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-xs font-medium text-foreground">
