@@ -140,12 +140,16 @@ export function MarketingCard({
         }}
       >
         {headline ? (
+          // Heavy SANS (not the display font): modern-screenshot under-measures
+          // multi-line DISPLAY-font height, so a wrapped display headline overlaps the
+          // body below it on export. The sans face measures correctly at any line count
+          // (the sans body never overlaps the chip), so the headline is safe to wrap.
           <div
             style={{
-              font: `700 ${sz.headline}px ${t.disp}`,
+              font: `800 ${sz.headline}px ${t.sans}`,
               color: ink,
-              lineHeight: 1.05,
-              letterSpacing: "0.005em",
+              lineHeight: 1.1,
+              letterSpacing: "-0.005em",
               width: "100%",
             }}
           >

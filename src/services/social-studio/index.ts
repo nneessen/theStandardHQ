@@ -29,3 +29,9 @@ export {
   generateSocialCaption,
   type CaptionContext,
 } from "./socialCaptionService";
+export {
+  generateMarketingCopy,
+  type MarketingCopyRequest,
+  type MarketingCopyResult,
+  type MarketingCopyVariant,
+} from "./socialMarketingCopyService";

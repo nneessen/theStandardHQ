@@ -134,35 +134,64 @@ function gradientDataUrl(): string {
 
 // ?deck=1 → a MIXED carousel (#8): the leaderboard lead card + every marketing variant,
 // page-stamped, so we can Read each marketing card AND confirm a mixed deck is cohesive.
+// ?stress=1 → fill each marketing field to the AI-draft length cap (socialMarketingCopy
+// service / social-marketing-copy edge fn: text 140, headline 40, body 160, attribution
+// 40) so we can prove the longest possible draft still fits the card frame (the #1 lesson:
+// overflow:hidden hides a clip — caps must hold at the boundary, not just for short copy).
 const wantDeck = params.get("deck") === "1";
+const wantStress = params.get("stress") === "1";
+const COPY_CAPS = { text: 140, attribution: 40, headline: 40, body: 160 };
+const STRESS_WORDS =
+  "protecting families with honest guidance and steady commitment every single day builds lasting trust that compounds over time and quietly changes lives across our whole community".split(
+    " ",
+  );
+// Largest whole-word string <= maxLen — exactly what the edge fn's word-boundary cap emits.
+function fill(maxLen: number): string {
+  let s = "";
+  for (let i = 0; i < 256; i++) {
+    const w = STRESS_WORDS[i % STRESS_WORDS.length];
+    const next = s ? `${s} ${w}` : w;
+    if (next.length > maxLen) break;
+    s = next;
+  }
+  return s;
+}
 const marketing: PreviewData[] = [
   {
     kind: "marketing",
     variant: "quote",
     theme: cardTheme,
-    text: "Protect what matters most — your family's future starts with one honest conversation.",
-    attribution: "The Standard",
+    text: wantStress
+      ? fill(COPY_CAPS.text)
+      : "Protect what matters most — your family's future starts with one honest conversation.",
+    attribution: wantStress ? fill(COPY_CAPS.attribution) : "The Standard",
   },
   {
     kind: "marketing",
     variant: "tip",
     theme: cardTheme,
-    headline: "Lead with the why",
-    body: "Open every call by asking what they're protecting. The product follows the purpose, never the other way around.",
+    headline: wantStress ? fill(COPY_CAPS.headline) : "Lead with the why",
+    body: wantStress
+      ? fill(COPY_CAPS.body)
+      : "Open every call by asking what they're protecting. The product follows the purpose, never the other way around.",
   },
   {
     kind: "marketing",
     variant: "cta",
     theme: cardTheme,
-    headline: "Join our team",
-    body: "We're growing across the region. Build a career helping families protect their future.",
+    headline: wantStress ? fill(COPY_CAPS.headline) : "Join our team",
+    body: wantStress
+      ? fill(COPY_CAPS.body)
+      : "We're growing across the region. Build a career helping families protect their future.",
   },
   {
     kind: "marketing",
     variant: "custom",
     theme: cardTheme,
-    headline: "A $1,000,000 month",
-    body: "Our biggest month yet — thank you to every producer who made it happen.",
+    headline: wantStress ? fill(COPY_CAPS.headline) : "A $1,000,000 month",
+    body: wantStress
+      ? fill(COPY_CAPS.body)
+      : "Our biggest month yet — thank you to every producer who made it happen.",
     imageDataUrl: gradientDataUrl(),
   },
 ];

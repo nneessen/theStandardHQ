@@ -18,8 +18,10 @@ import {
   Download,
   Loader2,
   ImagePlus,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAiAccess } from "@/hooks/subscription";
 import {
   FORMAT_DIMS,
   cardThemeWrapperClass,
@@ -33,6 +35,11 @@ import {
   type PeriodLabels,
 } from "../previewModel";
 import { useSpotlightActions } from "../hooks/useSpotlightActions";
+import {
+  useMarketingCopyDraft,
+  type MarketingCopyRequest,
+  type MarketingCopyResult,
+} from "../hooks/useMarketingCopyDraft";
 import type { SocialStudioConfig, SocialView } from "../types";
 import { toast } from "sonner";
 
@@ -108,6 +115,8 @@ export function CarouselBuilder({
   const [posting, setPosting] = useState(false);
   const postingRef = useRef(false);
   const exportRef = useRef<CardExportHandle>(null);
+  const { hasAiAccess } = useAiAccess();
+  const draftMarketingCopy = useMarketingCopyDraft();
 
   // One brand theme + page stamp applied to the WHOLE deck so the carousel is uniform,
   // regardless of the theme a slide was added under. (AOTW carries no page field.)
@@ -362,9 +371,14 @@ export function CarouselBuilder({
             {/* Inline editor for the selected marketing slide */}
             {selected?.data.kind === "marketing" && (
               <MarketingEditor
+                key={selected.id}
                 data={selected.data}
                 onPatch={patchMarketing}
                 onImage={handleImage}
+                hasAiAccess={hasAiAccess}
+                draftMarketingCopy={draftMarketingCopy}
+                agencyName={agencyName}
+                network={network}
               />
             )}
 
@@ -521,6 +535,10 @@ function MarketingEditor({
   data,
   onPatch,
   onImage,
+  hasAiAccess,
+  draftMarketingCopy,
+  agencyName,
+  network,
 }: {
   data: Extract<PreviewData, { kind: "marketing" }>;
   onPatch: (p: {
@@ -531,9 +549,45 @@ function MarketingEditor({
     imageDataUrl?: string;
   }) => void;
   onImage: (f: File) => void;
+  hasAiAccess: boolean;
+  draftMarketingCopy: (
+    req: MarketingCopyRequest,
+  ) => Promise<MarketingCopyResult>;
+  agencyName: string;
+  network?: string;
 }) {
   const input =
     "w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground";
+  const [topic, setTopic] = useState("");
+  const [drafting, setDrafting] = useState(false);
+
+  // "Draft with AI" only SEEDS the copy fields — they stay fully editable after. The
+  // server forces a quote's attribution empty (never fabricates a source), so we leave
+  // any user-typed attribution untouched here.
+  async function draft() {
+    if (drafting) return;
+    setDrafting(true);
+    try {
+      const result = await draftMarketingCopy({
+        variant: data.variant,
+        topic: topic.trim() || undefined,
+        agencyName,
+        network,
+      });
+      if (data.variant === "quote") {
+        onPatch({ text: result.text ?? "" });
+      } else {
+        onPatch({ headline: result.headline ?? "", body: result.body ?? "" });
+      }
+      toast.success("Drafted with AI — edit it to taste.");
+    } catch (e) {
+      console.error("Marketing copy draft failed:", e);
+      toast.error("Couldn't draft copy. Try again.");
+    } finally {
+      setDrafting(false);
+    }
+  }
+
   return (
     <div className="w-full space-y-2 rounded-md border border-border bg-secondary/30 p-2">
       {data.variant === "quote" ? (
@@ -541,12 +595,14 @@ function MarketingEditor({
           <textarea
             className={`${input} resize-none`}
             rows={3}
+            maxLength={140}
             placeholder="Quote text…"
             value={data.text ?? ""}
             onChange={(e) => onPatch({ text: e.target.value })}
           />
           <input
             className={input}
+            maxLength={40}
             placeholder="Attribution (optional)"
             value={data.attribution ?? ""}
             onChange={(e) => onPatch({ attribution: e.target.value })}
@@ -556,6 +612,7 @@ function MarketingEditor({
         <>
           <input
             className={input}
+            maxLength={40}
             placeholder="Headline"
             value={data.headline ?? ""}
             onChange={(e) => onPatch({ headline: e.target.value })}
@@ -563,6 +620,7 @@ function MarketingEditor({
           <textarea
             className={`${input} resize-none`}
             rows={3}
+            maxLength={160}
             placeholder="Body text…"
             value={data.body ?? ""}
             onChange={(e) => onPatch({ body: e.target.value })}
@@ -585,6 +643,33 @@ function MarketingEditor({
             </label>
           )}
         </>
+      )}
+
+      {/* Draft with AI — seeds the copy fields; gated on the AI entitlement. */}
+      {hasAiAccess && (
+        <div className="flex items-center gap-1.5 border-t border-border/60 pt-2">
+          <input
+            className={`${input} flex-1`}
+            placeholder="Optional: steer the draft (e.g. team growth)…"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            disabled={drafting}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={draft}
+            disabled={drafting}
+            title="Draft this slide's copy with AI"
+          >
+            {drafting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {drafting ? "Drafting…" : "Draft with AI"}
+          </Button>
+        </div>
       )}
     </div>
   );
