@@ -75,9 +75,18 @@ export function BoardPersistency({
   /** "me" = the signed-in agent's own book; "team" = own + downline. */
   scope?: "me" | "team";
 }) {
-  // Blended headline: active / total across every milestone that has policies.
-  const totalActive = buckets.reduce((s, b) => s + b.activeCount, 0);
-  const totalCount = buckets.reduce((s, b) => s + b.issuedCount, 0);
+  // Blended headline: active / total over the widest cohort. The buckets are
+  // CUMULATIVE/nested (the 3-mo cohort ⊇ 6 ⊇ 9 ⊇ 12), so summing across them
+  // would count a long-tenured policy in every cohort it has passed — inflating
+  // both sides. The widest cohort (smallest milestone, e.g. ≥3-mo) already
+  // contains every policy that has reached any milestone, so its own
+  // active/issued IS the overall rate, with no double-counting.
+  const widest = buckets.reduce(
+    (best, b) => (best == null || b.issuedCount > best.issuedCount ? b : best),
+    null as PersistencyBucket | null,
+  );
+  const totalActive = widest?.activeCount ?? 0;
+  const totalCount = widest?.issuedCount ?? 0;
   const blended =
     totalCount > 0 ? Math.round((totalActive / totalCount) * 100) : null;
   const blendedTone = blended == null ? "blue" : toneFor(blended);
