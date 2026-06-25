@@ -4,6 +4,8 @@ import {
   endOfYear,
   differenceInDays,
   differenceInMonths,
+  subDays,
+  startOfDay,
 } from "date-fns";
 
 export interface GoalTrackingData {
@@ -42,6 +44,29 @@ interface CalculateGoalTrackingParams {
   commissions: Commission[];
   annualGoal: number;
   referenceDate?: Date; // Defaults to today
+}
+
+/**
+ * The earliest `createdAt` that {@link calculateGoalTracking} can read, given a
+ * reference date. It only ever looks at three windows — YTD `[startOfYear, now]`,
+ * last-30 `[now-30, now]` and previous-30 `[now-60, now-30)` — so every row it
+ * uses has `createdAt >= min(startOfYear, now-60d)`. We day-floor and subtract a
+ * 2-day skew buffer so the bound is a safe superset regardless of timezone.
+ *
+ * Callers that want to bound a server-side commission fetch (so they don't load
+ * an agent's whole history) should fetch `created_at >=` this value and pass the
+ * result straight into calculateGoalTracking. Keep this in lockstep with the
+ * windows above: if a wider window is ever added to calculateGoalTracking, widen
+ * this bound too, or the fetch will silently under-read and skew money numbers.
+ */
+export function goalTrackingFetchWindowStart(
+  referenceDate: Date = new Date(),
+): Date {
+  const yearStart = startOfYear(referenceDate);
+  const sixtyDaysAgo = subDays(referenceDate, 60);
+  return startOfDay(
+    subDays(yearStart < sixtyDaysAgo ? yearStart : sixtyDaysAgo, 2),
+  );
 }
 
 /**

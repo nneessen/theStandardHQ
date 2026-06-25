@@ -49,6 +49,9 @@ export const useCommissions = (options?: UseCommissionsOptions) => {
   const createdAfter = options?.createdAfter;
 
   return useQuery({
+    // Keep the all-time key exactly ["commissions", userId] so existing callers
+    // and prefix invalidations are unaffected; only the bounded fetch gets a
+    // distinct key so the two never collide in the cache.
     queryKey: createdAfter
       ? ["commissions", user?.id, "since", createdAfter.toISOString()]
       : ["commissions", user?.id],
@@ -56,13 +59,12 @@ export const useCommissions = (options?: UseCommissionsOptions) => {
       if (!user?.id) {
         return [];
       }
-      // Filter by current user's ID to only show their commissions
-      return createdAfter
-        ? await commissionService.getCommissionsByUserSince(
-            user.id,
-            createdAfter,
-          )
-        : await commissionService.getCommissionsByUser(user.id);
+      // Filter by current user's ID to only show their commissions; createdAfter
+      // (when set) bounds the fetch server-side to created_at >= that date.
+      return await commissionService.getCommissionsByUser(
+        user.id,
+        createdAfter,
+      );
     },
     staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 minutes default
     gcTime: options?.gcTime ?? 10 * 60 * 1000, // 10 minutes garbage collection

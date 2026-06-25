@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { startOfYear, subDays, startOfDay } from "date-fns";
-import { calculateGoalTracking } from "../goalTrackingService";
+import {
+  calculateGoalTracking,
+  goalTrackingFetchWindowStart,
+} from "../goalTrackingService";
 import type { Commission } from "@/types/commission.types";
 
 // Build a minimal Commission with just the fields calculateGoalTracking reads
@@ -16,23 +18,15 @@ function commission(createdAt: string, earnedAmount: number): Commission {
   } as unknown as Commission;
 }
 
-// Mirror of the bound IncomeGoalTracker passes to useCommissions({ createdAfter }):
-// min(startOfYear(now), now-60d), day-floored, minus a 2-day skew buffer.
-function fetchBound(now: Date): Date {
-  const yearStart = startOfYear(now);
-  const sixtyDaysAgo = subDays(now, 60);
-  return startOfDay(
-    subDays(yearStart < sixtyDaysAgo ? yearStart : sixtyDaysAgo, 2),
-  );
-}
-
 // The contract: feeding calculateGoalTracking the full all-time set must produce
-// byte-identical output to feeding it only the rows on/after the fetch bound.
-// If this ever fails, the IncomeGoalTracker date-bound is under-fetching and
-// silently changing money numbers.
+// byte-identical output to feeding it only the rows on/after the PRODUCTION fetch
+// bound (goalTrackingFetchWindowStart — the same function IncomeGoalTracker uses).
+// If this ever fails, the date-bound is under-fetching and silently changing
+// money numbers. Importing the real bound (not a copy) means a drift between the
+// bound and the windows calculateGoalTracking reads will fail this test.
 describe("goalTracking — date-bound equivalence (Issue 2 IncomeGoalTracker)", () => {
   function assertBoundEquivalence(referenceDate: Date, all: Commission[]) {
-    const bound = fetchBound(referenceDate);
+    const bound = goalTrackingFetchWindowStart(referenceDate);
     const bounded = all.filter((c) => new Date(c.createdAt) >= bound);
 
     const full = calculateGoalTracking({
@@ -67,6 +61,19 @@ describe("goalTracking — date-bound equivalence (Issue 2 IncomeGoalTracker)", 
       commission("2025-12-15T10:00:00Z", 800), // ~36d before ref → prev-30 window, MUST survive
       commission("2026-01-02T10:00:00Z", 1200), // YTD + last-30
       commission("2026-01-18T10:00:00Z", 600), // last-30
+    ]);
+  });
+
+  it("boundary: a row at the prev-30 window start (now-60d) is inside the bound", () => {
+    // now-60d is the earliest instant calculateGoalTracking reads; the fetch
+    // bound must sit before it (the 2-day buffer guarantees this). Seed a row
+    // right at that edge so a too-tight bound would clip it and break equality.
+    const ref = new Date("2026-08-15T12:00:00Z");
+    const sixtyDaysAgo = new Date(ref);
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    assertBoundEquivalence(ref, [
+      commission(sixtyDaysAgo.toISOString(), 1500), // exactly at prev-30 start
+      commission("2026-08-10T10:00:00Z", 700), // last-30
     ]);
   });
 

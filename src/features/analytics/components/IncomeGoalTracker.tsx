@@ -12,11 +12,11 @@ import { useCommissions, useCalculatedTargets } from "@/hooks";
 // eslint-disable-next-line no-restricted-imports
 import {
   calculateGoalTracking,
+  goalTrackingFetchWindowStart,
   getGoalStatusLabel,
   getGoalStatusBadgeColor,
 } from "@/services/analytics/goalTrackingService";
 import { formatCurrency } from "@/utils/formatters";
-import { startOfYear, subDays, startOfDay } from "date-fns";
 import {
   TrendingUp,
   TrendingDown,
@@ -31,17 +31,11 @@ import { Link } from "@tanstack/react-router";
 export function IncomeGoalTracker() {
   const { calculated, isLoading: targetsLoading } = useCalculatedTargets();
 
-  // calculateGoalTracking only reads `createdAt` within three windows: YTD
-  // [startOfYear, now], last-30 [now-30, now] and previous-30 [now-60, now-30).
-  // So we only need rows since min(startOfYear, now-60d). Day-floored (and a
-  // 2-day skew buffer) so the resulting ISO string — which lands in the query
-  // key — is stable across re-renders instead of refetching every render.
-  const now = new Date();
-  const yearStart = startOfYear(now);
-  const sixtyDaysAgo = subDays(now, 60);
-  const createdAfter = startOfDay(
-    subDays(yearStart < sixtyDaysAgo ? yearStart : sixtyDaysAgo, 2),
-  );
+  // Only fetch the commissions calculateGoalTracking can actually read (its
+  // YTD + last-60-day windows), bounded server-side. The bound is owned by
+  // goalTrackingService so it can't drift from the windows it must cover; it's
+  // day-floored, so its ISO string is stable across re-renders (no refetch loop).
+  const createdAfter = goalTrackingFetchWindowStart();
 
   const { data: commissions = [], isLoading: commissionsLoading } =
     useCommissions({ createdAfter });

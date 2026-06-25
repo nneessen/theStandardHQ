@@ -227,9 +227,19 @@ export class CommissionRepository extends BaseRepository<
     }
   }
 
-  async findByAgent(userId: string): Promise<Commission[]> {
+  /**
+   * All commissions for an agent, newest first.
+   *
+   * @param since Optional lower bound on `created_at`. When provided, only rows
+   *   created on/after `since` are returned — callers that aggregate over a
+   *   recent window (e.g. IncomeGoalTracker) pass a superset of the window their
+   *   math reads and get the same result as filtering the full set in JS,
+   *   without loading the agent's entire history. The select + transform are
+   *   identical regardless of `since`, so the row shape never diverges.
+   */
+  async findByAgent(userId: string, since?: Date): Promise<Commission[]> {
     try {
-      const { data, error } = await this.client
+      let query = this.client
         .from(this.tableName)
         .select(
           `
@@ -237,8 +247,15 @@ export class CommissionRepository extends BaseRepository<
           policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)
         `,
         )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+        .eq("user_id", userId);
+
+      if (since) {
+        query = query.gte("created_at", since.toISOString());
+      }
+
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) {
         throw this.handleError(error, "findByAgent");
@@ -251,40 +268,6 @@ export class CommissionRepository extends BaseRepository<
       );
     } catch (error) {
       throw this.wrapError(error, "findByAgent");
-    }
-  }
-
-  /**
-   * Like {@link findByAgent} but only rows created on/after `since`.
-   * Identical select + transform so the row shape is byte-for-byte the same as
-   * findByAgent — callers that compute money metrics can pass a window superset
-   * and get the exact same result as filtering the full set in JS.
-   */
-  async findByAgentSince(userId: string, since: Date): Promise<Commission[]> {
-    try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select(
-          `
-          *,
-          policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)
-        `,
-        )
-        .eq("user_id", userId)
-        .gte("created_at", since.toISOString())
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        throw this.handleError(error, "findByAgentSince");
-      }
-
-      return (
-        (data as CommissionWithPolicy[])?.map((item) =>
-          this.transformFromDBWithPolicy(item),
-        ) || []
-      );
-    } catch (error) {
-      throw this.wrapError(error, "findByAgentSince");
     }
   }
 

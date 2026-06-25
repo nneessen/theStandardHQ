@@ -52,15 +52,11 @@ class CommissionService {
     return commissionCRUDService.getByPolicyIds(policyIds);
   }
 
-  async getCommissionsByUser(userId: string): Promise<Commission[]> {
-    return commissionCRUDService.getCommissionsByUser(userId);
-  }
-
-  async getCommissionsByUserSince(
+  async getCommissionsByUser(
     userId: string,
-    since: Date,
+    since?: Date,
   ): Promise<Commission[]> {
-    return commissionCRUDService.getCommissionsByUserSince(userId, since);
+    return commissionCRUDService.getCommissionsByUser(userId, since);
   }
 
   async create(data: CreateCommissionData): Promise<Commission> {

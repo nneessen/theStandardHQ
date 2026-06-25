@@ -150,22 +150,14 @@ class CommissionCRUDService {
     }
   }
 
-  async getCommissionsByUser(userId: string): Promise<Commission[]> {
-    try {
-      return await this.repository.findByAgent(userId);
-    } catch (error) {
-      throw this.handleError(error, "getCommissionsByUser");
-    }
-  }
-
-  async getCommissionsByUserSince(
+  async getCommissionsByUser(
     userId: string,
-    since: Date,
+    since?: Date,
   ): Promise<Commission[]> {
     try {
-      return await this.repository.findByAgentSince(userId, since);
+      return await this.repository.findByAgent(userId, since);
     } catch (error) {
-      throw this.handleError(error, "getCommissionsByUserSince");
+      throw this.handleError(error, "getCommissionsByUser");
     }
   }
 
