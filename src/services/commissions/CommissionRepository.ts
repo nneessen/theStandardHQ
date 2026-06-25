@@ -254,6 +254,40 @@ export class CommissionRepository extends BaseRepository<
     }
   }
 
+  /**
+   * Like {@link findByAgent} but only rows created on/after `since`.
+   * Identical select + transform so the row shape is byte-for-byte the same as
+   * findByAgent — callers that compute money metrics can pass a window superset
+   * and get the exact same result as filtering the full set in JS.
+   */
+  async findByAgentSince(userId: string, since: Date): Promise<Commission[]> {
+    try {
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select(
+          `
+          *,
+          policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)
+        `,
+        )
+        .eq("user_id", userId)
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw this.handleError(error, "findByAgentSince");
+      }
+
+      return (
+        (data as CommissionWithPolicy[])?.map((item) =>
+          this.transformFromDBWithPolicy(item),
+        ) || []
+      );
+    } catch (error) {
+      throw this.wrapError(error, "findByAgentSince");
+    }
+  }
+
   // -------------------------------------------------------------------------
   // BATCH METHODS (for hierarchy/team queries)
   // -------------------------------------------------------------------------

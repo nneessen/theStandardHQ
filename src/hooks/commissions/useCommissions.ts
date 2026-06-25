@@ -8,6 +8,14 @@ export interface UseCommissionsOptions {
   enabled?: boolean;
   staleTime?: number;
   gcTime?: number;
+  /**
+   * When set, only fetch commissions created on/after this date (server-side
+   * `created_at >=`). Use it to bound the payload for consumers that only read
+   * a recent window — but the passed date MUST be a superset of every window
+   * the consumer's math reads, or money numbers will silently change. Cached
+   * under a distinct query key so it never collides with the all-time fetch.
+   */
+  createdAfter?: Date;
 }
 
 /**
@@ -38,15 +46,23 @@ export interface UseCommissionsOptions {
  */
 export const useCommissions = (options?: UseCommissionsOptions) => {
   const { user } = useAuth();
+  const createdAfter = options?.createdAfter;
 
   return useQuery({
-    queryKey: ["commissions", user?.id],
+    queryKey: createdAfter
+      ? ["commissions", user?.id, "since", createdAfter.toISOString()]
+      : ["commissions", user?.id],
     queryFn: async () => {
       if (!user?.id) {
         return [];
       }
       // Filter by current user's ID to only show their commissions
-      return await commissionService.getCommissionsByUser(user.id);
+      return createdAfter
+        ? await commissionService.getCommissionsByUserSince(
+            user.id,
+            createdAfter,
+          )
+        : await commissionService.getCommissionsByUser(user.id);
     },
     staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 minutes default
     gcTime: options?.gcTime ?? 10 * 60 * 1000, // 10 minutes garbage collection

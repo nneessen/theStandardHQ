@@ -16,6 +16,7 @@ import {
   getGoalStatusBadgeColor,
 } from "@/services/analytics/goalTrackingService";
 import { formatCurrency } from "@/utils/formatters";
+import { startOfYear, subDays, startOfDay } from "date-fns";
 import {
   TrendingUp,
   TrendingDown,
@@ -29,8 +30,21 @@ import { Link } from "@tanstack/react-router";
 
 export function IncomeGoalTracker() {
   const { calculated, isLoading: targetsLoading } = useCalculatedTargets();
+
+  // calculateGoalTracking only reads `createdAt` within three windows: YTD
+  // [startOfYear, now], last-30 [now-30, now] and previous-30 [now-60, now-30).
+  // So we only need rows since min(startOfYear, now-60d). Day-floored (and a
+  // 2-day skew buffer) so the resulting ISO string — which lands in the query
+  // key — is stable across re-renders instead of refetching every render.
+  const now = new Date();
+  const yearStart = startOfYear(now);
+  const sixtyDaysAgo = subDays(now, 60);
+  const createdAfter = startOfDay(
+    subDays(yearStart < sixtyDaysAgo ? yearStart : sixtyDaysAgo, 2),
+  );
+
   const { data: commissions = [], isLoading: commissionsLoading } =
-    useCommissions();
+    useCommissions({ createdAfter });
 
   const isLoading = targetsLoading || commissionsLoading;
 

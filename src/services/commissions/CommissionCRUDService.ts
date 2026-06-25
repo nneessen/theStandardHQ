@@ -158,6 +158,17 @@ class CommissionCRUDService {
     }
   }
 
+  async getCommissionsByUserSince(
+    userId: string,
+    since: Date,
+  ): Promise<Commission[]> {
+    try {
+      return await this.repository.findByAgentSince(userId, since);
+    } catch (error) {
+      throw this.handleError(error, "getCommissionsByUserSince");
+    }
+  }
+
   async create(data: CreateCommissionData): Promise<Commission> {
     const errors: Array<{ field: string; message: string; value?: unknown }> =
       [];

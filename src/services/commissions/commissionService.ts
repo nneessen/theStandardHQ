@@ -56,6 +56,13 @@ class CommissionService {
     return commissionCRUDService.getCommissionsByUser(userId);
   }
 
+  async getCommissionsByUserSince(
+    userId: string,
+    since: Date,
+  ): Promise<Commission[]> {
+    return commissionCRUDService.getCommissionsByUserSince(userId, since);
+  }
+
   async create(data: CreateCommissionData): Promise<Commission> {
     return commissionCRUDService.create(data);
   }
