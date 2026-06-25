@@ -4,14 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
 
 /**
- * Persistency at one milestone (an age-bounded bucket).
+ * Persistency at one milestone (a cumulative cohort).
  *
  * - `bucketMonths`  — the milestone (3, 6, 9 or 12).
- * - `issuedCount`   — issued policies whose tenure is in the [N, N+3) month band
- *                     (active + lapsed + cancelled; pending/expired excluded).
+ * - `issuedCount`   — issued policies that have REACHED N months of tenure, i.e.
+ *                     tenure >= N (active + lapsed + cancelled; pending/expired
+ *                     excluded). Cohorts are nested: the 12-month count is a
+ *                     subset of the 3-month count.
  * - `activeCount`   — of those, how many are still active.
  * - `persistencyRate` — activeCount / issuedCount × 100, or `null` when the
- *                     bucket is empty (no policies old enough yet).
+ *                     cohort is empty (no policies old enough yet).
  */
 export interface PersistencyBucket {
   bucketMonths: number;
@@ -41,10 +43,11 @@ function mapBuckets(data: unknown): PersistencyBucket[] {
  * Per-user persistency at the 3 / 6 / 9 / 12-month anniversaries.
  *
  * Persistency is a core insurance KPI (the share of issued business that stays
- * in force). Because the data has no lapse-date, each milestone is measured as
- * an age-bounded bucket: of policies that have reached ~N months of tenure, what
- * fraction is still active. Always returns exactly four rows (3/6/9/12), even
- * when a bucket is empty, so the UI layout is stable.
+ * in force). Because the data has no lapse-date, each milestone is measured as a
+ * cumulative cohort: of policies that have reached N months of tenure, what
+ * fraction is still active. Cohorts are nested (≥3 ⊇ ≥6 ⊇ ≥9 ⊇ ≥12). Always
+ * returns exactly four rows (3/6/9/12), even when a cohort is empty, so the UI
+ * layout is stable.
  */
 export const usePersistency = () => {
   return useQuery({
