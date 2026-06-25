@@ -10825,6 +10825,71 @@ export type Database = {
         };
         Relationships: [];
       };
+      social_carousel_decks: {
+        Row: {
+          card_theme: string;
+          created_at: string;
+          format: string;
+          id: string;
+          imo_id: string;
+          name: string;
+          owner_id: string;
+          slides: Json;
+          updated_at: string;
+        };
+        Insert: {
+          card_theme: string;
+          created_at?: string;
+          format: string;
+          id?: string;
+          imo_id: string;
+          name: string;
+          owner_id: string;
+          slides: Json;
+          updated_at?: string;
+        };
+        Update: {
+          card_theme?: string;
+          created_at?: string;
+          format?: string;
+          id?: string;
+          imo_id?: string;
+          name?: string;
+          owner_id?: string;
+          slides?: Json;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "social_carousel_decks_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_carousel_decks_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_carousel_decks_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "social_carousel_decks_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       social_templates: {
         Row: {
           agency_id: string | null;

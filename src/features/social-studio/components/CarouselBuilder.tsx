@@ -19,13 +19,18 @@ import {
   Loader2,
   ImagePlus,
   Sparkles,
+  Save,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAiAccess } from "@/hooks/subscription";
 import {
   FORMAT_DIMS,
   cardThemeWrapperClass,
+  normalizeCardTheme,
   type MarketingVariant,
+  type SocialFormat,
+  type CardTheme,
 } from "@/features/social-cards";
 import { SocialCardSwitch, type PreviewData } from "./SocialPreview";
 import { CardExportHost, type CardExportHandle } from "./CardExportHost";
@@ -40,6 +45,14 @@ import {
   type MarketingCopyRequest,
   type MarketingCopyResult,
 } from "../hooks/useMarketingCopyDraft";
+import {
+  useSocialDecks,
+  useSaveDeck,
+  useDeleteDeck,
+  useLoadDeck,
+  type DeckSpec,
+  type DeckSlideSpec,
+} from "../hooks/useSocialDecks";
 import type { SocialStudioConfig, SocialView } from "../types";
 import { toast } from "sonner";
 
@@ -50,10 +63,17 @@ const MAX_H = 460;
 interface DeckSlide {
   id: string;
   data: PreviewData;
+  /** Source view for a DATA slide — kept so a saved deck can re-derive it from live
+   *  metrics on load (PreviewData.kind alone can't tell daily from weekly). */
+  view?: SocialView;
 }
 
 interface CarouselBuilderProps {
   config: SocialStudioConfig;
+  /** Patch the studio config (used to restore a saved deck's theme + format on load). */
+  onConfigChange: (p: Partial<SocialStudioConfig>) => void;
+  /** Current IMO — the tenant a saved deck is filed under. */
+  imoId: string | null;
   producers: ProducerRow[];
   isSample: boolean;
   labels: PeriodLabels;
@@ -99,6 +119,8 @@ function slideLabel(data: PreviewData): string {
 
 export function CarouselBuilder({
   config,
+  onConfigChange,
+  imoId,
   producers,
   isSample,
   labels,
@@ -117,6 +139,13 @@ export function CarouselBuilder({
   const exportRef = useRef<CardExportHandle>(null);
   const { hasAiAccess } = useAiAccess();
   const draftMarketingCopy = useMarketingCopyDraft();
+
+  // Deck library (Phase 3A) — save / load / delete the ordered deck.
+  const decksQuery = useSocialDecks();
+  const saveDeckMut = useSaveDeck();
+  const deleteDeckMut = useDeleteDeck();
+  const loadDeckMut = useLoadDeck();
+  const [deckName, setDeckName] = useState("");
 
   // One brand theme + page stamp applied to the WHOLE deck so the carousel is uniform,
   // regardless of the theme a slide was added under. (AOTW carries no page field.)
@@ -140,25 +169,124 @@ export function CarouselBuilder({
   const selectedPage = deckPages[selectedIndex];
   const atCap = deck.length >= IG_CAROUSEL_MAX;
 
-  function addSlide(data: PreviewData) {
+  function addSlide(data: PreviewData, view?: SocialView) {
     if (atCap) {
       toast.message(`Carousels are capped at ${IG_CAROUSEL_MAX} slides.`);
       return;
     }
     const id = crypto.randomUUID();
-    setDeck((d) => [...d, { id, data }]);
+    setDeck((d) => [...d, { id, data, view }]);
     setSelectedId(id);
   }
 
-  function addData(view: SocialView) {
+  // Build a data slide's lead card from CURRENT metrics for a given view/format/theme.
+  function buildDataLead(
+    view: SocialView,
+    format: SocialFormat,
+    cardTheme: CardTheme,
+  ): PreviewData | undefined {
     const pages = buildPreviewPages({
-      config: { ...config, view },
+      config: { ...config, view, format, cardTheme },
       producers,
       isSample,
       labels,
     });
-    const lead = pages[0];
-    if (lead) addSlide(lead);
+    return pages[0];
+  }
+
+  function addData(view: SocialView) {
+    const lead = buildDataLead(view, config.format, config.cardTheme);
+    if (lead) addSlide(lead, view);
+  }
+
+  // ── Deck save / load (Phase 3A) ─────────────────────────────────────────────
+  // Serialize the deck to a versioned spec: data slides keep only their view (re-derived
+  // from live metrics on load); marketing slides snapshot their static copy + image.
+  function deckToSpec(): DeckSpec {
+    const slides: DeckSlideSpec[] = deck.map((s) => {
+      if (s.data.kind === "marketing") {
+        const d = s.data;
+        return {
+          t: "marketing",
+          variant: d.variant,
+          text: d.text,
+          attribution: d.attribution,
+          headline: d.headline,
+          body: d.body,
+          imageDataUrl: d.imageDataUrl,
+        };
+      }
+      return { t: "data", view: s.view ?? config.view };
+    });
+    return { v: 1, slides };
+  }
+
+  function handleSaveDeck() {
+    const name = deckName.trim();
+    if (!name) {
+      toast.error("Name your deck first.");
+      return;
+    }
+    if (deck.length === 0) {
+      toast.error("Add at least one slide before saving.");
+      return;
+    }
+    if (!imoId) {
+      toast.error("No agency context — reload and try again.");
+      return;
+    }
+    saveDeckMut.mutate(
+      {
+        name,
+        imoId,
+        spec: deckToSpec(),
+        format: config.format,
+        cardTheme: config.cardTheme,
+      },
+      { onSuccess: () => setDeckName("") },
+    );
+  }
+
+  async function handleLoadDeck(id: string) {
+    try {
+      const loaded = await loadDeckMut.mutateAsync(id);
+      const theme = normalizeCardTheme(loaded.card_theme);
+      const fmt: SocialFormat = (
+        ["portrait", "square", "story"].includes(loaded.format)
+          ? loaded.format
+          : "portrait"
+      ) as SocialFormat;
+      const next: DeckSlide[] = [];
+      for (const spec of loaded.spec?.slides ?? []) {
+        if (spec.t === "data") {
+          const lead = buildDataLead(spec.view, fmt, theme);
+          if (lead)
+            next.push({ id: crypto.randomUUID(), data: lead, view: spec.view });
+        } else {
+          next.push({
+            id: crypto.randomUUID(),
+            data: {
+              kind: "marketing",
+              variant: spec.variant,
+              theme,
+              text: spec.text,
+              attribution: spec.attribution,
+              headline: spec.headline,
+              body: spec.body,
+              imageDataUrl: spec.imageDataUrl,
+            },
+          });
+        }
+      }
+      // Restore the saved deck's theme + format so the re-derived deck renders as saved.
+      onConfigChange({ cardTheme: theme, format: fmt });
+      const capped = next.slice(0, IG_CAROUSEL_MAX);
+      setDeck(capped);
+      setSelectedId(capped[0]?.id ?? null);
+      toast.success(`Loaded "${loaded.name}".`);
+    } catch {
+      /* error toast handled by the mutation's onError */
+    }
   }
 
   function addMarketing(variant: MarketingVariant) {
@@ -514,6 +642,79 @@ export function CarouselBuilder({
               ))}
             </ul>
           )}
+        </div>
+
+        {/* Saved decks (Phase 3A) — name + save the current deck; reload/delete saved ones.
+            Data slides re-derive from live metrics on load; marketing copy is snapshotted. */}
+        <div className="rounded-xl border border-border bg-card/40 p-3">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Saved decks
+          </p>
+          <div className="flex items-center gap-1.5">
+            <input
+              value={deckName}
+              onChange={(e) => setDeckName(e.target.value)}
+              placeholder="Name this deck…"
+              maxLength={80}
+              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveDeck();
+              }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSaveDeck}
+              disabled={
+                deck.length === 0 || saveDeckMut.isPending || !deckName.trim()
+              }
+              title="Save the current deck"
+            >
+              {saveDeckMut.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )}
+              Save
+            </Button>
+          </div>
+
+          <div className="mt-2">
+            {decksQuery.isLoading ? (
+              <p className="text-xs text-muted-foreground">Loading…</p>
+            ) : (decksQuery.data?.length ?? 0) === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                No saved decks yet.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {decksQuery.data?.map((d) => (
+                  <li
+                    key={d.id}
+                    className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+                  >
+                    <button
+                      className="flex flex-1 items-center gap-1.5 truncate text-left text-foreground disabled:opacity-50"
+                      onClick={() => handleLoadDeck(d.id)}
+                      disabled={loadDeckMut.isPending}
+                      title="Load this deck"
+                    >
+                      <FolderOpen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{d.name}</span>
+                    </button>
+                    <button
+                      className="text-destructive/80 hover:text-destructive disabled:opacity-30"
+                      onClick={() => deleteDeckMut.mutate(d.id)}
+                      disabled={deleteDeckMut.isPending}
+                      title="Delete this deck"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
 

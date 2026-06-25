@@ -35,3 +35,11 @@ export {
   type MarketingCopyResult,
   type MarketingCopyVariant,
 } from "./socialMarketingCopyService";
+export {
+  socialDeckService,
+  type DeckSlideSpec,
+  type DeckSpec,
+  type DeckSummary,
+  type LoadedDeck,
+  type SaveDeckInput,
+} from "./socialDeckService";

@@ -578,6 +578,8 @@ export function SocialStudioPage() {
         {mode === "builder" && (
           <CarouselBuilder
             config={config}
+            onConfigChange={patch}
+            imoId={imoId}
             producers={producers}
             isSample={isSample}
             labels={labels}
