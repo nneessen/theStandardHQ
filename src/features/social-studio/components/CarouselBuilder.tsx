@@ -6,7 +6,7 @@
 // → uploadCarouselSlides → publishToInstagram as a FEED carousel). One brand theme +
 // format applies to the whole deck so the carousel reads as a cohesive set.
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -24,9 +24,12 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PillNav } from "@/components/v2";
 import { useAiAccess } from "@/hooks/subscription";
 import {
   FORMAT_DIMS,
+  CARD_THEMES,
+  CARD_THEME_LABEL,
   cardThemeWrapperClass,
   normalizeCardTheme,
   type MarketingVariant,
@@ -86,11 +89,19 @@ interface CarouselBuilderProps {
   postsImoId: string | null;
   producers: ProducerRow[];
   isSample: boolean;
+  /** True when there is NO live data, so sample is forced — the toggle is disabled. */
+  sampleForced: boolean;
+  /** Flip the "Preview with sample data" override (so carousel mode can toggle it too). */
+  onSampleChange: (v: boolean) => void;
   labels: PeriodLabels;
   agencyName: string;
   network?: string;
   igConnected: boolean;
+  /** All connected IG accounts — drives the account picker (which account to post from). */
+  connectedIntegrations: { id: string; instagram_username?: string | null }[];
   selectedIntegration?: { id: string; instagram_username?: string | null };
+  /** Pick which connected account to post/schedule from. */
+  onSelectIntegration: (id: string) => void;
 }
 
 const DATA_VIEWS: { view: SocialView; label: string }[] = [
@@ -143,11 +154,15 @@ export function CarouselBuilder({
   postsImoId,
   producers,
   isSample,
+  sampleForced,
+  onSampleChange,
   labels,
   agencyName,
   network,
   igConnected,
+  connectedIntegrations,
   selectedIntegration,
+  onSelectIntegration,
 }: CarouselBuilderProps) {
   const { uploadCarouselSlides, publishToInstagram, readFileAsDataUrl } =
     useSpotlightActions();
@@ -186,19 +201,54 @@ export function CarouselBuilder({
   const [captioning, setCaptioning] = useState(false);
   const captioningRef = useRef(false);
 
-  // One brand theme + page stamp applied to the WHOLE deck so the carousel is uniform,
-  // regardless of the theme a slide was added under. (AOTW carries no page field.)
+  // Instagram carousels are FEED posts (portrait 4:5 or square 1:1) — never 9:16 Story. If the
+  // shared config carries "story" (set in single-card mode), treat the carousel as portrait for
+  // the preview, derivation, AND export, so a 9:16 deck can never be published as a feed carousel.
+  const carouselFormat: SocialFormat =
+    config.format === "story" ? "portrait" : config.format;
+
+  // Build a data slide's lead card from CURRENT metrics for a given view/format/theme. Memoized
+  // so deckPages can re-derive data slides whenever the inputs it snapshots change.
+  const buildDataLead = useCallback(
+    (
+      view: SocialView,
+      format: SocialFormat,
+      cardTheme: CardTheme,
+    ): PreviewData | undefined => {
+      const pages = buildPreviewPages({
+        config: { ...config, view, format, cardTheme },
+        producers,
+        isSample,
+        labels,
+      });
+      return pages[0];
+    },
+    [config, producers, isSample, labels],
+  );
+
+  // One brand theme + page stamp applied to the WHOLE deck so the carousel is uniform.
+  // Data slides are RE-DERIVED LIVE from their source view + the current sample/producers/shape
+  // (never the stale add-time snapshot) — so a slide built in sample mode can't be exported/posted
+  // with fabricated numbers after the toggle flips, and a shape change re-paginates its rows
+  // instead of clipping. Marketing slides keep their edited copy. (AOTW carries no page field.)
   const deckPages = useMemo<PreviewData[]>(() => {
     const total = deck.length;
     return deck.map((s, i) => {
-      const themed = { ...s.data, theme: config.cardTheme } as PreviewData;
+      const live =
+        s.view && s.data.kind !== "marketing"
+          ? buildDataLead(s.view, carouselFormat, config.cardTheme)
+          : undefined;
+      const themed = {
+        ...(live ?? s.data),
+        theme: config.cardTheme,
+      } as PreviewData;
       if (themed.kind === "aotw") return themed;
       return {
         ...themed,
         page: total > 1 ? { index: i + 1, total } : undefined,
       };
     });
-  }, [deck, config.cardTheme]);
+  }, [deck, config.cardTheme, carouselFormat, buildDataLead]);
 
   const selectedIndex = Math.max(
     0,
@@ -207,6 +257,13 @@ export function CarouselBuilder({
   const selected = deck[selectedIndex];
   const selectedPage = deckPages[selectedIndex];
   const atCap = deck.length >= IG_CAROUSEL_MAX;
+  // A data slide (leaderboard / AOTW / monthly recap) carries real-vs-sample numbers; a
+  // marketing slide (quote/tip/cta/custom) does not. So sample mode only blocks posting when the
+  // deck CONTAINS a data slide — an all-marketing carousel is always safe to post. This is sound
+  // because deckPages re-derives data slides from the LIVE isSample, so when isSample is true the
+  // rendered/exported data slides genuinely hold sample numbers (and real ones when it's false).
+  const deckHasData = deck.some((s) => s.data.kind !== "marketing");
+  const sampleBlocksPost = isSample && deckHasData;
 
   function addSlide(data: PreviewData, view?: SocialView) {
     if (atCap) {
@@ -218,23 +275,8 @@ export function CarouselBuilder({
     setSelectedId(id);
   }
 
-  // Build a data slide's lead card from CURRENT metrics for a given view/format/theme.
-  function buildDataLead(
-    view: SocialView,
-    format: SocialFormat,
-    cardTheme: CardTheme,
-  ): PreviewData | undefined {
-    const pages = buildPreviewPages({
-      config: { ...config, view, format, cardTheme },
-      producers,
-      isSample,
-      labels,
-    });
-    return pages[0];
-  }
-
   function addData(view: SocialView) {
-    const lead = buildDataLead(view, config.format, config.cardTheme);
+    const lead = buildDataLead(view, carouselFormat, config.cardTheme);
     if (lead) addSlide(lead, view);
   }
 
@@ -279,7 +321,7 @@ export function CarouselBuilder({
         name,
         imoId,
         spec: deckToSpec(),
-        format: config.format,
+        format: carouselFormat,
         cardTheme: config.cardTheme,
       },
       { onSuccess: () => setDeckName("") },
@@ -447,7 +489,7 @@ export function CarouselBuilder({
     // an empty leaderboard/AOTW slide that we'd then have to drop.
     const availableViews = aiDataSlides
       ? DATA_VIEWS.map((d) => d.view).filter(
-          (view) => !!buildDataLead(view, config.format, config.cardTheme),
+          (view) => !!buildDataLead(view, carouselFormat, config.cardTheme),
         )
       : [];
     composingRef.current = true;
@@ -464,7 +506,7 @@ export function CarouselBuilder({
       });
       const next: DeckSlide[] = [];
       for (const spec of result.slides) {
-        const slide = specToDeckSlide(spec, config.format, config.cardTheme);
+        const slide = specToDeckSlide(spec, carouselFormat, config.cardTheme);
         if (slide) next.push(slide);
       }
       const capped = next.slice(0, IG_CAROUSEL_MAX);
@@ -555,8 +597,8 @@ export function CarouselBuilder({
 
   async function postAll() {
     if (postingRef.current) return;
-    if (isSample) {
-      toast.error("Switch off sample data to post your real deck.");
+    if (sampleBlocksPost) {
+      toast.error("Switch off sample data to post your real numbers.");
       return;
     }
     if (!igConnected) {
@@ -599,8 +641,8 @@ export function CarouselBuilder({
   // row's folder, then inserts the queue row via the carousel RPC; the cron worker fires it.
   async function scheduleAll() {
     if (schedulingRef.current) return;
-    if (isSample) {
-      toast.error("Switch off sample data to schedule your deck.");
+    if (sampleBlocksPost) {
+      toast.error("Switch off sample data to schedule your real numbers.");
       return;
     }
     if (!igConnected) {
@@ -678,7 +720,7 @@ export function CarouselBuilder({
   }
 
   // Scaled on-screen preview of the selected slide (display only — never the export src).
-  const { w: natW, h: natH } = FORMAT_DIMS[config.format];
+  const { w: natW, h: natH } = FORMAT_DIMS[carouselFormat];
   const scale = Math.min(MAX_W / natW, MAX_H / natH);
 
   const handleLabel = selectedIntegration?.instagram_username
@@ -719,7 +761,7 @@ export function CarouselBuilder({
                   {selectedPage && (
                     <SocialCardSwitch
                       data={selectedPage}
-                      format={config.format}
+                      format={carouselFormat}
                       agencyName={agencyName}
                       network={network}
                       showPolicies={config.showPolicies}
@@ -810,7 +852,7 @@ export function CarouselBuilder({
                 size="sm"
                 onClick={postAll}
                 disabled={
-                  isSample ||
+                  sampleBlocksPost ||
                   posting ||
                   composing ||
                   captioning ||
@@ -818,8 +860,8 @@ export function CarouselBuilder({
                   deck.length < 2
                 }
                 title={
-                  isSample
-                    ? "Switch to live data to post"
+                  sampleBlocksPost
+                    ? "This deck has live-metric slides — switch off sample data to post"
                     : composing || captioning
                       ? "Wait for the AI to finish before posting"
                       : !igConnected
@@ -853,7 +895,7 @@ export function CarouselBuilder({
                 variant="outline"
                 onClick={scheduleAll}
                 disabled={
-                  isSample ||
+                  sampleBlocksPost ||
                   scheduling ||
                   composing ||
                   captioning ||
@@ -862,8 +904,8 @@ export function CarouselBuilder({
                   !scheduledFor
                 }
                 title={
-                  isSample
-                    ? "Switch to live data to schedule"
+                  sampleBlocksPost
+                    ? "This deck has live-metric slides — switch off sample data to schedule"
                     : composing || captioning
                       ? "Wait for the AI to finish before scheduling"
                       : !igConnected
@@ -889,6 +931,90 @@ export function CarouselBuilder({
 
       {/* Palette + deck */}
       <div className="flex flex-col gap-3">
+        {/* Style & posting controls — carousel mode hides the single-card SocialCustomizer,
+            so the brand theme, shape, account picker, and the sample-data toggle live here
+            (otherwise they're unreachable while building a carousel). */}
+        <div className="space-y-2.5 rounded-xl border border-border bg-card/40 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Style &amp; posting
+          </p>
+          <div className="space-y-1">
+            <span className="text-[11px] text-muted-foreground">Theme</span>
+            <PillNav
+              size="sm"
+              activeValue={config.cardTheme}
+              onChange={(v) =>
+                onConfigChange({
+                  cardTheme: v as SocialStudioConfig["cardTheme"],
+                  aowBackground: null,
+                  aowBgImageUrl: null,
+                })
+              }
+              items={CARD_THEMES.map((th) => ({
+                label: CARD_THEME_LABEL[th],
+                value: th,
+              }))}
+            />
+          </div>
+          <div className="space-y-1">
+            <span className="text-[11px] text-muted-foreground">Shape</span>
+            <PillNav
+              size="sm"
+              activeValue={carouselFormat}
+              onChange={(v) =>
+                // Reset postType to "post" too — a carousel is a feed post, never a story, so
+                // never leave the config in an inconsistent {postType:"story", format:"portrait"}.
+                onConfigChange({
+                  format: v as SocialStudioConfig["format"],
+                  postType: "post",
+                })
+              }
+              items={[
+                { label: "Portrait 4:5", value: "portrait" },
+                { label: "Square 1:1", value: "square" },
+              ]}
+            />
+          </div>
+          {connectedIntegrations.length > 1 && (
+            <div className="space-y-1">
+              <span className="text-[11px] text-muted-foreground">
+                Post from
+              </span>
+              <select
+                value={selectedIntegration?.id ?? ""}
+                onChange={(e) => onSelectIntegration(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+                title="Which Instagram account to post from"
+                aria-label="Instagram account to post from"
+              >
+                {connectedIntegrations.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    @{i.instagram_username}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <label
+            className="flex items-center gap-2 text-xs text-muted-foreground"
+            title={
+              sampleForced
+                ? "No live data yet — sample shows until your agency has producers"
+                : "Fill the data slides with sample numbers while production is thin"
+            }
+          >
+            <input
+              type="checkbox"
+              checked={isSample}
+              disabled={sampleForced}
+              onChange={(e) => onSampleChange(e.target.checked)}
+            />
+            Preview with sample data
+            {sampleForced && (
+              <span className="text-[10px]">(no live data yet)</span>
+            )}
+          </label>
+        </div>
         {/* Build the whole carousel from one idea (Phase 3C) — gated on the AI entitlement. */}
         {hasAiAccess && (
           <div className="rounded-xl border border-accent/40 bg-accent/5 p-3">
@@ -1126,7 +1252,7 @@ export function CarouselBuilder({
       <CardExportHost
         ref={exportRef}
         pages={deckPages}
-        format={config.format}
+        format={carouselFormat}
         agencyName={agencyName}
         network={network}
         showPolicies={config.showPolicies}

@@ -583,11 +583,15 @@ export function SocialStudioPage() {
             postsImoId={postsImoId}
             producers={producers}
             isSample={isSample}
+            sampleForced={sampleForced}
+            onSampleChange={setSampleOverride}
             labels={labels}
             agencyName={agencyName}
             network={network}
             igConnected={igConnected}
+            connectedIntegrations={connectedIntegrations}
             selectedIntegration={selectedIntegration}
+            onSelectIntegration={setSelectedIntegrationId}
           />
         )}
 
