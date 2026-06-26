@@ -19,6 +19,7 @@ import {
   Pencil,
   CheckCircle2,
   Circle,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,6 +155,16 @@ export function CallReviewsPage() {
   const uploadAgents = isSuperAdmin ? agents : downlineAgents;
   const canAssignUpload = isSuperAdmin || hasDownline;
   const rows = data?.pages.flatMap((p) => p.rows) ?? [];
+
+  // Distinguish "your filters matched nothing" from "nothing is shared with you
+  // yet" — the latter is the normal state for most agents now that recordings
+  // are held back until their client PII (SSNs, payment details) is removed.
+  const hasActiveFilters =
+    filters.search.trim() !== "" ||
+    filters.outcome !== "all" ||
+    filters.agentId !== "all" ||
+    filters.callTypeId !== "all" ||
+    filters.showArchived;
 
   // Likes: which calls the current user has hearted (to fill their own hearts)
   // and the toggle mutation. Fetched once for the whole list.
@@ -295,9 +306,24 @@ export function CallReviewsPage() {
             <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
           </div>
         ) : rows.length === 0 ? (
-          <div className="p-8 text-center text-xs text-v2-ink-muted">
-            No calls match. Upload a recording to start building the library.
-          </div>
+          hasActiveFilters ? (
+            <div className="p-8 text-center text-xs text-v2-ink-muted">
+              No calls match your filters.
+            </div>
+          ) : (
+            <div className="mx-auto max-w-md p-8 text-center">
+              <ShieldCheck className="mx-auto mb-2 h-5 w-5 text-v2-ink-subtle" />
+              <p className="text-sm font-medium text-v2-ink">
+                Recordings are being processed for privacy
+              </p>
+              <p className="mt-1 text-xs text-v2-ink-muted">
+                Shared call recordings appear here once their sensitive client
+                information (Social Security and payment details) has been
+                removed. Your own uploads stay visible to you and your managers
+                in the meantime.
+              </p>
+            </div>
+          )
         ) : (
           <div className="divide-y divide-v2-ring">
             {rows.map((r) => {
