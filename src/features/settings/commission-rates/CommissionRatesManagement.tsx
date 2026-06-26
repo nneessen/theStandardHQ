@@ -34,6 +34,7 @@ import { RateEditDialog } from "./components/RateEditDialog";
 import { RateBulkImport } from "./components/RateBulkImport";
 import type { Database } from "@/types/database.types";
 import { useImo } from "@/contexts/ImoContext";
+import { getTodayString } from "@/lib/date";
 
 type ProductType = Database["public"]["Enums"]["product_type"];
 
@@ -163,7 +164,7 @@ export function CommissionRatesManagement() {
               product_type: product.product_type,
               contract_level: contractLevel,
               commission_percentage: percentage / 100,
-              effective_date: new Date().toISOString().split("T")[0],
+              effective_date: getTodayString(),
             };
             await createRate.mutateAsync(newRate);
           }
@@ -267,7 +268,7 @@ export function CommissionRatesManagement() {
             product_type: product.product_type,
             contract_level: contractLevel,
             commission_percentage: commission / 100,
-            effective_date: new Date().toISOString().split("T")[0],
+            effective_date: getTodayString(),
           });
         }
       }

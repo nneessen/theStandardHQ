@@ -48,7 +48,12 @@ import type {
   AdvancedExpenseFilters,
   ExpenseTemplate,
 } from "../../types/expense.types";
-import { isSameMonth, formatDateForDisplay } from "../../lib/date";
+import {
+  isSameMonth,
+  formatDateForDisplay,
+  formatDateForDB,
+  getTodayString,
+} from "../../lib/date";
 import { formatCurrency, formatPercent } from "../../lib/format";
 import { Board, Cap, FlapTile } from "@/components/board";
 import { toast } from "sonner";
@@ -164,7 +169,7 @@ export function ExpenseDashboardCompact() {
   // Compare as strings (YYYY-MM-DD format) to avoid timezone issues
   const today = new Date();
   const currentYear = today.getFullYear();
-  const todayStr = today.toISOString().split("T")[0]; // "2026-01-03"
+  const todayStr = formatDateForDB(today); // "2026-01-03"
   const startOfYearStr = `${currentYear}-01-01`; // "2026-01-01"
 
   const ytdExpenses = expenses.filter((e) => {
@@ -377,7 +382,7 @@ export function ExpenseDashboardCompact() {
 
   const _handleUseTemplate = async (template: ExpenseTemplate) => {
     const expenseData = expenseTemplateService.templateToExpenseData(template);
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     try {
       await createExpense.mutateAsync({ ...expenseData, date: today });
       toast.success(`✓ Added: ${template.template_name}`);

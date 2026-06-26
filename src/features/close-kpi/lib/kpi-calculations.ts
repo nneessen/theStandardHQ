@@ -1,6 +1,8 @@
 // src/features/close-kpi/lib/kpi-calculations.ts
 // Derived metric calculations: trends, deltas, lifecycle velocity
 
+import { getTodayString, formatDateForDB } from "@/lib/date";
+
 /**
  * Calculate percentage change between two values.
  * Returns null if previous value is 0 (can't compute % change from zero).
@@ -34,7 +36,7 @@ export function getDateRangeBounds(
   customTo?: string,
 ): { from: string; to: string } {
   const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  const today = getTodayString(now);
 
   switch (preset) {
     case "today":
@@ -42,35 +44,35 @@ export function getDateRangeBounds(
     case "this_week": {
       const start = new Date(now);
       start.setDate(now.getDate() - now.getDay());
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "this_month": {
       const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "last_7_days": {
       const start = new Date(now);
       start.setDate(now.getDate() - 7);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "last_30_days": {
       const start = new Date(now);
       start.setDate(now.getDate() - 30);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "last_90_days": {
       const start = new Date(now);
       start.setDate(now.getDate() - 90);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "this_quarter": {
       const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
       const start = new Date(now.getFullYear(), quarterMonth, 1);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "this_year": {
       const start = new Date(now.getFullYear(), 0, 1);
-      return { from: start.toISOString().split("T")[0], to: today };
+      return { from: formatDateForDB(start), to: today };
     }
     case "custom":
       return { from: customFrom ?? today, to: customTo ?? today };

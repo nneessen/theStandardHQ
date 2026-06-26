@@ -8,7 +8,7 @@ import {
 import { PolicyRepository } from "./PolicyRepository";
 import { supabase } from "../base/supabase";
 import { logger } from "../base/logger";
-import { formatDateForDB } from "../../lib/date";
+import { formatDateForDB, getTodayString } from "../../lib/date";
 import { commissionStatusService } from "../commissions/CommissionStatusService";
 import { commissionService } from "../commissions/commissionService";
 import {
@@ -932,8 +932,8 @@ class PolicyService {
         .update({
           lifecycle_status: "active",
           notes: policy.notes
-            ? `${policy.notes}\n\nReinstated: ${reason} (${new Date().toISOString().split("T")[0]})`
-            : `Reinstated: ${reason} (${new Date().toISOString().split("T")[0]})`,
+            ? `${policy.notes}\n\nReinstated: ${reason} (${getTodayString()})`
+            : `Reinstated: ${reason} (${getTodayString()})`,
           updated_at: new Date().toISOString(),
         })
         .eq("id", policyId)

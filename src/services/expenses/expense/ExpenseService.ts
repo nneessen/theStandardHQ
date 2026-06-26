@@ -1,7 +1,7 @@
 // src/services/expenses/expense/ExpenseService.ts
 import { BaseService, ServiceResponse } from "../../base/BaseService";
 import { ExpenseRepository, ExpenseBaseEntity } from "./ExpenseRepository";
-import { isSameMonth, isSameYear } from "@/lib/date";
+import { isSameMonth, isSameYear, getTodayString } from "@/lib/date";
 import type {
   Expense,
   CreateExpenseData,
@@ -542,9 +542,7 @@ class ExpenseServiceClass extends BaseService<
             cleanValues[headers.indexOf("recurring frequency")];
 
           const expenseData: CreateExpenseData = {
-            date:
-              cleanValues[headers.indexOf("date")] ||
-              new Date().toISOString().split("T")[0],
+            date: cleanValues[headers.indexOf("date")] || getTodayString(),
             name: cleanValues[headers.indexOf("name")] || "Imported Expense",
             description: cleanValues[headers.indexOf("description")] || null,
             amount: parseFloat(cleanValues[headers.indexOf("amount")] || "0"),

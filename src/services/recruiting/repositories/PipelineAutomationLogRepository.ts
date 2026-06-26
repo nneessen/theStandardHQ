@@ -1,6 +1,7 @@
 // src/services/recruiting/repositories/PipelineAutomationLogRepository.ts
 import { BaseRepository } from "../../base/BaseRepository";
 import type { Json } from "@/types/database.types";
+import { getTodayString } from "@/lib/date";
 
 export type AutomationLogStatus = "pending" | "sent" | "failed" | "skipped";
 
@@ -95,8 +96,8 @@ export class PipelineAutomationLogRepository extends BaseRepository<
     automationId: string,
     recruitId: string,
   ): Promise<boolean> {
-    // Get today's date in UTC to match the computed column
-    const today = new Date().toISOString().split("T")[0];
+    // Get today's date in LOCAL time to match the computed column
+    const today = getTodayString();
 
     const { data, error } = await this.client
       .from(this.tableName)
@@ -180,7 +181,7 @@ export class PipelineAutomationLogRepository extends BaseRepository<
         automationId: "",
         recruitId: "",
         triggeredAt: new Date().toISOString(),
-        triggeredDate: new Date().toISOString().split("T")[0],
+        triggeredDate: getTodayString(),
         status: updates.status || "pending",
         errorMessage: updates.errorMessage || null,
         metadata: updates.metadata || null,

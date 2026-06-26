@@ -3,6 +3,7 @@
 // Provides runtime type validation for database responses
 
 import { z } from "zod";
+import { formatDateForDB } from "@/lib/date";
 
 /**
  * Schema for monthly performance report row (IMO or Agency)
@@ -291,7 +292,7 @@ export function clampDateRange(dateRange: ReportDateRange): ReportDateRange {
  * Format date for PostgreSQL query parameters
  */
 export function formatDateForQuery(date: Date): string {
-  return date.toISOString().split("T")[0];
+  return formatDateForDB(date);
 }
 
 /**

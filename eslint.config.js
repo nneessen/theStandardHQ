@@ -57,6 +57,19 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // Ban the `new Date().toISOString().split(...)` "today" antipattern: that's the UTC
+      // calendar date, which rolls over an evening early in the Americas and empties out
+      // daily leaderboards/KPIs/effective-date windows. Use getTodayString() / formatDateForDB()
+      // from @/lib/date (LOCAL date) instead.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.property.name='split'][callee.object.callee.property.name='toISOString'][callee.object.callee.object.type='NewExpression'][callee.object.callee.object.callee.name='Date'][callee.object.callee.object.arguments.length=0]",
+          message:
+            "Don't derive a date from `new Date().toISOString().split(...)` — that's the UTC date and is wrong in the evening for the Americas. Use getTodayString() / formatDateForDB() from @/lib/date (local).",
+        },
+      ],
       'boundaries/element-types': [
         'error',
         {
@@ -166,6 +179,14 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'no-restricted-imports': 'off',
+    },
+  },
+  // Deno edge functions run server-side (UTC) and can't import @/lib/date — the local-date
+  // rule is for the browser app only. Their date handling is a separate (server) concern.
+  {
+    files: ['supabase/functions/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
   // Dev-only tooling under scripts/ (render harnesses, smoke runners) is NOT app code

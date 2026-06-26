@@ -6,6 +6,7 @@ import { useCarriers } from "../../hooks/carriers";
 import { useProducts } from "../../hooks/products/useProducts";
 import { useCompGuide } from "../../hooks/comps";
 import { supabase } from "../../services/base/supabase";
+import { getTodayString } from "@/lib/date";
 
 export const TestCompGuide: React.FC = () => {
   const { user } = useAuth();
@@ -31,7 +32,7 @@ export const TestCompGuide: React.FC = () => {
     const testDirectQuery = async () => {
       if (!selectedProductId) return;
 
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayString();
 
       const { data, error } = await supabase
         .from("comp_guide")

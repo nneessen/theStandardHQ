@@ -6,6 +6,7 @@ import {
   getComparisonBounds,
   median,
 } from "../kpi-calculations";
+import { getTodayString } from "@/lib/date";
 
 describe("calculateChangePercent", () => {
   it("returns positive percent for increase", () => {
@@ -115,7 +116,7 @@ describe("getDateRangeBounds", () => {
 
   it("falls back to today for unknown preset", () => {
     const { from, to } = getDateRangeBounds("unknown_preset");
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     expect(from).toBe(today);
     expect(to).toBe(today);
   });

@@ -2,6 +2,7 @@
 // Service layer for Commission Guide data from Supabase database
 
 import { supabase } from "../base/supabase";
+import { getTodayString } from "@/lib/date";
 
 export interface CompGuideRecord {
   id: string;
@@ -190,11 +191,8 @@ class CompGuideService {
       .ilike("carriers.name", `%${carrierName}%`)
       .eq("product_type", productType)
       .eq("comp_level", compLevel)
-      .lte("effective_date", new Date().toISOString().split("T")[0])
-      .or(
-        "expiration_date.is.null,expiration_date.gte." +
-          new Date().toISOString().split("T")[0],
-      )
+      .lte("effective_date", getTodayString())
+      .or("expiration_date.is.null,expiration_date.gte." + getTodayString())
       .order("effective_date", { ascending: false })
       .limit(1)
       .single();

@@ -4,6 +4,7 @@ import {
   type TenantScopedEntity,
 } from "../../base/TenantScopedRepository";
 import type { Database } from "@/types/database.types";
+import { getTodayString } from "@/lib/date";
 
 type CompGuideRow = Database["public"]["Tables"]["comp_guide"]["Row"];
 type CompGuideInsert = Database["public"]["Tables"]["comp_guide"]["Insert"];
@@ -222,7 +223,7 @@ export class CompGuideRepository extends TenantScopedRepository<
    * Find all active entries (not expired)
    */
   async findActive(): Promise<CompGuideBaseEntity[]> {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     const { imo_id } = await this.getTenantFilter();
 
     const { data, error } = await this.client
@@ -333,7 +334,7 @@ export class CompGuideRepository extends TenantScopedRepository<
     productId: string,
     contractLevel: number,
   ): Promise<number | null> {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     const { imo_id } = await this.getTenantFilter();
 
     const { data, error } = await this.client
@@ -363,7 +364,7 @@ export class CompGuideRepository extends TenantScopedRepository<
     commission_percentage: number;
     bonus_percentage: number | null;
   } | null> {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     const { imo_id } = await this.getTenantFilter();
 
     let query = this.client
@@ -405,7 +406,7 @@ export class CompGuideRepository extends TenantScopedRepository<
       return [];
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayString();
     const { imo_id } = await this.getTenantFilter();
 
     const { data, error } = await this.client

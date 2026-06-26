@@ -17,6 +17,7 @@ import { Upload, Loader2, FileText, X, Calendar } from "lucide-react";
 import { useUploadDocument } from "../hooks/useRecruitDocuments";
 import { DocumentTypeCategorySelector } from "@/features/documents";
 import type { InsuranceDocumentType } from "@/types/documents.types";
+import { getTodayString } from "@/lib/date";
 
 interface UploadDocumentDialogProps {
   open: boolean;
@@ -237,7 +238,7 @@ export function UploadDocumentDialog({
               onChange={(e) => setExpirationDate(e.target.value)}
               className="h-7 text-[11px]"
               disabled={uploadDocument.isPending}
-              min={new Date().toISOString().split("T")[0]}
+              min={getTodayString()}
             />
             {expirationDate && (
               <p className="text-[10px] text-muted-foreground">

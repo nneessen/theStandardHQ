@@ -3,6 +3,7 @@
 // Supports dual provider: Gmail (if connected) or Mailgun (fallback)
 
 import { supabase } from "@/services/base/supabase";
+import { getTodayString, formatDateForDB } from "@/lib/date";
 
 import { gmailService } from "@/services/gmail";
 
@@ -103,7 +104,7 @@ async function getSystemSetting(key: string): Promise<string | null> {
 async function getMonthlyMailgunSpend(userId: string): Promise<number> {
   const firstOfMonth = new Date();
   firstOfMonth.setDate(1);
-  const monthStart = firstOfMonth.toISOString().split("T")[0];
+  const monthStart = formatDateForDB(firstOfMonth);
 
   const { data, error } = await supabase
     .from("email_quota_tracking")
@@ -515,7 +516,7 @@ export async function sendEmail(
 }
 
 export async function getEmailQuota(userId: string): Promise<EmailQuota> {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayString();
 
   // Default limits (conservative for single-user app)
   const defaultDailyLimit = 50;
@@ -536,7 +537,7 @@ export async function getEmailQuota(userId: string): Promise<EmailQuota> {
   // Calculate monthly usage by aggregating all days in current month
   const firstOfMonth = new Date();
   firstOfMonth.setDate(1);
-  const monthStart = firstOfMonth.toISOString().split("T")[0];
+  const monthStart = formatDateForDB(firstOfMonth);
 
   const { data: monthlyData, error: monthlyError } = await supabase
     .from("email_quota_tracking")
@@ -570,7 +571,7 @@ async function incrementQuota(
   userId: string,
   provider: "mailgun" | "gmail",
 ): Promise<void> {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayString();
 
   // Increment usage_tracking (source of truth for billing UI + plan limit enforcement)
   const { error: rpcError } = await supabase.rpc("increment_usage", {

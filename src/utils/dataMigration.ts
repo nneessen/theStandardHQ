@@ -10,6 +10,7 @@ import { Policy } from "../types/policy.types";
 import { CreateExpenseData } from "../types/expense.types";
 import { Carrier } from "../types/carrier.types";
 import { logger } from "../services/base/logger";
+import { getTodayString } from "@/lib/date";
 
 // Legacy types for migration
 interface LegacyExpenseItem {
@@ -315,7 +316,7 @@ class DataMigrationService {
           amount: expense.amount,
           category: expense.category,
           expense_type: expense.expense_type,
-          date: new Date().toISOString().split("T")[0], // Use current date for legacy data
+          date: getTodayString(), // Use current date for legacy data
         };
         await expenseService.create(createData, userId);
         result.details.expenses++;
