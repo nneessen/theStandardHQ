@@ -100,33 +100,29 @@ describe("resolveSampleState", () => {
   });
 });
 
-describe("buildPeriodLabels (timezone-consistent with the UTC data window — #6)", () => {
-  it("stamps daily/monthly labels from the UTC date, not the local date", () => {
-    // 02:00 UTC on Jun 21: in any Western-hemisphere TZ the LOCAL date is still
-    // Jun 20, but calculateDateRange keys the data window off the UTC date (Jun 21).
-    // The label must match the data → JUN 21. (Old code used toLocaleDateString and
-    // would print JUN 20 on a US machine, contradicting the data it stamped.)
+describe("buildPeriodLabels (matches the LOCAL data window — calculateDateRange)", () => {
+  it("stamps the daily/monthly label from the LOCAL calendar date, not UTC", () => {
+    // 8pm LOCAL on Jun 25 is already Jun 26 in UTC. The data window now keys off the
+    // LOCAL day (Jun 25) so the daily leaderboard isn't empty an evening early — and the
+    // label must match the data → JUN 25. Constructed from LOCAL components so it's
+    // deterministic in any test-runner timezone. (Old code keyed off the UTC date → JUN 26,
+    // contradicting the data and emptying the daily card every evening for the Americas.)
     const { dateLabel, monthLabel } = buildPeriodLabels(
-      new Date("2026-06-21T02:00:00Z"),
+      new Date(2026, 5, 25, 20, 0, 0),
     );
-    expect(dateLabel).toBe("JUN 21, 2026");
+    expect(dateLabel).toBe("JUN 25, 2026");
     expect(monthLabel).toBe("JUNE 2026");
   });
 
-  it("reflects the report's month (mid-month → unambiguous in any TZ)", () => {
-    // Mid-month midday UTC is the same calendar month in every real timezone
-    // (UTC-12…+14), so this is deterministic regardless of the test machine's TZ.
-    // (The month-boundary case is intentionally not asserted: monthLabel mirrors
-    // calculateDateRange's LOCAL monthStart by design, so its value at a boundary is
-    // genuinely timezone-dependent — and consistent with the data, which is the fix.)
-    expect(buildPeriodLabels(new Date("2026-07-15T12:00:00Z")).monthLabel).toBe(
+  it("reflects the report's local month", () => {
+    expect(buildPeriodLabels(new Date(2026, 6, 15, 12, 0, 0)).monthLabel).toBe(
       "JULY 2026",
     );
   });
 
   it("produces a well-formed week-to-date range", () => {
     expect(
-      buildPeriodLabels(new Date("2026-06-21T12:00:00Z")).weekRange,
+      buildPeriodLabels(new Date(2026, 5, 25, 12, 0, 0)).weekRange,
     ).toMatch(/^[A-Z]{3} \d{1,2}–/);
   });
 });

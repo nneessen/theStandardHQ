@@ -2,6 +2,12 @@
 // Service for leaderboard data fetching and transformation
 
 import { supabase } from "../base/supabase";
+import {
+  getMonthStartString,
+  getTodayString,
+  getWeekStartString,
+  getYearStartString,
+} from "@/lib/date";
 import type { Database } from "../../types/database.types";
 import type {
   LeaderboardFilters,
@@ -40,43 +46,24 @@ function calculateDateRange(
   customStart?: string,
   customEnd?: string,
 ): DateRange {
-  const now = new Date();
-  const today = now.toISOString().split("T")[0];
+  // All boundaries use the canonical LOCAL-date helpers (src/lib/date) — business dates
+  // (submit_date/effective_date) are local DATEs, so a UTC "today" would roll the window
+  // forward an evening early and empty out daily/weekly numbers (see getTodayString).
+  const today = getTodayString();
 
   switch (period) {
     case "daily":
       return { start: today, end: today };
 
-    case "weekly": {
-      // Week-to-date: Monday 00:00 through today.
-      const dayOfWeek = now.getDay(); // 0=Sun … 6=Sat
-      const daysSinceMonday = (dayOfWeek + 6) % 7;
-      const weekStart = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() - daysSinceMonday,
-      );
-      return {
-        start: weekStart.toISOString().split("T")[0],
-        end: today,
-      };
-    }
+    case "weekly":
+      // Week-to-date: Monday through today (local).
+      return { start: getWeekStartString(), end: today };
 
-    case "mtd": {
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      return {
-        start: monthStart.toISOString().split("T")[0],
-        end: today,
-      };
-    }
+    case "mtd":
+      return { start: getMonthStartString(), end: today };
 
-    case "ytd": {
-      const yearStart = new Date(now.getFullYear(), 0, 1);
-      return {
-        start: yearStart.toISOString().split("T")[0],
-        end: today,
-      };
-    }
+    case "ytd":
+      return { start: getYearStartString(), end: today };
 
     case "custom":
       if (!customStart || !customEnd) {
@@ -86,14 +73,9 @@ function calculateDateRange(
       }
       return { start: customStart, end: customEnd };
 
-    default: {
+    default:
       // Default to MTD
-      const defaultMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      return {
-        start: defaultMonthStart.toISOString().split("T")[0],
-        end: today,
-      };
-    }
+      return { start: getMonthStartString(), end: today };
   }
 }
 

@@ -50,8 +50,39 @@ export function formatDateForDB(date: Date | string): string {
   return `${year}-${month}-${day}`;
 }
 
-export function getTodayString(): string {
-  return formatDateForDB(new Date());
+/**
+ * The LOCAL calendar "today" as YYYY-MM-DD.
+ *
+ * CRITICAL: use this for any "today / this period" window — NEVER `new Date().toISOString()
+ * .split("T")[0]`, which yields the UTC date. Business dates in this app (submit_date,
+ * effective_date, …) are bare DATEs representing the user's LOCAL day, so a UTC "today" rolls
+ * the window forward an evening early for Americas timezones — e.g. 8pm EDT is already the next
+ * day in UTC — which empties out "daily" leaderboards/KPIs. `now` is injectable for tests.
+ */
+export function getTodayString(now: Date = new Date()): string {
+  return formatDateForDB(now);
+}
+
+/** Monday of the current LOCAL week as YYYY-MM-DD (week-to-date window start). */
+export function getWeekStartString(now: Date = new Date()): string {
+  const daysSinceMonday = (now.getDay() + 6) % 7; // 0=Sun…6=Sat → days back to Monday
+  return formatDateForDB(
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - daysSinceMonday,
+    ),
+  );
+}
+
+/** First day of the current LOCAL month as YYYY-MM-DD (MTD window start). */
+export function getMonthStartString(now: Date = new Date()): string {
+  return formatDateForDB(new Date(now.getFullYear(), now.getMonth(), 1));
+}
+
+/** First day of the current LOCAL year as YYYY-MM-DD (YTD window start). */
+export function getYearStartString(now: Date = new Date()): string {
+  return formatDateForDB(new Date(now.getFullYear(), 0, 1));
 }
 
 export function isSameDay(date1: Date | string, date2: Date | string): boolean {

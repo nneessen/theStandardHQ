@@ -6,6 +6,11 @@
 // label/data timezone disagreement) have regression tests with no React in the way.
 
 import { toLastInitial, usd } from "@/features/social-cards";
+import {
+  getMonthStartString,
+  getTodayString,
+  getWeekStartString,
+} from "@/lib/date";
 import type {
   AowDesign,
   CardTheme,
@@ -83,17 +88,12 @@ export function resolveSampleState(input: SampleStateInput): SampleState {
 }
 
 // ── 2. Period labels (timezone-consistent with the data window) ──────────────
-// leaderboardService.calculateDateRange derives the queried window from a mix of
-// UTC (`today = now.toISOString()`) and local (week/month-start arithmetic). To
-// guarantee the printed label can never contradict the data it stamps, we mirror
-// that exact math here and format the resulting y-m-d strings in UTC. `now` is
-// injectable so the rules are deterministically testable.
-function ymd(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
-
+// The printed label must never contradict the data it stamps, so it mirrors
+// leaderboardService.calculateDateRange EXACTLY by deriving every boundary from the SAME
+// canonical LOCAL-date helpers (src/lib/date). `now` is injectable for deterministic tests.
 function fmtYmd(ymdStr: string, opts: Intl.DateTimeFormatOptions): string {
-  // Parse as UTC midnight and format in UTC so a local offset can't shift the day.
+  // The y-m-d string is already the intended LOCAL calendar day; parse it as UTC midnight and
+  // format in UTC so re-formatting can't shift it back across a local offset.
   return new Date(`${ymdStr}T00:00:00Z`)
     .toLocaleDateString("en-US", { ...opts, timeZone: "UTC" })
     .toUpperCase();
@@ -106,19 +106,10 @@ export interface PeriodLabels {
 }
 
 export function buildPeriodLabels(now: Date = new Date()): PeriodLabels {
-  // daily window = { today, today } (UTC today) — see calculateDateRange "daily".
-  const today = ymd(now);
-  // weekly window start = Monday of the local week (calculateDateRange "weekly").
-  const daysSinceMonday = (now.getDay() + 6) % 7;
-  const weekStartYmd = ymd(
-    new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - daysSinceMonday,
-    ),
-  );
-  // mtd window start = local month start (calculateDateRange "mtd").
-  const monthStartYmd = ymd(new Date(now.getFullYear(), now.getMonth(), 1));
+  // Same canonical local-date windows as calculateDateRange (daily / weekly / mtd).
+  const today = getTodayString(now);
+  const weekStartYmd = getWeekStartString(now);
+  const monthStartYmd = getMonthStartString(now);
 
   const dateLabel = fmtYmd(today, {
     month: "short",
