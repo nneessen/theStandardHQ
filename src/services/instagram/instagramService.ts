@@ -139,7 +139,16 @@ class InstagramServiceClass {
    * Disconnect an Instagram integration
    */
   async disconnect(integrationId: string): Promise<void> {
-    return this.integrationRepo.disconnect(integrationId);
+    // REAL disconnect: the edge function revokes the app's authorization at Meta (so a
+    // different business account can be connected afterwards — a soft DB flag never did this)
+    // and removes the row. Fall back to the soft DB disconnect if the function is unavailable
+    // so the UI still reflects the change.
+    const { error } = await supabase.functions.invoke("instagram-disconnect", {
+      body: { integrationId },
+    });
+    if (error) {
+      await this.integrationRepo.disconnect(integrationId);
+    }
   }
 
   /**
