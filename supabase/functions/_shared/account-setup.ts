@@ -111,9 +111,17 @@ export async function createOrRefreshSetupToken(
     email: string;
     createdBy?: string | null;
     enforceCap?: boolean;
+    /**
+     * Base URL for the /set-password link. Defaults to SITE_URL. Callers that
+     * serve unauthenticated requests (send-password-reset) MUST pass a trusted
+     * base — never an attacker-suppliable redirectTo host — to avoid leaking the
+     * token to an arbitrary domain, and to keep local-dev links pointed locally.
+     */
+    baseUrl?: string;
   },
 ): Promise<{ capped: boolean; link?: string; resendCount?: number }> {
-  const siteUrl = Deno.env.get("SITE_URL") || "https://www.thestandardhq.com";
+  const base =
+    opts.baseUrl || Deno.env.get("SITE_URL") || "https://www.thestandardhq.com";
   const { data, error } = await admin.rpc("upsert_account_setup_token", {
     p_user_id: opts.userId,
     p_email: opts.email,
@@ -127,7 +135,7 @@ export async function createOrRefreshSetupToken(
   }
   return {
     capped: false,
-    link: `${siteUrl}/set-password/${data.token}`,
+    link: `${base.replace(/\/$/, "")}/set-password/${data.token}`,
     resendCount: data.resend_count,
   };
 }

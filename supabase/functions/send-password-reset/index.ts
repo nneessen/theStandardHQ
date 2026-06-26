@@ -1,7 +1,15 @@
 // supabase/functions/send-password-reset/index.ts
-// Sends password reset emails via Mailgun in hosted environments.
-// In local Supabase, it returns a direct recovery link so the browser can enter
-// the password reset flow without relying on Mailpit.
+//
+// Sends password-reset emails. Uses the app-owned account-setup token system
+// (a real 7-day /set-password/{token} link) instead of a Supabase recovery link,
+// whose real lifetime was the project OTP/email-link expiry (the 72h `expiresIn`
+// is silently ignored) and which email scanners could burn on pre-click.
+//
+// The token flow has NO session, so the user lands on the set-password form and
+// can never be dropped onto the dashboard (the historical recovery-flow bug).
+//
+// In local Supabase (no Mailgun) it returns the link directly so the browser can
+// redirect without Mailpit.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
@@ -10,6 +18,7 @@ import {
   resolveImoSenderUserId,
   sendViaConnectedGmail,
 } from "../_shared/connected-gmail.ts";
+import { createOrRefreshSetupToken } from "../_shared/account-setup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,42 +38,24 @@ function jsonResponse(payload: unknown, status = 200) {
   });
 }
 
-function buildGenerateLinkErrorResponse(
-  linkError: { message?: string; code?: string },
-  email: string,
-) {
-  console.error("[send-password-reset] Failed to generate link:", linkError);
-
-  const errorCode = linkError.code;
-  const isUserNotFound =
-    errorCode === "user_not_found" ||
-    linkError.message?.includes("User not found") ||
-    linkError.message?.includes("not found");
-
-  if (isUserNotFound) {
-    return jsonResponse(
-      {
-        success: false,
-        error: `No auth account found for ${email}. This user exists in user_profiles but NOT in auth.users. They need to be created properly via the Add User flow.`,
-      },
-      404,
-    );
-  }
-
+// Preserved verbatim: useResendInvite (recruiting) and the admin reset path branch
+// on this exact "No auth account found" string to fall back to creating the account.
+function noAuthAccountResponse(email: string) {
   return jsonResponse(
-    { success: false, error: linkError.message || "Failed to generate link" },
-    400,
+    {
+      success: false,
+      error: `No auth account found for ${email}. This user exists in user_profiles but NOT in auth.users. They need to be created properly via the Add User flow.`,
+    },
+    404,
   );
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Get credentials
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
@@ -75,7 +66,7 @@ serve(async (req) => {
       SUPABASE_URL?.includes("127.0.0.1") ||
       SUPABASE_URL?.includes("localhost");
 
-    // Normalize to canonical URL (always use www for consistency)
+    // Always use the canonical www host for the prod link base.
     const normalizedSiteUrl = SITE_URL.replace(
       "://thestandardhq.com",
       "://www.thestandardhq.com",
@@ -93,10 +84,7 @@ serve(async (req) => {
       SUPABASE_URL,
       SUPABASE_SERVICE_ROLE_KEY,
       {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
+        auth: { autoRefreshToken: false, persistSession: false },
       },
     );
 
@@ -107,7 +95,6 @@ serve(async (req) => {
       return jsonResponse({ success: false, error: "Email is required" }, 400);
     }
 
-    // Determine the redirect URL - use provided or default to normalized site URL
     const effectiveRedirectTo =
       redirectTo || `${normalizedSiteUrl}/auth/callback`;
     const requestUrl = new URL(req.url);
@@ -118,107 +105,85 @@ serve(async (req) => {
       effectiveRedirectTo.includes("127.0.0.1") ||
       effectiveRedirectTo.includes("localhost");
 
+    // Look up the target user. The token system needs the user's id, and we must
+    // confirm an auth.users row exists (a user_profiles-only record cannot set a
+    // password) — preserving the "No auth account found" diagnostic callers rely on.
+    const { data: profile } = await supabaseAdmin
+      .from("user_profiles")
+      .select("id, imo_id")
+      .ilike("email", email.trim())
+      .limit(1)
+      .maybeSingle();
+
+    if (!profile?.id) {
+      return noAuthAccountResponse(email);
+    }
+
+    const { data: authUser, error: authUserError } =
+      await supabaseAdmin.auth.admin.getUserById(profile.id);
+    if (authUserError || !authUser?.user) {
+      return noAuthAccountResponse(email);
+    }
+
+    // SECURITY: derive the link base ourselves. In prod always use the canonical
+    // site (never the attacker-suppliable redirectTo host, which would leak the
+    // token to an arbitrary domain). Only in local dev point at the local origin
+    // so the token (stored in the local DB) resolves.
+    let linkBase = normalizedSiteUrl;
+    if (isLocalRequest) {
+      try {
+        const u = new URL(effectiveRedirectTo);
+        if (u.hostname === "127.0.0.1" || u.hostname === "localhost") {
+          linkBase = u.origin;
+        }
+      } catch {
+        // fall through to normalizedSiteUrl
+      }
+    }
+
+    const setup = await createOrRefreshSetupToken(supabaseAdmin, {
+      userId: profile.id,
+      email,
+      createdBy: null,
+      enforceCap: false,
+      baseUrl: linkBase,
+    });
+
+    const resetLink = setup.link;
+    if (!resetLink) {
+      console.error("[send-password-reset] Failed to create setup token");
+      return jsonResponse(
+        { success: false, error: "Failed to generate reset link" },
+        500,
+      );
+    }
+
+    // Local dev (no Mailgun): hand the link back for a browser redirect.
     if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
       if (!isLocalRequest) {
         console.error("[send-password-reset] Missing Mailgun credentials");
         return jsonResponse(
-          {
-            success: false,
-            error: "Email service not configured",
-          },
+          { success: false, error: "Email service not configured" },
           500,
         );
       }
-
-      const { data: localLinkData, error: localLinkError } =
-        await supabaseAdmin.auth.admin.generateLink({
-          type: "recovery",
-          email,
-          options: {
-            redirectTo: effectiveRedirectTo,
-            expiresIn: 3600,
-          } as Record<string, unknown>,
-        });
-
-      if (localLinkError) {
-        return buildGenerateLinkErrorResponse(localLinkError, email);
-      }
-
-      const recoveryUrl = localLinkData?.properties?.action_link;
-
-      if (!recoveryUrl) {
-        console.error(
-          "[send-password-reset] No local recovery action link in response",
-        );
-        return jsonResponse(
-          {
-            success: false,
-            error: "Failed to generate local reset link",
-          },
-          500,
-        );
-      }
-
       return jsonResponse({
         success: true,
         directReset: true,
-        recoveryUrl,
+        recoveryUrl: resetLink,
         message:
           "Local password reset link generated. Redirect the browser to complete the reset.",
       });
     }
 
-    // Generate password reset link using Supabase Admin SDK
-    // Use /auth/callback as redirect - it's whitelisted and handles recovery type
-    const { data: linkData, error: linkError } =
-      await supabaseAdmin.auth.admin.generateLink({
-        type: "recovery",
-        email: email,
-        options: {
-          redirectTo: effectiveRedirectTo,
-          expiresIn: 259200, // 72 hours in seconds
-        } as Record<string, unknown>,
-      });
-
-    if (linkError) {
-      return buildGenerateLinkErrorResponse(linkError, email);
-    }
-
-    if (!linkData?.properties?.action_link) {
-      console.error("[send-password-reset] No action link in response");
-      return jsonResponse(
-        {
-          success: false,
-          error: "Failed to generate reset link",
-        },
-        500,
-      );
-    }
-
-    const resetLink = linkData.properties.action_link;
-
-    // Resolve the target user's IMO so the email is branded (e.g. "Epic Life") and
-    // sent from that IMO's connected Gmail; everything degrades to Mailgun + the
-    // platform name on any failure.
-    let targetImoId: string | null = null;
-    try {
-      const { data: targetProfiles } = await supabaseAdmin
-        .from("user_profiles")
-        .select("imo_id")
-        .ilike("email", email.trim())
-        .limit(1);
-      targetImoId = targetProfiles?.[0]?.imo_id ?? null;
-    } catch {
-      targetImoId = null;
-    }
-    const brandName = await getImoBrandName(supabaseAdmin, targetImoId);
+    // Brand + send (IMO connected Gmail primary, Mailgun fallback).
+    const brandName = await getImoBrandName(supabaseAdmin, profile.imo_id);
     const senderUserId = await resolveImoSenderUserId(
       supabaseAdmin,
-      targetImoId,
+      profile.imo_id,
     );
     const subject = `Reset Your Password - ${brandName}`;
 
-    // Build the email HTML
     const emailHtml = `
 <!DOCTYPE html>
 <html>
@@ -253,6 +218,9 @@ serve(async (req) => {
               <p style="margin: 0 0 24px; font-size: 12px; line-height: 1.5; color: #a1a1aa; word-break: break-all;">
                 ${resetLink}
               </p>
+              <p style="margin: 0 0 24px; font-size: 12px; line-height: 1.5; color: #a1a1aa;">
+                This link expires in 7 days.
+              </p>
               <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
               <p style="margin: 0; font-size: 12px; color: #a1a1aa;">
                 If you didn't request this password reset, you can safely ignore this email. Your password will not be changed.
@@ -282,12 +250,14 @@ You requested a password reset for your account at ${brandName}.
 Click this link to set a new password:
 ${resetLink}
 
+This link expires in 7 days.
+
 If you didn't request this password reset, you can safely ignore this email.
 
 © ${new Date().getFullYear()} ${brandName}
     `.trim();
 
-    // Primary path: send from the IMO's connected Gmail (e.g. epiclife.neessen@gmail.com)
+    // Primary: the IMO's connected Gmail.
     if (senderUserId) {
       const gmailResult = await sendViaConnectedGmail(
         senderUserId,
@@ -309,32 +279,30 @@ If you didn't request this password reset, you can safely ignore this email.
       );
     }
 
-    // Fallback path: send via Mailgun API
+    // Fallback: Mailgun.
     const form = new FormData();
     form.append("from", `${brandName} <noreply@${MAILGUN_DOMAIN}>`);
     form.append("to", email);
     form.append("subject", subject);
     form.append("html", emailHtml);
     form.append("text", plainText);
-    form.append("o:tracking", "no"); // Don't track password reset emails for privacy
-
-    const mailgunUrl = `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`;
+    form.append("o:tracking", "no");
 
     const credentials = `api:${MAILGUN_API_KEY}`;
-    const encoder = new TextEncoder();
-    const credentialsBytes = encoder.encode(credentials);
-    const base64Credentials = btoa(String.fromCharCode(...credentialsBytes));
+    const base64Credentials = btoa(
+      String.fromCharCode(...new TextEncoder().encode(credentials)),
+    );
 
-    const response = await fetch(mailgunUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${base64Credentials}`,
+    const response = await fetch(
+      `https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`,
+      {
+        method: "POST",
+        headers: { Authorization: `Basic ${base64Credentials}` },
+        body: form,
       },
-      body: form,
-    });
+    );
 
     const responseText = await response.text();
-
     if (!response.ok) {
       console.error("[send-password-reset] Mailgun API error:", responseText);
       return jsonResponse(
@@ -359,7 +327,6 @@ If you didn't request this password reset, you can safely ignore this email.
   } catch (err) {
     console.error("[send-password-reset] Error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-
     return jsonResponse({ success: false, error: errorMessage }, 500);
   }
 });
