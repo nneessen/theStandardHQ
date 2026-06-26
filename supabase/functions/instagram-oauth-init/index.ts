@@ -196,11 +196,12 @@ serve(async (req) => {
     authUrl.searchParams.set("state", signedState);
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("enable_fb_login", "0");
-    // Force a fresh Instagram login on every connect. Without this, Instagram silently
-    // re-authorizes whichever account it last approved (the existing one), so connecting a
-    // SECOND business account just re-updates the first. force_reauth=true makes the user
-    // log in again and choose which account to connect (multi-account, WI-6).
-    authUrl.searchParams.set("force_reauth", "true");
+    // NOTE: Instagram's Business Login authorize endpoint accepts ONLY client_id, redirect_uri,
+    // response_type, scope, state (per Meta docs) — there is NO server-side param to force
+    // re-auth or an account picker. The account that connects is whichever Instagram session is
+    // active in the user's browser at authorize time. To connect a DIFFERENT professional
+    // account, the user must sign that account in first (e.g. an incognito window) or revoke
+    // the app from the currently-connected account's Instagram "Apps and websites" settings.
 
     console.log(
       `[instagram-oauth-init] Generated OAuth URL for IMO ${imoId}, user ${userId}`,
