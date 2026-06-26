@@ -49,6 +49,7 @@ import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { DesignPreviewPage } from "./features/recruiting/pages/DesignPreviewPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
 import { PublicRegistrationPage } from "./features/recruiting/pages/PublicRegistrationPage";
+import { SetPasswordPage } from "./features/auth/SetPasswordPage";
 import { RecruitDetailPage } from "./features/recruiting/pages/RecruitDetailPage";
 import { LeadDetailPage } from "./features/recruiting/pages/LeadDetailPage";
 import { TrainingHubPage, TrainerDashboard } from "./features/training-hub";
@@ -634,6 +635,14 @@ const publicRegistrationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "register/$token",
   component: PublicRegistrationPage,
+});
+
+// Public Set-Password route - a newly-created account sets its password via an
+// app-owned setup token from the welcome email (NO AUTH). Marked public in App.tsx.
+const setPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "set-password/$token",
+  component: SetPasswordPage,
 });
 
 // Underwriting Wizard route - full-page wizard, feature flag guarded internally
@@ -1306,6 +1315,7 @@ const routeTree = rootRoute.addChildren([
   publicJoinRoute,
   designPreviewRoute,
   publicRegistrationRoute,
+  setPasswordRoute,
   trainingHubRoute,
   myTrainingRoute,
   myTrainingBuilderRoute,

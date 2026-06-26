@@ -45,6 +45,7 @@ import { userApprovalService } from "@/services/users/userService";
 import { supabase } from "@/services/base/supabase";
 // eslint-disable-next-line no-restricted-imports
 import { createAuthUserWithProfile } from "@/services/recruiting";
+import { useResendAccountSetup } from "@/hooks/team";
 import { toast } from "sonner";
 import {
   Mail,
@@ -117,6 +118,7 @@ export default function EditUserDialog({
   const { data: roles } = useAllRolesWithPermissions();
   const deleteUserMutation = useDeleteUser();
   const toggleUWAccessMutation = useToggleUserUWAccess();
+  const resendSetupMutation = useResendAccountSetup();
 
   // Auth hook for activity logging
   const { user: currentUser } = useAuth();
@@ -570,29 +572,28 @@ export default function EditUserDialog({
     setIsSendingInvite(true);
 
     try {
-      // First, try to send password reset (works if auth user exists)
-      const { data, error: fnError } = await supabase.functions.invoke(
-        "send-password-reset",
-        {
-          body: {
-            email: user.email,
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        },
-      );
+      // Resend the app-controlled setup link (a real 7-day token, NOT the old
+      // Supabase recovery link that died within ~24h). Works when the auth user
+      // already exists.
+      const resend = await resendSetupMutation.mutateAsync(user.id);
 
-      if (!fnError && data?.success !== false) {
+      if (resend.success) {
         toast.success(
-          `Confirmation email sent to ${user.email} to set password`,
+          `Setup email sent to ${user.email} to set their password`,
         );
         return;
       }
 
-      // Auth user likely doesn't exist — create one with matching profile ID
-      console.log(
-        "[handleResendInvite] Password reset failed, creating auth user for:",
-        user.email,
-      );
+      // Anything other than "no account yet" is a real failure — surface it.
+      if (resend.error !== "no_auth_user") {
+        toast.error(
+          resend.message || resend.error || "Couldn't resend the setup email.",
+        );
+        return;
+      }
+
+      // No auth user yet (e.g. an accepted lead that never onboarded) — create
+      // one; create-auth-user emails the same app-controlled setup link.
       const fullName =
         `${user.first_name || ""} ${user.last_name || ""}`.trim();
       const createResult = await createAuthUserWithProfile({

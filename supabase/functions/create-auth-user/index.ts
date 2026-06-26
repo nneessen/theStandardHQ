@@ -4,9 +4,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { z } from "npm:zod@3.23.8";
 import {
-  getImoBrandName,
-  sendViaConnectedGmail,
-} from "../_shared/connected-gmail.ts";
+  createOrRefreshSetupToken,
+  sendSetupEmail,
+} from "../_shared/account-setup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -135,132 +135,8 @@ function normalizeRoles(roles: string[]) {
   ];
 }
 
-// Build the "Welcome - Set Your Password" email content (shared by the Gmail + Mailgun senders)
-function buildWelcomeEmail(
-  resetLink: string,
-  brandName: string,
-): { subject: string; html: string; text: string } {
-  const subject = `Welcome - Set Your Password | ${brandName}`;
-  const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome - Set Your Password</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f5;">
-    <tr>
-      <td style="padding: 40px 20px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 480px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 32px 32px 24px;">
-              <h1 style="margin: 0 0 16px; font-size: 24px; font-weight: 600; color: #18181b;">Welcome to ${brandName}!</h1>
-              <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #52525b;">
-                Your account has been created. Click the button below to set your password and get started.
-              </p>
-              <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #dc2626; font-weight: 500;">
-                ⚠️ This link expires in 72 hours. Please set your password soon.
-              </p>
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                <tr>
-                  <td style="text-align: center; padding: 8px 0 24px;">
-                    <a href="${resetLink}" style="display: inline-block; padding: 12px 32px; font-size: 14px; font-weight: 600; color: #ffffff; background-color: #18181b; text-decoration: none; border-radius: 6px;">
-                      Set Your Password
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #71717a;">
-                If the button doesn't work, copy and paste this link into your browser:
-              </p>
-              <p style="margin: 0 0 24px; font-size: 12px; line-height: 1.5; color: #a1a1aa; word-break: break-all;">
-                ${resetLink}
-              </p>
-              <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;">
-              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">
-                If you didn't expect this email, you can safely ignore it.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 16px 32px 24px; text-align: center;">
-              <p style="margin: 0; font-size: 11px; color: #a1a1aa;">
-                © ${new Date().getFullYear()} ${brandName}. All rights reserved.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim();
-
-  const plainText = `
-Welcome to ${brandName}!
-
-Your account has been created. Click this link to set your password:
-${resetLink}
-
-IMPORTANT: This link expires in 72 hours. Please set your password soon.
-
-If you didn't expect this email, you can safely ignore it.
-
-© ${new Date().getFullYear()} ${brandName}
-  `.trim();
-
-  return { subject, html: emailHtml, text: plainText };
-}
-
-// Helper function to send the welcome email via Mailgun (fallback when Gmail is unavailable)
-async function sendPasswordResetEmail(
-  email: string,
-  subject: string,
-  emailHtml: string,
-  plainText: string,
-  brandName: string,
-  mailgunApiKey: string,
-  mailgunDomain: string,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const form = new FormData();
-    form.append("from", `${brandName} <noreply@${mailgunDomain}>`);
-    form.append("to", email);
-    form.append("subject", subject);
-    form.append("html", emailHtml);
-    form.append("text", plainText);
-    form.append("o:tracking", "no");
-
-    const mailgunUrl = `https://api.mailgun.net/v3/${mailgunDomain}/messages`;
-    const credentials = `api:${mailgunApiKey}`;
-    const encoder = new TextEncoder();
-    const credentialsBytes = encoder.encode(credentials);
-    const base64Credentials = btoa(String.fromCharCode(...credentialsBytes));
-
-    const response = await fetch(mailgunUrl, {
-      method: "POST",
-      headers: { Authorization: `Basic ${base64Credentials}` },
-      body: form,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[create-auth-user] Mailgun error:", errorText);
-      return { success: false, error: `Mailgun API error: ${response.status}` };
-    }
-
-    return { success: true };
-  } catch (err) {
-    console.error("[create-auth-user] Email send error:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
-    };
-  }
-}
+// buildWelcomeEmail + the Mailgun sender now live in ../_shared/account-setup.ts
+// (shared with resend-account-setup) so onboarding copy + delivery stay in one place.
 
 // Helper function to send SMS notification via Twilio
 // Uses same env vars as send-sms edge function
@@ -971,115 +847,41 @@ serve(async (req) => {
       }
     }
 
-    // Send the "Set Your Password" welcome email.
-    // Primary: the acting admin's connected Gmail (e.g. epiclife.neessen@gmail.com) via
-    //   the shared gmail-send-email function — so it comes from a real person, not Mailgun.
-    // Fallback: Mailgun — so onboarding email never silently fails if Gmail is disconnected.
+    // Send the "Set Your Password" welcome email via an app-owned setup token.
+    // This replaces the old Supabase recovery link (whose real lifetime was the
+    // project OTP/email-link expiry, not the 72h we asked for, and which scanners
+    // could burn on pre-click). createOrRefreshSetupToken stores a real 7-day token
+    // and returns the /set-password link; sendSetupEmail does Gmail→Mailgun.
     let emailSent = false;
     let emailVia: "gmail" | "mailgun" | null = null;
     if (authUser.user) {
-      const siteUrl =
-        Deno.env.get("SITE_URL") || "https://www.thestandardhq.com";
-      const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
-      const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
-
-      // Log env var presence for diagnostics (not values)
-      console.log("[create-auth-user] Env check:", {
-        hasMailgunKey: !!MAILGUN_API_KEY,
-        hasMailgunDomain: !!MAILGUN_DOMAIN,
-        hasSiteUrl: !!Deno.env.get("SITE_URL"),
-        hasServiceRoleKey: !!Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-      });
-
-      // Generate a password reset link using Supabase Admin SDK (needed by both senders).
-      // Use /auth/callback which is whitelisted and handles recovery type.
-      const { data: linkData, error: linkError } =
-        await supabaseAdmin.auth.admin.generateLink({
-          type: "recovery",
+      try {
+        const setup = await createOrRefreshSetupToken(supabaseAdmin, {
+          userId: authUser.user.id,
           email: normalizedEmail,
-          options: {
-            redirectTo: `${siteUrl}/auth/callback`,
-            expiresIn: 259200, // 72 hours in seconds
-          } as Record<string, unknown>,
+          createdBy: callerResult.caller.userId,
+          enforceCap: false,
         });
 
-      // Log link generation result for diagnostics
-      console.log("[create-auth-user] Link generation:", {
-        success: !linkError,
-        hasLink: !!linkData?.properties?.action_link,
-        error: linkError?.message || null,
-      });
-
-      if (linkError) {
-        console.error(
-          "[create-auth-user] Failed to generate reset link:",
-          linkError,
-        );
-      } else if (linkData?.properties?.action_link) {
-        // Brand the email with the new user's IMO (e.g. "Epic Life"); falls back
-        // to the platform name for unknown IMOs.
-        const brandName = await getImoBrandName(
-          supabaseAdmin,
-          profile?.imo_id ?? callerResult.caller.imoId,
-        );
-        const { subject, html, text } = buildWelcomeEmail(
-          linkData.properties.action_link,
-          brandName,
-        );
-
-        // Primary path: send from the acting admin's connected Gmail
-        const senderUserId = callerResult.caller.userId;
-        const gmailResult = await sendViaConnectedGmail(
-          senderUserId,
-          normalizedEmail,
-          subject,
-          html,
-          text,
-        );
-
-        if (gmailResult.success) {
-          emailSent = true;
-          emailVia = "gmail";
-          console.log(
-            "[create-auth-user] Welcome email sent via connected Gmail",
-          );
-        } else {
-          console.warn(
-            "[create-auth-user] Connected Gmail unavailable, falling back to Mailgun:",
-            { error: gmailResult.error, code: gmailResult.code || null },
-          );
-
-          // Fallback path: Mailgun
-          if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
-            console.error(
-              "[create-auth-user] Missing Mailgun credentials for fallback email",
-            );
-          } else {
-            const result = await sendPasswordResetEmail(
-              normalizedEmail,
-              subject,
-              html,
-              text,
-              brandName,
-              MAILGUN_API_KEY,
-              MAILGUN_DOMAIN,
-            );
-            emailSent = result.success;
-            emailVia = result.success ? "mailgun" : null;
-
-            console.log("[create-auth-user] Mailgun fallback result:", {
-              success: result.success,
-              error: result.error || null,
-            });
-
-            if (!result.success) {
-              console.error(
-                "[create-auth-user] Email send failed (Gmail AND Mailgun):",
-                result.error,
-              );
-            }
-          }
+        if (setup.link) {
+          const sendResult = await sendSetupEmail(supabaseAdmin, {
+            senderUserId: callerResult.caller.userId,
+            toEmail: normalizedEmail,
+            imoId: profile?.imo_id ?? callerResult.caller.imoId,
+            setupLink: setup.link,
+          });
+          emailSent = sendResult.sent;
+          emailVia = sendResult.via;
+          console.log("[create-auth-user] Setup email result:", {
+            sent: emailSent,
+            via: emailVia,
+          });
         }
+      } catch (setupError) {
+        console.error(
+          "[create-auth-user] Failed to create/send account setup link:",
+          setupError,
+        );
       }
     }
 
@@ -1088,7 +890,7 @@ serve(async (req) => {
     if (phone && emailSent) {
       const smsResult = await sendSmsNotification(
         phone,
-        "Welcome to The Standard HQ! Check your email to set your password. The link expires in 72 hours.",
+        "Welcome to The Standard HQ! Check your email to set your password. The link expires in 7 days.",
       );
       smsSent = smsResult.success;
       console.log("[create-auth-user] SMS result:", {

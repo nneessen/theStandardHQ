@@ -15,6 +15,9 @@ import {
   MessageCircle,
   UserMinus,
   Trash2,
+  Ban,
+  RotateCcw,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,6 +55,7 @@ import { policyRepository } from "@/services/policies";
 // eslint-disable-next-line no-restricted-imports
 import type { PolicyMetricRow } from "@/services/policies";
 import { useCurrentUserProfile, useDeleteUser } from "@/hooks/admin";
+import { useResendAccountSetup, useSetMemberAccess } from "@/hooks/team";
 import { EditAgentModal } from "./EditAgentModal";
 
 interface AgentWithMetrics extends UserProfile {
@@ -61,6 +65,9 @@ interface AgentWithMetrics extends UserProfile {
   override_spread?: number; // Actual spread between agent and upline contract levels
   override_amount?: number;
   upline_contract_level?: number;
+  // Reversible sign-in disable state (column added by migration 20260626142400;
+  // the select("*") downline query already carries it). Local until types regen.
+  access_disabled_at?: string | null;
 }
 
 interface DateRangeFilter {
@@ -213,6 +220,9 @@ function AgentRow({
   onRemove,
   onDelete,
   onEdit,
+  onResend,
+  onDisable,
+  onEnable,
   canModify,
   metrics,
   isOwner,
@@ -226,6 +236,9 @@ function AgentRow({
   onRemove: (agent: AgentWithMetrics) => void;
   onDelete: (agent: AgentWithMetrics) => void;
   onEdit: (agent: AgentWithMetrics) => void;
+  onResend: (agent: AgentWithMetrics) => void;
+  onDisable: (agent: AgentWithMetrics) => void;
+  onEnable: (agent: AgentWithMetrics) => void;
   canModify: boolean;
   metrics?: AgentMetrics;
   isOwner?: boolean;
@@ -352,6 +365,11 @@ function AgentRow({
           {agent.approval_status === "approved" && (
             <UserCheck className="h-3 w-3 text-success" />
           )}
+          {agent.access_disabled_at && (
+            <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-semibold bg-destructive/15 text-destructive ml-1">
+              Disabled
+            </span>
+          )}
         </div>
       </td>
 
@@ -471,6 +489,33 @@ function AgentRow({
               <MessageCircle className="mr-1.5 h-3 w-3" />
               Send Message
             </DropdownMenuItem>
+            {canModify && (
+              <DropdownMenuItem
+                className="text-[12px]"
+                onClick={() => onResend(agent)}
+              >
+                <KeyRound className="mr-1.5 h-3 w-3" />
+                Resend setup email
+              </DropdownMenuItem>
+            )}
+            {canModify &&
+              (agent.access_disabled_at ? (
+                <DropdownMenuItem
+                  className="text-[12px]"
+                  onClick={() => onEnable(agent)}
+                >
+                  <RotateCcw className="mr-1.5 h-3 w-3" />
+                  Re-enable access
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  className="text-destructive text-[12px]"
+                  onClick={() => onDisable(agent)}
+                >
+                  <Ban className="mr-1.5 h-3 w-3" />
+                  Disable access
+                </DropdownMenuItem>
+              ))}
             {depth > 0 && (
               <DropdownMenuItem
                 className="text-destructive text-[12px]"
@@ -512,7 +557,12 @@ export function AgentTable({
     null,
   );
   const [agentToEdit, setAgentToEdit] = useState<AgentWithMetrics | null>(null);
+  const [agentToDisable, setAgentToDisable] = useState<AgentWithMetrics | null>(
+    null,
+  );
   const deleteUser = useDeleteUser();
+  const resendSetup = useResendAccountSetup();
+  const setMemberAccess = useSetMemberAccess();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -663,6 +713,43 @@ export function AgentTable({
     }
   };
 
+  // Resend the app-controlled "set your password" link to a team member.
+  const handleResend = (agent: AgentWithMetrics) => {
+    resendSetup.mutate(agent.id, {
+      onSuccess: (res) => {
+        if (res.success) {
+          toast.success("Setup email resent.");
+        } else {
+          toast.error(
+            res.message || res.error || "Couldn't resend the setup email.",
+          );
+        }
+      },
+      onError: () => toast.error("Couldn't resend the setup email."),
+    });
+  };
+
+  // Reversibly block a departed member's sign-in (data + hierarchy preserved).
+  const handleConfirmDisable = () => {
+    if (!agentToDisable) return;
+    setMemberAccess.mutate(
+      { userId: agentToDisable.id, action: "disable" },
+      {
+        onSuccess: () => {
+          setAgentToDisable(null);
+          onRefresh?.();
+        },
+      },
+    );
+  };
+
+  const handleEnable = (agent: AgentWithMetrics) => {
+    setMemberAccess.mutate(
+      { userId: agent.id, action: "enable" },
+      { onSuccess: () => onRefresh?.() },
+    );
+  };
+
   // Direct upline/recruiter of a recruit-or-agent target. Server enforces the
   // same rule via RLS (UPDATE + DELETE policies) + admin_deleteuser RPC.
   // Used to gate both Edit and Delete actions in the row dropdown.
@@ -725,6 +812,9 @@ export function AgentTable({
           onRemove={setAgentToRemove}
           onDelete={setAgentToDelete}
           onEdit={setAgentToEdit}
+          onResend={handleResend}
+          onDisable={setAgentToDisable}
+          onEnable={handleEnable}
           canModify={canModifyAgent(agent)}
           metrics={metricsMap.get(agent.id)}
           isOwner={agent.id === viewerId}
@@ -811,6 +901,9 @@ export function AgentTable({
                       onRemove={() => {}}
                       onDelete={() => {}}
                       onEdit={() => {}}
+                      onResend={() => {}}
+                      onDisable={() => {}}
+                      onEnable={() => {}}
                       canModify={false}
                       metrics={metricsMap.get(owner.id)}
                       isOwner={true}
@@ -904,6 +997,45 @@ export function AgentTable({
               className="bg-destructive text-destructive-foreground"
             >
               Remove from Team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Disable Access Confirmation Dialog */}
+      <AlertDialog
+        open={!!agentToDisable}
+        onOpenChange={(open) => {
+          if (!open) setAgentToDisable(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Disable this member&apos;s access?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-semibold">
+                {agentToDisable
+                  ? [agentToDisable.first_name, agentToDisable.last_name]
+                      .filter(Boolean)
+                      .join(" ") || agentToDisable.email
+                  : ""}
+              </span>{" "}
+              will no longer be able to sign in. Their data, team position, and
+              commissions are kept — you can re-enable access at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={setMemberAccess.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDisable}
+              disabled={setMemberAccess.isPending}
+              className="bg-destructive hover:bg-destructive text-destructive-foreground"
+            >
+              {setMemberAccess.isPending ? "Disabling..." : "Disable access"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -293,6 +293,12 @@ enabled = false
 [functions.instagram-oauth-callback]
 verify_jwt = false
 
+# Public account setup: a newly-created user (not logged in) sets their password
+# from the emailed /set-password/{token} link. The function authenticates via the
+# app-owned account_setup_tokens row, so the gateway JWT check MUST be off.
+[functions.set-account-password]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
