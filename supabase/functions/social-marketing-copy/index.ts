@@ -29,27 +29,27 @@ import {
   extractText,
   getAnthropicClient,
   MODEL_FAST,
+  MODEL_SMART,
   parseJsonFromText,
 } from "../close-ai-builder/ai/anthropic-client.ts";
+import { capWords, clean, COPY_CAPS as CAPS } from "../_shared/social-copy.ts";
 
 const FN_NAME = "social-marketing-copy";
 const MAX_TOKENS = 512;
 
 type Variant = "quote" | "tip" | "cta" | "custom";
 
-// Hard caps so a draft always fits the card frame (MarketingCard.tsx font sizes). Trimmed
-// at a word boundary, never mid-word. These are the SERVER-AUTHORITATIVE numbers (truncation
-// happens here). The frontend mirrors them in src/features/social-studio/marketingCopyCaps.ts
-// (component maxLength + the export harness) — keep the two in sync; the Deno/Vite runtime
-// split prevents a single literal shared import (review #14).
-const CAPS = { text: 140, attribution: 40, headline: 40, body: 160 } as const;
-
-const SYSTEM_PROMPT = `You are a social-media copywriter for an insurance sales agency. You write the copy for ONE slide of an Instagram carousel. The slide is one of four types and you write ONLY for the type requested.
+function buildSystemPrompt(allowRealAttribution: boolean): string {
+  return `You are a social-media copywriter for an insurance sales agency. You write the copy for ONE slide of an Instagram carousel. The slide is one of four types and you write ONLY for the type requested.
 
 OUTPUT: respond with ONLY a single JSON object, no prose and no markdown fences.
 
 SLIDE TYPES and the EXACT keys to return:
-- "quote": an ORIGINAL, punchy, motivational one-liner about sales, service, persistence, or protecting families. Return { "text": "the line", "attribution": "" }. The attribution MUST be an empty string — do NOT attribute the line to any real or famous person; never write a known person's name.
+- "quote": ${
+    allowRealAttribution
+      ? `a motivational one-liner about sales, service, persistence, or protecting families. Return { "text": "the line", "attribution": "" }. ONLY if you are genuinely confident of a real, well-known quote AND its correct author, you MAY instead use that real quote and put the author's real name in "attribution". If you are not certain of BOTH the exact wording and the author, write an ORIGINAL line and leave "attribution" as "" — never guess or fabricate a source.`
+      : `an ORIGINAL, punchy, motivational one-liner about sales, service, persistence, or protecting families. Return { "text": "the line", "attribution": "" }. The attribution MUST be an empty string — do NOT attribute the line to any real or famous person; never write a known person's name.`
+  }
 - "tip": a practical sales/service tip an insurance agent can act on. Return { "headline": "short hook", "body": "1–2 sentence tip" }.
 - "cta": a warm recruiting message inviting people to join the agency's team. Return { "headline": "short hook", "body": "1–2 inviting sentences" }. Do NOT include "DM us to apply" in the body — the card already shows that chip.
 - "custom": a general headline + supporting body for a slide that sits over the user's own photo. Return { "headline": "short hook", "body": "1–2 sentences" }.
@@ -59,6 +59,7 @@ RULES:
 - Keep it tight: headline a few words; body one or two short sentences; quote one sentence.
 - Use the agency name / network only if it reads naturally; do not force it in.
 - NEVER invent dollar amounts, counts, rankings, awards, or named people. If unsure, stay general.`;
+}
 
 function buildUserMessage(req: Record<string, unknown>): string {
   const variant = req.variant as Variant;
@@ -79,29 +80,10 @@ function buildUserMessage(req: Record<string, unknown>): string {
     parts.push(`Focus the copy on: ${req.topic.trim()}.`);
   parts.push(
     variant === "quote"
-      ? `Return exactly { "text": "...", "attribution": "" }.`
+      ? `Return exactly { "text": "...", "attribution": "" } (fill "attribution" only with a real author you are certain of, per the rules).`
       : `Return exactly { "headline": "...", "body": "..." }.`,
   );
   return parts.join(" ");
-}
-
-// ── Deterministic cleanup (feedback_ai_toggle_determinism) ────────────────────
-// Strip markdown emphasis, surrounding quotes/fences, and collapse whitespace.
-function clean(s: unknown): string {
-  if (typeof s !== "string") return "";
-  return s
-    .replace(/[*_`#]+/g, "") // markdown emphasis / fences / headings
-    .replace(/^\s*["'“”']+|["'“”']+\s*$/g, "") // surrounding quotes
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// Hard length cap, trimmed at the last word boundary so we never cut mid-word.
-function capWords(s: string, max: number): string {
-  if (s.length <= max) return s;
-  const slice = s.slice(0, max);
-  const lastSpace = slice.lastIndexOf(" ");
-  return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trim();
 }
 
 serve(async (req) => {
@@ -131,6 +113,8 @@ serve(async (req) => {
   ) {
     return json({ error: "variant must be quote, tip, cta, or custom." }, 400);
   }
+  // Opt-in: keep a real-person attribution on quotes (default off → forced empty).
+  const allowRealAttribution = body.allowRealAttribution === true;
 
   // ── 2. Authenticate ──────────────────────────────────────────────────────────
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -165,9 +149,12 @@ serve(async (req) => {
   try {
     const client = getAnthropicClient();
     const response = await client.messages.create({
-      model: MODEL_FAST,
+      // Attributed quotes need the stronger model — Haiku misattributes or bails to an
+      // empty attribution far more often, which would silently defeat the feature.
+      model:
+        allowRealAttribution && variant === "quote" ? MODEL_SMART : MODEL_FAST,
       max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(allowRealAttribution),
       messages: [{ role: "user", content: buildUserMessage(body) }],
     });
     totalTokens =
@@ -196,8 +183,14 @@ serve(async (req) => {
     const t = capWords(clean(parsed.text), CAPS.text);
     if (!t)
       return json({ error: "AI returned an empty draft. Try again." }, 502);
-    // attribution forced empty — never let the model fabricate a source.
-    copy = { text: t, attribution: "" };
+    // attribution kept (capped) only when the caller opted into real attributed quotes;
+    // otherwise forced empty so the model can never fabricate a source (review #14 default).
+    copy = {
+      text: t,
+      attribution: allowRealAttribution
+        ? capWords(clean(parsed.attribution), CAPS.attribution)
+        : "",
+    };
   } else {
     const headline = capWords(clean(parsed.headline), CAPS.headline);
     const bodyText = capWords(clean(parsed.body), CAPS.body);

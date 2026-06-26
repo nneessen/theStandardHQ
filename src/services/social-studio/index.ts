@@ -39,6 +39,17 @@ export {
   type MarketingCopyVariant,
 } from "./socialMarketingCopyService";
 export {
+  composeCarousel,
+  generateCarouselCaption,
+  type ComposedSlide,
+  type ComposeVariant,
+  type ComposeView,
+  type ComposeCarouselRequest,
+  type ComposeCarouselResult,
+  type CaptionSlideDescriptor,
+  type GenerateCarouselCaptionRequest,
+} from "./socialCarouselComposeService";
+export {
   socialDeckService,
   type DeckSlideSpec,
   type DeckSpec,

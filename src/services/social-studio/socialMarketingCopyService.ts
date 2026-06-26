@@ -13,6 +13,8 @@ export interface MarketingCopyRequest {
   topic?: string;
   agencyName: string;
   network?: string;
+  /** For quotes: keep a real-person attribution instead of forcing it empty (default off). */
+  allowRealAttribution?: boolean;
 }
 
 /**

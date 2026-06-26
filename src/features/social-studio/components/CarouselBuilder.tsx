@@ -47,6 +47,7 @@ import {
   type MarketingCopyRequest,
   type MarketingCopyResult,
 } from "../hooks/useMarketingCopyDraft";
+import { useComposeCarousel } from "../hooks/useComposeCarousel";
 import {
   useSocialDecks,
   useSaveDeck,
@@ -126,6 +127,15 @@ function slideLabel(data: PreviewData): string {
   }
 }
 
+// Normalize the Build-with-AI slide-count input (which is "" while the user is mid-edit) to a
+// valid count; "" / NaN / out-of-range fall back to a safe value (review #8).
+function clampSlideCount(v: number | ""): number {
+  const n = typeof v === "number" ? v : NaN;
+  return Number.isFinite(n)
+    ? Math.max(2, Math.min(IG_CAROUSEL_MAX, Math.round(n)))
+    : 5;
+}
+
 export function CarouselBuilder({
   config,
   onConfigChange,
@@ -161,6 +171,20 @@ export function CarouselBuilder({
   const deleteDeckMut = useDeleteDeck();
   const loadDeckMut = useLoadDeck();
   const [deckName, setDeckName] = useState("");
+
+  // Build-with-AI (Phase 3C) — compose a whole deck from one idea + write a deck-aware caption.
+  const { composeCarousel: runCompose, generateCaption: runCaption } =
+    useComposeCarousel();
+  const [aiIdea, setAiIdea] = useState("");
+  // Empty string while the user is mid-edit (cleared the field); normalized to a valid count
+  // on blur / at use (review #8 — a plain number snapped back to 2 the moment it was cleared).
+  const [aiCount, setAiCount] = useState<number | "">(5);
+  const [aiRealQuotes, setAiRealQuotes] = useState(true);
+  const [aiDataSlides, setAiDataSlides] = useState(true);
+  const [composing, setComposing] = useState(false);
+  const composingRef = useRef(false);
+  const [captioning, setCaptioning] = useState(false);
+  const captioningRef = useRef(false);
 
   // One brand theme + page stamp applied to the WHOLE deck so the carousel is uniform,
   // regardless of the theme a slide was added under. (AOTW carries no page field.)
@@ -262,6 +286,35 @@ export function CarouselBuilder({
     );
   }
 
+  // Map one persisted/composed slide spec to a live DeckSlide: data slides re-derive from
+  // current metrics (null when a metric is unavailable so the caller can report it); marketing
+  // slides snapshot their copy. Shared by handleLoadDeck + buildWithAI (review #15).
+  function specToDeckSlide(
+    spec: DeckSlideSpec,
+    fmt: SocialFormat,
+    theme: CardTheme,
+  ): DeckSlide | null {
+    if (spec.t === "data") {
+      const lead = buildDataLead(spec.view, fmt, theme);
+      return lead
+        ? { id: crypto.randomUUID(), data: lead, view: spec.view }
+        : null;
+    }
+    return {
+      id: crypto.randomUUID(),
+      data: {
+        kind: "marketing",
+        variant: spec.variant,
+        theme,
+        text: spec.text,
+        attribution: spec.attribution,
+        headline: spec.headline,
+        body: spec.body,
+        imageDataUrl: spec.imageDataUrl,
+      },
+    };
+  }
+
   async function handleLoadDeck(id: string) {
     try {
       const loaded = await loadDeckMut.mutateAsync(id);
@@ -274,27 +327,10 @@ export function CarouselBuilder({
       const expected = loaded.spec.slides.length;
       const next: DeckSlide[] = [];
       for (const spec of loaded.spec.slides) {
-        if (spec.t === "data") {
-          const lead = buildDataLead(spec.view, fmt, theme);
-          // A data slide whose live metric is unavailable (e.g. sample mode off) can't be
-          // rebuilt; it's counted and reported below, not silently dropped (review #3/#10).
-          if (lead)
-            next.push({ id: crypto.randomUUID(), data: lead, view: spec.view });
-        } else {
-          next.push({
-            id: crypto.randomUUID(),
-            data: {
-              kind: "marketing",
-              variant: spec.variant,
-              theme,
-              text: spec.text,
-              attribution: spec.attribution,
-              headline: spec.headline,
-              body: spec.body,
-              imageDataUrl: spec.imageDataUrl,
-            },
-          });
-        }
+        // A data slide whose live metric is unavailable can't be rebuilt; it's counted and
+        // reported below, not silently dropped (review #3/#10).
+        const slide = specToDeckSlide(spec, fmt, theme);
+        if (slide) next.push(slide);
       }
       // Restore the saved deck's theme + format so the re-derived deck renders as saved.
       onConfigChange({ cardTheme: theme, format: fmt });
@@ -381,6 +417,139 @@ export function CarouselBuilder({
       patchMarketing({ imageDataUrl: dataUrl });
     } catch {
       toast.error("Couldn't read that image.");
+    }
+  }
+
+  // ── Build the whole deck with AI (Phase 3C) ─────────────────────────────────
+  // One idea → an ordered set of marketing slides (copy written by AI) + an optional
+  // data slide or two (the AI picks the VIEW; we fill the real numbers via buildDataLead,
+  // so no metric is ever fabricated) + the caption. Maps onto the SAME deck state the
+  // builder + loadDeck already use.
+  async function buildWithAI() {
+    if (composingRef.current || captioningRef.current) return;
+    const idea = aiIdea.trim();
+    if (!idea) {
+      toast.error("Tell the AI what the carousel is about.");
+      return;
+    }
+    // A build replaces the whole post (slides AND caption), so say so before clobbering a
+    // hand-written caption (review #6).
+    if (
+      deck.length > 0 &&
+      !window.confirm(
+        "Replace the current slides and caption with an AI-built carousel?",
+      )
+    ) {
+      return;
+    }
+    const requested = clampSlideCount(aiCount); // review #8 — "" / out-of-range → safe count
+    // Only offer the AI views that actually have live data right now, so it doesn't pick
+    // an empty leaderboard/AOTW slide that we'd then have to drop.
+    const availableViews = aiDataSlides
+      ? DATA_VIEWS.map((d) => d.view).filter(
+          (view) => !!buildDataLead(view, config.format, config.cardTheme),
+        )
+      : [];
+    composingRef.current = true;
+    setComposing(true);
+    try {
+      const result = await runCompose({
+        idea,
+        slideCount: requested,
+        agencyName,
+        network,
+        allowRealAttribution: aiRealQuotes,
+        allowDataSlides: aiDataSlides,
+        availableViews,
+      });
+      const next: DeckSlide[] = [];
+      for (const spec of result.slides) {
+        const slide = specToDeckSlide(spec, config.format, config.cardTheme);
+        if (slide) next.push(slide);
+      }
+      const capped = next.slice(0, IG_CAROUSEL_MAX);
+      if (capped.length < 2) {
+        toast.error(
+          "The AI couldn't build a full carousel. Try a clearer idea.",
+        );
+        return;
+      }
+      setDeck(capped);
+      setSelectedId(capped[0]?.id ?? null);
+      // The build owns the whole post: install its caption (or clear + warn if none came back,
+      // rather than silently keeping the previous deck's caption — review #5).
+      setCaption(result.caption);
+      if (!result.caption.trim())
+        toast.warning(
+          "No caption came back — add one or hit Generate caption.",
+        );
+
+      // Surface a shortfall: fewer slides than requested, and why (review #9).
+      const shortfall = requested - capped.length;
+      const droppedData = result.slides.length - next.length;
+      if (shortfall > 0) {
+        toast.warning(
+          `Built ${capped.length} of ${requested} slides` +
+            (droppedData > 0
+              ? ` (${droppedData} needed live metrics that aren't available yet)`
+              : "") +
+            ". Regenerate or add slides.",
+        );
+      } else {
+        toast.success(`Built a ${capped.length}-slide carousel.`);
+      }
+      if (
+        capped.some(
+          (s) =>
+            s.data.kind === "marketing" &&
+            s.data.variant === "quote" &&
+            s.data.attribution?.trim(),
+        )
+      ) {
+        toast.warning("Double-check each quote's attribution before posting.");
+      }
+    } catch (e) {
+      console.error("Carousel compose failed:", e);
+      toast.error("Couldn't build the carousel. Try again.");
+    } finally {
+      composingRef.current = false;
+      setComposing(false);
+    }
+  }
+
+  // Write a deck-aware caption from the CURRENT slides (works on any deck, AI-built or not).
+  async function buildCaption() {
+    // Ref guard (not state) so a fast double-click can't double-fire before the re-render —
+    // matches buildWithAI / postAll / scheduleAll (review #7).
+    if (captioningRef.current || composingRef.current) return;
+    if (deck.length === 0) {
+      toast.error("Add slides first.");
+      return;
+    }
+    captioningRef.current = true;
+    setCaptioning(true);
+    try {
+      const slides = deck.map((s) => {
+        if (s.data.kind === "marketing") {
+          const d = s.data;
+          return {
+            variant: d.variant,
+            headline: d.headline,
+            text: d.text,
+            body: d.body,
+          };
+        }
+        return { view: s.view ?? config.view };
+      });
+      const caption = await runCaption({ agencyName, network, slides });
+      setCaption(caption);
+      toast.success("Caption written — edit it to taste.");
+    } catch (e) {
+      console.error("Caption generation failed:", e);
+      toast.error("Couldn't write a caption. Try again.");
+    } finally {
+      captioningRef.current = false;
+      setCaptioning(false);
     }
   }
 
@@ -600,13 +769,33 @@ export function CarouselBuilder({
             )}
 
             {/* Caption + actions */}
-            <textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="Caption for the carousel (optional)…"
-              rows={2}
-              className="w-full resize-none rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
-            />
+            <div className="w-full space-y-1">
+              {hasAiAccess && (
+                <div className="flex items-center justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={buildCaption}
+                    disabled={captioning || composing || deck.length === 0}
+                    title="Write a caption from these slides with AI"
+                  >
+                    {captioning ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3.5 w-3.5" />
+                    )}
+                    {captioning ? "Writing…" : "Generate caption"}
+                  </Button>
+                </div>
+              )}
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Caption for the carousel (optional)…"
+                rows={2}
+                className="w-full resize-none rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+              />
+            </div>
             <div className="flex w-full items-center justify-end gap-2">
               <Button
                 size="sm"
@@ -621,16 +810,23 @@ export function CarouselBuilder({
                 size="sm"
                 onClick={postAll}
                 disabled={
-                  isSample || posting || !igConnected || deck.length < 2
+                  isSample ||
+                  posting ||
+                  composing ||
+                  captioning ||
+                  !igConnected ||
+                  deck.length < 2
                 }
                 title={
                   isSample
                     ? "Switch to live data to post"
-                    : !igConnected
-                      ? "Connect Instagram in Settings → Integrations"
-                      : deck.length < 2
-                        ? "Add at least 2 slides for a carousel"
-                        : `Post the ${deck.length}-slide carousel to ${handleLabel}`
+                    : composing || captioning
+                      ? "Wait for the AI to finish before posting"
+                      : !igConnected
+                        ? "Connect Instagram in Settings → Integrations"
+                        : deck.length < 2
+                          ? "Add at least 2 slides for a carousel"
+                          : `Post the ${deck.length}-slide carousel to ${handleLabel}`
                 }
               >
                 {posting ? (
@@ -659,6 +855,8 @@ export function CarouselBuilder({
                 disabled={
                   isSample ||
                   scheduling ||
+                  composing ||
+                  captioning ||
                   !igConnected ||
                   deck.length < 2 ||
                   !scheduledFor
@@ -666,13 +864,15 @@ export function CarouselBuilder({
                 title={
                   isSample
                     ? "Switch to live data to schedule"
-                    : !igConnected
-                      ? "Connect Instagram in Settings → Integrations"
-                      : deck.length < 2
-                        ? "Add at least 2 slides for a carousel"
-                        : !scheduledFor
-                          ? "Pick a future date and time"
-                          : `Schedule the ${deck.length}-slide carousel to ${handleLabel}`
+                    : composing || captioning
+                      ? "Wait for the AI to finish before scheduling"
+                      : !igConnected
+                        ? "Connect Instagram in Settings → Integrations"
+                        : deck.length < 2
+                          ? "Add at least 2 slides for a carousel"
+                          : !scheduledFor
+                            ? "Pick a future date and time"
+                            : `Schedule the ${deck.length}-slide carousel to ${handleLabel}`
                 }
               >
                 {scheduling ? (
@@ -689,6 +889,79 @@ export function CarouselBuilder({
 
       {/* Palette + deck */}
       <div className="flex flex-col gap-3">
+        {/* Build the whole carousel from one idea (Phase 3C) — gated on the AI entitlement. */}
+        {hasAiAccess && (
+          <div className="rounded-xl border border-accent/40 bg-accent/5 p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-accent" /> Build with AI
+            </p>
+            <textarea
+              value={aiIdea}
+              onChange={(e) => setAiIdea(e.target.value)}
+              placeholder="Describe the carousel (e.g. 5 tips to help new agents sell more final expense)…"
+              rows={2}
+              disabled={composing}
+              className="w-full resize-none rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+            />
+            <div className="mt-1.5 flex items-center gap-2">
+              <label className="flex items-center gap-1 text-xs text-muted-foreground">
+                Slides
+                <input
+                  type="number"
+                  min={2}
+                  max={IG_CAROUSEL_MAX}
+                  value={aiCount}
+                  onChange={(e) => {
+                    // Allow an empty field while editing; clamp the MAX as they type but defer
+                    // the MIN to onBlur so they can clear and retype (review #8).
+                    const v = e.target.value;
+                    if (v === "") return setAiCount("");
+                    const n = Number(v);
+                    if (Number.isInteger(n))
+                      setAiCount(Math.min(IG_CAROUSEL_MAX, Math.max(0, n)));
+                  }}
+                  onBlur={() => setAiCount(clampSlideCount(aiCount))}
+                  disabled={composing}
+                  className="w-14 rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground"
+                />
+              </label>
+              <Button
+                size="sm"
+                className="ml-auto"
+                onClick={buildWithAI}
+                disabled={composing || captioning || !aiIdea.trim()}
+                title="Let AI build the whole carousel from your idea"
+              >
+                {composing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+                {composing ? "Building…" : "Generate"}
+              </Button>
+            </div>
+            <div className="mt-1.5 flex flex-col gap-1">
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={aiRealQuotes}
+                  onChange={(e) => setAiRealQuotes(e.target.checked)}
+                  disabled={composing}
+                />
+                Real attributed quotes (verify names before posting)
+              </label>
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={aiDataSlides}
+                  onChange={(e) => setAiDataSlides(e.target.checked)}
+                  disabled={composing}
+                />
+                Let AI add leaderboard / Agent-of-Week slides
+              </label>
+            </div>
+          </div>
+        )}
         <div className="rounded-xl border border-border bg-card/40 p-3">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Add a slide {atCap ? "(max 10 reached)" : ""}
@@ -893,9 +1166,10 @@ function MarketingEditor({
   const [topic, setTopic] = useState("");
   const [drafting, setDrafting] = useState(false);
 
-  // "Draft with AI" only SEEDS the copy fields — they stay fully editable after. The
-  // server forces a quote's attribution empty (never fabricates a source), so we leave
-  // any user-typed attribution untouched here.
+  // "Draft with AI" only SEEDS the copy fields — they stay fully editable after. For a quote
+  // we ask for a real attributed line (allowRealAttribution) and seed the text; we only seed
+  // the attribution when the AI actually returned one, so a re-draft never wipes a name the
+  // user typed themselves (review #4). The inline note reminds them to verify it.
   async function draft() {
     if (drafting) return;
     setDrafting(true);
@@ -905,9 +1179,16 @@ function MarketingEditor({
         topic: topic.trim() || undefined,
         agencyName,
         network,
+        allowRealAttribution: data.variant === "quote" ? true : undefined,
       });
       if (data.variant === "quote") {
-        onPatch({ text: result.text ?? "" });
+        onPatch({
+          text: result.text ?? "",
+          // only overwrite attribution when the AI gave a non-empty one
+          ...(result.attribution?.trim()
+            ? { attribution: result.attribution }
+            : {}),
+        });
       } else {
         onPatch({ headline: result.headline ?? "", body: result.body ?? "" });
       }
@@ -939,6 +1220,11 @@ function MarketingEditor({
             value={data.attribution ?? ""}
             onChange={(e) => onPatch({ attribution: e.target.value })}
           />
+          {data.attribution?.trim() && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-500">
+              Verify this attribution before posting.
+            </p>
+          )}
         </>
       ) : (
         <>
