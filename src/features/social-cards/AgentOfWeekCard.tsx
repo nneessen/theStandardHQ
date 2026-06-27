@@ -17,6 +17,7 @@
 
 import { usd, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
 import { copyText, type CopyField, type CopyMap } from "./templateCopy";
+import { PhotoFrame } from "./PhotoFrame";
 
 // ── Editable text labels (the live agent name / AP / policies stay dynamic). ──
 export const AOTW_COPY: CopyField[] = [
@@ -71,6 +72,8 @@ export interface AgentOfWeekCardProps {
   design?: AowDesign;
   /** Photo focal point ("x% y%") — drag-to-reposition in the studio. Default centered. */
   photoPosition?: string;
+  /** Photo zoom multiplier (1 = fit). Focuses on `photoPosition`. Default 1. */
+  photoScale?: number;
   style?: AowStyle;
   /** Per-field text overrides (keyed by AOTW_COPY keys); blank → the default. */
   copy?: CopyMap;
@@ -115,12 +118,14 @@ function heroNamePx(name: string, base: number, scale: number): number {
 // A crisp, full-color photo in a shaped frame. Never an overlay over the face — the
 // frame (ring / shadow / offset plate) sits AROUND the subject. Renders a neutral
 // branded placeholder when no photo was uploaded so the composition still holds.
+// Move + zoom live in the shared PhotoFrame so every card frames a face identically.
 function Photo({
   url,
   w,
   h,
   radius,
   objectPosition = "50% 50%",
+  scale = 1,
   style,
 }: {
   url?: string | null;
@@ -129,35 +134,21 @@ function Photo({
   radius: number | string;
   /** CSS object-position focal point ("x% y%") so the face can be dragged into frame. */
   objectPosition?: string;
+  /** Zoom multiplier (1 = fit). */
+  scale?: number;
   style?: React.CSSProperties;
 }) {
   return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        flex: "none",
-        borderRadius: radius,
-        overflow: "hidden",
-        background: `linear-gradient(135deg, ${C.cardDk}, ${C.slate})`,
-        ...style,
-      }}
-    >
-      {url ? (
-        <img
-          src={url}
-          alt=""
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition,
-            display: "block",
-            filter: "contrast(1.04) saturate(1.05)",
-          }}
-        />
-      ) : null}
-    </div>
+    <PhotoFrame
+      url={url}
+      w={w}
+      h={h}
+      radius={radius}
+      position={objectPosition}
+      scale={scale}
+      background={`linear-gradient(135deg, ${C.cardDk}, ${C.slate})`}
+      style={style}
+    />
   );
 }
 
@@ -169,6 +160,7 @@ export function AgentOfWeekCard({
   format = "portrait",
   design = "aurora",
   photoPosition = "50% 50%",
+  photoScale = 1,
   style,
   copy,
 }: AgentOfWeekCardProps) {
@@ -266,6 +258,7 @@ export function AgentOfWeekCard({
             h="100%"
             radius={2}
             objectPosition={photoPosition}
+            scale={photoScale}
             style={
               {
                 position: "absolute",
@@ -475,6 +468,7 @@ export function AgentOfWeekCard({
               h={portraitH}
               radius={24}
               objectPosition={photoPosition}
+              scale={photoScale}
               style={{
                 boxShadow:
                   "0 28px 52px rgba(15,23,42,0.18), inset 0 0 0 1px rgba(99,102,241,0.55)",
@@ -646,6 +640,7 @@ export function AgentOfWeekCard({
             h={portraitH}
             radius={30}
             objectPosition={photoPosition}
+            scale={photoScale}
             style={{
               boxShadow:
                 "0 38px 80px rgba(0,0,0,0.62), 0 0 96px rgba(99,102,241,0.5), inset 0 0 0 2px rgba(129,140,248,0.85)",

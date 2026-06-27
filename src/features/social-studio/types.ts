@@ -36,6 +36,32 @@ export const WELCOME_VARIANT_OPTIONS: { v: WelcomeVariant; label: string }[] = [
  */
 export type SocialPostType = "post" | "story" | "reel";
 
+/** How one photo is framed on a card — drag-to-reposition + zoom. Pure CSS
+ *  (`object-position` + `transform: scale`), so the live preview and the PNG export
+ *  capture it identically (see PhotoFrame). */
+export interface PhotoTransform {
+  /** CSS `object-position` focal point ("x% y%"). */
+  position: string;
+  /** Zoom multiplier (1 = fit/cover, up to 3). Focuses on `position`. */
+  scale: number;
+}
+
+export const DEFAULT_PHOTO_TRANSFORM: PhotoTransform = {
+  position: "50% 50%",
+  scale: 1,
+};
+
+/** Resolve a card's photo framing from the keyed map, falling back to centered/1×.
+ *  `key` is the card identity: "aotw" for the Agent-of-the-Week upload, the agent id
+ *  for each new-agent welcome card — so every face frames independently. */
+export function getPhotoTransform(
+  map: Record<string, PhotoTransform> | undefined,
+  key: string | null | undefined,
+): PhotoTransform {
+  if (!key) return DEFAULT_PHOTO_TRANSFORM;
+  return map?.[key] ?? DEFAULT_PHOTO_TRANSFORM;
+}
+
 export interface SocialStudioConfig {
   view: SocialView;
   format: SocialFormat;
@@ -68,9 +94,11 @@ export interface SocialStudioConfig {
    * data URL); NOT what the card renders in Phase 1.
    */
   aowPhotoStorageUrl: string | null;
-  /** Photo focal point as a CSS `object-position` ("x% y%") — set by dragging the
-   *  photo in the preview so the face fits the frame. Default "50% 50%". (aotw only.) */
-  aowPhotoPosition: string;
+  /** Per-photo move + zoom, keyed by card identity ("aotw" for the AOTW upload, the
+   *  agent id for each new-agent welcome card). Set by dragging the photo / the zoom
+   *  slider in the preview so each face fits its frame independently — different photos
+   *  need different framing. Per-POST content (stripped from saved style templates). */
+  photoTransforms: Record<string, PhotoTransform>;
 
   // ── Agent-of-the-Week customization (Step 3) — only used when view === "aotw".
   /** CSS font-family override for the hero name; null → the design default
@@ -114,7 +142,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
   caption: "",
   aowPhotoUrl: null,
   aowPhotoStorageUrl: null,
-  aowPhotoPosition: "50% 50%",
+  photoTransforms: {},
   aowFontDisplay: null,
   aowBackground: null,
   aowBgImageUrl: null,
@@ -132,7 +160,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
 const TEMPLATE_OMIT_KEYS = [
   "aowPhotoUrl",
   "aowPhotoStorageUrl",
-  "aowPhotoPosition",
+  "photoTransforms",
   "aowBgImageUrl",
   "caption",
 ] as const satisfies readonly (keyof SocialStudioConfig)[];

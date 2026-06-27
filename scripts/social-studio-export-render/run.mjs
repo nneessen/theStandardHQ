@@ -66,7 +66,7 @@ for (const view of VIEWS) {
       const page = await browser.newPage({ deviceScaleFactor: 1 });
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${TOPN}&n=${N}&deck=${process.env.DECK || "0"}&stress=${process.env.STRESS || "0"}&variant=${variant}&copyJson=${encodeURIComponent(process.env.COPY_JSON || "")}&aowBg=${encodeURIComponent(process.env.AOW_BG || "")}`;
+      const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${TOPN}&n=${N}&deck=${process.env.DECK || "0"}&stress=${process.env.STRESS || "0"}&variant=${variant}&copyJson=${encodeURIComponent(process.env.COPY_JSON || "")}&aowBg=${encodeURIComponent(process.env.AOW_BG || "")}&photo=${process.env.PHOTO || "0"}&photoPos=${encodeURIComponent(process.env.PHOTO_POS || "")}&photoScale=${process.env.PHOTO_SCALE || ""}`;
       const url = `http://localhost:5197/scripts/social-studio-export-render/index.html?${qp}`;
       const tag = variant ? `${view}-${variant}` : view;
       try {

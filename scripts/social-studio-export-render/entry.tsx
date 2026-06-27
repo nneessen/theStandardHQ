@@ -98,6 +98,13 @@ const topN: number | "all" = topNParam === "all" ? "all" : Number(topNParam);
 const n = Number(params.get("n") || "47");
 // Recruiting view only: which template variant to render (manifesto|hours|seal|lifeback|compare).
 const recruitingVariant = params.get("variant") || undefined;
+// Photo move/zoom verification (aotw + newagent). ?photo=1 injects a test photo (a
+// gradient with an OFF-CENTER white circle marker so a pan visibly relocates it);
+// ?photoPos="x% y%" pans; ?photoScale=<n> zooms. Driven THROUGH config / newAgents so
+// the harness exercises the REAL wiring, not a card prop shortcut.
+const withPhoto = params.get("photo") === "1";
+const photoPos = params.get("photoPos") || "50% 50%";
+const photoScaleParam = Number(params.get("photoScale") || "1");
 
 // Strictly descending AP so ranks are unambiguous across page boundaries.
 const producers: ProducerRow[] = Array.from({ length: n }, (_, i) => ({
@@ -128,6 +135,14 @@ const config = {
 const aowBgParam = params.get("aowBg");
 if (aowBgParam) config.aowBackground = decodeURIComponent(aowBgParam);
 
+// Photo framing through the real config map (keyed "aotw"); inject the test photo for
+// the AOTW upload slot when requested. (newagent photo is injected via the newAgents
+// arg below, mirroring how the page feeds featuredAgents.)
+config.photoTransforms = {
+  aotw: { position: photoPos, scale: photoScaleParam },
+};
+if (withPhoto && view === "aotw") config.aowPhotoUrl = gradientDataUrl();
+
 // ?copyJson=<url-encoded JSON> overrides config.templateCopy — lets us verify that long
 // custom wording auto-fits (shrinks) instead of clipping at the card edge.
 const copyJsonParam = params.get("copyJson");
@@ -148,6 +163,19 @@ const dataPages = buildPreviewPages({
   producers,
   isSample: false,
   labels,
+  // newagent view: one featured welcome card with the test photo + framing, so move/zoom
+  // is verified on the welcome card too (not just AOTW).
+  newAgents:
+    view === "newagent"
+      ? [
+          {
+            name: "Jordan A.",
+            photoUrl: withPhoto ? gradientDataUrl() : null,
+            photoPosition: photoPos,
+            photoScale: photoScaleParam,
+          },
+        ]
+      : undefined,
 });
 
 // A canvas-drawn gradient stands in for an uploaded photo so we can Read the custom

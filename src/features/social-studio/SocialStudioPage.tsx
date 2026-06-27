@@ -44,8 +44,11 @@ import { WelcomeQueuePanel } from "./components/WelcomeQueuePanel";
 import { ScheduledPostsPanel } from "./components/ScheduledPostsPanel";
 import {
   DEFAULT_CONFIG,
+  DEFAULT_PHOTO_TRANSFORM,
   VIEW_META,
+  getPhotoTransform,
   resolveTemplateTheme,
+  type PhotoTransform,
   type SocialStudioConfig,
 } from "./types";
 import {
@@ -136,6 +139,18 @@ export function SocialStudioPage() {
   const schedulePostMut = useSchedulePost(postsImoId ?? undefined);
   const patch = (p: Partial<SocialStudioConfig>) =>
     setConfig((c) => ({ ...c, ...p }));
+
+  // Merge a partial photo transform into the keyed map for one card (functional update
+  // → always merges into the latest config, so rapid zoom-slider ticks don't clobber a
+  // just-committed drag). `key` = "aotw" for the AOTW upload, the agent id per welcome card.
+  const setPhotoTransform = (key: string, partial: Partial<PhotoTransform>) =>
+    setConfig((c) => ({
+      ...c,
+      photoTransforms: {
+        ...c.photoTransforms,
+        [key]: { ...getPhotoTransform(c.photoTransforms, key), ...partial },
+      },
+    }));
 
   const period = VIEW_META[config.view].period;
   const filters: LeaderboardFilters = { timePeriod: period, scope: "all" };
@@ -241,12 +256,22 @@ export function SocialStudioPage() {
     () =>
       featuredAgents.map((a, i) => {
         const chosen = featuredChosenUrls[i];
+        // Each agent's photo frames independently — keyed by agent id (see
+        // setPhotoTransform), so dragging/zooming one welcome card never moves another.
+        const t = getPhotoTransform(config.photoTransforms, a.id);
         return {
           name: toLastInitial(a.name),
           photoUrl: chosen ? (photoDataUrlByUrl[chosen] ?? null) : null,
+          photoPosition: t.position,
+          photoScale: t.scale,
         };
       }),
-    [featuredAgents, featuredChosenUrls, photoDataUrlByUrl],
+    [
+      featuredAgents,
+      featuredChosenUrls,
+      photoDataUrlByUrl,
+      config.photoTransforms,
+    ],
   );
 
   // The "Preview with sample data" toggle: null = let the auto heuristic decide.
@@ -296,6 +321,24 @@ export function SocialStudioPage() {
   const shownIndex = Math.min(pageIndex, pageCount - 1);
   const shownPage = previewPages[shownIndex];
 
+  // Photo move/zoom targets the CURRENTLY-shown card's photo. Its identity key is
+  // "aotw" for the AOTW upload, or the agent id of the welcome card on screen — so the
+  // transform map stays per-face. `repositionable` only when that card actually has a
+  // photo (no point dragging the initials placeholder).
+  const activePhotoKey: string | null =
+    shownPage?.kind === "aotw"
+      ? "aotw"
+      : shownPage?.kind === "newagent"
+        ? (featuredAgents[shownIndex]?.id ?? null)
+        : null;
+  const activeTransform = getPhotoTransform(
+    config.photoTransforms,
+    activePhotoKey,
+  );
+  const shownHasPhoto =
+    (shownPage?.kind === "aotw" && !!config.aowPhotoUrl) ||
+    (shownPage?.kind === "newagent" && !!shownPage.agent.photoUrl);
+
   // When the roster SHAPE changes (view / Top-N / format), the page count changes too:
   // reset to slide 1 so we never linger on a now-out-of-range slide, and dismiss an open
   // post-confirm dialog so the user can only publish exactly the card they confirmed —
@@ -327,6 +370,11 @@ export function SocialStudioPage() {
             ...c,
             aowPhotoUrl: dataUrl,
             aowPhotoStorageUrl: topProfilePhoto,
+            // A new face starts centered — don't inherit a prior photo's framing.
+            photoTransforms: {
+              ...c.photoTransforms,
+              aotw: DEFAULT_PHOTO_TRANSFORM,
+            },
           }));
       } catch {
         /* leave the placeholder gradient — the export stays clean */
@@ -353,12 +401,16 @@ export function SocialStudioPage() {
       // Upload + data-URL read happen in the service (storage access stays out of
       // the UI); both land in config only on full success.
       const { dataUrl, storageUrl } = await uploadAgentPhoto(file);
-      // A new face starts centered — don't inherit the prior photo's focal point.
-      patch({
+      // A new face starts centered/1× — don't inherit the prior photo's framing.
+      setConfig((c) => ({
+        ...c,
         aowPhotoUrl: dataUrl,
         aowPhotoStorageUrl: storageUrl,
-        aowPhotoPosition: "50% 50%",
-      });
+        photoTransforms: {
+          ...c.photoTransforms,
+          aotw: DEFAULT_PHOTO_TRANSFORM,
+        },
+      }));
       toast.success("Photo added");
     } catch (e) {
       console.error("Spotlight photo upload failed:", e);
@@ -376,11 +428,15 @@ export function SocialStudioPage() {
     } catch (e) {
       console.error("Spotlight photo delete failed:", e);
     } finally {
-      patch({
+      setConfig((c) => ({
+        ...c,
         aowPhotoUrl: null,
         aowPhotoStorageUrl: null,
-        aowPhotoPosition: "50% 50%",
-      });
+        photoTransforms: {
+          ...c.photoTransforms,
+          aotw: DEFAULT_PHOTO_TRANSFORM,
+        },
+      }));
     }
   }
 
@@ -935,9 +991,16 @@ export function SocialStudioPage() {
               isSample={isSample}
               isLoading={isLoading}
               showPolicies={config.showPolicies}
-              repositionable={config.view === "aotw" && !!config.aowPhotoUrl}
-              photoPosition={config.aowPhotoPosition}
-              onPhotoPositionChange={(pos) => patch({ aowPhotoPosition: pos })}
+              repositionable={!!activePhotoKey && shownHasPhoto}
+              photoPosition={activeTransform.position}
+              photoScale={activeTransform.scale}
+              onPhotoPositionChange={(pos) =>
+                activePhotoKey &&
+                setPhotoTransform(activePhotoKey, { position: pos })
+              }
+              onPhotoScaleChange={(scale) =>
+                activePhotoKey && setPhotoTransform(activePhotoKey, { scale })
+              }
             />
             {/* Off-screen exporter — mounts EVERY slide at full 1080×H for Download/Post. */}
             <CardExportHost

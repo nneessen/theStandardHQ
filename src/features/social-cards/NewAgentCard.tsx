@@ -19,6 +19,7 @@ import {
   type SocialFormat,
   type CardPageInfo,
 } from "./socialFormat";
+import { PhotoFrame } from "./PhotoFrame";
 import type { CardTheme } from "./themes";
 import {
   copyText,
@@ -34,6 +35,10 @@ export interface NewAgentCardProps {
   network?: string;
   agent: { name: string; photoUrl?: string | null };
   format?: SocialFormat; // default "portrait"
+  /** Photo focal point ("x% y%") — drag-to-reposition in the studio. Default centered. */
+  photoPosition?: string;
+  /** Photo zoom multiplier (1 = fit). Focuses on `photoPosition`. Default 1. */
+  photoScale?: number;
   /** Which welcome design renders. Default "celebration". */
   variant?: WelcomeVariant;
   /** Per-field copy overrides (keyed by CopyField.key); blank → the default. */
@@ -97,7 +102,8 @@ function heroNamePx(name: string, base: number): number {
 }
 
 // The agent's headshot in a shaped frame; a branded placeholder with the agent's initials
-// when no photo URL is provided so the composition still holds.
+// when no photo URL is provided so the composition still holds. Move + zoom live in the
+// shared PhotoFrame so a welcome card frames a face exactly like the AOTW card does.
 function Photo({
   url,
   initial,
@@ -105,6 +111,8 @@ function Photo({
   h,
   radius,
   ring,
+  objectPosition = "50% 50%",
+  scale = 1,
   style,
 }: {
   url?: string | null;
@@ -114,37 +122,23 @@ function Photo({
   radius: number | string;
   /** Border/ring color for the placeholder gradient + initials tint. */
   ring: string;
+  /** CSS object-position focal point ("x% y%") so the face can be dragged into frame. */
+  objectPosition?: string;
+  /** Zoom multiplier (1 = fit). */
+  scale?: number;
   style?: CSSProperties;
 }) {
   return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        flex: "none",
-        borderRadius: radius,
-        overflow: "hidden",
-        background: `linear-gradient(135deg, ${W.ink2}, ${W.plum})`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        ...style,
-      }}
-    >
-      {url ? (
-        <img
-          src={url}
-          alt=""
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "50% 50%",
-            display: "block",
-            filter: "contrast(1.04) saturate(1.05)",
-          }}
-        />
-      ) : (
+    <PhotoFrame
+      url={url}
+      w={w}
+      h={h}
+      radius={radius}
+      position={objectPosition}
+      scale={scale}
+      background={`linear-gradient(135deg, ${W.ink2}, ${W.plum})`}
+      style={style}
+      placeholder={
         <span
           style={{
             font: `800 ${typeof h === "number" ? Math.round(h * 0.36) : 220}px/1 ${BIG}`,
@@ -156,8 +150,8 @@ function Photo({
         >
           {initial}
         </span>
-      )}
-    </div>
+      }
+    />
   );
 }
 
@@ -214,6 +208,8 @@ export function NewAgentCard({
   network,
   agent,
   format = "portrait",
+  photoPosition = "50% 50%",
+  photoScale = 1,
   variant = "celebration",
   copy,
   page,
@@ -337,6 +333,8 @@ export function NewAgentCard({
                 h={photoH}
                 radius={24}
                 ring={W.gold}
+                objectPosition={photoPosition}
+                scale={photoScale}
                 style={{
                   boxShadow: "0 26px 50px rgba(20,16,25,0.18)",
                   border: `4px solid ${W.creamCard}`,
@@ -469,6 +467,8 @@ export function NewAgentCard({
               h={Math.round(photoH * 0.5)}
               radius={20}
               ring={W.goldSoft}
+              objectPosition={photoPosition}
+              scale={photoScale}
               style={{
                 border: `3px solid ${W.gold}`,
                 boxShadow: "0 24px 60px rgba(0,0,0,0.55)",
@@ -581,6 +581,8 @@ export function NewAgentCard({
             h={photoW}
             radius="50%"
             ring={W.goldSoft}
+            objectPosition={photoPosition}
+            scale={photoScale}
             style={{
               border: `2px solid ${W.gold}`,
               boxShadow: `0 30px 70px rgba(0,0,0,0.5), 0 0 72px rgba(240,185,78,0.16)`,

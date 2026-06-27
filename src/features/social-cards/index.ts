@@ -25,6 +25,8 @@ export {
 } from "./RecruitingCard";
 export { copyForVariant, type CopyField, type CopyMap } from "./templateCopy";
 
+export { PhotoFrame, type PhotoFrameProps } from "./PhotoFrame";
+
 export {
   LeaderboardSocialCard,
   LEADERBOARD_COPY,

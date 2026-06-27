@@ -19,6 +19,7 @@ import type {
   SocialFormat,
 } from "@/features/social-cards";
 import type { PreviewData } from "./components/SocialPreview";
+import { getPhotoTransform } from "./types";
 import type { SocialStudioConfig, SocialView } from "./types";
 
 // The shared theme maps onto the AOTW card's bespoke layout keys (its three layouts
@@ -165,6 +166,10 @@ function policyCountFor(p: ProducerRow): number {
 export interface NewAgentCardInput {
   name: string;
   photoUrl: string | null;
+  /** Per-agent photo framing (resolved by the page from config.photoTransforms keyed
+   *  by agent id). Omitted → centered / 1×. */
+  photoPosition?: string;
+  photoScale?: number;
 }
 
 export interface BuildPreviewArgs {
@@ -273,6 +278,7 @@ export function buildPreviewPages({
   if (config.view === "aotw") {
     const top = useLive ? producers[0] : undefined;
     const photoUrl = config.aowPhotoUrl;
+    const aotwPhoto = getPhotoTransform(config.photoTransforms, "aotw");
     const agent = top
       ? {
           name: toLastInitial(top.agentName),
@@ -289,7 +295,8 @@ export function buildPreviewPages({
         theme,
         copy: aotwCopy,
         agent,
-        photoPosition: config.aowPhotoPosition,
+        photoPosition: aotwPhoto.position,
+        photoScale: aotwPhoto.scale,
         style: {
           fontDisplay: config.aowFontDisplay,
           background: config.aowBackground,
@@ -317,6 +324,8 @@ export function buildPreviewPages({
     return list.map((a, i) => ({
       kind: "newagent",
       agent: { name: a.name, photoUrl: a.photoUrl ?? null },
+      photoPosition: a.photoPosition ?? "50% 50%",
+      photoScale: a.photoScale ?? 1,
       variant: config.welcomeVariant,
       copy: welcomeCopy,
       theme,

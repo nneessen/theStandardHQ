@@ -3,7 +3,7 @@
 // the SAME components the app uses. Scaled to fit the pane; the forwarded ref
 // points at the UNSCALED card so the PNG export captures it at full 1080px.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   LeaderboardSocialCard,
   MonthlyReportCard,
@@ -45,6 +45,7 @@ export type PreviewData =
       theme: CardTheme;
       agent: AgentOfWeekCardProps["agent"];
       photoPosition?: string;
+      photoScale?: number;
       style?: AowStyle;
       copy?: CopyMap;
     }
@@ -76,6 +77,9 @@ export type PreviewData =
   | {
       kind: "newagent";
       agent: { name: string; photoUrl?: string | null };
+      /** Photo focal point ("x% y%") + zoom — drag/zoom in the preview. */
+      photoPosition?: string;
+      photoScale?: number;
       /** Which welcome design renders (own palette). */
       variant: WelcomeVariant;
       /** Per-field copy overrides for the welcome design. */
@@ -102,13 +106,28 @@ interface SocialPreviewProps {
   isSample: boolean;
   isLoading: boolean;
   showPolicies: boolean;
-  /** AOTW only: enable drag-to-reposition of the agent photo (face → frame). */
+  /** Enable drag-to-reposition + zoom of the agent photo (face → frame). Applies to any
+   *  card with a photo (AOTW + new-agent welcome). */
   repositionable?: boolean;
   /** Current photo focal point ("x% y%"). */
   photoPosition?: string;
+  /** Current photo zoom multiplier (1 = fit). */
+  photoScale?: number;
   /** Called with the new "x% y%" as the user drags the photo. */
   onPhotoPositionChange?: (pos: string) => void;
+  /** Called with the new zoom multiplier as the user moves the zoom slider. */
+  onPhotoScaleChange?: (scale: number) => void;
 }
+
+/** Card kinds that carry a movable/zoomable photo. */
+function hasPhotoTransform(
+  d: PreviewData,
+): d is Extract<PreviewData, { kind: "aotw" | "newagent" }> {
+  return d.kind === "aotw" || d.kind === "newagent";
+}
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3;
 
 function parsePos(p?: string): [number, number] {
   const m = (p || "50% 50%").match(/(-?[\d.]+)%\s+(-?[\d.]+)%/);
@@ -162,6 +181,7 @@ export function SocialCardSwitch({
           format={format}
           design={data.design}
           photoPosition={data.photoPosition}
+          photoScale={data.photoScale}
           style={data.style}
           copy={data.copy}
         />
@@ -206,6 +226,8 @@ export function SocialCardSwitch({
           network={network}
           agent={data.agent}
           format={format}
+          photoPosition={data.photoPosition}
+          photoScale={data.photoScale}
           variant={data.variant}
           copy={data.copy}
           theme={data.theme}
@@ -245,7 +267,9 @@ export function SocialPreview({
   showPolicies,
   repositionable = false,
   photoPosition,
+  photoScale = 1,
   onPhotoPositionChange,
+  onPhotoScaleChange,
 }: SocialPreviewProps) {
   const { w: naturalW, h: naturalH } = FORMAT_DIMS[format];
   const scale = Math.min(MAX_W / naturalW, MAX_H / naturalH);
@@ -266,6 +290,30 @@ export function SocialPreview({
   const [dragging, setDragging] = useState(false);
   const [dragPos, setDragPos] = useState<string | null>(null);
 
+  // Wheel / trackpad-pinch to zoom over the photo. React's onWheel is passive at the
+  // root (preventDefault no-ops), so attach a NON-passive native listener to the overlay
+  // and read the latest scale/callback through refs (no listener re-attach per zoom tick).
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef(photoScale);
+  scaleRef.current = photoScale;
+  const onScaleRef = useRef(onPhotoScaleChange);
+  onScaleRef.current = onPhotoScaleChange;
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el || !repositionable) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!onScaleRef.current) return;
+      e.preventDefault();
+      const next = Math.min(
+        MAX_ZOOM,
+        Math.max(MIN_ZOOM, scaleRef.current - e.deltaY * 0.0022),
+      );
+      onScaleRef.current(Math.round(next * 100) / 100);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [repositionable]);
+
   // Compute the final focal point from the release event + the captured base, commit
   // it once, and clear the local override (batched, so no flicker). Shared by
   // pointerup AND pointercancel so an OS-cancelled drag never leaves state stuck.
@@ -284,8 +332,9 @@ export function SocialPreview({
   // for any legacy theme-v2 consumer. Every PreviewData kind now carries `theme`.
   const themeClass = cardThemeWrapperClass(data.theme);
   // Show the in-progress drag focal point live without touching the studio config.
-  const liveData =
-    dragPos !== null && data.kind === "aotw"
+  // Applies to ANY photo-bearing card (AOTW + new-agent), not just AOTW.
+  const liveData: PreviewData =
+    dragPos !== null && hasPhotoTransform(data)
       ? { ...data, photoPosition: dragPos }
       : data;
 
@@ -334,6 +383,7 @@ export function SocialPreview({
 
         {repositionable && onPhotoPositionChange && (
           <div
+            ref={overlayRef}
             onPointerDown={(e) => {
               const [bx, by] = parsePos(dragPos ?? photoPosition);
               drag.current = { sx: e.clientX, sy: e.clientY, bx, by };
@@ -354,11 +404,11 @@ export function SocialPreview({
               cursor: dragging ? "grabbing" : "grab",
               touchAction: "none",
             }}
-            title="Drag to reposition the photo"
+            title="Drag to reposition the photo · scroll to zoom"
           >
             {!dragging && (
               <div className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-foreground/75 px-2.5 py-1 text-[10px] font-semibold text-background shadow">
-                ⠿ Drag to reposition photo
+                ⠿ Drag to move · scroll to zoom
               </div>
             )}
           </div>
@@ -370,6 +420,41 @@ export function SocialPreview({
           </div>
         )}
       </div>
+
+      {repositionable && onPhotoScaleChange && (
+        <div
+          className="mt-3 flex items-center gap-2"
+          style={{ width: dispW }}
+          data-testid="photo-zoom"
+        >
+          <span className="text-[11px] font-medium text-muted-foreground">
+            Zoom
+          </span>
+          <input
+            type="range"
+            min={MIN_ZOOM}
+            max={MAX_ZOOM}
+            step={0.02}
+            value={photoScale}
+            onChange={(e) => onPhotoScaleChange(Number(e.target.value))}
+            className="h-1.5 flex-1 cursor-pointer accent-primary"
+            aria-label="Zoom photo"
+          />
+          <span className="w-10 text-right text-[11px] tabular-nums text-muted-foreground">
+            {Math.round(photoScale * 100)}%
+          </span>
+          {photoScale !== 1 && (
+            <button
+              type="button"
+              onClick={() => onPhotoScaleChange(1)}
+              className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted"
+              title="Reset zoom to 100%"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

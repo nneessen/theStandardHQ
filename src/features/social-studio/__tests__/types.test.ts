@@ -15,6 +15,7 @@ describe("toTemplateConfig", () => {
       caption: "my working caption",
       aowPhotoUrl: "data:image/png;base64,AAA",
       aowPhotoStorageUrl: "https://cdn/p?v=1",
+      photoTransforms: { aotw: { position: "20% 30%", scale: 1.6 } },
       aowBgImageUrl: "data:image/png;base64,BBB",
       aowBackground: "#111317",
       aowFontDisplay: '"Syne", system-ui, sans-serif',
@@ -25,7 +26,7 @@ describe("toTemplateConfig", () => {
     expect(tpl).not.toHaveProperty("caption");
     expect(tpl).not.toHaveProperty("aowPhotoUrl");
     expect(tpl).not.toHaveProperty("aowPhotoStorageUrl");
-    expect(tpl).not.toHaveProperty("aowPhotoPosition");
+    expect(tpl).not.toHaveProperty("photoTransforms");
     expect(tpl).not.toHaveProperty("aowBgImageUrl");
   });
 
