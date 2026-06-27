@@ -6172,6 +6172,8 @@ export type Database = {
           transcription_error: string | null;
           transcription_model: string | null;
           transcription_status: string;
+          redaction_detector: string | null;
+          redaction_spans: Json | null;
           redaction_status: string;
           updated_at: string;
           uploader_id: string | null;
@@ -6229,6 +6231,8 @@ export type Database = {
           transcription_error?: string | null;
           transcription_model?: string | null;
           transcription_status?: string;
+          redaction_detector?: string | null;
+          redaction_spans?: Json | null;
           redaction_status?: string;
           updated_at?: string;
           uploader_id?: string | null;
@@ -6286,6 +6290,8 @@ export type Database = {
           transcription_error?: string | null;
           transcription_model?: string | null;
           transcription_status?: string;
+          redaction_detector?: string | null;
+          redaction_spans?: Json | null;
           redaction_status?: string;
           updated_at?: string;
           uploader_id?: string | null;

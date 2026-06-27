@@ -19,6 +19,7 @@
 // PII: the spoken words may contain client PII. NEVER console.log the transcript,
 // a signed URL, or any Deepgram response body — status codes only.
 
+import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import {
@@ -26,7 +27,58 @@ import {
   createSupabaseClient,
 } from "../_shared/supabase-client.ts";
 import { resolveAiAccessFacts } from "../_shared/resolve-ai-access.ts";
-import { enforceRateLimit } from "../_shared/rate-limit.ts";
+import { enforceRateLimit, recordAiTokens } from "../_shared/rate-limit.ts";
+import {
+  buildRedaction,
+  redactPlainText,
+  type PiiItem,
+  type RedactionSpan,
+  type RedactSegment,
+  type RedactWord,
+} from "../_shared/pii-redaction.ts";
+
+// PII detection model (the Claude pass that finds spoken SSN/banking data).
+const PII_MODEL = "claude-sonnet-4-6";
+const PII_SYSTEM =
+  "You are a PII detection assistant for insurance phone-call transcripts. You find SPOKEN sensitive personal data that must be removed before a recording can be shared for training. Return ONLY raw JSON — no markdown, no prose.";
+
+function piiUserPrompt(diarized: string): string {
+  return `Each transcript line is prefixed with a segment id like [#3]. Find EVERY occurrence of highly sensitive personal data: Social Security numbers, bank account numbers, bank routing numbers, credit/debit card numbers, card security codes (CVV), and full dates of birth. Do NOT flag: prices, premiums, coverage amounts, ages, policy numbers, generic dates, or phone numbers.
+
+For each occurrence, return the segment id it appears in and the VERBATIM substring exactly as written in that line (so it can be string-matched). If a number is spelled out in words, return those words verbatim.
+
+TRANSCRIPT:
+${diarized}
+
+Return JSON with this EXACT schema: { "items": [ { "segment_id": number, "text": "verbatim substring", "type": "ssn|bank_account|routing|card|cvv|dob" } ] }. Return { "items": [] } if there is none.`;
+}
+
+// Tolerant JSON extraction (model may wrap in prose/fences). Returns [] on any
+// shape problem — detection is best-effort and must never break transcription.
+function parsePiiItems(text: string): PiiItem[] {
+  try {
+    const trimmed = text.trim();
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    const candidate = fenced?.[1]?.trim() ?? trimmed;
+    const first = candidate.indexOf("{");
+    const last = candidate.lastIndexOf("}");
+    const jsonText =
+      first !== -1 && last > first
+        ? candidate.slice(first, last + 1)
+        : candidate;
+    const parsed = JSON.parse(jsonText) as { items?: unknown };
+    if (!Array.isArray(parsed.items)) return [];
+    return parsed.items.filter(
+      (it): it is PiiItem =>
+        it != null &&
+        typeof (it as PiiItem).segment_id === "number" &&
+        typeof (it as PiiItem).text === "string" &&
+        (it as PiiItem).text.trim().length > 0,
+    );
+  } catch {
+    return [];
+  }
+}
 
 // Container/extension set Deepgram handles (superset of the old Whisper list;
 // matches the call-recordings bucket's allowed MIME types). No size cap: Deepgram
@@ -55,12 +107,20 @@ interface DeepgramUtterance {
   speaker?: number;
 }
 
+interface DeepgramWord {
+  word?: string;
+  punctuated_word?: string;
+  start?: number;
+  end?: number;
+  speaker?: number;
+}
+
 interface DeepgramResponse {
   metadata?: { duration?: number };
   results?: {
     channels?: Array<{
       detected_language?: string;
-      alternatives?: Array<{ transcript?: string }>;
+      alternatives?: Array<{ transcript?: string; words?: DeepgramWord[] }>;
     }>;
     utterances?: DeepgramUtterance[];
   };
@@ -186,9 +246,17 @@ serve(async (req) => {
   // claimable status — the loser affects 0 rows and bails here, so Deepgram is
   // never invoked twice for one recording. (completed/processing already returned
   // at step 6; only pending/failed/skipped are claimable.)
+  // Also drop redaction_status → 'detecting': if this is a RE-transcribe of an
+  // already-approved (shared) recording, it must leave the shared library
+  // immediately (its transcript/audio are about to change) and only return after
+  // a fresh redaction + human re-approval. New uploads were 'pending' already.
   const { data: claimed, error: claimErr } = await db
     .from("kpi_call_recordings")
-    .update({ transcription_status: "processing", transcription_error: null })
+    .update({
+      transcription_status: "processing",
+      transcription_error: null,
+      redaction_status: "detecting",
+    })
     .eq("id", recording.id)
     .in("transcription_status", ["pending", "failed", "skipped"])
     .select("id")
@@ -373,14 +441,95 @@ serve(async (req) => {
         ? Math.round(result.metadata.duration)
         : null;
 
+    // ── PII detection + redaction (runs BETWEEN transcription and analysis) ────
+    // Detect spoken SSN / banking PII, REDACT the transcript text IN PLACE, and
+    // record audio mute-spans for the Phase 2 ffmpeg worker. Because analyze-call-
+    // transcript reads ONLY transcript_segments (never the audio), redacting here
+    // makes every downstream AI field (summary, objection quotes, …) clean by
+    // construction. Claude is BEST-EFFORT: if it's unavailable (no key / Anthropic
+    // down or out of credits) we fall back to regex only and flag the detector so
+    // the human reviewer knows to look harder. Either way the recording lands in
+    // 'needs_review' (quarantined) — never auto-shared. Raw PII is never persisted.
+    const dgWords: RedactWord[] = (Array.isArray(alt?.words) ? alt!.words! : [])
+      .filter((w): w is DeepgramWord => w != null && typeof w === "object")
+      .map((w) => ({
+        word: typeof w.word === "string" ? w.word : "",
+        punctuated_word:
+          typeof w.punctuated_word === "string" ? w.punctuated_word : undefined,
+        start: typeof w.start === "number" ? w.start : null,
+        end: typeof w.end === "number" ? w.end : null,
+        speaker: typeof w.speaker === "number" ? w.speaker : null,
+      }));
+
+    let redactedSegments: RedactSegment[] | null = segments;
+    let redactedTranscript = transcriptText;
+    let redactionSpans: RedactionSpan[] = [];
+    let redactionDetector = "none";
+
+    if (segments && segments.length) {
+      let claudeItems: PiiItem[] = [];
+      let usedClaude = false;
+      const piiKey = Deno.env.get("ANTHROPIC_API_KEY");
+      if (piiKey) {
+        try {
+          const diarized = segments
+            .map(
+              (s) => `[#${s.id}] Speaker ${s.speaker ?? "?"}: ${s.text ?? ""}`,
+            )
+            .join("\n");
+          const anthropic = new Anthropic({ apiKey: piiKey });
+          const piiResp = await anthropic.messages.create({
+            model: PII_MODEL,
+            max_tokens: 1024,
+            system: PII_SYSTEM,
+            messages: [{ role: "user", content: piiUserPrompt(diarized) }],
+          });
+          const tok =
+            (piiResp.usage?.input_tokens ?? 0) +
+            (piiResp.usage?.output_tokens ?? 0);
+          await recordAiTokens(adminClient, userId, tok);
+          const piiText = piiResp.content
+            .filter(
+              (b): b is { type: "text"; text: string } =>
+                b.type === "text" && "text" in b,
+            )
+            .map((b) => b.text)
+            .join("");
+          claudeItems = parsePiiItems(piiText);
+          usedClaude = true;
+        } catch (e) {
+          // Status/name only — NEVER log transcript or model content.
+          console.error(
+            "transcribe-call-recording pii pass failed",
+            e instanceof Error ? e.name : "",
+          );
+        }
+      }
+      const redaction = buildRedaction({
+        segments,
+        words: dgWords,
+        claudeItems,
+        durationSeconds,
+      });
+      redactedSegments = redaction.segments;
+      redactedTranscript = redaction.transcriptText;
+      redactionSpans = redaction.spans;
+      redactionDetector = usedClaude ? "claude+regex" : "regex_only";
+    } else if (transcriptText) {
+      // Rare: no utterance segments to redact per line — best-effort regex on the
+      // flat transcript so raw PII is still never persisted.
+      redactedTranscript = redactPlainText(transcriptText).text;
+      redactionDetector = "regex_only";
+    }
+
     const { error: saveErr } = await adminClient
       .from("kpi_call_recordings")
       .update({
         ...(authoritativeSize != null
           ? { file_size_bytes: authoritativeSize }
           : {}),
-        transcript_text: transcriptText,
-        transcript_segments: segments,
+        transcript_text: redactedTranscript,
+        transcript_segments: redactedSegments,
         duration_seconds: durationSeconds,
         talk_time_seconds: hasSpeakers ? Math.round(agentTalk) : null,
         client_talk_seconds: hasSpeakers ? Math.round(clientTalk) : null,
@@ -393,6 +542,10 @@ serve(async (req) => {
         transcribed_at: new Date().toISOString(),
         transcription_status: "completed",
         transcription_error: null,
+        // Quarantine for human review (Phase 3) before it can be shared IMO-wide.
+        redaction_status: "needs_review",
+        redaction_spans: redactionSpans,
+        redaction_detector: redactionDetector,
       })
       .eq("id", recording.id);
     if (saveErr)
@@ -446,6 +599,9 @@ serve(async (req) => {
       .update({
         transcription_status: "failed",
         transcription_error: message,
+        // A failed (re)transcribe must not stay shared: the claim above set
+        // 'detecting'; keep it out of the IMO-wide library until it succeeds.
+        redaction_status: "failed",
       })
       .eq("id", recording.id);
     return json({ ok: false, recording_id: recording.id, error: message }, 500);
