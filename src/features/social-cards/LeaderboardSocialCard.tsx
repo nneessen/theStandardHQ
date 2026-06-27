@@ -17,6 +17,22 @@ import {
   themePageBackground,
   type CardTheme,
 } from "./themes";
+import { copyText, type CopyField, type CopyMap } from "./templateCopy";
+
+// ── Editable text labels (rows, AP totals, ranks, period all stay dynamic). ──
+export const LEADERBOARD_COPY: CopyField[] = [
+  { key: "policiesLabel", label: "Policies column", default: "POL" },
+  {
+    key: "byAnnualPremiumLabel",
+    label: "Subheading prefix",
+    default: "By Annual Premium",
+  },
+  {
+    key: "footerTotalLabel",
+    label: "Footer total label",
+    default: "Agency Total AP",
+  },
+];
 
 export interface SocialAgentRow {
   rank: number;
@@ -40,6 +56,8 @@ export interface LeaderboardSocialCardProps {
   theme?: CardTheme;
   /** Carousel position when the roster spans multiple cards. */
   page?: CardPageInfo;
+  /** Per-field text overrides (keyed by LEADERBOARD_COPY keys); blank → the default. */
+  copy?: CopyMap;
 }
 
 export function LeaderboardSocialCard({
@@ -53,8 +71,10 @@ export function LeaderboardSocialCard({
   showPolicies = true,
   theme = "spotlight",
   page,
+  copy,
 }: LeaderboardSocialCardProps) {
   const t = resolveCardTheme(theme);
+  const lbl = (key: string, dflt: string) => copyText(copy, key, dflt);
   const isStory = format === "story";
   const { w: W, h: H } = FORMAT_DIMS[format];
   const PAD = isStory ? 72 : 56;
@@ -171,7 +191,7 @@ export function LeaderboardSocialCard({
                 letterSpacing: "0.12em",
               }}
             >
-              POL
+              {lbl("policiesLabel", "POL")}
             </div>
           </div>
         )}
@@ -259,7 +279,8 @@ export function LeaderboardSocialCard({
             textTransform: "uppercase",
           }}
         >
-          By Annual Premium&nbsp;&nbsp;·&nbsp;&nbsp;{periodLabel}
+          {lbl("byAnnualPremiumLabel", "By Annual Premium")}
+          &nbsp;&nbsp;·&nbsp;&nbsp;{periodLabel}
         </div>
       </div>
 
@@ -301,7 +322,7 @@ export function LeaderboardSocialCard({
               textTransform: "uppercase",
             }}
           >
-            Agency Total AP
+            {lbl("footerTotalLabel", "Agency Total AP")}
           </div>
           <div style={{ marginTop: 6 }}>
             {num(usd(totalAp), t.ink, sz.footAp, 700)}

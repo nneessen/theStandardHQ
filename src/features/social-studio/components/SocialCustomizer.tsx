@@ -25,6 +25,9 @@ import {
   CARD_THEME_LABEL,
   RECRUITING_COPY,
   WELCOME_COPY,
+  LEADERBOARD_COPY,
+  MONTHLY_COPY,
+  AOTW_COPY,
 } from "@/features/social-cards";
 import type {
   RecruitingVariant,
@@ -641,6 +644,32 @@ export function SocialCustomizer({
             />
           </div>
         </>
+      )}
+
+      {/* Data-card wording — labels/headings editable (the live numbers stay live). */}
+      {(config.view === "daily" || config.view === "weekly") && (
+        <CopyEditor
+          fields={LEADERBOARD_COPY}
+          variant="leaderboard"
+          templateCopy={config.templateCopy}
+          onChange={(tc) => onChange({ templateCopy: tc })}
+        />
+      )}
+      {isReport && (
+        <CopyEditor
+          fields={MONTHLY_COPY}
+          variant="monthly"
+          templateCopy={config.templateCopy}
+          onChange={(tc) => onChange({ templateCopy: tc })}
+        />
+      )}
+      {isAotw && (
+        <CopyEditor
+          fields={AOTW_COPY}
+          variant="aotw"
+          templateCopy={config.templateCopy}
+          onChange={(tc) => onChange({ templateCopy: tc })}
+        />
       )}
 
       <div className="space-y-1.5">

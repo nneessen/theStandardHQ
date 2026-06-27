@@ -15,6 +15,30 @@ import {
   themePageBackground,
   type CardTheme,
 } from "./themes";
+import { copyText, type CopyField, type CopyMap } from "./templateCopy";
+
+// ── Editable text labels (totals, stat values, names, month all stay dynamic). ──
+export const MONTHLY_COPY: CopyField[] = [
+  { key: "mainTitle", label: "Title", default: "MONTHLY REPORT" },
+  { key: "recapLabel", label: "Subheading prefix", default: "Agency Recap" },
+  {
+    key: "totalAPLabel",
+    label: "Hero AP label",
+    default: "Total Annual Premium",
+  },
+  {
+    key: "agentOfMonthLabel",
+    label: "Spotlight label",
+    default: "Agent of the Month",
+  },
+  { key: "policiesLabel", label: "Policies label", default: "POLICIES" },
+  {
+    key: "topProducersLabel",
+    label: "Top section heading",
+    default: "Top Producers",
+  },
+  { key: "paginationCTA", label: "Pagination note", default: "full roster →" },
+];
 
 export interface ReportStat {
   label: string;
@@ -37,6 +61,8 @@ export interface MonthlyReportCardProps {
   theme?: CardTheme;
   /** Carousel position — this recap is slide 1 when the full roster spans more cards. */
   page?: CardPageInfo;
+  /** Per-field text overrides (keyed by MONTHLY_COPY keys); blank → the default. */
+  copy?: CopyMap;
 }
 
 // Growth = positive trend → the brand success green (--success in index.css),
@@ -56,8 +82,10 @@ export function MonthlyReportCard({
   format = "portrait",
   theme = "spotlight",
   page,
+  copy,
 }: MonthlyReportCardProps) {
   const t = resolveCardTheme(theme);
+  const lbl = (key: string, dflt: string) => copyText(copy, key, dflt);
   const isStory = format === "story";
   const { w: W, h: H } = FORMAT_DIMS[format];
   const PAD = isStory ? 72 : 56;
@@ -163,7 +191,7 @@ export function MonthlyReportCard({
             letterSpacing: "0.005em",
           }}
         >
-          MONTHLY REPORT
+          {lbl("mainTitle", "MONTHLY REPORT")}
         </div>
         <div
           style={{
@@ -174,7 +202,8 @@ export function MonthlyReportCard({
             textTransform: "uppercase",
           }}
         >
-          Agency Recap&nbsp;&nbsp;·&nbsp;&nbsp;{monthLabel}
+          {lbl("recapLabel", "Agency Recap")}
+          &nbsp;&nbsp;·&nbsp;&nbsp;{monthLabel}
         </div>
       </div>
 
@@ -198,7 +227,7 @@ export function MonthlyReportCard({
               textTransform: "uppercase",
             }}
           >
-            Total Annual Premium
+            {lbl("totalAPLabel", "Total Annual Premium")}
           </div>
           <div style={{ marginTop: isStory ? 10 : 6 }}>
             {num(usd(totalAp), t.ink, sz.hero, true)}
@@ -272,7 +301,7 @@ export function MonthlyReportCard({
               textTransform: "uppercase",
             }}
           >
-            Agent of the Month
+            {lbl("agentOfMonthLabel", "Agent of the Month")}
           </div>
           <div
             style={{
@@ -297,7 +326,7 @@ export function MonthlyReportCard({
               marginTop: 2,
             }}
           >
-            {topPerformer.policies} POLICIES
+            {topPerformer.policies} {lbl("policiesLabel", "POLICIES")}
           </div>
         </div>
       </div>
@@ -327,7 +356,7 @@ export function MonthlyReportCard({
               textTransform: "uppercase",
             }}
           >
-            Top Producers
+            {lbl("topProducersLabel", "Top Producers")}
           </div>
           {paginated ? (
             <div
@@ -338,7 +367,8 @@ export function MonthlyReportCard({
                 textTransform: "uppercase",
               }}
             >
-              Page {page.index} / {page.total} · full roster →
+              Page {page.index} / {page.total} ·{" "}
+              {lbl("paginationCTA", "full roster →")}
             </div>
           ) : null}
         </div>

@@ -16,6 +16,22 @@
 // pixel-faithful — no external render service, no PII leaving the tenant.
 
 import { usd, FORMAT_DIMS, type SocialFormat } from "./socialFormat";
+import { copyText, type CopyField, type CopyMap } from "./templateCopy";
+
+// ── Editable text labels (the live agent name / AP / policies stay dynamic). ──
+export const AOTW_COPY: CopyField[] = [
+  {
+    key: "agentOfWeekLabel",
+    label: "Spotlight label",
+    default: "Agent of the Week",
+  },
+  {
+    key: "annualPremiumLabel",
+    label: "AP stat label",
+    default: "Annual Premium",
+  },
+  { key: "policiesLabel", label: "Policies stat label", default: "Policies" },
+];
 
 export type AowDesign = "aurora" | "editorial" | "noir";
 
@@ -56,6 +72,8 @@ export interface AgentOfWeekCardProps {
   /** Photo focal point ("x% y%") — drag-to-reposition in the studio. Default centered. */
   photoPosition?: string;
   style?: AowStyle;
+  /** Per-field text overrides (keyed by AOTW_COPY keys); blank → the default. */
+  copy?: CopyMap;
 }
 
 const BIG = '"Big Shoulders Display", "Arial Black", system-ui, sans-serif';
@@ -152,12 +170,17 @@ export function AgentOfWeekCard({
   design = "aurora",
   photoPosition = "50% 50%",
   style,
+  copy,
 }: AgentOfWeekCardProps) {
   const { w: W, h: H } = FORMAT_DIMS[format];
   const st = style ?? {};
   const titleScale = st.titleScale ?? 1;
   const agencyScale = st.agencyScale ?? 1;
   const dispFont = st.fontDisplay || BIG;
+  // Editable labels (shared across all three designs).
+  const lblAotw = copyText(copy, "agentOfWeekLabel", "Agent of the Week");
+  const lblAp = copyText(copy, "annualPremiumLabel", "Annual Premium");
+  const lblPol = copyText(copy, "policiesLabel", "Policies");
 
   const base: React.CSSProperties = {
     width: W,
@@ -267,7 +290,7 @@ export function AgentOfWeekCard({
               textTransform: "uppercase",
             }}
           >
-            Agent of the Week
+            {lblAotw}
           </span>
           <div
             style={{
@@ -307,7 +330,7 @@ export function AgentOfWeekCard({
                 marginTop: 8,
               }}
             >
-              Annual Premium
+              {lblAp}
             </div>
           </div>
           <div style={{ borderLeft: `1px solid ${C.line}`, paddingLeft: 32 }}>
@@ -323,7 +346,7 @@ export function AgentOfWeekCard({
                 marginTop: 8,
               }}
             >
-              Policies
+              {lblPol}
             </div>
           </div>
           <div style={{ marginLeft: "auto", textAlign: "right" }}>
@@ -444,7 +467,7 @@ export function AgentOfWeekCard({
                 textTransform: "uppercase",
               }}
             >
-              Agent of the Week
+              {lblAotw}
             </div>
             <Photo
               url={agent.photoUrl}
@@ -482,14 +505,10 @@ export function AgentOfWeekCard({
 
           {/* two rounded depth stat cards */}
           <div style={{ flex: "none", display: "flex", gap: 26 }}>
-            <LiftStat
-              value={usd(agent.ap)}
-              label="Annual Premium"
-              font={dispFont}
-            />
+            <LiftStat value={usd(agent.ap)} label={lblAp} font={dispFont} />
             <LiftStat
               value={String(agent.policies)}
-              label="Policies"
+              label={lblPol}
               font={dispFont}
             />
           </div>
@@ -642,7 +661,7 @@ export function AgentOfWeekCard({
                 marginBottom: 16,
               }}
             >
-              Agent of the Week
+              {lblAotw}
             </div>
             <div
               style={{
@@ -663,12 +682,12 @@ export function AgentOfWeekCard({
           <div style={{ display: "flex", gap: 26 }}>
             <SpotlightStat
               value={usd(agent.ap)}
-              label="Annual Premium"
+              label={lblAp}
               font={dispFont}
             />
             <SpotlightStat
               value={String(agent.policies)}
-              label="Policies"
+              label={lblPol}
               font={dispFont}
             />
           </div>

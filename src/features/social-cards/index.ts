@@ -4,7 +4,7 @@
 // consumed by the Social Studio feature; importing through this root barrel keeps
 // callers off banned deep paths (eslint no-restricted-imports).
 
-export { AgentOfWeekCard } from "./AgentOfWeekCard";
+export { AgentOfWeekCard, AOTW_COPY } from "./AgentOfWeekCard";
 export type {
   AgentOfWeekCardProps,
   AowDesign,
@@ -25,13 +25,16 @@ export {
 } from "./RecruitingCard";
 export { copyForVariant, type CopyField, type CopyMap } from "./templateCopy";
 
-export { LeaderboardSocialCard } from "./LeaderboardSocialCard";
+export {
+  LeaderboardSocialCard,
+  LEADERBOARD_COPY,
+} from "./LeaderboardSocialCard";
 export type {
   LeaderboardSocialCardProps,
   SocialAgentRow,
 } from "./LeaderboardSocialCard";
 
-export { MonthlyReportCard } from "./MonthlyReportCard";
+export { MonthlyReportCard, MONTHLY_COPY } from "./MonthlyReportCard";
 export type { MonthlyReportCardProps, ReportStat } from "./MonthlyReportCard";
 
 export { MarketingCard } from "./MarketingCard";

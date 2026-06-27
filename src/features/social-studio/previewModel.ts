@@ -247,6 +247,10 @@ export function buildPreviewPages({
   const format = config.format;
   const theme = config.cardTheme;
   const perPage = ROWS_PER_PAGE[format];
+  // Editable text-label overrides per data card (namespaced by card kind).
+  const leaderboardCopy = copyForVariant(config.templateCopy, "leaderboard");
+  const reportCopy = copyForVariant(config.templateCopy, "monthly");
+  const aotwCopy = copyForVariant(config.templateCopy, "aotw");
 
   const leaderboardPage = (
     rows: SocialAgentRow[],
@@ -261,6 +265,7 @@ export function buildPreviewPages({
     periodLabel,
     title,
     theme,
+    copy: leaderboardCopy,
     page,
   });
 
@@ -282,6 +287,7 @@ export function buildPreviewPages({
         periodLabel: `WEEK OF ${weekRange}`,
         design: AOW_DESIGN_FOR_THEME[theme],
         theme,
+        copy: aotwCopy,
         agent,
         photoPosition: config.aowPhotoPosition,
         style: {
@@ -333,7 +339,15 @@ export function buildPreviewPages({
   // ── MONTHLY: recap page + roster-continuation pages ──
   if (config.view === "monthly") {
     if (!useLive) {
-      return [{ kind: "report", monthLabel, theme, ...SAMPLE_MONTHLY }];
+      return [
+        {
+          kind: "report",
+          monthLabel,
+          theme,
+          copy: reportCopy,
+          ...SAMPLE_MONTHLY,
+        },
+      ];
     }
     const totalAp = producers.reduce((s, e) => s + e.apTotal, 0);
     const totalPol = producers.reduce((s, e) => s + policyCountFor(e), 0);
@@ -370,6 +384,7 @@ export function buildPreviewPages({
         },
         top: recapRows.map((r) => ({ rank: r.rank, name: r.name, ap: r.ap })),
         theme,
+        copy: reportCopy,
         page: total > 1 ? { index: 1, total } : undefined,
       },
     ];

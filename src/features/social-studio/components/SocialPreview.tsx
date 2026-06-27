@@ -35,6 +35,7 @@ export type PreviewData =
       periodLabel: string;
       title?: string;
       theme: CardTheme;
+      copy?: CopyMap;
       page?: CardPageInfo;
     }
   | {
@@ -45,11 +46,13 @@ export type PreviewData =
       agent: AgentOfWeekCardProps["agent"];
       photoPosition?: string;
       style?: AowStyle;
+      copy?: CopyMap;
     }
   | ({
       kind: "report";
       monthLabel: string;
       theme: CardTheme;
+      copy?: CopyMap;
       page?: CardPageInfo;
     } & Pick<
       MonthlyReportCardProps,
@@ -145,6 +148,7 @@ export function SocialCardSwitch({
           title={data.title}
           showPolicies={showPolicies}
           theme={data.theme}
+          copy={data.copy}
           page={data.page}
         />
       );
@@ -159,6 +163,7 @@ export function SocialCardSwitch({
           design={data.design}
           photoPosition={data.photoPosition}
           style={data.style}
+          copy={data.copy}
         />
       );
     case "report":
@@ -174,6 +179,7 @@ export function SocialCardSwitch({
           growthLabel={data.growthLabel}
           format={format}
           theme={data.theme}
+          copy={data.copy}
           page={data.page}
         />
       );
