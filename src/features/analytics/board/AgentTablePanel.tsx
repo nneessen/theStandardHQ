@@ -1,4 +1,5 @@
 // src/features/analytics/board/AgentTablePanel.tsx
+import { useState } from "react";
 import { Users } from "lucide-react";
 import { format } from "date-fns";
 import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
@@ -9,6 +10,8 @@ import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { formatCurrency } from "@/lib/format";
 import { Board, Cap, FlapTile, EmptyState, T } from "@/components/board";
 
+type SortKey = "policies" | "ap" | "ip";
+
 export function AgentTablePanel() {
   const { dateRange } = useAnalyticsDateRange();
 
@@ -18,6 +21,20 @@ export function AgentTablePanel() {
   const { data: currentUser, isLoading: userLoading } = useCurrentUserProfile();
   const { data: downlines = [], isLoading: downlinesLoading } =
     useMyDownlines();
+
+  // Sortable on the production columns; default to IP desc (the leaderboard's
+  // own ranking order).
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({
+    key: "ip",
+    dir: "desc",
+  });
+
+  const toggleSort = (key: SortKey) =>
+    setSort((s) =>
+      s.key === key
+        ? { key, dir: s.dir === "desc" ? "asc" : "desc" }
+        : { key, dir: "desc" },
+    );
 
   const filters: LeaderboardFilters = {
     timePeriod: "custom",
@@ -67,22 +84,46 @@ export function AgentTablePanel() {
     );
   }
 
-  // Filter the global leaderboard down to the user's team, then re-rank and
-  // re-total over just those rows. Entries arrive sorted by rank_overall
-  // (IP desc), so a simple re-number keeps the team's own 1..N ordering.
+  // Filter the global leaderboard down to the user's team.
   const teamIds = new Set<string>(
     currentUser ? [currentUser.id, ...downlines.map((d) => d.id)] : [],
   );
+  const baseEntries = (data?.entries ?? []).filter((entry) =>
+    teamIds.has(entry.agentId),
+  );
 
-  const entries = (data?.entries ?? [])
-    .filter((entry) => teamIds.has(entry.agentId))
-    .map((entry, idx) => ({ ...entry, rankOverall: idx + 1 }));
+  // "Top performer" callout stays the IP leader regardless of table sort.
+  const topAgent = [...baseEntries].sort((a, b) => b.ipTotal - a.ipTotal)[0];
 
-  const totalAgentCount = entries.length;
-  const totalPolicies = entries.reduce((sum, e) => sum + e.policyCount, 0);
-  const totalAp = entries.reduce((sum, e) => sum + e.apTotal, 0);
-  const totalIp = entries.reduce((sum, e) => sum + e.ipTotal, 0);
-  const topAgent = entries[0];
+  const valueFor = (e: (typeof baseEntries)[number]) =>
+    sort.key === "policies"
+      ? e.policyCount
+      : sort.key === "ap"
+        ? e.apTotal
+        : e.ipTotal;
+
+  const dirMul = sort.dir === "asc" ? 1 : -1;
+  // Show ALL team members (the table body scrolls), ranked by the active sort.
+  const entries = [...baseEntries]
+    .sort((a, b) => (valueFor(a) - valueFor(b)) * dirMul)
+    .map((entry, idx) => ({ ...entry, rowRank: idx + 1 }));
+
+  const totalAgentCount = baseEntries.length;
+  const totalPolicies = baseEntries.reduce((sum, e) => sum + e.policyCount, 0);
+  const totalAp = baseEntries.reduce((sum, e) => sum + e.apTotal, 0);
+  const totalIp = baseEntries.reduce((sum, e) => sum + e.ipTotal, 0);
+
+  const columns: {
+    label: string;
+    align: "left" | "right";
+    key: SortKey | null;
+  }[] = [
+    { label: "#", align: "left", key: null },
+    { label: "Agent", align: "left", key: null },
+    { label: "Policies", align: "right", key: "policies" },
+    { label: "AP", align: "right", key: "ap" },
+    { label: "IP", align: "right", key: "ip" },
+  ];
 
   return (
     <Board
@@ -107,7 +148,7 @@ export function AgentTablePanel() {
               marginTop: 4,
             }}
           >
-            {totalAgentCount} on your team · top 10 shown
+            {totalAgentCount} on your team
           </div>
         </div>
         {topAgent && (
@@ -140,7 +181,7 @@ export function AgentTablePanel() {
         )}
       </div>
 
-      {entries.length === 0 ? (
+      {baseEntries.length === 0 ? (
         <EmptyState
           icon={<Users size={22} />}
           title="No team production this period"
@@ -160,39 +201,37 @@ export function AgentTablePanel() {
               }}
             >
               <thead>
-                <tr
-                  style={{
-                    borderBottom: `1px solid ${T.line2}`,
-                  }}
-                >
-                  {(
-                    [
-                      { label: "#", align: "left" as const },
-                      { label: "Agent", align: "left" as const },
-                      { label: "Policies", align: "right" as const },
-                      { label: "AP", align: "right" as const },
-                      { label: "IP", align: "right" as const },
-                    ] as const
-                  ).map((col) => (
-                    <th
-                      key={col.label}
-                      style={{
-                        font: `700 12.5px ${T.mono}`,
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                        color: T.mut,
-                        textAlign: col.align,
-                        paddingBottom: 8,
-                        paddingLeft: col.align === "right" ? 18 : 0,
-                      }}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
+                <tr style={{ borderBottom: `1px solid ${T.line2}` }}>
+                  {columns.map((col) => {
+                    const active = col.key && sort.key === col.key;
+                    return (
+                      <th
+                        key={col.label}
+                        onClick={
+                          col.key ? () => toggleSort(col.key!) : undefined
+                        }
+                        style={{
+                          font: `700 12.5px ${T.mono}`,
+                          letterSpacing: "0.14em",
+                          textTransform: "uppercase",
+                          color: active ? T.cream : T.mut,
+                          textAlign: col.align,
+                          paddingBottom: 8,
+                          paddingLeft: col.align === "right" ? 18 : 0,
+                          cursor: col.key ? "pointer" : "default",
+                          userSelect: "none",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {col.label}
+                        {active ? (sort.dir === "desc" ? " ↓" : " ↑") : ""}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
-                {entries.slice(0, 10).map((entry, idx, arr) => (
+                {entries.map((entry, idx, arr) => (
                   <tr
                     key={entry.agentId}
                     style={{
@@ -208,7 +247,7 @@ export function AgentTablePanel() {
                         width: 32,
                       }}
                     >
-                      {entry.rankOverall}
+                      {entry.rowRank}
                     </td>
                     <td
                       style={{
