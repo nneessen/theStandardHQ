@@ -122,6 +122,16 @@ serve(async (req) => {
     // Create Supabase client with service role
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // TEMP DIAGNOSTIC (multi-account connect): capture what Meta actually returns at each
+    // stage into ig_oauth_debug so we can read it server-side. Remove after the issue is fixed.
+    const dbg = async (stage: string, fields: Record<string, unknown> = {}) => {
+      try {
+        await supabase.from("ig_oauth_debug").insert({ stage, ...fields });
+      } catch (_e) {
+        /* best effort */
+      }
+    };
+
     // =========================================================================
     // Step 1: Exchange code for short-lived access token (Instagram API)
     // =========================================================================
@@ -155,8 +165,14 @@ serve(async (req) => {
         "[instagram-oauth-callback] Token exchange failed:",
         tokenData.error_message || tokenData,
       );
+      await dbg("token_error", {
+        detail: JSON.stringify(tokenData ?? {}).slice(0, 400),
+      });
       return Response.redirect(
-        `${redirectUrl}?instagram=error&reason=token_exchange`,
+        `${redirectUrl}?instagram=error&reason=token_exchange` +
+          `&dbg_detail=${encodeURIComponent(
+            JSON.stringify(tokenData ?? {}).slice(0, 200),
+          )}`,
       );
     }
 
@@ -229,22 +245,17 @@ serve(async (req) => {
     // =========================================================================
     // Step 3: Get Instagram profile details
     // =========================================================================
-    // IMPORTANT: Instagram Graph API does NOT have a /me endpoint like Facebook.
-    // Must use /{user-id} where user-id comes from the token response.
-    //
-    // The error "Unsupported request - method type: get" (IGApiException 100) happens when:
-    // 1. Using /me endpoint (doesn't exist for Instagram API)
-    // 2. Requesting user_id as a FIELD (it's not a valid field - it's only in the URL)
-    //
-    // CORRECT: Use /{instagramUserId} with fields: id,username,name,account_type
-    // The returned 'id' field is the IGSID that matches webhooks and conversations.
+    // Fetch the profile via /me — the access token identifies the user, so Meta resolves the
+    // correct Instagram account regardless of the token's app-scoped user_id format. Querying
+    // /{instagramUserId} directly only worked for accounts whose OAuth user_id happens to equal
+    // their IGSID; for others (e.g. a second business account) that id isn't directly queryable
+    // and the GET 404s ("Object with ID … does not exist"). Confirmed against Meta docs:
+    // GET https://graph.instagram.com/me?fields=id,username,account_type&access_token=…
     console.log(
-      `[instagram-oauth-callback] Fetching Instagram profile for user: ${instagramUserId}`,
+      `[instagram-oauth-callback] Fetching Instagram profile via /me (token user_id: ${instagramUserId})`,
     );
 
-    const igProfileUrl = new URL(
-      `https://graph.instagram.com/v21.0/${instagramUserId}`,
-    );
+    const igProfileUrl = new URL(`https://graph.instagram.com/v21.0/me`);
     igProfileUrl.searchParams.set("access_token", accessToken);
     // CRITICAL: Only request valid fields. DO NOT include:
     // - user_id (not a valid field - causes IGApiException 100)
@@ -264,6 +275,10 @@ serve(async (req) => {
         "[instagram-oauth-callback] Failed to get Instagram profile:",
         igProfile,
       );
+      await dbg("profile_error", {
+        token_user_id: String(instagramUserId),
+        detail: JSON.stringify(igProfile ?? {}).slice(0, 400),
+      });
       return Response.redirect(
         `${redirectUrl}?instagram=error&reason=profile_fetch`,
       );
@@ -291,6 +306,14 @@ serve(async (req) => {
     console.log(
       `[instagram-oauth-callback] Storing instagram_user_id: ${instagramBusinessAccountId} (IGSID from /${instagramUserId} endpoint)`,
     );
+
+    // KEY CAPTURE: which account did Meta actually return?
+    await dbg("resolved", {
+      token_user_id: String(instagramUserId),
+      ig_user_id: String(instagramBusinessAccountId),
+      username: igProfile.username,
+      account_type: igProfile.account_type ?? null,
+    });
 
     // =========================================================================
     // Step 4: Encrypt tokens and store in database
@@ -361,13 +384,27 @@ serve(async (req) => {
       upsertError = error;
     }
 
+    await dbg(upsertError ? "save_error" : "saved", {
+      token_user_id: String(instagramUserId),
+      ig_user_id: String(instagramBusinessAccountId),
+      username: igProfile.username,
+      account_type: igProfile.account_type ?? null,
+      detail: upsertError
+        ? (upsertError.message ?? JSON.stringify(upsertError))
+        : existingIntegration
+          ? "updated"
+          : "inserted",
+    });
     if (upsertError) {
       console.error(
         "[instagram-oauth-callback] Failed to save integration:",
         upsertError,
       );
       return Response.redirect(
-        `${redirectUrl}?instagram=error&reason=save_failed`,
+        `${redirectUrl}?instagram=error&reason=save_failed` +
+          `&dbg_uid=${encodeURIComponent(instagramBusinessAccountId)}` +
+          `&dbg_user=${encodeURIComponent(igProfile.username)}` +
+          `&dbg_detail=${encodeURIComponent(upsertError.message ?? "")}`,
       );
     }
 
@@ -375,9 +412,14 @@ serve(async (req) => {
       `[instagram-oauth-callback] Integration saved successfully for @${igProfile.username}`,
     );
 
-    // Redirect back to app with success
+    // Redirect back to app with success. dbg_* params are TEMPORARY diagnostics for the
+    // multi-account connect issue — they reveal WHICH Instagram account the OAuth actually
+    // resolved (so we can tell if Meta returned the wrong account).
     return Response.redirect(
-      `${redirectUrl}?instagram=success&account=${encodeURIComponent(igProfile.username)}`,
+      `${redirectUrl}?instagram=success&account=${encodeURIComponent(igProfile.username)}` +
+        `&dbg_uid=${encodeURIComponent(instagramBusinessAccountId)}` +
+        `&dbg_type=${encodeURIComponent(igProfile.account_type ?? "")}` +
+        `&dbg_tokuid=${encodeURIComponent(String(instagramUserId))}`,
     );
   } catch (err) {
     console.error("[instagram-oauth-callback] Unexpected error:", err);
