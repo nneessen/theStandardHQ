@@ -37,7 +37,9 @@ export type RecruitingVariant =
   | "checklist"
   | "poster"
   | "neon"
-  | "clock";
+  | "clock"
+  | "highway"
+  | "memo";
 
 export interface RecruitingCardProps {
   agencyName: string;
@@ -235,6 +237,29 @@ export const RECRUITING_COPY: Record<RecruitingVariant, CopyField[]> = {
       default:
         "Inbound-only sales, Monday to Friday. When the clock hits five, you're off.",
     },
+  ],
+  highway: [
+    { key: "eyebrow", label: "Eyebrow", default: "Take the next exit" },
+    { key: "exit", label: "Exit tab", default: "EXIT 5" },
+    { key: "dest", label: "Destination (on sign)", default: "Quality of Life" },
+    {
+      key: "sub",
+      label: "Supporting line",
+      multiline: true,
+      default: "100% inbound · Mon–Fri 10–5 · Weekends off",
+    },
+  ],
+  memo: [
+    { key: "eyebrow", label: "Eyebrow", default: "Auto-reply" },
+    { key: "subject", label: "Subject line", default: "Out of office" },
+    {
+      key: "body",
+      label: "Body",
+      multiline: true,
+      default:
+        "I'm off the clock — it's after five, or it's the weekend. Inbound-only sales means I actually get my life back. Back Monday at 10 ET.",
+    },
+    { key: "signoff", label: "Sign-off", default: "— An agent with a life" },
   ],
 };
 
@@ -859,11 +884,16 @@ export function RecruitingCard({
       textTransform: "uppercase",
       color: C.inkMuteOnCream,
     };
+    const ticketPad = format === "square" ? 56 : 70;
+    // FROM / connector / TO are deterministic columns: a fixed 90px connector and two
+    // equal halves. Each big word is sized to fit its half (real Big Shoulders em ≈ 0.52,
+    // 0.62 here over-estimates) so the row can never overflow the cream card.
+    const routeColW = (W - 2 * ticketPad - 80 - 90 - 44) / 2;
     return (
       <div
         style={{
           ...base,
-          padding: format === "square" ? 56 : 70,
+          padding: ticketPad,
           background: C.ink,
           fontFamily: SANS,
         }}
@@ -911,13 +941,16 @@ export function RecruitingCard({
             </span>
           </div>
 
-          {/* body */}
+          {/* body — info anchored to the top, barcode pinned to the bottom (the
+              canonical boarding-pass layout), so a tall Story reads as intentional
+              ticket whitespace instead of a void. */}
           <div
             style={{
               flex: 1,
-              padding: "38px 40px 30px",
+              padding: "40px 40px 34px",
               display: "flex",
               flexDirection: "column",
+              minHeight: 0,
             }}
           >
             <div
@@ -932,15 +965,16 @@ export function RecruitingCard({
                 display: "flex",
                 alignItems: "flex-end",
                 gap: 22,
-                margin: "32px 0",
+                marginTop: 30,
               }}
             >
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={fieldLabel}>From</div>
                 <div
                   style={{
-                    font: `800 ${format === "square" ? 38 : 46}px ${BIG}`,
+                    font: `800 ${fitFontPx(t("from"), format === "square" ? 38 : 46, routeColW, 0.62)}px ${BIG}`,
                     textTransform: "uppercase",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {t("from")}
@@ -948,7 +982,8 @@ export function RecruitingCard({
               </div>
               <div
                 style={{
-                  flex: 1,
+                  flex: "none",
+                  width: 90,
                   height: 2,
                   background: C.creamLine,
                   position: "relative",
@@ -967,13 +1002,14 @@ export function RecruitingCard({
                   ✈
                 </span>
               </div>
-              <div style={{ textAlign: "right" }}>
+              <div style={{ flex: 1, minWidth: 0, textAlign: "right" }}>
                 <div style={fieldLabel}>To</div>
                 <div
                   style={{
-                    font: `800 ${format === "square" ? 38 : 46}px ${BIG}`,
+                    font: `800 ${fitFontPx(t("to"), format === "square" ? 38 : 46, routeColW, 0.62)}px ${BIG}`,
                     textTransform: "uppercase",
                     color: C.emerald,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {t("to")}
@@ -985,7 +1021,7 @@ export function RecruitingCard({
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "16px 30px",
-                marginTop: "auto",
+                marginTop: 34,
               }}
             >
               {rows.slice(0, 4).map((r, i) => (
@@ -1002,6 +1038,28 @@ export function RecruitingCard({
                 </div>
               ))}
             </div>
+            {/* spacer pushes the barcode to the bottom edge of the pass */}
+            <div style={{ flex: 1, minHeight: 24 }} />
+            {/* barcode — grounds the pass + reinforces the boarding-pass metaphor */}
+            <div>
+              <div
+                style={{
+                  height: 64,
+                  background: `repeating-linear-gradient(90deg, ${C.ink} 0 4px, transparent 4px 7px, ${C.ink} 7px 9px, transparent 9px 14px, ${C.ink} 14px 19px, transparent 19px 22px)`,
+                }}
+              />
+              <div
+                style={{
+                  marginTop: 9,
+                  font: `700 13px ${SANS}`,
+                  letterSpacing: "0.3em",
+                  textTransform: "uppercase",
+                  color: C.inkMuteOnCream,
+                }}
+              >
+                E-Ticket · 100% inbound · No cold calls
+              </div>
+            </div>
           </div>
 
           {/* perforated stub */}
@@ -1014,22 +1072,29 @@ export function RecruitingCard({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              gap: 24,
             }}
           >
             <span
               style={{
+                flex: "none",
                 font: `800 26px ${BIG}`,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
+                whiteSpace: "nowrap",
               }}
             >
               {t("stamp")}
             </span>
             <span
               style={{
+                minWidth: 0,
                 font: `700 14px ${SANS}`,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {network ? `${agencyName} · ${network}` : agencyName}
@@ -1117,6 +1182,528 @@ export function RecruitingCard({
           onDark={false}
           page={page}
         />
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // POSTER — giant stacked words, a bold typographic hiring poster
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "poster") {
+    const words = l("words").filter(Boolean);
+    const longest = words.reduce((a, b) => (b.length > a.length ? b : a), "");
+    // Size each word to fit BOTH the column width (longest word) and the available
+    // height (line count) — deterministic, so the stack never clips (no DOM measuring).
+    const availH = H - 2 * padY - 240;
+    const byWidth = (W - 2 * pad) / (Math.max(1, longest.length) * 0.58);
+    const byHeight = availH / (Math.max(1, words.length) * 0.94);
+    const wordPx = Math.max(44, Math.min(byWidth, byHeight, 250));
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: `linear-gradient(165deg, ${C.navy}, ${C.navyDk})`,
+          color: C.cream,
+          fontFamily: SANS,
+        }}
+      >
+        <div
+          style={{
+            flex: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <span
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: C.amber,
+              flex: "none",
+            }}
+          />
+          <Eyebrow color={C.amber}>{t("eyebrow")}</Eyebrow>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          {words.map((w, i) => (
+            <div
+              key={i}
+              style={{
+                font: `800 ${wordPx}px/0.92 ${BIG}`,
+                textTransform: "uppercase",
+                letterSpacing: "-0.01em",
+                color: i === words.length - 1 ? C.amber : C.cream,
+              }}
+            >
+              {w}
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: "none" }}>
+          <div
+            style={{
+              font: `600 ${format === "square" ? 26 : 30}px/1.3 ${SANS}`,
+              color: C.amberSoft,
+              marginBottom: 8,
+            }}
+          >
+            {t("sub")}
+          </div>
+          <Footer
+            agencyName={agencyName}
+            network={network}
+            onDark
+            page={page}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // NEON — a glowing "now hiring" sign in a neon-framed window
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "neon") {
+    const glow = (c: string) => `0 0 6px ${c}, 0 0 14px ${c}, 0 0 30px ${c}`;
+    const signPx = fitFontPx(
+      t("sign"),
+      format === "square" ? 116 : 138,
+      W - 2 * pad - 150,
+      0.5,
+    );
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: `radial-gradient(120% 80% at 50% 38%, #151922, ${C.ink} 78%)`,
+          color: C.white,
+          fontFamily: SANS,
+        }}
+      >
+        <div style={{ flex: "none" }}>
+          <Eyebrow color={C.neon}>
+            <span style={{ textShadow: glow(C.neon) }}>● {t("eyebrow")}</span>
+          </Eyebrow>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              border: `3px solid ${C.neon}`,
+              borderRadius: 18,
+              boxShadow: `${glow(C.neon)}, inset 0 0 22px rgba(95,227,192,0.22)`,
+              padding: format === "square" ? "44px 52px" : "58px 72px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 20,
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                font: `800 ${signPx}px/0.96 ${BIG}`,
+                textTransform: "uppercase",
+                letterSpacing: "0.02em",
+                color: C.white,
+                textShadow: glow(C.neon),
+              }}
+            >
+              {t("sign")}
+            </div>
+            <div
+              style={{
+                width: 120,
+                height: 3,
+                background: C.neon,
+                boxShadow: glow(C.neon),
+              }}
+            />
+            <div
+              style={{
+                font: `500 ${format === "square" ? 28 : 32}px/1.3 ${SANS}`,
+                color: "rgba(255,255,255,0.82)",
+              }}
+            >
+              {t("sub")}
+            </div>
+          </div>
+        </div>
+        <div style={{ flex: "none" }}>
+          <div
+            style={{
+              textAlign: "center",
+              font: `700 ${format === "square" ? 20 : 22}px ${SANS}`,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: C.amberSoft,
+              marginBottom: 14,
+            }}
+          >
+            {t("rule")}
+          </div>
+          <Footer
+            agencyName={agencyName}
+            network={network}
+            onDark
+            page={page}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // CLOCK — a clock face stopped at 5:00 ("we're done at five")
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "clock") {
+    const dia = format === "square" ? 360 : format === "story" ? 460 : 410;
+    const hand = (deg: number, len: number, thick: number, color: string) => (
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom: "50%",
+          width: thick,
+          height: len,
+          background: color,
+          borderRadius: thick,
+          transformOrigin: "50% 100%",
+          transform: `translateX(-50%) rotate(${deg}deg)`,
+        }}
+      />
+    );
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: `radial-gradient(120% 90% at 50% 32%, ${C.ink2}, ${C.ink} 72%)`,
+          color: C.white,
+          fontFamily: SANS,
+        }}
+      >
+        <div style={{ flex: "none" }}>
+          <Eyebrow color={C.amber}>{t("eyebrow")}</Eyebrow>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: format === "story" ? 56 : 40,
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: dia,
+              height: dia,
+              flex: "none",
+              borderRadius: "50%",
+              background: C.cream,
+              boxShadow:
+                "0 30px 70px rgba(0,0,0,0.5), inset 0 0 0 10px rgba(13,15,20,0.05)",
+            }}
+          >
+            {Array.from({ length: 12 }).map((_, i) => {
+              const major = i % 3 === 0;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    left: "50%",
+                    top: 16,
+                    width: major ? 6 : 3,
+                    height: major ? 26 : 16,
+                    background: major ? C.ink : "rgba(13,15,20,0.42)",
+                    transformOrigin: `50% ${dia / 2 - 16}px`,
+                    transform: `translateX(-50%) rotate(${i * 30}deg)`,
+                  }}
+                />
+              );
+            })}
+            {/* hour hand → 5 o'clock (150°), minute hand → 12 (0°) */}
+            {hand(150, dia * 0.26, 13, C.ink)}
+            {hand(0, dia * 0.38, 8, C.amber)}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: C.ink,
+                transform: "translate(-50%,-50%)",
+                border: `4px solid ${C.amber}`,
+              }}
+            />
+          </div>
+          <div
+            style={{
+              font: `800 ${format === "square" ? 64 : 78}px/0.98 ${BIG}`,
+              textTransform: "uppercase",
+              textAlign: "center",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("headline")}
+          </div>
+        </div>
+        <div style={{ flex: "none" }}>
+          <div
+            style={{
+              font: `500 ${format === "square" ? 26 : 30}px/1.3 ${SANS}`,
+              color: "rgba(255,255,255,0.72)",
+              textAlign: "center",
+              marginBottom: 8,
+            }}
+          >
+            {t("sub")}
+          </div>
+          <Footer
+            agencyName={agencyName}
+            network={network}
+            onDark
+            page={page}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // HIGHWAY — an interstate green guide sign: take the exit out of the grind
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "highway") {
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: "#15171c",
+          color: C.white,
+          fontFamily: SANS,
+        }}
+      >
+        <div style={{ flex: "none" }}>
+          <Eyebrow color={C.lime}>{t("eyebrow")}</Eyebrow>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              background: "#0f7a3f",
+              border: "6px solid #fff",
+              borderRadius: 22,
+              padding: format === "square" ? "56px 48px" : "72px 56px",
+              boxShadow: "0 30px 70px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 44,
+                transform: "translateY(-100%)",
+                background: "#0f7a3f",
+                border: "5px solid #fff",
+                borderBottom: "none",
+                borderRadius: "12px 12px 0 0",
+                padding: "8px 22px",
+                font: `800 ${format === "square" ? 30 : 36}px ${SANS}`,
+                letterSpacing: "0.06em",
+              }}
+            >
+              {t("exit")}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  font: `800 ${fitFontPx(t("dest"), format === "square" ? 92 : 112, (W - 2 * pad) * 0.62, 0.6)}px/0.98 ${SANS}`,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {t("dest")}
+              </div>
+              <div
+                style={{
+                  flex: "none",
+                  font: `800 ${format === "square" ? 118 : 150}px/1 ${SANS}`,
+                }}
+              >
+                ↗
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ flex: "none" }}>
+          <div
+            style={{
+              font: `600 ${format === "square" ? 26 : 30}px/1.3 ${SANS}`,
+              color: "rgba(255,255,255,0.72)",
+              marginBottom: 8,
+            }}
+          >
+            {t("sub")}
+          </div>
+          <Footer
+            agencyName={agencyName}
+            network={network}
+            onDark
+            page={page}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // MEMO — an "out of office" auto-reply: the agent who has a life
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "memo") {
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: C.ink2,
+          fontFamily: SANS,
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              background: C.cream,
+              borderRadius: 16,
+              overflow: "hidden",
+              boxShadow: "0 30px 70px rgba(0,0,0,0.45)",
+              color: C.ink,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "20px 28px",
+                borderBottom: `1.5px solid ${C.creamLine}`,
+              }}
+            >
+              <span
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: "50%",
+                  background: C.red,
+                }}
+              />
+              <span
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: "50%",
+                  background: C.amber,
+                }}
+              />
+              <span
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: "50%",
+                  background: C.emerald,
+                }}
+              />
+              <span
+                style={{
+                  marginLeft: 14,
+                  font: `700 16px ${SANS}`,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: C.inkMuteOnCream,
+                }}
+              >
+                {t("eyebrow")}
+              </span>
+            </div>
+            <div
+              style={{
+                padding: format === "square" ? "40px 44px" : "54px 56px",
+              }}
+            >
+              <div
+                style={{
+                  font: `800 ${fitFontPx(t("subject"), format === "square" ? 56 : 66, W - 2 * pad - 120, 0.56)}px ${GROTESK}`,
+                  letterSpacing: "-0.01em",
+                  marginBottom: 26,
+                }}
+              >
+                {t("subject")}
+              </div>
+              <div
+                style={{
+                  font: `400 ${format === "square" ? 30 : 35}px/1.5 ${SANS}`,
+                  color: "#39322a",
+                }}
+              >
+                {t("body")}
+              </div>
+              <div
+                style={{
+                  marginTop: 34,
+                  font: `600 ${format === "square" ? 24 : 27}px ${SANS}`,
+                  color: C.inkMuteOnCream,
+                }}
+              >
+                {t("signoff")}
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer agencyName={agencyName} network={network} onDark page={page} />
       </div>
     );
   }

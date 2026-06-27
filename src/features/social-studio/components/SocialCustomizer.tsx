@@ -40,6 +40,14 @@ const RECRUITING_VARIANTS: { v: RecruitingVariant; label: string }[] = [
   { v: "seal", label: "Inbound-Only Seal" },
   { v: "lifeback", label: "Get Your Life Back" },
   { v: "compare", label: "Them vs Us" },
+  { v: "bigstat", label: "Zero Cold Calls" },
+  { v: "ticket", label: "Boarding Pass" },
+  { v: "checklist", label: "Everything You Get" },
+  { v: "poster", label: "Stacked Poster" },
+  { v: "neon", label: "Neon Now-Hiring" },
+  { v: "clock", label: "Done at Five" },
+  { v: "highway", label: "Take the Exit" },
+  { v: "memo", label: "Out of Office" },
 ];
 
 const CAPTION_TOKENS = [
