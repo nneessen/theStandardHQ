@@ -65,3 +65,14 @@ export {
   type WelcomeDraft,
   type WelcomePostStatus,
 } from "./agentWelcomeService";
+export { listNewAgents, type NewAgentRow } from "./newAgentsService";
+export {
+  listAgentPhotos,
+  addAgentPhoto,
+  removeAgentPhoto as removeAgentPhotoRow,
+  setPrimaryAgentPhoto,
+  reorderAgentPhotos,
+  bumpAgentPhotoRotation,
+  type AgentPhoto,
+  type AddAgentPhotoInput,
+} from "./agentPhotoService";

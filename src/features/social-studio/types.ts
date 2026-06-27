@@ -7,7 +7,7 @@ import { normalizeCardTheme } from "@/features/social-cards";
 import type { CardTheme, SocialFormat } from "@/features/social-cards";
 export type { SocialFormat };
 
-export type SocialView = "daily" | "weekly" | "monthly" | "aotw";
+export type SocialView = "daily" | "weekly" | "monthly" | "aotw" | "newagent";
 
 /** Where the graphic gets posted on Instagram (the user picks "post it as a post, a
  *  story, or a reel"). Drives the canvas aspect AND the publish endpoint:
@@ -150,6 +150,11 @@ export const VIEW_META: Record<
   aotw: {
     label: "Agent of the Week",
     blurb: "This week's #1 producer",
+    period: "weekly",
+  },
+  newagent: {
+    label: "New Agents",
+    blurb: "Welcome your newest agents",
     period: "weekly",
   },
 };

@@ -87,6 +87,9 @@ interface SocialCustomizerProps {
   uploadingPhoto: boolean;
   onUploadBgImage: (file: File) => void;
   uploadingBg: boolean;
+  /** The "New Agents" picker (+ photo manager in C-B), rendered only for the newagent
+   *  view. Supplied by the page so this editor stays agnostic of the agent data shape. */
+  newAgentPicker?: ReactNode;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -113,9 +116,11 @@ export function SocialCustomizer({
   uploadingPhoto,
   onUploadBgImage,
   uploadingBg,
+  newAgentPicker,
 }: SocialCustomizerProps) {
   const isReport = config.view === "monthly";
   const isAotw = config.view === "aotw";
+  const isNewAgent = config.view === "newagent";
   // Only the dark Spotlight theme has light text, so only it may carry a photo
   // background (with a legibility scrim). Editorial + Lift are dark-text on a light
   // surface, so they get light "paper" presets and no photo background.
@@ -227,6 +232,9 @@ export function SocialCustomizer({
           }))}
         />
       </Field>
+
+      {/* New Agents view: pick which agents to feature (one welcome card each). */}
+      {isNewAgent && newAgentPicker}
 
       {isAotw && (
         <Field label="Agent photo">
@@ -434,7 +442,7 @@ export function SocialCustomizer({
 
       {/* Show-top applies to every ranked view INCLUDING the monthly report (its roster
           paginates across continuation slides). "All" posts the whole agency. */}
-      {!isAotw && (
+      {!isAotw && !isNewAgent && (
         <Field label="Show top">
           <PillNav
             size="sm"
@@ -455,7 +463,7 @@ export function SocialCustomizer({
         </Field>
       )}
 
-      {!isReport && !isAotw && (
+      {!isReport && !isAotw && !isNewAgent && (
         <>
           <Field label="Headline">
             <Input

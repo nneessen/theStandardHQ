@@ -323,3 +323,66 @@ describe("buildPreviewPages (pagination — WI-4)", () => {
     expect(pages[0].kind).toBe("aotw");
   });
 });
+
+describe("buildPreviewPages — newagent view (Phase C)", () => {
+  it("emits one welcome card per featured agent, with the resolved photo URL", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "newagent" }),
+      producers: [], // leaderboard producers are irrelevant to this view
+      isSample: false,
+      labels: LABELS,
+      newAgents: [
+        { name: "Jordan A.", photoUrl: "data:image/png;base64,AAA" },
+        { name: "Priya R.", photoUrl: null },
+      ],
+    });
+    expect(pages).toHaveLength(2);
+    expect(pages.every((p) => p.kind === "newagent")).toBe(true);
+    if (pages[0].kind === "newagent") {
+      expect(pages[0].agent.name).toBe("Jordan A.");
+      expect(pages[0].agent.photoUrl).toBe("data:image/png;base64,AAA");
+      expect(pages[0].page).toEqual({ index: 1, total: 2 });
+    }
+    if (pages[1].kind === "newagent")
+      expect(pages[1].agent.photoUrl).toBeNull();
+  });
+
+  it("leaves a single featured agent UNstamped (no PAGE x/N)", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "newagent" }),
+      producers: [],
+      isSample: false,
+      labels: LABELS,
+      newAgents: [{ name: "Solo A.", photoUrl: null }],
+    });
+    expect(pages).toHaveLength(1);
+    if (pages[0].kind === "newagent") expect(pages[0].page).toBeUndefined();
+  });
+
+  it("shows ONE placeholder welcome card (not a real agent) when none is featured", () => {
+    // No featured agent → render the sample card so the layout is never empty; the page's
+    // isSample gate (driven by featuredAgents.length === 0) blocks posting it.
+    const pages = buildPreviewPages({
+      config: cfg({ view: "newagent" }),
+      producers: [],
+      isSample: true,
+      labels: LABELS,
+      newAgents: [],
+    });
+    expect(pages).toHaveLength(1);
+    expect(pages[0].kind).toBe("newagent");
+  });
+
+  it("ignores featured agents while isSample is true (sample card, never a real one)", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "newagent" }),
+      producers: [],
+      isSample: true,
+      labels: LABELS,
+      newAgents: [{ name: "Real A.", photoUrl: "data:real" }],
+    });
+    expect(pages).toHaveLength(1);
+    if (pages[0].kind === "newagent")
+      expect(pages[0].agent.photoUrl).not.toBe("data:real");
+  });
+});

@@ -47,6 +47,9 @@ const MIN_PRODUCERS: Record<SocialView, number> = {
   weekly: 5,
   monthly: 5,
   aotw: 1,
+  // newagent: "producers" here means FEATURED agents (the page feeds featuredAgents.length
+  // as the count) — one selected agent is enough to render a real welcome card.
+  newagent: 1,
 };
 
 export interface SampleStateInput {
@@ -153,12 +156,32 @@ function policyCountFor(p: ProducerRow): number {
   return p.submittedPolicies ?? p.policyCount;
 }
 
+/** A featured new-agent welcome card (newagent view). The `photoUrl` is ALREADY
+ *  resolved to a CORS-safe data URL (or null) by the page before it reaches here, so
+ *  the PNG export embeds it — this module never fetches. `name` is pre-formatted
+ *  (e.g. last-initial). */
+export interface NewAgentCardInput {
+  name: string;
+  photoUrl: string | null;
+}
+
 export interface BuildPreviewArgs {
   config: SocialStudioConfig;
   producers: ProducerRow[];
   isSample: boolean;
   labels: PeriodLabels;
+  /** Featured agents for the `newagent` view (one welcome card each). Omitted/empty
+   *  for every other view. */
+  newAgents?: NewAgentCardInput[];
 }
+
+// Placeholder welcome card shown when the newagent view has no featured agent yet (so
+// the layout is never empty). `isSample` gates posting/downloading it, exactly like the
+// fabricated leaderboard sample — a fake "Welcome, Jordan A." can never reach Instagram.
+const SAMPLE_NEWAGENT: NewAgentCardInput = {
+  name: "Jordan A.",
+  photoUrl: null,
+};
 
 // Rows per leaderboard / roster-continuation page, per format. Pinned so a FULL
 // page's last row sits fully inside the 1080×H frame — overflow:hidden hides a clip,
@@ -213,6 +236,7 @@ export function buildPreviewPages({
   producers,
   isSample,
   labels,
+  newAgents,
 }: BuildPreviewArgs): PreviewData[] {
   // Defense-in-depth: only take the live path when sample is off AND we actually have
   // producers (every producers[0] access stays crash-proof regardless of isSample).
@@ -267,6 +291,23 @@ export function buildPreviewPages({
         },
       },
     ];
+  }
+
+  // ── NEW AGENTS: one welcome card per featured agent (own sample logic) ──
+  // Independent of leaderboard `producers`: the "data" is the selected agent + their
+  // real photo (already resolved to a data URL by the page), so sample is decided by
+  // whether any agent is featured — NOT by whether the agency has ranked producers.
+  if (config.view === "newagent") {
+    const featured = newAgents ?? [];
+    const live = !isSample && featured.length > 0;
+    const list = live ? featured : [SAMPLE_NEWAGENT];
+    const total = list.length;
+    return list.map((a, i) => ({
+      kind: "newagent",
+      agent: { name: a.name, photoUrl: a.photoUrl ?? null },
+      theme,
+      page: total > 1 ? { index: i + 1, total } : undefined,
+    }));
   }
 
   // ── MONTHLY: recap page + roster-continuation pages ──

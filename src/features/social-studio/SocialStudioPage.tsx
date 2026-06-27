@@ -26,7 +26,11 @@ import { useAiAccess } from "@/hooks/subscription";
 import { useInstagramIntegrations, useSchedulePost } from "@/hooks/instagram";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
+import { useNewAgents, useBumpAgentRotation } from "./hooks/useNewAgents";
+import { resolveDisplayPhoto } from "./photoRotation";
+import { toLastInitial } from "@/features/social-cards";
 import { SocialPreview } from "./components/SocialPreview";
+import { NewAgentsSection } from "./components/NewAgentsSection";
 import {
   CardExportHost,
   type CardExportHandle,
@@ -147,16 +151,119 @@ export function SocialStudioPage() {
   );
   const hasLive = producers.length > 0;
 
+  // ── New Agents view ──────────────────────────────────────────────────────────────
+  // Lists approved, non-archived agents (incl. brand-new ones with no policies — exactly
+  // who you welcome), independent of the leaderboard. The owner picks which to feature;
+  // each becomes its own welcome card. Photos are resolved to CORS-safe data URLs below.
+  const { data: newAgents = [], isLoading: newAgentsLoading } =
+    useNewAgents(imoId);
+  const [featuredAgentIds, setFeaturedAgentIds] = useState<string[]>([]);
+  const [photoDataUrlByUrl, setPhotoDataUrlByUrl] = useState<
+    Record<string, string>
+  >({});
+  const toggleFeaturedAgent = (id: string) =>
+    setFeaturedAgentIds((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id],
+    );
+  const bumpRotation = useBumpAgentRotation();
+  // After a welcome graphic is posted/scheduled, advance the rotation cursor of the agents
+  // whose cards actually went out, so the NEXT post uses their next photo. Best-effort +
+  // fire-and-forget — the image already rendered+uploaded with the CURRENT photo, so a bump
+  // failure can't change what was posted (and never alarms after a successful post).
+  // newagent view only; a no-op elsewhere (e.g. AOTW keeps its own photo flow).
+  const bumpRotationFor = (agentIds: string[]) => {
+    if (config.view !== "newagent") return;
+    for (const id of agentIds) bumpRotation.mutate(id);
+  };
+  // Auto-feature the newest agent ONCE on first entry so the preview isn't empty — a ref,
+  // not a length check, so deselecting everyone never fights the user by re-adding them.
+  const autoFeaturedRef = useRef(false);
+  useEffect(() => {
+    if (config.view !== "newagent" || autoFeaturedRef.current) return;
+    if (newAgents.length === 0) return;
+    autoFeaturedRef.current = true;
+    setFeaturedAgentIds([newAgents[0].id]);
+  }, [config.view, newAgents]);
+
+  const featuredAgents = useMemo(
+    () => newAgents.filter((a) => featuredAgentIds.includes(a.id)),
+    [newAgents, featuredAgentIds],
+  );
+  // The chosen SOURCE photo per featured agent (manual override → rotation photo →
+  // profile photo). C-A has no rotation photos, so this is the profile photo.
+  const featuredChosenUrls = useMemo(
+    () =>
+      featuredAgents.map((a) =>
+        resolveDisplayPhoto({
+          photos: a.photos,
+          rotationIdx: a.rotationIdx,
+          profilePhotoUrl: a.photoUrl,
+        }),
+      ),
+    [featuredAgents],
+  );
+  // Resolve each distinct chosen URL → data URL (CORS-safe for the PNG export), keyed by
+  // URL so a rotation change (C-B) re-resolves; a failure falls back to the initials
+  // placeholder so the export stays clean (mirrors the AOTW photo path).
+  useEffect(() => {
+    let cancelled = false;
+    const missing = [
+      ...new Set(
+        featuredChosenUrls.filter(
+          (u): u is string => !!u && !photoDataUrlByUrl[u],
+        ),
+      ),
+    ];
+    if (missing.length === 0) return;
+    void (async () => {
+      const resolved = await Promise.all(
+        missing.map(async (u) => {
+          try {
+            return [u, await fetchImageAsDataUrl(u)] as const;
+          } catch {
+            return null;
+          }
+        }),
+      );
+      if (cancelled) return;
+      const next = resolved.filter(Boolean) as [string, string][];
+      if (next.length)
+        setPhotoDataUrlByUrl((p) => ({ ...p, ...Object.fromEntries(next) }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [featuredChosenUrls, photoDataUrlByUrl, fetchImageAsDataUrl]);
+
+  // The featured welcome cards, photo-resolved (name → last-initial like the welcome
+  // card). Fed into buildPreviewPages for the newagent view.
+  const newAgentCards = useMemo(
+    () =>
+      featuredAgents.map((a, i) => {
+        const chosen = featuredChosenUrls[i];
+        return {
+          name: toLastInitial(a.name),
+          photoUrl: chosen ? (photoDataUrlByUrl[chosen] ?? null) : null,
+        };
+      }),
+    [featuredAgents, featuredChosenUrls, photoDataUrlByUrl],
+  );
+
   // The "Preview with sample data" toggle: null = let the auto heuristic decide.
   const [sampleOverride, setSampleOverride] = useState<boolean | null>(null);
   // Sample vs. live is a pure decision (see resolveSampleState): when there are zero
   // real producers, sample is FORCED for EVERY view — so `!isSample` implies live
   // producers exist (no zero-producer crash) and the download/caption guards can
   // never let an empty real card through.
+  // For the newagent view the "count" is the number of FEATURED agents (not leaderboard
+  // producers): one selected agent → a real card; none → the placeholder sample (posting
+  // blocked). So sample is decided by the selection, not by whether the agency has ranked
+  // producers.
   const { isSample, sampleForced } = resolveSampleState({
     view: config.view,
-    producersCount: producers.length,
-    isLoading,
+    producersCount:
+      config.view === "newagent" ? featuredAgents.length : producers.length,
+    isLoading: config.view === "newagent" ? newAgentsLoading : isLoading,
     sampleOverride,
   });
 
@@ -167,8 +274,15 @@ export function SocialStudioPage() {
   // The carousel of slides for the current config. One card always; more when the
   // selected roster (Top-N / "all") spills past a page at the current format.
   const previewPages = useMemo(
-    () => buildPreviewPages({ config, producers, isSample, labels }),
-    [config, producers, isSample, labels],
+    () =>
+      buildPreviewPages({
+        config,
+        producers,
+        isSample,
+        labels,
+        newAgents: newAgentCards,
+      }),
+    [config, producers, isSample, labels, newAgentCards],
   );
   // Lead slide drives the caption context; the shown slide drives the on-screen preview.
   const previewData = previewPages[0];
@@ -378,6 +492,9 @@ export function SocialStudioPage() {
         toast.success(
           username ? `Posted Story to @${username}` : "Posted to your Story",
         );
+        // A Story posts only the shown slide → bump just that agent.
+        const shownId = featuredAgents[shownIndex]?.id;
+        bumpRotationFor(shownId ? [shownId] : []);
       } else {
         const slides = await exportHostRef.current?.exportAll();
         if (!slides || slides.length === 0)
@@ -400,6 +517,8 @@ export function SocialStudioPage() {
             ? `Posted ${what} to @${username}`
             : `Posted ${what} to Instagram`,
         );
+        // A feed post sends every featured agent as a carousel → bump them all.
+        bumpRotationFor(featuredAgents.map((a) => a.id));
       }
       setConfirmOpen(false);
     } catch (e) {
@@ -462,6 +581,10 @@ export function SocialStudioPage() {
           minute: "2-digit",
         })}`,
       );
+      // Schedule renders only the shown slide → bump just that agent so the next welcome
+      // post uses their next photo (the scheduled image was already rendered).
+      const shownId = featuredAgents[shownIndex]?.id;
+      bumpRotationFor(shownId ? [shownId] : []);
       setScheduleOpen(false);
       setScheduleAt("");
     } catch (e) {
@@ -530,15 +653,25 @@ export function SocialStudioPage() {
                   topAgent: previewData.rows[0]?.name,
                   totalAP: previewData.totalAp,
                 }
-              : {
-                  // Marketing slides carry no data context — they aren't produced by
-                  // buildPreviewPages in the single-card flow; defensive for the
-                  // broadened PreviewData union so the exhaustive types stay honest.
-                  view: config.view,
-                  agencyName,
-                  network,
-                  periodLabel: "",
-                };
+              : previewData.kind === "newagent"
+                ? {
+                    // Welcome card — give the AI the new agent's name as the subject so
+                    // a generated caption can welcome them by name.
+                    view: config.view,
+                    agencyName,
+                    network,
+                    periodLabel: "",
+                    topAgent: previewData.agent.name,
+                  }
+                : {
+                    // Marketing slides carry no data context — they aren't produced by
+                    // buildPreviewPages in the single-card flow; defensive for the
+                    // broadened PreviewData union so the exhaustive types stay honest.
+                    view: config.view,
+                    agencyName,
+                    network,
+                    periodLabel: "",
+                  };
       const caption = await generateCaption(ctx);
       patch({ caption });
       toast.success("Caption generated");
@@ -584,6 +717,7 @@ export function SocialStudioPage() {
               { label: "Weekly", value: "weekly" },
               { label: "Monthly", value: "monthly" },
               { label: "Agent of Week", value: "aotw" },
+              { label: "New Agents", value: "newagent" },
             ]}
           />
         </div>
@@ -861,6 +995,21 @@ export function SocialStudioPage() {
                 uploadingPhoto={uploadingPhoto}
                 onUploadBgImage={handleUploadBgImage}
                 uploadingBg={uploadingBg}
+                newAgentPicker={
+                  <NewAgentsSection
+                    agents={newAgents.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      photoUrl: a.photoUrl,
+                      createdAt: a.createdAt,
+                      photoCount: a.photos.length,
+                    }))}
+                    featuredIds={featuredAgentIds}
+                    onToggle={toggleFeaturedAgent}
+                    loading={newAgentsLoading}
+                    imoId={imoId}
+                  />
+                }
               />
             </Board>
 
