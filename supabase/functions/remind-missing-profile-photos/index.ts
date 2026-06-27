@@ -12,8 +12,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseAdminClient } from "../_shared/supabase-client.ts";
 
-const APP_URL_FALLBACK = "https://app.thestandardhq.com";
-
 // The bearer's `role` claim. The gateway's verify_jwt already guarantees a valid PROJECT token
 // reached us; we only need to confirm it's the service role (the cron) and not a logged-in user.
 // Decoding the claim (rather than exact-matching the service key) stays correct even if the cron's
@@ -70,12 +68,26 @@ serve(async (req) => {
   }
 
   // Absolute link for the email; the in-app notification uses a relative path.
+  // The public app URL is configuration, NEVER a hardcoded domain — a wrong guess ships
+  // dead 404 links in real email. Single source of truth: app_config.app_url, then the
+  // SITE_URL env. If neither is set, SKIP the email (a missing reminder beats a broken one).
   const { data: cfg } = await admin
     .from("app_config")
     .select("value")
     .eq("key", "app_url")
     .maybeSingle();
-  const appUrl = String(cfg?.value ?? APP_URL_FALLBACK).replace(/\/+$/, "");
+  const appUrl = String(cfg?.value ?? Deno.env.get("SITE_URL") ?? "")
+    .trim()
+    .replace(/\/+$/, "");
+  if (!appUrl) {
+    console.error(
+      "[remind-missing-profile-photos] no app_url configured (app_config.app_url or SITE_URL) — skipping to avoid emailing a broken link",
+    );
+    return new Response(
+      JSON.stringify({ reminded: 0, skipped: "missing app_url" }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
   const emailLink = `${appUrl}/settings?tab=agents`;
 
   let reminded = 0;
