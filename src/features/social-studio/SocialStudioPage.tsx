@@ -28,7 +28,7 @@ import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { useSpotlightActions } from "./hooks/useSpotlightActions";
 import { useNewAgents, useBumpAgentRotation } from "./hooks/useNewAgents";
 import { resolveDisplayPhoto } from "./photoRotation";
-import { toLastInitial } from "@/features/social-cards";
+import { toLastInitial, copyForVariant } from "@/features/social-cards";
 import { SocialPreview } from "./components/SocialPreview";
 import { NewAgentsSection } from "./components/NewAgentsSection";
 import {
@@ -744,6 +744,10 @@ export function SocialStudioPage() {
           cardTheme={config.cardTheme}
           welcomeVariant={config.welcomeVariant}
           onWelcomeVariantChange={(v) => patch({ welcomeVariant: v })}
+          welcomeCopy={copyForVariant(
+            config.templateCopy,
+            config.welcomeVariant,
+          )}
           igConnected={igConnected}
           selectedIntegration={selectedIntegration}
           postsImoId={postsImoId}

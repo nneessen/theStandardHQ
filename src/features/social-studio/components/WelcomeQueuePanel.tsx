@@ -14,6 +14,7 @@ import {
   toLastInitial,
   type CardTheme,
   type WelcomeVariant,
+  type CopyMap,
 } from "@/features/social-cards";
 import { SocialCardSwitch, type PreviewData } from "./SocialPreview";
 import { CardExportHost, type CardExportHandle } from "./CardExportHost";
@@ -36,6 +37,8 @@ export interface WelcomeQueuePanelProps {
   /** Which welcome design the drafts render with (the owner can switch it here). */
   welcomeVariant: WelcomeVariant;
   onWelcomeVariantChange: (v: WelcomeVariant) => void;
+  /** Per-field wording overrides for the welcome design. */
+  welcomeCopy: CopyMap;
   igConnected: boolean;
   selectedIntegration?: { id: string; instagram_username?: string | null };
   postsImoId: string | null;
@@ -66,6 +69,7 @@ interface WelcomeDraftRowProps {
   network?: string;
   cardTheme: CardTheme;
   welcomeVariant: WelcomeVariant;
+  welcomeCopy: CopyMap;
   igConnected: boolean;
   selectedIntegration?: { id: string; instagram_username?: string | null };
   postsImoId: string | null;
@@ -77,6 +81,7 @@ function WelcomeDraftRow({
   network,
   cardTheme,
   welcomeVariant,
+  welcomeCopy,
   igConnected,
   selectedIntegration,
   postsImoId,
@@ -129,6 +134,7 @@ function WelcomeDraftRow({
       photoUrl: photoDataUrl ?? null,
     },
     variant: welcomeVariant,
+    copy: welcomeCopy,
     theme: cardTheme,
   };
 
@@ -360,6 +366,7 @@ export function WelcomeQueuePanel({
   cardTheme,
   welcomeVariant,
   onWelcomeVariantChange,
+  welcomeCopy,
   igConnected,
   selectedIntegration,
   postsImoId,
@@ -402,6 +409,7 @@ export function WelcomeQueuePanel({
             network={network}
             cardTheme={cardTheme}
             welcomeVariant={welcomeVariant}
+            welcomeCopy={welcomeCopy}
             igConnected={igConnected}
             selectedIntegration={selectedIntegration}
             postsImoId={postsImoId}

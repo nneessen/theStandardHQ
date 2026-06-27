@@ -23,6 +23,7 @@ import {
   type MarketingVariant,
   type RecruitingVariant,
   type WelcomeVariant,
+  type CopyMap,
 } from "@/features/social-cards";
 import type { SocialFormat } from "../types";
 
@@ -74,16 +75,19 @@ export type PreviewData =
       agent: { name: string; photoUrl?: string | null };
       /** Which welcome design renders (own palette). */
       variant: WelcomeVariant;
+      /** Per-field copy overrides for the welcome design. */
+      copy?: CopyMap;
       theme: CardTheme;
       page?: CardPageInfo;
     }
   // Recruiting campaign template (The Standard / Epic Life pitch). Data-free — the
   // `variant` picks the design; its own palette (ignores `theme`, kept for the wrapper).
+  // `copy` carries per-field wording overrides.
   | {
       kind: "recruiting";
       variant: RecruitingVariant;
+      copy?: CopyMap;
       theme: CardTheme;
-      headline?: string;
       page?: CardPageInfo;
     };
 
@@ -197,6 +201,7 @@ export function SocialCardSwitch({
           agent={data.agent}
           format={format}
           variant={data.variant}
+          copy={data.copy}
           theme={data.theme}
           page={data.page}
         />
@@ -208,7 +213,7 @@ export function SocialCardSwitch({
           network={network}
           variant={data.variant}
           format={format}
-          headline={data.headline}
+          copy={data.copy}
           page={data.page}
         />
       );

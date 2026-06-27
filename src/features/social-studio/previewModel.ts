@@ -5,7 +5,7 @@
 // bugs (zero-producer crash, empty-card export, fabricated-sample leakage,
 // label/data timezone disagreement) have regression tests with no React in the way.
 
-import { toLastInitial, usd } from "@/features/social-cards";
+import { toLastInitial, usd, copyForVariant } from "@/features/social-cards";
 import {
   getMonthStartString,
   getTodayString,
@@ -304,10 +304,15 @@ export function buildPreviewPages({
     const live = !isSample && featured.length > 0;
     const list = live ? featured : [SAMPLE_NEWAGENT];
     const total = list.length;
+    const welcomeCopy = copyForVariant(
+      config.templateCopy,
+      config.welcomeVariant,
+    );
     return list.map((a, i) => ({
       kind: "newagent",
       agent: { name: a.name, photoUrl: a.photoUrl ?? null },
       variant: config.welcomeVariant,
+      copy: welcomeCopy,
       theme,
       page: total > 1 ? { index: i + 1, total } : undefined,
     }));
@@ -319,8 +324,8 @@ export function buildPreviewPages({
       {
         kind: "recruiting",
         variant: config.recruitingVariant,
+        copy: copyForVariant(config.templateCopy, config.recruitingVariant),
         theme,
-        headline: config.title?.trim() ? config.title : undefined,
       },
     ];
   }

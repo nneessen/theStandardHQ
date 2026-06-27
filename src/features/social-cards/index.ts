@@ -13,14 +13,17 @@ export type {
 
 export {
   NewAgentCard,
+  WELCOME_COPY,
   type NewAgentCardProps,
   type WelcomeVariant,
 } from "./NewAgentCard";
 export {
   RecruitingCard,
+  RECRUITING_COPY,
   type RecruitingCardProps,
   type RecruitingVariant,
 } from "./RecruitingCard";
+export { copyForVariant, type CopyField, type CopyMap } from "./templateCopy";
 
 export { LeaderboardSocialCard } from "./LeaderboardSocialCard";
 export type {

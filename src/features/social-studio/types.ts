@@ -88,6 +88,11 @@ export interface SocialStudioConfig {
   /** Which "welcome new agent" design renders (newagent view + the welcome-post queue).
    *  Its own celebratory palette, independent of cardTheme. */
   welcomeVariant: WelcomeVariant;
+
+  /** Per-template copy overrides for the recruiting + welcome designs, keyed by
+   *  `${variant}.${field}`. A blank/absent value falls back to the design's built-in
+   *  default — so the owner can rewrite any sentence without losing the starting copy. */
+  templateCopy: Record<string, string>;
 }
 
 export const DEFAULT_CONFIG: SocialStudioConfig = {
@@ -109,6 +114,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
   aowAgencyScale: 1,
   recruitingVariant: "manifesto",
   welcomeVariant: "celebration",
+  templateCopy: {},
 };
 
 // Per-POST content that is never part of a reusable STYLE template: the uploaded

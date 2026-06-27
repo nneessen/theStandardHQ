@@ -399,31 +399,32 @@ describe("buildPreviewPages — recruiting view", () => {
     expect(pages[0].kind).toBe("recruiting");
     if (pages[0].kind === "recruiting") {
       expect(pages[0].variant).toBe("compare");
-      expect(pages[0].headline).toBeUndefined();
+      // No overrides → an empty copy map (the card falls back to its defaults).
+      expect(pages[0].copy).toEqual({});
     }
   });
 
-  it("passes a non-blank headline override through (blank → undefined)", () => {
-    const withTitle = buildPreviewPages({
+  it("passes the picked variant's copy overrides through (stripping the variant prefix)", () => {
+    const pages = buildPreviewPages({
       config: cfg({
         view: "recruiting",
         recruitingVariant: "manifesto",
-        title: "Stop dialing. Start living.",
+        templateCopy: {
+          "manifesto.payoff1": "Stop dialing.",
+          "manifesto.payoff2": "Start living.",
+          // an override for a DIFFERENT variant must NOT leak into manifesto's copy
+          "hours.headline": "We clock out at five.",
+        },
       }),
       producers: [],
       isSample: false,
       labels: LABELS,
     });
-    if (withTitle[0].kind === "recruiting")
-      expect(withTitle[0].headline).toBe("Stop dialing. Start living.");
-
-    const blank = buildPreviewPages({
-      config: cfg({ view: "recruiting", title: "   " }),
-      producers: [],
-      isSample: false,
-      labels: LABELS,
-    });
-    if (blank[0].kind === "recruiting")
-      expect(blank[0].headline).toBeUndefined();
+    if (pages[0].kind === "recruiting") {
+      expect(pages[0].copy).toEqual({
+        payoff1: "Stop dialing.",
+        payoff2: "Start living.",
+      });
+    }
   });
 });

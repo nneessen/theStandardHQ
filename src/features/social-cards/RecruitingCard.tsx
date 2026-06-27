@@ -4,13 +4,10 @@
 // 10–5 ET, no weekends, no shared/aged/over-called leads — "get your life back."
 //
 // Deliberately its OWN look (warm ink / cream / amber / emerald), NOT the app's indigo
-// leaderboard/AOTW palette, so these read as a separate campaign. Five variants, each a
-// different layout + emphasis:
-//   • manifesto — bold strikethrough list of the grind they DON'T do → the inbound payoff
-//   • hours     — a bankers'-hours weekly grid (Mon–Fri 10–5 lit, weekends "yours")
-//   • seal      — an "inbound only" certification emblem (premium, badge-like)
-//   • lifeback  — an airy serif "get your life back" lifestyle card
-//   • compare   — a "most agencies vs The Standard" split
+// leaderboard/AOTW palette. Five variants (the `variant` prop), and EVERY sentence is
+// editable: each text slot resolves copy[field] ?? a built-in default (see RECRUITING_COPY),
+// so the owner controls the wording. List slots (the strikethrough list, chips, vs-columns)
+// edit one item per line.
 //
 // Pure/presentational: no hooks, no data. Deterministic sizing (no DOM measuring) so the
 // live preview and the modern-screenshot PNG export render identically.
@@ -21,6 +18,12 @@ import {
   type SocialFormat,
   type CardPageInfo,
 } from "./socialFormat";
+import {
+  copyText,
+  copyList,
+  type CopyField,
+  type CopyMap,
+} from "./templateCopy";
 
 export type RecruitingVariant =
   | "manifesto"
@@ -34,8 +37,8 @@ export interface RecruitingCardProps {
   network?: string;
   variant?: RecruitingVariant; // default "manifesto"
   format?: SocialFormat; // default "portrait"
-  /** Optional headline override; each variant has a strong default. */
-  headline?: string;
+  /** Per-field copy overrides (keyed by CopyField.key); blank → the default. */
+  copy?: CopyMap;
   page?: CardPageInfo;
 }
 
@@ -52,7 +55,6 @@ const C = {
   emerald: "#2f7d65",
   emeraldDk: "#123a30",
   red: "#df5b54",
-  mute: "#8b9099",
   inkMuteOnCream: "#6b6256",
 } as const;
 
@@ -61,35 +63,94 @@ const SANS = '"Inter",system-ui,sans-serif';
 const GROTESK = '"Space Grotesk","Inter",system-ui,sans-serif';
 const SERIF = '"Instrument Serif",Georgia,"Times New Roman",serif';
 
-// ── Baked copy (The Standard's pitch) ──
-const DONTS = [
-  "Cold calls",
-  "Outbound dialing",
-  "Nights & weekends",
-  "Aged & shared leads",
-  "Leads dialed 100 times",
-];
-const CHIPS = [
-  "Inbound only",
-  "No outbound",
-  "M–F · 10–5 ET",
-  "No weekends",
-  "Fresh leads",
-  "Quality of life",
-];
-const COMPARE_THEM = [
-  "Cold calls all day",
-  "Nights & weekends",
-  "Aged, shared leads",
-  "Dial-til-you-drop burnout",
-];
-const COMPARE_US = [
-  "100% inbound calls",
-  "Mon–Fri · 10–5 ET",
-  "Fresh leads only",
-  "Quality of life",
-];
 const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI"];
+
+// ── Editable copy schema + built-in defaults (the customizer renders these fields) ──
+export const RECRUITING_COPY: Record<RecruitingVariant, CopyField[]> = {
+  manifesto: [
+    { key: "eyebrow", label: "Eyebrow", default: "We don't do the grind" },
+    {
+      key: "donts",
+      label: "The list (one per line)",
+      list: true,
+      default:
+        "Cold calls\nOutbound dialing\nNights & weekends\nAged & shared leads\nLeads dialed 100 times",
+    },
+    { key: "payoff1", label: "Payoff line 1", default: "Just inbound." },
+    {
+      key: "payoff2",
+      label: "Payoff line 2",
+      default: "Just quality of life.",
+    },
+  ],
+  hours: [
+    { key: "eyebrow", label: "Eyebrow", default: "Bankers' hours, on purpose" },
+    { key: "headline", label: "Headline", default: "We clock out at five." },
+    { key: "weekend", label: "Weekend word", default: "YOURS" },
+    {
+      key: "subtext",
+      label: "Subtext",
+      multiline: true,
+      default: "No nights. No weekends. No outbound — ever.",
+    },
+  ],
+  seal: [
+    { key: "eyebrow", label: "Eyebrow", default: "The Standard guarantee" },
+    { key: "badge1", label: "Badge line 1", default: "Inbound" },
+    { key: "badge2", label: "Badge line 2", default: "Only" },
+    { key: "badgeSub", label: "Badge subtext", default: "Zero cold calls" },
+    {
+      key: "headline",
+      label: "Headline",
+      default: "Certified quality of life",
+    },
+  ],
+  lifeback: [
+    { key: "eyebrow", label: "Eyebrow", default: "Inbound insurance sales" },
+    { key: "headline", label: "Headline", default: "Get your life back." },
+    {
+      key: "body",
+      label: "Body",
+      multiline: true,
+      default:
+        "Inbound-only insurance sales. Monday to Friday, ten to five Eastern. Then you're off — no outbound, no weekends, no aged leads.",
+    },
+    {
+      key: "chips",
+      label: "Chips (one per line)",
+      list: true,
+      default:
+        "Inbound only\nNo outbound\nM–F · 10–5 ET\nNo weekends\nFresh leads\nQuality of life",
+    },
+  ],
+  compare: [
+    {
+      key: "eyebrow",
+      label: "Eyebrow",
+      default: "Same license. Different life.",
+    },
+    { key: "headline", label: "Headline", default: "Pick your day-to-day" },
+    { key: "themLabel", label: "Left column label", default: "Most agencies" },
+    {
+      key: "themItems",
+      label: "Left column (one per line)",
+      list: true,
+      default:
+        "Cold calls all day\nNights & weekends\nAged, shared leads\nDial-til-you-drop burnout",
+    },
+    {
+      key: "usItems",
+      label: "Right column (one per line)",
+      list: true,
+      default:
+        "100% inbound calls\nMon–Fri · 10–5 ET\nFresh leads only\nQuality of life",
+    },
+  ],
+};
+
+function defaultsFor(variant: RecruitingVariant, key: string): string {
+  return RECRUITING_COPY[variant].find((f) => f.key === key)?.default ?? "";
+}
 
 function Footer({
   agencyName,
@@ -160,12 +221,15 @@ export function RecruitingCard({
   network,
   variant = "manifesto",
   format = "portrait",
-  headline,
+  copy,
   page,
 }: RecruitingCardProps) {
   const { w: W, h: H } = FORMAT_DIMS[format];
-  // Vertical breathing room scales with the canvas; padding a touch tighter on square.
   const pad = format === "square" ? 70 : 88;
+  // Resolve a text/list slot: override if non-blank, else the variant's default.
+  const t = (key: string) => copyText(copy, key, defaultsFor(variant, key));
+  const l = (key: string) =>
+    copyList(copy, key, defaultsFor(variant, key).split("\n"));
 
   const base: CSSProperties = {
     width: W,
@@ -192,7 +256,7 @@ export function RecruitingCard({
         }}
       >
         <div style={{ flex: "none" }}>
-          <Eyebrow color={C.amber}>We don't do the grind</Eyebrow>
+          <Eyebrow color={C.amber}>{t("eyebrow")}</Eyebrow>
         </div>
 
         <div
@@ -205,9 +269,9 @@ export function RecruitingCard({
             minHeight: 0,
           }}
         >
-          {DONTS.map((d) => (
+          {l("donts").map((d, i) => (
             <div
-              key={d}
+              key={i}
               style={{
                 font: `800 ${format === "square" ? 76 : 88}px/0.98 ${BIG}`,
                 letterSpacing: "-0.01em",
@@ -232,9 +296,9 @@ export function RecruitingCard({
               color: "#fff",
             }}
           >
-            {headline ?? "Just inbound."}
+            {t("payoff1")}
             <br />
-            <span style={{ color: C.amber }}>Just quality of life.</span>
+            <span style={{ color: C.amber }}>{t("payoff2")}</span>
           </div>
         </div>
 
@@ -248,6 +312,7 @@ export function RecruitingCard({
   // ════════════════════════════════════════════════════════════════════════
   if (variant === "hours") {
     const cellGap = 12;
+    const weekendWord = t("weekend");
     return (
       <div
         style={{
@@ -259,7 +324,7 @@ export function RecruitingCard({
         }}
       >
         <div style={{ flex: "none" }}>
-          <Eyebrow color={C.emerald}>Bankers' hours, on purpose</Eyebrow>
+          <Eyebrow color={C.emerald}>{t("eyebrow")}</Eyebrow>
           <div
             style={{
               marginTop: 18,
@@ -267,7 +332,7 @@ export function RecruitingCard({
               letterSpacing: "-0.02em",
             }}
           >
-            {headline ?? "We clock out at five."}
+            {t("headline")}
           </div>
         </div>
 
@@ -306,7 +371,6 @@ export function RecruitingCard({
               >
                 {d}
               </div>
-              {/* lit 10–5 working band */}
               <div
                 style={{
                   flex: 1,
@@ -329,8 +393,7 @@ export function RecruitingCard({
               </div>
             </div>
           ))}
-          {/* weekend = yours (letters stacked down the column so it can't overflow the
-              narrow cell — deterministic, rasterizer-safe, and reads as intentional) */}
+          {/* weekend = yours (letters stacked so a longer word still fits) */}
           <div
             style={{
               flex: 1,
@@ -365,17 +428,20 @@ export function RecruitingCard({
                 alignItems: "center",
               }}
             >
-              {"YOURS".split("").map((ch, i) => (
-                <span
-                  key={i}
-                  style={{
-                    font: `800 ${format === "square" ? 40 : 48}px/0.9 ${BIG}`,
-                    color: C.amber,
-                  }}
-                >
-                  {ch}
-                </span>
-              ))}
+              {weekendWord
+                .slice(0, 8)
+                .split("")
+                .map((ch, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      font: `800 ${format === "square" ? 36 : 44}px/0.92 ${BIG}`,
+                      color: C.amber,
+                    }}
+                  >
+                    {ch}
+                  </span>
+                ))}
             </div>
           </div>
         </div>
@@ -387,7 +453,7 @@ export function RecruitingCard({
               color: C.inkMuteOnCream,
             }}
           >
-            No nights. No weekends. No outbound — ever.
+            {t("subtext")}
           </div>
           <Footer
             agencyName={agencyName}
@@ -417,7 +483,7 @@ export function RecruitingCard({
         }}
       >
         <div style={{ flex: "none", textAlign: "center", width: "100%" }}>
-          <Eyebrow color={C.amberSoft}>The Standard guarantee</Eyebrow>
+          <Eyebrow color={C.amberSoft}>{t("eyebrow")}</Eyebrow>
         </div>
 
         <div
@@ -463,9 +529,9 @@ export function RecruitingCard({
                 marginTop: 8,
               }}
             >
-              Inbound
+              {t("badge1")}
               <br />
-              Only
+              {t("badge2")}
             </span>
             <div
               style={{
@@ -484,7 +550,7 @@ export function RecruitingCard({
                 color: "rgba(255,255,255,0.85)",
               }}
             >
-              Zero cold calls
+              {t("badgeSub")}
             </span>
           </div>
         </div>
@@ -497,7 +563,7 @@ export function RecruitingCard({
               textTransform: "uppercase",
             }}
           >
-            {headline ?? "Certified quality of life"}
+            {t("headline")}
           </div>
           <Footer
             agencyName={agencyName}
@@ -525,9 +591,7 @@ export function RecruitingCard({
         }}
       >
         <div style={{ flex: "none" }}>
-          <Eyebrow color={C.emerald}>
-            {network ?? "Inbound insurance sales"}
-          </Eyebrow>
+          <Eyebrow color={C.emerald}>{t("eyebrow")}</Eyebrow>
         </div>
 
         <div
@@ -545,7 +609,7 @@ export function RecruitingCard({
               letterSpacing: "-0.01em",
             }}
           >
-            {headline ?? "Get your life back."}
+            {t("headline")}
           </div>
           <div
             style={{
@@ -555,23 +619,16 @@ export function RecruitingCard({
               color: C.inkMuteOnCream,
             }}
           >
-            Inbound-only insurance sales. Monday to Friday, ten to five Eastern.
-            Then you're off — no outbound, no weekends, no aged leads.
+            {t("body")}
           </div>
         </div>
 
-        {/* value chips */}
         <div
-          style={{
-            flex: "none",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
+          style={{ flex: "none", display: "flex", flexWrap: "wrap", gap: 12 }}
         >
-          {CHIPS.map((c) => (
+          {l("chips").map((c, i) => (
             <span
-              key={c}
+              key={i}
               style={{
                 font: `600 22px ${SANS}`,
                 letterSpacing: "0.01em",
@@ -611,9 +668,10 @@ export function RecruitingCard({
     onDark: boolean,
     accent: string,
     mark: string,
+    k: number,
   ) => (
     <div
-      key={text}
+      key={k}
       style={{
         display: "flex",
         alignItems: "flex-start",
@@ -646,7 +704,6 @@ export function RecruitingCard({
 
   return (
     <div style={{ ...base, flexDirection: "column", background: C.ink }}>
-      {/* headline strip */}
       <div
         style={{
           flex: "none",
@@ -654,7 +711,7 @@ export function RecruitingCard({
           background: C.ink,
         }}
       >
-        <Eyebrow color={C.amber}>Same license. Different life.</Eyebrow>
+        <Eyebrow color={C.amber}>{t("eyebrow")}</Eyebrow>
         <div
           style={{
             marginTop: 14,
@@ -663,15 +720,13 @@ export function RecruitingCard({
             textTransform: "uppercase",
           }}
         >
-          {headline ?? "Pick your day-to-day"}
+          {t("headline")}
         </div>
       </div>
 
-      {/* split body */}
       <div
         style={{ flex: 1, display: "flex", minHeight: 0, position: "relative" }}
       >
-        {/* them */}
         <div
           style={{
             flex: 1,
@@ -683,10 +738,9 @@ export function RecruitingCard({
             justifyContent: "center",
           }}
         >
-          <div style={colHead(C.red, false)}>Most agencies</div>
-          {COMPARE_THEM.map((t) => rowItem(t, false, C.red, "✕"))}
+          <div style={colHead(C.red, false)}>{t("themLabel")}</div>
+          {l("themItems").map((tx, i) => rowItem(tx, false, C.red, "✕", i))}
         </div>
-        {/* us */}
         <div
           style={{
             flex: 1,
@@ -699,9 +753,8 @@ export function RecruitingCard({
           }}
         >
           <div style={colHead(C.amber, true)}>{agencyName}</div>
-          {COMPARE_US.map((t) => rowItem(t, true, C.amber, "✓"))}
+          {l("usItems").map((tx, i) => rowItem(tx, true, C.amber, "✓", i))}
         </div>
-        {/* VS badge */}
         <div
           style={{
             position: "absolute",
@@ -724,7 +777,6 @@ export function RecruitingCard({
         </div>
       </div>
 
-      {/* footer strip */}
       <div
         style={{
           flex: "none",

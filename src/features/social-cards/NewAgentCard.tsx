@@ -20,6 +20,12 @@ import {
   type CardPageInfo,
 } from "./socialFormat";
 import type { CardTheme } from "./themes";
+import {
+  copyText,
+  applyTokens,
+  type CopyField,
+  type CopyMap,
+} from "./templateCopy";
 
 export type WelcomeVariant = "celebration" | "badge" | "marquee";
 
@@ -30,10 +36,33 @@ export interface NewAgentCardProps {
   format?: SocialFormat; // default "portrait"
   /** Which welcome design renders. Default "celebration". */
   variant?: WelcomeVariant;
+  /** Per-field copy overrides (keyed by CopyField.key); blank → the default. */
+  copy?: CopyMap;
   /** Kept for the card-wrapper class (SocialPreview); the welcome design has its own
    *  palette and does not use the shared theme. */
   theme?: CardTheme;
   page?: CardPageInfo; // optional carousel stamp (usually omit)
+}
+
+// ── Editable copy schema + built-in defaults. {agency} resolves to the agency name. ──
+export const WELCOME_COPY: Record<WelcomeVariant, CopyField[]> = {
+  celebration: [
+    { key: "eyebrow", label: "Eyebrow", default: "Welcome to the team" },
+    { key: "joined", label: "Tagline", default: "Just joined {agency}" },
+  ],
+  badge: [
+    { key: "kicker", label: "Kicker", default: "Welcome to the team" },
+    { key: "ribbon", label: "Ribbon", default: "New Agent" },
+  ],
+  marquee: [
+    { key: "eyebrow", label: "Eyebrow", default: "Welcome to the team" },
+    { key: "wordmark", label: "Big word", default: "WELCOME" },
+    { key: "joined", label: "Tagline", default: "Just joined {agency}" },
+  ],
+};
+
+function welcomeDefault(variant: WelcomeVariant, key: string): string {
+  return WELCOME_COPY[variant].find((f) => f.key === key)?.default ?? "";
 }
 
 const BIG = '"Big Shoulders Display", "Arial Black", system-ui, sans-serif';
@@ -211,10 +240,16 @@ export function NewAgentCard({
   agent,
   format = "portrait",
   variant = "celebration",
+  copy,
   page,
 }: NewAgentCardProps) {
   const { w: W_, h: H } = FORMAT_DIMS[format];
   const agentInitials = initials(agent.name);
+  // Resolve a copy slot (override if non-blank, else default) + fill the {agency} token.
+  const t = (key: string) =>
+    applyTokens(copyText(copy, key, welcomeDefault(variant, key)), {
+      agency: agencyName,
+    });
   const photoH = Math.round(
     H * (format === "story" ? 0.42 : format === "square" ? 0.48 : 0.5),
   );
@@ -344,7 +379,7 @@ export function NewAgentCard({
                   boxShadow: "0 8px 18px rgba(242,102,122,0.4)",
                 }}
               >
-                New Agent
+                {t("ribbon")}
               </div>
             </div>
             <div style={{ width: "100%", textAlign: "center" }}>
@@ -357,7 +392,7 @@ export function NewAgentCard({
                   marginBottom: 12,
                 }}
               >
-                Welcome to the team
+                {t("kicker")}
               </div>
               <div
                 style={{
@@ -411,7 +446,7 @@ export function NewAgentCard({
             color: W.gold,
           }}
         >
-          Welcome to the team
+          {t("eyebrow")}
         </div>
 
         <div
@@ -434,7 +469,16 @@ export function NewAgentCard({
               whiteSpace: "nowrap",
             }}
           >
-            Wel<span style={{ color: W.gold }}>come</span>
+            {(() => {
+              const wm = t("wordmark");
+              const mid = Math.ceil(wm.length / 2);
+              return (
+                <>
+                  {wm.slice(0, mid)}
+                  <span style={{ color: W.gold }}>{wm.slice(mid)}</span>
+                </>
+              );
+            })()}
           </div>
 
           {/* portrait + name row */}
@@ -471,7 +515,7 @@ export function NewAgentCard({
                   color: W.goldSoft,
                 }}
               >
-                Just joined {agencyName}
+                {t("joined")}
               </div>
             </div>
           </div>
@@ -539,7 +583,7 @@ export function NewAgentCard({
             color: W.gold,
           }}
         >
-          Welcome to the team
+          {t("eyebrow")}
         </div>
 
         <div
@@ -589,7 +633,7 @@ export function NewAgentCard({
                 padding: "9px 22px",
               }}
             >
-              Just joined {agencyName}
+              {t("joined")}
             </div>
           </div>
         </div>

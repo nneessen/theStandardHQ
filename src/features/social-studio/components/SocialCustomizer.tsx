@@ -20,10 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CARD_THEMES, CARD_THEME_LABEL } from "@/features/social-cards";
+import {
+  CARD_THEMES,
+  CARD_THEME_LABEL,
+  RECRUITING_COPY,
+  WELCOME_COPY,
+} from "@/features/social-cards";
 import type {
   RecruitingVariant,
   WelcomeVariant,
+  CopyField,
 } from "@/features/social-cards";
 import type { SocialStudioConfig } from "../types";
 
@@ -118,6 +124,65 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     <div className="space-y-1.5">
       <Cap style={{ fontSize: 11 }}>{label}</Cap>
       {children}
+    </div>
+  );
+}
+
+/** Editable-copy panel: one input per text slot of the active template variant. Blank =
+ *  the design's built-in default (shown as the placeholder). Overrides are stored on
+ *  config.templateCopy under `${variant}.${field}`. */
+function CopyEditor({
+  fields,
+  variant,
+  templateCopy,
+  onChange,
+}: {
+  fields: CopyField[];
+  variant: string;
+  templateCopy: Record<string, string>;
+  onChange: (next: Record<string, string>) => void;
+}) {
+  const set = (key: string, value: string) => {
+    const k = `${variant}.${key}`;
+    const next = { ...templateCopy };
+    if (value.trim() === "") delete next[k];
+    else next[k] = value;
+    onChange(next);
+  };
+  return (
+    <div className="space-y-2.5 rounded-lg border border-border bg-card/40 p-3">
+      <Cap style={{ fontSize: 11 }}>Wording — edit any line</Cap>
+      {fields.map((f) => {
+        const val = templateCopy[`${variant}.${f.key}`] ?? "";
+        return (
+          <div key={f.key} className="space-y-1">
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {f.label}
+            </span>
+            {f.multiline || f.list ? (
+              <Textarea
+                value={val}
+                placeholder={f.default}
+                rows={
+                  f.list ? Math.min(7, f.default.split("\n").length + 1) : 2
+                }
+                onChange={(e) => set(f.key, e.target.value)}
+              />
+            ) : (
+              <Input
+                value={val}
+                placeholder={f.default}
+                onChange={(e) => set(f.key, e.target.value)}
+              />
+            )}
+            {f.list && (
+              <span className="text-[9px] text-muted-foreground">
+                One item per line.
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -283,13 +348,12 @@ export function SocialCustomizer({
               })}
             </div>
           </Field>
-          <Field label="Headline (optional)">
-            <Input
-              value={config.title ?? ""}
-              placeholder="Leave blank for the template's built-in headline"
-              onChange={(e) => onChange({ title: e.target.value || undefined })}
-            />
-          </Field>
+          <CopyEditor
+            fields={RECRUITING_COPY[config.recruitingVariant]}
+            variant={config.recruitingVariant}
+            templateCopy={config.templateCopy}
+            onChange={(tc) => onChange({ templateCopy: tc })}
+          />
         </>
       )}
 
@@ -314,6 +378,14 @@ export function SocialCustomizer({
             })}
           </div>
         </Field>
+      )}
+      {isNewAgent && (
+        <CopyEditor
+          fields={WELCOME_COPY[config.welcomeVariant]}
+          variant={config.welcomeVariant}
+          templateCopy={config.templateCopy}
+          onChange={(tc) => onChange({ templateCopy: tc })}
+        />
       )}
       {isNewAgent && newAgentPicker}
 
