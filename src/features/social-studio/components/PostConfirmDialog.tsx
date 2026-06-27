@@ -153,7 +153,7 @@ export function PostConfirmDialog({
             // ── Feed chrome: header + image + actions + caption ──
             <div
               className="w-full overflow-hidden rounded-xl border border-border bg-card"
-              style={{ maxWidth: FRAME_W + 24 }}
+              style={{ maxWidth: FRAME_W }}
             >
               <div className="flex items-center gap-2 px-3 py-2">
                 <div className="h-7 w-7 rounded-full bg-gradient-to-br from-fuchsia-500 to-amber-400" />
@@ -162,7 +162,9 @@ export function PostConfirmDialog({
                 </span>
                 <span className="ml-auto text-muted-foreground">···</span>
               </div>
-              <div className="flex justify-center bg-black">{card}</div>
+              {/* Edge-to-edge: the card image fills the post width exactly — no black
+                  letterbox bars (the actual posted PNG is just the card). */}
+              <div className="flex justify-center">{card}</div>
               <div className="flex items-center gap-3 px-3 py-2 text-foreground">
                 <Heart className="h-5 w-5" />
                 <MessageCircle className="h-5 w-5" />
