@@ -205,8 +205,8 @@ function selectN<T>(items: T[], topN: number | "all"): T[] {
  *
  * Every slide carries the SAME agency total AP and a `page` stamp ("PAGE X / N") when
  * there's more than one. Ranks are absolute and contiguous across the page boundary —
- * the lead slide's title reflects the SELECTED total (e.g. "TOP 20 AGENTS"), not the
- * per-page row count.
+ * the lead slide's title reflects the user's SELECTED Top-N (e.g. "TOP 20 AGENTS"), not
+ * the per-page slice OR the (possibly smaller) rendered row count.
  */
 export function buildPreviewPages({
   config,
@@ -349,8 +349,18 @@ export function buildPreviewPages({
 
   const chunks = chunk(rows, perPage);
   const total = Math.max(1, chunks.length);
-  // Lead title reflects the SELECTED total, not the per-page slice length.
-  const firstTitle = config.title ?? `TOP ${rows.length} AGENTS`;
+  // Lead title reflects the user's SELECTED Top-N (config.topN), NOT the rendered row
+  // count — so changing 5 → 10 → 20 always changes the heading even when the agency has
+  // fewer producers than N (rows.length would plateau and read as "static"). "all" has
+  // no number, so it reads as the whole-agency leaderboard. An explicit headline wins.
+  // An explicit, non-blank headline wins; a blank/whitespace title (e.g. from a legacy
+  // saved template) must NOT defeat the fallback and render an empty heading.
+  const customTitle = config.title?.trim() ? config.title : undefined;
+  const firstTitle =
+    customTitle ??
+    (config.topN === "all"
+      ? "AGENCY LEADERBOARD"
+      : `TOP ${config.topN} AGENTS`);
   return chunks.map((slice, i) =>
     leaderboardPage(
       slice,

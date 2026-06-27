@@ -4,7 +4,7 @@
 // metrics yet), full customization, client-side PNG download, one-tap "Post to
 // Instagram", and scheduled auto-posting to the connected account (cron worker).
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Download,
@@ -48,6 +48,8 @@ import {
   buildPeriodLabels,
   buildPreviewPages,
 } from "./previewModel";
+import { aiErrorMessage } from "./aiErrorMessage";
+import { toLocalInputValue } from "./datetimeLocal";
 
 // Formats the spotlight-assets bucket accepts AND a browser <img> can render. iPhone
 // HEIC is excluded on both counts (the bucket rejects it; most browsers can't display it).
@@ -94,6 +96,7 @@ export function SocialStudioPage() {
     removeAgentPhoto,
     readFileAsDataUrl,
     generateCaption,
+    uploadGeneratedPost,
     uploadCarouselSlides,
     publishToInstagram,
   } = useSpotlightActions();
@@ -168,6 +171,15 @@ export function SocialStudioPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const shownIndex = Math.min(pageIndex, pageCount - 1);
   const shownPage = previewPages[shownIndex];
+
+  // When the roster SHAPE changes (view / Top-N / format), the page count changes too:
+  // reset to slide 1 so we never linger on a now-out-of-range slide, and dismiss an open
+  // post-confirm dialog so the user can only publish exactly the card they confirmed —
+  // not one whose view/Top-N they changed while the dialog was open (stale-export guard).
+  useEffect(() => {
+    setPageIndex(0);
+    setConfirmOpen(false);
+  }, [config.view, config.topN, config.format]);
 
   async function handleUploadPhoto(file: File) {
     if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
@@ -319,7 +331,9 @@ export function SocialStudioPage() {
       if (config.postType === "story") {
         const dataUrl = await renderCardPng();
         if (!dataUrl) throw new Error("The card isn't ready yet.");
-        const [url] = await uploadCarouselSlides([dataUrl]);
+        // A Story is a single frame — use the stable-key single-post upload (no throwaway
+        // per-publish carousel batch folder accumulating in Storage).
+        const url = await uploadGeneratedPost(dataUrl);
         const { username } = await publishToInstagram([url], "", {
           mediaType: "STORIES",
           integrationId,
@@ -360,12 +374,6 @@ export function SocialStudioPage() {
       postingRef.current = false;
       setPosting(false);
     }
-  }
-
-  // Format a Date as a datetime-local input value in LOCAL time (no tz suffix).
-  function toLocalInputValue(d: Date): string {
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   function openSchedule() {
@@ -499,7 +507,7 @@ export function SocialStudioPage() {
       toast.success("Caption generated");
     } catch (e) {
       console.error("Caption generation failed:", e);
-      toast.error("Couldn't generate a caption. Please try again.");
+      toast.error(aiErrorMessage(e, "caption"));
     } finally {
       setGeneratingCaption(false);
     }
@@ -583,6 +591,7 @@ export function SocialStudioPage() {
             postsImoId={postsImoId}
             producers={producers}
             isSample={isSample}
+            isLoading={isLoading}
             sampleForced={sampleForced}
             onSampleChange={setSampleOverride}
             labels={labels}

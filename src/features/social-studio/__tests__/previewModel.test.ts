@@ -252,9 +252,27 @@ describe("buildPreviewPages (pagination — WI-4)", () => {
         expect(p.totalAp).toBe(expectedTotal);
       }
     });
-    // Lead title reflects the SELECTED total, not the per-page slice length.
+    // "all" has no number, so the lead title reads as the whole-agency leaderboard
+    // (matches the Headline placeholder) — not a per-page slice or rendered row count.
     if (pages[0].kind === "leaderboard")
-      expect(pages[0].title).toBe("TOP 25 AGENTS");
+      expect(pages[0].title).toBe("AGENCY LEADERBOARD");
+  });
+
+  it("titles the lead slide from the SELECTED Top-N, not the rendered row count (Bug B)", () => {
+    // The agency has only 6 producers but the owner picked Top 20. The heading must honor
+    // the PICK ("TOP 20 AGENTS") so changing 5 → 10 → 20 always changes it — the old code
+    // used rows.length, so it plateaued at "TOP 6 AGENTS" and looked static.
+    const pages = buildPreviewPages({
+      config: cfg({ view: "daily", format: "portrait", topN: 20 }),
+      producers: makeProducers(6),
+      isSample: false,
+      labels: LABELS,
+    });
+    expect(pages).toHaveLength(1);
+    if (pages[0].kind === "leaderboard") {
+      expect(pages[0].rows).toHaveLength(6); // only 6 actually render
+      expect(pages[0].title).toBe("TOP 20 AGENTS"); // but the heading honors the pick
+    }
   });
 
   it("honors a numeric Top-N cap before paginating", () => {

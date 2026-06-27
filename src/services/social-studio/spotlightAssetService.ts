@@ -98,18 +98,46 @@ export async function uploadCarouselSlides(
   const uid = u.user?.id;
   if (!uid) throw new Error("not authenticated");
   const batchId = crypto.randomUUID();
-  return Promise.all(
-    dataUrls.map(async (dataUrl, i) => {
-      const blob = await (await fetch(dataUrl)).blob();
-      const path = `${uid}/${CAROUSEL_PREFIX}/${batchId}/${i}.png`;
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, blob, { contentType: "image/png", upsert: true });
-      if (error) throw error;
-      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      return pub.publicUrl;
-    }),
+  const folder = `${uid}/${CAROUSEL_PREFIX}/${batchId}`;
+  try {
+    return await Promise.all(
+      dataUrls.map(async (dataUrl, i) => {
+        const blob = await (await fetch(dataUrl)).blob();
+        const path = `${folder}/${i}.png`;
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, blob, { contentType: "image/png", upsert: true });
+        if (error) throw error;
+        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        return pub.publicUrl;
+      }),
+    );
+  } catch (e) {
+    // A partial batch (one slide failed after others uploaded) would otherwise leave
+    // world-readable orphans behind — the keys are unique + immutable, so nothing else
+    // ever GCs them. Best-effort cleanup of the whole batch folder before rethrowing.
+    await removeCarouselBatch(uid, batchId, dataUrls.length).catch(() => {});
+    throw e;
+  }
+}
+
+/**
+ * Best-effort GC of an immediate-publish carousel batch's slides (on a partial-upload
+ * failure rollback). Keys are deterministic ({uid}/carousel/{batchId}/{i}.png), so no
+ * Storage list() is needed; removing a key that never uploaded is a no-op, so passing the
+ * full requested count is safe.
+ */
+async function removeCarouselBatch(
+  uid: string,
+  batchId: string,
+  slideCount: number,
+): Promise<void> {
+  const folder = `${uid}/${CAROUSEL_PREFIX}/${batchId}`;
+  const keys = Array.from(
+    { length: slideCount },
+    (_, i) => `${folder}/${i}.png`,
   );
+  await supabase.storage.from(BUCKET).remove(keys);
 }
 
 /**

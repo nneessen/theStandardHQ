@@ -6,7 +6,7 @@
 // → uploadCarouselSlides → publishToInstagram as a FEED carousel). One brand theme +
 // format applies to the whole deck so the carousel reads as a cohesive set.
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -61,6 +61,8 @@ import {
 } from "../hooks/useSocialDecks";
 import type { SocialStudioConfig, SocialView } from "../types";
 import { MARKETING_COPY_CAPS } from "../marketingCopyCaps";
+import { aiErrorMessage } from "../aiErrorMessage";
+import { toLocalInputValue } from "../datetimeLocal";
 import { toast } from "sonner";
 
 const IG_CAROUSEL_MAX = 10;
@@ -89,6 +91,9 @@ interface CarouselBuilderProps {
   postsImoId: string | null;
   producers: ProducerRow[];
   isSample: boolean;
+  /** Leaderboard still loading — gate the empty-deck sample seed so it doesn't fire
+   *  during the data-load flash (review). */
+  isLoading: boolean;
   /** True when there is NO live data, so sample is forced — the toggle is disabled. */
   sampleForced: boolean;
   /** Flip the "Preview with sample data" override (so carousel mode can toggle it too). */
@@ -154,6 +159,7 @@ export function CarouselBuilder({
   postsImoId,
   producers,
   isSample,
+  isLoading,
   sampleForced,
   onSampleChange,
   labels,
@@ -279,6 +285,32 @@ export function CarouselBuilder({
     const lead = buildDataLead(view, carouselFormat, config.cardTheme);
     if (lead) addSlide(lead, view);
   }
+
+  // An empty deck + sample data used to show a blank preview — the "Preview with sample
+  // data" toggle only re-derives EXISTING data slides, it never created one. Seed ONE
+  // sample leaderboard slide the first time we're in sample mode with an empty deck so the
+  // preview always shows something. Ref-guarded so deleting the seeded slide doesn't
+  // re-add it (respects an intentional clear), gated on !isLoading so it never fires during
+  // the data-load flash. Covers forced sample (0 producers), auto-sample (thin agency), and
+  // toggling sample on after entering the builder.
+  const autoSeededRef = useRef(false);
+  useEffect(() => {
+    if (autoSeededRef.current || isLoading || !isSample || deck.length > 0)
+      return;
+    const lead = buildDataLead("daily", carouselFormat, config.cardTheme);
+    if (!lead) return;
+    autoSeededRef.current = true;
+    const id = crypto.randomUUID();
+    setDeck([{ id, data: lead, view: "daily" }]);
+    setSelectedId(id);
+  }, [
+    isSample,
+    isLoading,
+    deck.length,
+    buildDataLead,
+    carouselFormat,
+    config.cardTheme,
+  ]);
 
   // ── Deck save / load (Phase 3A) ─────────────────────────────────────────────
   // Serialize the deck to a versioned spec: data slides keep only their view (re-derived
@@ -552,7 +584,7 @@ export function CarouselBuilder({
       }
     } catch (e) {
       console.error("Carousel compose failed:", e);
-      toast.error("Couldn't build the carousel. Try again.");
+      toast.error(aiErrorMessage(e, "carousel"));
     } finally {
       composingRef.current = false;
       setComposing(false);
@@ -588,7 +620,7 @@ export function CarouselBuilder({
       toast.success("Caption written — edit it to taste.");
     } catch (e) {
       console.error("Caption generation failed:", e);
-      toast.error("Couldn't write a caption. Try again.");
+      toast.error(aiErrorMessage(e, "caption"));
     } finally {
       captioningRef.current = false;
       setCaptioning(false);
@@ -886,6 +918,7 @@ export function CarouselBuilder({
               <input
                 type="datetime-local"
                 value={scheduledFor}
+                min={toLocalInputValue(new Date())}
                 onChange={(e) => setScheduledFor(e.target.value)}
                 className="rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
                 title="Pick a future date and time to auto-post this carousel"
@@ -1321,7 +1354,7 @@ function MarketingEditor({
       toast.success("Drafted with AI — edit it to taste.");
     } catch (e) {
       console.error("Marketing copy draft failed:", e);
-      toast.error("Couldn't draft copy. Try again.");
+      toast.error(aiErrorMessage(e, "copy"));
     } finally {
       setDrafting(false);
     }
