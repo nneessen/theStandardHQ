@@ -275,7 +275,7 @@ export function NewAgentCard({
               left: 0,
               right: 0,
               height: 8,
-              background: `linear-gradient(90deg, ${W.coral}, ${W.gold} 60%, ${W.mint})`,
+              background: W.gold,
             }}
           />
           <div
@@ -333,7 +333,7 @@ export function NewAgentCard({
                 w={photoW}
                 h={photoH}
                 radius={24}
-                ring={W.coral}
+                ring={W.gold}
                 style={{
                   boxShadow: "0 26px 50px rgba(20,16,25,0.18)",
                   border: `4px solid ${W.creamCard}`,
@@ -344,14 +344,14 @@ export function NewAgentCard({
                   position: "absolute",
                   top: 22,
                   left: -10,
-                  background: W.coral,
-                  color: W.white,
+                  background: W.ink,
+                  color: W.gold,
                   font: `800 18px ${SANS}`,
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   padding: "8px 18px",
                   borderRadius: 6,
-                  boxShadow: "0 8px 18px rgba(242,102,122,0.4)",
+                  boxShadow: "0 8px 18px rgba(20,16,25,0.3)",
                 }}
               >
                 {t("ribbon")}
@@ -362,7 +362,7 @@ export function NewAgentCard({
                 style={{
                   font: `700 13px ${SANS}`,
                   letterSpacing: "0.3em",
-                  color: W.mint,
+                  color: W.inkMuteCream,
                   textTransform: "uppercase",
                   marginBottom: 12,
                 }}

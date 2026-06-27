@@ -29,19 +29,8 @@ import {
   MONTHLY_COPY,
   AOTW_COPY,
 } from "@/features/social-cards";
-import type {
-  RecruitingVariant,
-  WelcomeVariant,
-  CopyField,
-} from "@/features/social-cards";
-import type { SocialStudioConfig } from "../types";
-
-// The welcome designs for the New Agents view (own celebratory palette).
-const WELCOME_VARIANTS: { v: WelcomeVariant; label: string }[] = [
-  { v: "celebration", label: "Celebration" },
-  { v: "badge", label: "New-Agent Badge" },
-  { v: "marquee", label: "Big Welcome" },
-];
+import type { RecruitingVariant, CopyField } from "@/features/social-cards";
+import { WELCOME_VARIANT_OPTIONS, type SocialStudioConfig } from "../types";
 
 // The recruiting template set (each a distinct design + its own palette). Order = the
 // picker order; labels are plain-English (no jargon).
@@ -364,7 +353,7 @@ export function SocialCustomizer({
       {isNewAgent && (
         <Field label="Welcome design">
           <div className="grid grid-cols-3 gap-1.5">
-            {WELCOME_VARIANTS.map((w) => {
+            {WELCOME_VARIANT_OPTIONS.map((w) => {
               const active = config.welcomeVariant === w.v;
               return (
                 <Button

@@ -156,20 +156,15 @@ export async function setPrimaryAgentPhoto(
   if (e2) throw e2;
 }
 
-/** Persist a new rotation order: sort_order = position in `orderedIds`. */
+/** Persist a new rotation order in ONE atomic statement: sort_order = position in
+ *  `orderedIds`. Server-side (reorder_agent_photos RPC), scoped to the caller's IMO —
+ *  so a mid-batch failure can't leave sort_order half-applied. */
 export async function reorderAgentPhotos(orderedIds: string[]): Promise<void> {
-  await Promise.all(
-    orderedIds.map((id, i) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any)
-        .from("agent_photos")
-        .update({ sort_order: i })
-        .eq("id", id)
-        .then(({ error }: { error: unknown }) => {
-          if (error) throw error;
-        }),
-    ),
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).rpc("reorder_agent_photos", {
+    p_ids: orderedIds,
+  });
+  if (error) throw error;
 }
 
 /** Advance an agent's rotation cursor (call AFTER a successful welcome post/schedule so the

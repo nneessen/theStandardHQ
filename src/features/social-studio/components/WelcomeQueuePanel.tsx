@@ -27,6 +27,7 @@ import {
 import { useSpotlightActions } from "../hooks/useSpotlightActions";
 import { useSchedulePost } from "@/hooks/instagram";
 import { toLocalInputValue } from "../datetimeLocal";
+import { WELCOME_VARIANT_OPTIONS } from "../types";
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
@@ -43,13 +44,6 @@ export interface WelcomeQueuePanelProps {
   selectedIntegration?: { id: string; instagram_username?: string | null };
   postsImoId: string | null;
 }
-
-// The welcome designs the owner can pick between (label = plain English).
-const WELCOME_VARIANTS: { v: WelcomeVariant; label: string }[] = [
-  { v: "celebration", label: "Celebration" },
-  { v: "badge", label: "New-Agent Badge" },
-  { v: "marquee", label: "Big Welcome" },
-];
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -384,7 +378,7 @@ export function WelcomeQueuePanel({
         </h3>
         {/* Design picker — change the welcome template for every draft below. */}
         <div className="inline-flex rounded-lg border border-border bg-background p-0.5 text-[11px]">
-          {WELCOME_VARIANTS.map((w) => (
+          {WELCOME_VARIANT_OPTIONS.map((w) => (
             <button
               key={w.v}
               type="button"

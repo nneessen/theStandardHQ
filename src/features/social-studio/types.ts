@@ -20,6 +20,14 @@ export type SocialView =
   | "newagent"
   | "recruiting";
 
+/** The welcome-card designs + their picker labels — the single source shared by the
+ *  customizer and the welcome-review queue (no per-file drift). */
+export const WELCOME_VARIANT_OPTIONS: { v: WelcomeVariant; label: string }[] = [
+  { v: "celebration", label: "Celebration" },
+  { v: "badge", label: "New-Agent Badge" },
+  { v: "marquee", label: "Big Welcome" },
+];
+
 /** Where the graphic gets posted on Instagram (the user picks "post it as a post, a
  *  story, or a reel"). Drives the canvas aspect AND the publish endpoint:
  *   • post  → feed (portrait 4:5 or square 1:1), feed/carousel endpoint
