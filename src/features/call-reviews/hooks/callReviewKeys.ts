@@ -18,8 +18,8 @@ export const callReviewKeys = {
   // Set of recording ids the current user has listened to (read/unread marker).
   myListens: (imoId: string, userId: string) =>
     [...callReviewKeys.all, "my-listens", imoId, userId] as const,
-  signedUrl: (path: string) =>
-    [...callReviewKeys.all, "signed-url", path] as const,
+  signedUrl: (path: string, bucket: string) =>
+    [...callReviewKeys.all, "signed-url", bucket, path] as const,
   markers: (recordingId: string) =>
     [...callReviewKeys.all, "markers", recordingId] as const,
   detections: (recordingId: string) =>

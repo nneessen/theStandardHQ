@@ -16,6 +16,8 @@ import {
   formatCallDuration,
   CALL_OUTCOME_OPTIONS,
   useKpiIdentity,
+  CALL_RECORDINGS_BUCKET,
+  REDACTED_RECORDINGS_BUCKET,
 } from "@/features/kpi";
 import {
   useCallRecording,
@@ -73,16 +75,23 @@ export function CallReviewDetailPage({
   const toggleLike = useToggleLike();
   const liked = likedIds?.has(recordingId) ?? false;
   const [showReassign, setShowReassign] = useState(false);
-  // Skip the signed-URL fetch once the audio has been purged by the retention
-  // policy — the object is gone, so a fetch would just 404.
-  const audioExpired = !!recording?.audio_deleted_at;
+  // Prefer the REDACTED (PII-muted) audio whenever it exists — that's what every
+  // viewer hears. Fall back to the raw audio only before muting has run (raw is
+  // owner/admin-only by RLS). audio_deleted_at (retention purge) applies to the
+  // raw object; if a redacted copy exists it's still playable.
+  const redactedPath = recording?.redacted_storage_path ?? null;
+  const rawExpired = !!recording?.audio_deleted_at;
+  const playPath =
+    redactedPath ?? (rawExpired ? undefined : recording?.storage_path);
+  const playBucket = redactedPath
+    ? REDACTED_RECORDINGS_BUCKET
+    : CALL_RECORDINGS_BUCKET;
+  const audioExpired = rawExpired && !redactedPath;
   const {
     data: signedUrl,
     isLoading: urlLoading,
     error: urlError,
-  } = useCallRecordingSignedUrl(
-    audioExpired ? undefined : recording?.storage_path,
-  );
+  } = useCallRecordingSignedUrl(playPath, playBucket);
   const { data: markerData, isLoading: markersLoading } =
     useCallMarkers(recordingId);
   const { data: detections, isLoading: detectionsLoading } =

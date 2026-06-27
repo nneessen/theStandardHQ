@@ -14,6 +14,7 @@ import { supabase } from "@/services/base/supabase";
 import {
   useKpiIdentity,
   recordingStorageService,
+  CALL_RECORDINGS_BUCKET,
   type CallRecordingRow,
 } from "@/features/kpi";
 import { callReviewKeys, isSettling } from "./callReviewKeys";
@@ -345,10 +346,14 @@ export function useCallRecording(id: string | undefined) {
   });
 }
 
-export function useCallRecordingSignedUrl(storagePath: string | undefined) {
+export function useCallRecordingSignedUrl(
+  storagePath: string | undefined,
+  bucket: string = CALL_RECORDINGS_BUCKET,
+) {
   return useQuery({
-    queryKey: callReviewKeys.signedUrl(storagePath ?? "none"),
-    queryFn: () => recordingStorageService.getSignedUrl(storagePath as string),
+    queryKey: callReviewKeys.signedUrl(storagePath ?? "none", bucket),
+    queryFn: () =>
+      recordingStorageService.getSignedUrl(storagePath as string, bucket),
     enabled: !!storagePath,
     staleTime: 50 * 60_000, // URL lives 1h; refresh comfortably before expiry
     gcTime: 60 * 60_000,

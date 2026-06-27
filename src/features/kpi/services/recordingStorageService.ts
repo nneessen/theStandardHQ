@@ -7,6 +7,9 @@
 import { supabase } from "@/services/base/supabase";
 
 export const CALL_RECORDINGS_BUCKET = "call-recordings";
+// Muted copies (PII spans silenced) live here. Peers stream THIS bucket, never
+// the raw audio. See Call Reviews PII redaction Phase 2.
+export const REDACTED_RECORDINGS_BUCKET = "call-recordings-redacted";
 const SIGNED_URL_EXPIRY_SECONDS = 3600; // 1 hour
 
 /** Sanitize a filename for safe storage, preserving the extension. */
@@ -60,10 +63,15 @@ export const recordingStorageService = {
     await supabase.storage.from(CALL_RECORDINGS_BUCKET).remove([storagePath]);
   },
 
-  /** Create a short-lived signed URL for playback. Null on failure. */
-  async getSignedUrl(storagePath: string): Promise<string | null> {
+  /** Create a short-lived signed URL for playback. Null on failure. The bucket
+   *  defaults to the raw recordings bucket; pass the redacted bucket to stream
+   *  the muted copy. */
+  async getSignedUrl(
+    storagePath: string,
+    bucket: string = CALL_RECORDINGS_BUCKET,
+  ): Promise<string | null> {
     const { data, error } = await supabase.storage
-      .from(CALL_RECORDINGS_BUCKET)
+      .from(bucket)
       .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
 
     if (error) {

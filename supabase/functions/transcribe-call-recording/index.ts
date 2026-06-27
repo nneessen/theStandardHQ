@@ -546,6 +546,10 @@ serve(async (req) => {
         redaction_status: "needs_review",
         redaction_spans: redactionSpans,
         redaction_detector: redactionDetector,
+        // Re-arm the audio muting step (clears a stale 'done' on a re-transcribe,
+        // whose spans just changed) so the redact-call-audio fire below re-runs.
+        audio_redaction_status: "pending",
+        audio_redaction_error: null,
       })
       .eq("id", recording.id);
     if (saveErr)
@@ -586,6 +590,39 @@ serve(async (req) => {
       if (runtime?.waitUntil) runtime.waitUntil(fire);
     } catch {
       /* never fail transcription on analysis dispatch */
+    }
+
+    // ── Fire redact-call-audio in the background ──────────────────────────────
+    // Mutes the detected PII spans in the audio (Phase 2 ffmpeg worker). Never
+    // blocks/fails this response; no-ops until AUDIO_WORKER_URL is configured.
+    try {
+      const redactUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/redact-call-audio`;
+      const fireRedact = fetch(redactUrl, {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recording_id: recording.id }),
+      })
+        .then((r) => {
+          if (!r.ok) console.error("redact-audio dispatch non-ok", r.status);
+        })
+        .catch((e) =>
+          console.error(
+            "redact-audio dispatch failed",
+            e instanceof Error ? e.message : "",
+          ),
+        );
+      const runtime2 = (
+        globalThis as {
+          EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void };
+        }
+      ).EdgeRuntime;
+      if (runtime2?.waitUntil) runtime2.waitUntil(fireRedact);
+    } catch {
+      /* never fail transcription on audio-redaction dispatch */
     }
 
     return json({ ok: true, recording_id: recording.id, status: "completed" });

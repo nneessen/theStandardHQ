@@ -21,6 +21,7 @@ export { kpiKeys, useKpiIdentity } from "./hooks/kpiKeys";
 export {
   recordingStorageService,
   CALL_RECORDINGS_BUCKET,
+  REDACTED_RECORDINGS_BUCKET,
 } from "./services/recordingStorageService";
 export {
   deriveRecordingStatus,

@@ -6172,6 +6172,10 @@ export type Database = {
           transcription_error: string | null;
           transcription_model: string | null;
           transcription_status: string;
+          audio_redacted_at: string | null;
+          audio_redaction_error: string | null;
+          audio_redaction_status: string;
+          redacted_storage_path: string | null;
           redaction_detector: string | null;
           redaction_spans: Json | null;
           redaction_status: string;
@@ -6231,6 +6235,10 @@ export type Database = {
           transcription_error?: string | null;
           transcription_model?: string | null;
           transcription_status?: string;
+          audio_redacted_at?: string | null;
+          audio_redaction_error?: string | null;
+          audio_redaction_status?: string;
+          redacted_storage_path?: string | null;
           redaction_detector?: string | null;
           redaction_spans?: Json | null;
           redaction_status?: string;
@@ -6290,6 +6298,10 @@ export type Database = {
           transcription_error?: string | null;
           transcription_model?: string | null;
           transcription_status?: string;
+          audio_redacted_at?: string | null;
+          audio_redaction_error?: string | null;
+          audio_redaction_status?: string;
+          redacted_storage_path?: string | null;
           redaction_detector?: string | null;
           redaction_spans?: Json | null;
           redaction_status?: string;
