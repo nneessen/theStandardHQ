@@ -15,6 +15,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import {
   FORMAT_DIMS,
+  fitFontPx,
   type SocialFormat,
   type CardPageInfo,
 } from "./socialFormat";
@@ -246,6 +247,20 @@ export function RecruitingCard({
   // MANIFESTO — strikethrough the grind, land on the inbound payoff
   // ════════════════════════════════════════════════════════════════════════
   if (variant === "manifesto") {
+    // Auto-fit so a long custom line shrinks instead of clipping (WYSIWYG with the export).
+    const avail = W - 2 * pad;
+    const donts = l("donts");
+    const dontBase = format === "square" ? 76 : 88;
+    // ONE uniform size = the size that fits the LONGEST line (keeps the list even).
+    const dontPx = donts.reduce(
+      (px, d) => Math.min(px, fitFontPx(d, dontBase, avail, 0.52)),
+      dontBase,
+    );
+    const payBase = format === "square" ? 84 : 100;
+    const payPx = Math.min(
+      fitFontPx(t("payoff1"), payBase, avail, 0.52),
+      fitFontPx(t("payoff2"), payBase, avail, 0.52),
+    );
     return (
       <div
         style={{
@@ -270,11 +285,11 @@ export function RecruitingCard({
             minHeight: 0,
           }}
         >
-          {l("donts").map((d, i) => (
+          {donts.map((d, i) => (
             <div
               key={i}
               style={{
-                font: `800 ${format === "square" ? 76 : 88}px/0.98 ${BIG}`,
+                font: `800 ${dontPx}px/0.98 ${BIG}`,
                 letterSpacing: "-0.01em",
                 color: "rgba(255,255,255,0.34)",
                 textDecoration: "line-through",
@@ -291,10 +306,12 @@ export function RecruitingCard({
           <div
             style={{
               marginTop: format === "square" ? 14 : 26,
-              font: `800 ${format === "square" ? 84 : 100}px/0.96 ${BIG}`,
+              font: `800 ${payPx}px/0.96 ${BIG}`,
               letterSpacing: "-0.01em",
               textTransform: "uppercase",
               color: "#fff",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
             }}
           >
             {t("payoff1")}

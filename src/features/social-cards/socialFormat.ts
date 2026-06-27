@@ -44,6 +44,25 @@ export function toLastInitial(fullName: string): string {
 /** Whole-dollar USD, no cents. */
 export const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
+/**
+ * Deterministic font size (px) that keeps `text` on ONE line within `availWidthPx`, never
+ * larger than `basePx`. No DOM measuring → the live preview, the PNG export, and the posted
+ * image are byte-identical (true WYSIWYG): editable text shrinks to fit instead of silently
+ * clipping at the card edge. `charWidthEm` is the font's average glyph advance as a fraction
+ * of the size — condensed display (Big Shoulders) ≈ 0.52, sans (Inter) ≈ 0.58 — slightly
+ * over-estimated so the text always fits with a hair of margin.
+ */
+export function fitFontPx(
+  text: string,
+  basePx: number,
+  availWidthPx: number,
+  charWidthEm = 0.52,
+): number {
+  const n = Math.max(1, (text ?? "").trim().length);
+  const fit = availWidthPx / (n * charWidthEm);
+  return Math.max(Math.round(Math.min(basePx, fit)), Math.round(basePx * 0.38));
+}
+
 /** Up to two leading initials, uppercased ("Marcus W." → "MW", "Priya" → "P"). */
 export function initials(name: string): string {
   return name
