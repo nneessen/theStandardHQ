@@ -11,6 +11,8 @@ export type {
   AowStyle,
 } from "./AgentOfWeekCard";
 
+export { NewAgentCard, type NewAgentCardProps } from "./NewAgentCard";
+
 export { LeaderboardSocialCard } from "./LeaderboardSocialCard";
 export type {
   LeaderboardSocialCardProps,

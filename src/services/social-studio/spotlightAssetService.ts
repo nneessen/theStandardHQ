@@ -27,6 +27,26 @@ export function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+/**
+ * Fetch a public image URL and return it as a data: URL, so a card that renders the image can
+ * be rasterized to PNG with zero cross-origin dependency. modern-screenshot embeds the bytes
+ * inline instead of refetching at capture time — a remote <img> can silently drop from the
+ * export on a CORS miss. Used to inline an agent's profile photo (public `recruiting-assets`
+ * bucket, served `ACAO:*`) before AOTW / welcome-card export. Throws on a fetch/read failure so
+ * the caller can fall back to the placeholder.
+ */
+export async function fetchImageAsDataUrl(url: string): Promise<string> {
+  const res = await fetch(url, { mode: "cors" });
+  if (!res.ok) throw new Error(`fetch image failed (${res.status})`);
+  const blob = await res.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error ?? new Error("read failed"));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export interface UploadedAgentPhoto {
   /** data: URL the card renders (CORS-proof in the PNG export). */
   dataUrl: string;

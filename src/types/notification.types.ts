@@ -20,7 +20,8 @@ export type NotificationType =
   | "sponsorship_request"
   | "sponsorship_decision"
   | "sponsorship_bypass"
-  | "downline_contract_status";
+  | "downline_contract_status"
+  | "profile_photo_reminder";
 
 export interface Notification {
   id: string;

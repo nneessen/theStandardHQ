@@ -36,6 +36,7 @@ import { SocialCustomizer } from "./components/SocialCustomizer";
 import { QuickPostsPanel } from "./components/QuickPostsPanel";
 import { SocialLibrary } from "./components/SocialLibrary";
 import { CarouselBuilder } from "./components/CarouselBuilder";
+import { WelcomeQueuePanel } from "./components/WelcomeQueuePanel";
 import { ScheduledPostsPanel } from "./components/ScheduledPostsPanel";
 import {
   DEFAULT_CONFIG,
@@ -95,11 +96,15 @@ export function SocialStudioPage() {
     uploadAgentPhoto,
     removeAgentPhoto,
     readFileAsDataUrl,
+    fetchImageAsDataUrl,
     generateCaption,
     uploadGeneratedPost,
     uploadCarouselSlides,
     publishToInstagram,
   } = useSpotlightActions();
+  // Remembers which profile-photo URL we already auto-filled, so removing the auto photo (or a
+  // re-render) doesn't re-fetch the same one. Reset implicitly when the spotlighted agent changes.
+  const autoAowPhotoRef = useRef<string | null>(null);
   // The agency's connected Instagram accounts (Business/Creator). Posting + scheduling are
   // gated on having at least one; the SELECTED account supplies the integration id we post
   // with / attach to a scheduled row (WI-6 multi-account).
@@ -180,6 +185,38 @@ export function SocialStudioPage() {
     setPageIndex(0);
     setConfirmOpen(false);
   }, [config.view, config.topN, config.format]);
+
+  // Auto-fill the Agent-of-the-Week photo from the spotlighted agent's OWN profile photo so the
+  // owner doesn't have to re-upload it. Only when: AOTW view, live data, the top producer has a
+  // profile photo, and the owner hasn't already supplied/auto-filled one. Fetched -> data URL so
+  // the PNG export embeds it (a remote URL can drop on a CORS miss). A manual upload still wins,
+  // and a removed photo isn't re-added for the same agent (autoAowPhotoRef).
+  const topProfilePhoto =
+    config.view === "aotw" && !isSample
+      ? (producers[0]?.profilePhotoUrl ?? null)
+      : null;
+  useEffect(() => {
+    if (!topProfilePhoto || config.aowPhotoUrl) return;
+    if (autoAowPhotoRef.current === topProfilePhoto) return;
+    autoAowPhotoRef.current = topProfilePhoto;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const dataUrl = await fetchImageAsDataUrl(topProfilePhoto);
+        if (!cancelled)
+          setConfig((c) => ({
+            ...c,
+            aowPhotoUrl: dataUrl,
+            aowPhotoStorageUrl: topProfilePhoto,
+          }));
+      } catch {
+        /* leave the placeholder gradient — the export stays clean */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [topProfilePhoto, config.aowPhotoUrl, fetchImageAsDataUrl]);
 
   async function handleUploadPhoto(file: File) {
     if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
@@ -558,6 +595,17 @@ export function SocialStudioPage() {
             sample layouts — reload the page to try again.
           </div>
         )}
+
+        {/* Auto-generated "welcome new agent" posts awaiting the owner's review. Renders nothing
+            when the queue is empty, so it only appears when there's something to approve. */}
+        <WelcomeQueuePanel
+          agencyName={agencyName}
+          network={network}
+          cardTheme={config.cardTheme}
+          igConnected={igConnected}
+          selectedIntegration={selectedIntegration}
+          postsImoId={postsImoId}
+        />
 
         {/* Mode toggle: a single card, or the multi-slide carousel builder. */}
         <div className="mb-3 inline-flex rounded-lg border border-border bg-card/40 p-0.5 text-xs">

@@ -9,6 +9,7 @@ import {
   MonthlyReportCard,
   AgentOfWeekCard,
   MarketingCard,
+  NewAgentCard,
   FORMAT_DIMS,
   cardThemeWrapperClass,
   type SocialAgentRow,
@@ -62,6 +63,14 @@ export type PreviewData =
       headline?: string;
       body?: string;
       imageDataUrl?: string;
+    }
+  // "Welcome new agent" card — one agent + their profile photo. Used by the auto-generated
+  // welcome-post approval queue (photo passed as a data: URL so the export embeds it).
+  | {
+      kind: "newagent";
+      agent: { name: string; photoUrl?: string | null };
+      theme: CardTheme;
+      page?: CardPageInfo;
     };
 
 interface SocialPreviewProps {
@@ -164,6 +173,17 @@ export function SocialCardSwitch({
           headline={data.headline}
           body={data.body}
           imageDataUrl={data.imageDataUrl}
+        />
+      );
+    case "newagent":
+      return (
+        <NewAgentCard
+          agencyName={agencyName}
+          network={network}
+          agent={data.agent}
+          format={format}
+          theme={data.theme}
+          page={data.page}
         />
       );
     default: {

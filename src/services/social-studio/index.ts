@@ -5,6 +5,7 @@ export {
 } from "./socialTemplateService";
 export {
   readFileAsDataUrl,
+  fetchImageAsDataUrl,
   uploadAgentPhoto,
   uploadGeneratedPost,
   uploadCarouselSlides,
@@ -57,3 +58,10 @@ export {
   type LoadedDeck,
   type SaveDeckInput,
 } from "./socialDeckService";
+export {
+  listPendingWelcomePosts,
+  approveWelcomePost,
+  denyWelcomePost,
+  type WelcomeDraft,
+  type WelcomePostStatus,
+} from "./agentWelcomeService";
