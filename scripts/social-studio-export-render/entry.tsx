@@ -123,6 +123,11 @@ const config = {
       }
     : {}),
 };
+// ?aowBg=<css color/gradient> overrides the AOTW background — verifies the picker applies
+// on every design (editorial/noir, not just spotlight).
+const aowBgParam = params.get("aowBg");
+if (aowBgParam) config.aowBackground = decodeURIComponent(aowBgParam);
+
 // ?copyJson=<url-encoded JSON> overrides config.templateCopy — lets us verify that long
 // custom wording auto-fits (shrinks) instead of clipping at the card edge.
 const copyJsonParam = params.get("copyJson");

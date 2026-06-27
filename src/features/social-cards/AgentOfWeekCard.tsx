@@ -199,7 +199,7 @@ export function AgentOfWeekCard({
       <div
         style={{
           ...base,
-          background: C.white,
+          background: st.background || C.white,
           color: C.ink,
           fontFamily: SANS,
           display: "flex",
@@ -284,9 +284,9 @@ export function AgentOfWeekCard({
               display: "inline-block",
               background: C.ink,
               color: C.white,
-              font: `700 13px ${SANS}`,
+              font: `700 20px ${SANS}`,
               letterSpacing: "0.12em",
-              padding: "9px 15px",
+              padding: "10px 18px",
               textTransform: "uppercase",
             }}
           >
@@ -380,7 +380,7 @@ export function AgentOfWeekCard({
       <div
         style={{
           ...base,
-          background: C.canvas,
+          background: st.background || C.canvas,
           fontFamily: SANS,
           padding: inset,
         }}
@@ -461,7 +461,7 @@ export function AgentOfWeekCard({
           >
             <div
               style={{
-                font: `700 14px ${SANS}`,
+                font: `700 20px ${SANS}`,
                 letterSpacing: "0.32em",
                 color: C.indigo,
                 textTransform: "uppercase",
@@ -654,7 +654,7 @@ export function AgentOfWeekCard({
           <div style={{ textAlign: "center" }}>
             <div
               style={{
-                font: `700 16px ${SANS}`,
+                font: `700 22px ${SANS}`,
                 letterSpacing: "0.36em",
                 color: C.indigoLight,
                 textTransform: "uppercase",
