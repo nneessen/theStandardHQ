@@ -97,6 +97,60 @@ export function useApproveRedaction() {
   });
 }
 
+/** Approve many recordings at once (admin only). Calls the approve edge fn per
+ *  recording in small concurrent batches and reports per-id success/failure. */
+export function useApproveMany() {
+  const queryClient = useQueryClient();
+  const { imoId } = useKpiIdentity();
+  return useMutation({
+    mutationFn: async (recordingIds: string[]) => {
+      const ok: string[] = [];
+      const failed: string[] = [];
+      const CHUNK = 5;
+      for (let i = 0; i < recordingIds.length; i += CHUNK) {
+        const batch = recordingIds.slice(i, i + CHUNK);
+        await Promise.all(
+          batch.map(async (id) => {
+            try {
+              const { data, error } = await supabase.functions.invoke(
+                "approve-call-redaction",
+                { body: { recording_id: id } },
+              );
+              if (error) throw new Error(error.message);
+              if (data && (data as { ok?: boolean }).ok === false) {
+                throw new Error(
+                  (data as { status?: string }).status ?? "not ready",
+                );
+              }
+              ok.push(id);
+            } catch {
+              failed.push(id);
+            }
+          }),
+        );
+      }
+      return { ok, failed };
+    },
+    onSuccess: (res) => {
+      if (res.failed.length === 0) {
+        toast.success(
+          `Approved ${res.ok.length} recording${res.ok.length === 1 ? "" : "s"}.`,
+        );
+      } else {
+        toast.warning(
+          `Approved ${res.ok.length}; ${res.failed.length} not ready — re-mute or retry.`,
+        );
+      }
+      queryClient.invalidateQueries({
+        queryKey: callReviewKeys.reviewQueue(imoId ?? "none"),
+      });
+      queryClient.invalidateQueries({ queryKey: callReviewKeys.all });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Bulk approve failed."),
+  });
+}
+
 /** Replace the mute spans and re-mute from the raw original (admin only). */
 export function useUpdateSpans() {
   const queryClient = useQueryClient();
