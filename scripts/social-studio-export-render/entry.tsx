@@ -96,6 +96,8 @@ const cardTheme = normalizeCardTheme(params.get("theme"));
 const topNParam = params.get("topN") || "all";
 const topN: number | "all" = topNParam === "all" ? "all" : Number(topNParam);
 const n = Number(params.get("n") || "47");
+// Recruiting view only: which template variant to render (manifesto|hours|seal|lifeback|compare).
+const recruitingVariant = params.get("variant") || undefined;
 
 // Strictly descending AP so ranks are unambiguous across page boundaries.
 const producers: ProducerRow[] = Array.from({ length: n }, (_, i) => ({
@@ -104,7 +106,19 @@ const producers: ProducerRow[] = Array.from({ length: n }, (_, i) => ({
   policyCount: Math.max(1, 15 - Math.floor(i / 3)),
 }));
 
-const config = { ...DEFAULT_CONFIG, view, format, cardTheme, topN };
+const config = {
+  ...DEFAULT_CONFIG,
+  view,
+  format,
+  cardTheme,
+  topN,
+  ...(recruitingVariant
+    ? {
+        recruitingVariant:
+          recruitingVariant as typeof DEFAULT_CONFIG.recruitingVariant,
+      }
+    : {}),
+};
 const labels = buildPeriodLabels(new Date("2026-06-20T12:00:00Z"));
 const dataPages = buildPreviewPages({
   config,

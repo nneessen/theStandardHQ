@@ -10,6 +10,7 @@ import {
   AgentOfWeekCard,
   MarketingCard,
   NewAgentCard,
+  RecruitingCard,
   FORMAT_DIMS,
   cardThemeWrapperClass,
   type SocialAgentRow,
@@ -20,6 +21,7 @@ import {
   type CardTheme,
   type CardPageInfo,
   type MarketingVariant,
+  type RecruitingVariant,
 } from "@/features/social-cards";
 import type { SocialFormat } from "../types";
 
@@ -70,6 +72,15 @@ export type PreviewData =
       kind: "newagent";
       agent: { name: string; photoUrl?: string | null };
       theme: CardTheme;
+      page?: CardPageInfo;
+    }
+  // Recruiting campaign template (The Standard / Epic Life pitch). Data-free — the
+  // `variant` picks the design; its own palette (ignores `theme`, kept for the wrapper).
+  | {
+      kind: "recruiting";
+      variant: RecruitingVariant;
+      theme: CardTheme;
+      headline?: string;
       page?: CardPageInfo;
     };
 
@@ -183,6 +194,17 @@ export function SocialCardSwitch({
           agent={data.agent}
           format={format}
           theme={data.theme}
+          page={data.page}
+        />
+      );
+    case "recruiting":
+      return (
+        <RecruitingCard
+          agencyName={agencyName}
+          network={network}
+          variant={data.variant}
+          format={format}
+          headline={data.headline}
           page={data.page}
         />
       );

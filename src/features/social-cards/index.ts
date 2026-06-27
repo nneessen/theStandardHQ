@@ -12,6 +12,11 @@ export type {
 } from "./AgentOfWeekCard";
 
 export { NewAgentCard, type NewAgentCardProps } from "./NewAgentCard";
+export {
+  RecruitingCard,
+  type RecruitingCardProps,
+  type RecruitingVariant,
+} from "./RecruitingCard";
 
 export { LeaderboardSocialCard } from "./LeaderboardSocialCard";
 export type {

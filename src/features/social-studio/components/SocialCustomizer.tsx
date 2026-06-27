@@ -21,7 +21,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CARD_THEMES, CARD_THEME_LABEL } from "@/features/social-cards";
+import type { RecruitingVariant } from "@/features/social-cards";
 import type { SocialStudioConfig } from "../types";
+
+// The recruiting template set (each a distinct design + its own palette). Order = the
+// picker order; labels are plain-English (no jargon).
+const RECRUITING_VARIANTS: { v: RecruitingVariant; label: string }[] = [
+  { v: "manifesto", label: "No-Grind Manifesto" },
+  { v: "hours", label: "Bankers' Hours" },
+  { v: "seal", label: "Inbound-Only Seal" },
+  { v: "lifeback", label: "Get Your Life Back" },
+  { v: "compare", label: "Them vs Us" },
+];
 
 const CAPTION_TOKENS = [
   "{agencyName}",
@@ -121,6 +132,7 @@ export function SocialCustomizer({
   const isReport = config.view === "monthly";
   const isAotw = config.view === "aotw";
   const isNewAgent = config.view === "newagent";
+  const isRecruiting = config.view === "recruiting";
   // Only the dark Spotlight theme has light text, so only it may carry a photo
   // background (with a legibility scrim). Editorial + Lift are dark-text on a light
   // surface, so they get light "paper" presets and no photo background.
@@ -130,24 +142,27 @@ export function SocialCustomizer({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-lg border border-border bg-card/50 px-3 py-2">
-        <div>
-          <Label htmlFor="samplePreview" className="text-xs">
-            Preview with sample data
-          </Label>
-          <p className="text-[10px] text-muted-foreground">
-            {sampleForced
-              ? "No live data yet — sample shows until your agency has producers"
-              : "Fills the layout while production is thin"}
-          </p>
+      {/* Recruiting templates carry no live data, so the sample toggle is irrelevant there. */}
+      {!isRecruiting && (
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card/50 px-3 py-2">
+          <div>
+            <Label htmlFor="samplePreview" className="text-xs">
+              Preview with sample data
+            </Label>
+            <p className="text-[10px] text-muted-foreground">
+              {sampleForced
+                ? "No live data yet — sample shows until your agency has producers"
+                : "Fills the layout while production is thin"}
+            </p>
+          </div>
+          <Switch
+            id="samplePreview"
+            checked={samplePreview}
+            disabled={sampleForced}
+            onCheckedChange={onSamplePreviewChange}
+          />
         </div>
-        <Switch
-          id="samplePreview"
-          checked={samplePreview}
-          disabled={sampleForced}
-          onCheckedChange={onSamplePreviewChange}
-        />
-      </div>
+      )}
       {/* How it posts to Instagram — Post (feed), Story, or Reel. Reels are video-only
           via the IG API, so a static graphic can't post as one (disabled). Choosing
           Story locks the canvas to 9:16; Post exposes the feed shape sub-control. */}
@@ -214,24 +229,59 @@ export function SocialCustomizer({
       {/* ONE shared brand theme drives EVERY card type — pick a look once and it
           applies to daily / weekly / monthly / AOTW alike. Switching theme clears any
           AOTW background tied to the old theme's text-color regime (a dark preset would
-          be illegible on the light themes); font + sizes are regime-agnostic, so persist. */}
-      <Field label="Theme">
-        <PillNav
-          size="sm"
-          activeValue={config.cardTheme}
-          onChange={(v) =>
-            onChange({
-              cardTheme: v as SocialStudioConfig["cardTheme"],
-              aowBackground: null,
-              aowBgImageUrl: null,
-            })
-          }
-          items={CARD_THEMES.map((th) => ({
-            label: CARD_THEME_LABEL[th],
-            value: th,
-          }))}
-        />
-      </Field>
+          be illegible on the light themes); font + sizes are regime-agnostic, so persist.
+          Recruiting templates have their OWN palette per design, so the theme doesn't apply. */}
+      {!isRecruiting && (
+        <Field label="Theme">
+          <PillNav
+            size="sm"
+            activeValue={config.cardTheme}
+            onChange={(v) =>
+              onChange({
+                cardTheme: v as SocialStudioConfig["cardTheme"],
+                aowBackground: null,
+                aowBgImageUrl: null,
+              })
+            }
+            items={CARD_THEMES.map((th) => ({
+              label: CARD_THEME_LABEL[th],
+              value: th,
+            }))}
+          />
+        </Field>
+      )}
+
+      {/* Recruiting view: pick a template design + optional headline override. */}
+      {isRecruiting && (
+        <>
+          <Field label="Template">
+            <div className="grid grid-cols-2 gap-1.5">
+              {RECRUITING_VARIANTS.map((r) => {
+                const active = config.recruitingVariant === r.v;
+                return (
+                  <Button
+                    key={r.v}
+                    type="button"
+                    size="sm"
+                    variant={active ? "default" : "outline"}
+                    className="justify-start text-xs"
+                    onClick={() => onChange({ recruitingVariant: r.v })}
+                  >
+                    {r.label}
+                  </Button>
+                );
+              })}
+            </div>
+          </Field>
+          <Field label="Headline (optional)">
+            <Input
+              value={config.title ?? ""}
+              placeholder="Leave blank for the template's built-in headline"
+              onChange={(e) => onChange({ title: e.target.value || undefined })}
+            />
+          </Field>
+        </>
+      )}
 
       {/* New Agents view: pick which agents to feature (one welcome card each). */}
       {isNewAgent && newAgentPicker}

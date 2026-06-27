@@ -4,10 +4,20 @@
 
 // Single source of truth for the output dimensions (2026 Instagram sizes).
 import { normalizeCardTheme } from "@/features/social-cards";
-import type { CardTheme, SocialFormat } from "@/features/social-cards";
+import type {
+  CardTheme,
+  SocialFormat,
+  RecruitingVariant,
+} from "@/features/social-cards";
 export type { SocialFormat };
 
-export type SocialView = "daily" | "weekly" | "monthly" | "aotw" | "newagent";
+export type SocialView =
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "aotw"
+  | "newagent"
+  | "recruiting";
 
 /** Where the graphic gets posted on Instagram (the user picks "post it as a post, a
  *  story, or a reel"). Drives the canvas aspect AND the publish endpoint:
@@ -68,6 +78,11 @@ export interface SocialStudioConfig {
   aowTitleScale: number;
   /** Multiplier on the agency-name size ("a lot larger"). Default 1. */
   aowAgencyScale: number;
+
+  // ── Recruiting view (only used when view === "recruiting") ──
+  /** Which recruiting template design renders. Its own self-contained palette/layout
+   *  (independent of cardTheme). */
+  recruitingVariant: RecruitingVariant;
 }
 
 export const DEFAULT_CONFIG: SocialStudioConfig = {
@@ -87,6 +102,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
   aowBgImageUrl: null,
   aowTitleScale: 1,
   aowAgencyScale: 1,
+  recruitingVariant: "manifesto",
 };
 
 // Per-POST content that is never part of a reusable STYLE template: the uploaded
@@ -155,6 +171,11 @@ export const VIEW_META: Record<
   newagent: {
     label: "New Agents",
     blurb: "Welcome your newest agents",
+    period: "weekly",
+  },
+  recruiting: {
+    label: "Recruiting",
+    blurb: "Attract agents — quality-of-life templates",
     period: "weekly",
   },
 };

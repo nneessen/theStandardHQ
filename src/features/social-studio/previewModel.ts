@@ -50,6 +50,8 @@ const MIN_PRODUCERS: Record<SocialView, number> = {
   // newagent: "producers" here means FEATURED agents (the page feeds featuredAgents.length
   // as the count) — one selected agent is enough to render a real welcome card.
   newagent: 1,
+  // recruiting: data-free templates — never sampled (the page forces isSample=false).
+  recruiting: 1,
 };
 
 export interface SampleStateInput {
@@ -308,6 +310,18 @@ export function buildPreviewPages({
       theme,
       page: total > 1 ? { index: i + 1, total } : undefined,
     }));
+  }
+
+  // ── RECRUITING: a single data-free campaign template (the picked variant) ──
+  if (config.view === "recruiting") {
+    return [
+      {
+        kind: "recruiting",
+        variant: config.recruitingVariant,
+        theme,
+        headline: config.title?.trim() ? config.title : undefined,
+      },
+    ];
   }
 
   // ── MONTHLY: recap page + roster-continuation pages ──

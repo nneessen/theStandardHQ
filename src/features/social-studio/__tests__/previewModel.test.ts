@@ -386,3 +386,44 @@ describe("buildPreviewPages — newagent view (Phase C)", () => {
       expect(pages[0].agent.photoUrl).not.toBe("data:real");
   });
 });
+
+describe("buildPreviewPages — recruiting view", () => {
+  it("emits a single data-free card for the picked variant", () => {
+    const pages = buildPreviewPages({
+      config: cfg({ view: "recruiting", recruitingVariant: "compare" }),
+      producers: [], // recruiting templates use no producer data
+      isSample: false,
+      labels: LABELS,
+    });
+    expect(pages).toHaveLength(1);
+    expect(pages[0].kind).toBe("recruiting");
+    if (pages[0].kind === "recruiting") {
+      expect(pages[0].variant).toBe("compare");
+      expect(pages[0].headline).toBeUndefined();
+    }
+  });
+
+  it("passes a non-blank headline override through (blank → undefined)", () => {
+    const withTitle = buildPreviewPages({
+      config: cfg({
+        view: "recruiting",
+        recruitingVariant: "manifesto",
+        title: "Stop dialing. Start living.",
+      }),
+      producers: [],
+      isSample: false,
+      labels: LABELS,
+    });
+    if (withTitle[0].kind === "recruiting")
+      expect(withTitle[0].headline).toBe("Stop dialing. Start living.");
+
+    const blank = buildPreviewPages({
+      config: cfg({ view: "recruiting", title: "   " }),
+      producers: [],
+      isSample: false,
+      labels: LABELS,
+    });
+    if (blank[0].kind === "recruiting")
+      expect(blank[0].headline).toBeUndefined();
+  });
+});

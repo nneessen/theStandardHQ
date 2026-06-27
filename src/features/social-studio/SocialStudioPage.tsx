@@ -259,13 +259,18 @@ export function SocialStudioPage() {
   // producers): one selected agent → a real card; none → the placeholder sample (posting
   // blocked). So sample is decided by the selection, not by whether the agency has ranked
   // producers.
-  const { isSample, sampleForced } = resolveSampleState({
+  const sampleState = resolveSampleState({
     view: config.view,
     producersCount:
       config.view === "newagent" ? featuredAgents.length : producers.length,
     isLoading: config.view === "newagent" ? newAgentsLoading : isLoading,
     sampleOverride,
   });
+  // Recruiting templates carry no live data — they're always real, so never sampled
+  // (otherwise the zero-producer rule would force-sample them and block posting).
+  const isRecruiting = config.view === "recruiting";
+  const isSample = isRecruiting ? false : sampleState.isSample;
+  const sampleForced = isRecruiting ? false : sampleState.sampleForced;
 
   // Period labels mirror the queried window's date math (timezone-consistent), so
   // the printed stamp can't disagree with the data. Computed once per mount.
@@ -718,6 +723,7 @@ export function SocialStudioPage() {
               { label: "Monthly", value: "monthly" },
               { label: "Agent of Week", value: "aotw" },
               { label: "New Agents", value: "newagent" },
+              { label: "Recruiting", value: "recruiting" },
             ]}
           />
         </div>
