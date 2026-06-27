@@ -522,8 +522,10 @@ export function SocialStudioPage() {
             ? `Posted ${what} to @${username}`
             : `Posted ${what} to Instagram`,
         );
-        // A feed post sends every featured agent as a carousel → bump them all.
-        bumpRotationFor(featuredAgents.map((a) => a.id));
+        // A feed post sends the featured agents as a carousel, but Instagram caps it at
+        // 10 — bump ONLY the agents whose cards actually posted (slides/featuredAgents are
+        // 1:1), else agents 11+ would skip a photo they never showed.
+        bumpRotationFor(featuredAgents.slice(0, 10).map((a) => a.id));
       }
       setConfirmOpen(false);
     } catch (e) {
@@ -668,15 +670,25 @@ export function SocialStudioPage() {
                     periodLabel: "",
                     topAgent: previewData.agent.name,
                   }
-                : {
-                    // Marketing slides carry no data context — they aren't produced by
-                    // buildPreviewPages in the single-card flow; defensive for the
-                    // broadened PreviewData union so the exhaustive types stay honest.
-                    view: config.view,
-                    agencyName,
-                    network,
-                    periodLabel: "",
-                  };
+                : previewData.kind === "recruiting"
+                  ? {
+                      // Recruiting post — pass the agency's pitch so the caption is on
+                      // message (the edge fn frames it as a "now hiring" post).
+                      view: config.view,
+                      agencyName,
+                      network,
+                      periodLabel: "",
+                      tone: "Inbound-only insurance sales: 100% inbound calls, no cold calling or outbound, Monday–Friday 10–5 Eastern, no weekends, no shared/aged/over-called leads — quality of life, get your life back.",
+                    }
+                  : {
+                      // Marketing slides carry no data context — they aren't produced by
+                      // buildPreviewPages in the single-card flow; defensive for the
+                      // broadened PreviewData union so the exhaustive types stay honest.
+                      view: config.view,
+                      agencyName,
+                      network,
+                      periodLabel: "",
+                    };
       const caption = await generateCaption(ctx);
       patch({ caption });
       toast.success("Caption generated");

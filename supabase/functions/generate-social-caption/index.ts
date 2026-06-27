@@ -33,13 +33,13 @@ import {
 const FN_NAME = "generate-social-caption";
 const MAX_TOKENS = 1024;
 
-const SYSTEM_PROMPT = `You are a social-media copywriter for an insurance sales agency. You write ONE Instagram caption to accompany a leaderboard, monthly-report, or single-agent "Agent of the Week" spotlight graphic that celebrates the agency's producers.
+const SYSTEM_PROMPT = `You are a social-media copywriter for an insurance sales agency. You write ONE Instagram caption for the agency's social graphic — which may be a producer leaderboard, a monthly report, an "Agent of the Week" spotlight, a "welcome to the team" new-agent post, or a recruiting / "now hiring" post. Match the caption to the graphic described in the user message.
 
 OUTPUT: respond with ONLY a single JSON object, no prose and no markdown fences:
 { "caption": "the full caption text" }
 
 CAPTION RULES:
-- 2–5 short lines: an energetic hook, a celebratory line about the team's results, and a soft call-to-action.
+- 2–5 short lines: an energetic hook, a line that fits the graphic (celebrate results for a leaderboard, warmly welcome a new teammate, or invite agents to apply for a recruiting post), and a soft call-to-action.
 - Tasteful emojis (a few, not every line). Insurance/financial-services appropriate; never spammy, never ALL CAPS shouting.
 - End with 4–7 relevant hashtags on their own line (e.g. #lifeinsurance #insuranceagent #salesteam #leaderboard #topproducer — tailor to the data).
 - Use the agency name and network if provided. Refer to agents EXACTLY by the names given (already first-name + last-initial); NEVER expand a name or invent a full last name.
@@ -52,8 +52,20 @@ function buildUserMessage(ctx: Record<string, unknown>): string {
       ? "monthly agency report"
       : ctx.view === "aotw"
         ? "Agent of the Week spotlight"
-        : `${ctx.view} leaderboard`;
+        : ctx.view === "newagent"
+          ? "welcome-to-the-team post for a brand-new agent"
+          : ctx.view === "recruiting"
+            ? "agency recruiting / 'now hiring' post"
+            : `${ctx.view} leaderboard`;
   const parts = [`Write the Instagram caption for a ${kind} graphic.`];
+  if (ctx.view === "newagent")
+    parts.push(
+      "Write a warm, celebratory welcome for this new teammate — keep it about the welcome and the culture, NOT numbers or rankings.",
+    );
+  if (ctx.view === "recruiting")
+    parts.push(
+      "Write an inviting recruiting caption asking insurance agents to apply — focus on culture and quality of life; do NOT reference specific producers, dollar amounts, or rankings.",
+    );
   if (ctx.agencyName) parts.push(`Agency: ${ctx.agencyName}.`);
   if (ctx.network) parts.push(`Network: ${ctx.network}.`);
   if (ctx.periodLabel) parts.push(`Period: ${ctx.periodLabel}.`);
@@ -63,7 +75,9 @@ function buildUserMessage(ctx: Record<string, unknown>): string {
     parts.push(
       ctx.view === "aotw"
         ? `Agent of the Week: ${ctx.topAgent}.`
-        : `Top producer: ${ctx.topAgent}.`,
+        : ctx.view === "newagent"
+          ? `New agent who just joined: ${ctx.topAgent}.`
+          : `Top producer: ${ctx.topAgent}.`,
     );
   // For AOTW, totalAP carries the spotlighted agent's OWN premium — never label it
   // as an agency-wide total (it isn't one).
@@ -103,10 +117,15 @@ serve(async (req) => {
     view !== "daily" &&
     view !== "weekly" &&
     view !== "monthly" &&
-    view !== "aotw"
+    view !== "aotw" &&
+    view !== "newagent" &&
+    view !== "recruiting"
   ) {
     return json(
-      { error: "view must be daily, weekly, monthly, or aotw." },
+      {
+        error:
+          "view must be daily, weekly, monthly, aotw, newagent, or recruiting.",
+      },
       400,
     );
   }

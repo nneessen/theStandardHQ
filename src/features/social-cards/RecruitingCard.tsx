@@ -149,7 +149,8 @@ export const RECRUITING_COPY: Record<RecruitingVariant, CopyField[]> = {
 };
 
 function defaultsFor(variant: RecruitingVariant, key: string): string {
-  return RECRUITING_COPY[variant].find((f) => f.key === key)?.default ?? "";
+  // Defensive `?.` — a bad variant must not crash on an undefined schema.
+  return RECRUITING_COPY[variant]?.find((f) => f.key === key)?.default ?? "";
 }
 
 function Footer({

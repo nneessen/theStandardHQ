@@ -22,7 +22,9 @@ const ALLOWED_PHOTO_TYPES = [
   "image/webp",
   "image/gif",
 ];
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+// recruiting-assets bucket caps files at 5MB (storage.buckets.file_size_limit) — match it
+// client-side so we reject big files BEFORE the upload 413s and orphans a half-written object.
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 interface AgentPhotoManagerProps {
   agentId: string;

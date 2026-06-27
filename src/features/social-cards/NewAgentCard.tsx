@@ -62,7 +62,9 @@ export const WELCOME_COPY: Record<WelcomeVariant, CopyField[]> = {
 };
 
 function welcomeDefault(variant: WelcomeVariant, key: string): string {
-  return WELCOME_COPY[variant].find((f) => f.key === key)?.default ?? "";
+  // Defensive `?.` — a bad variant (e.g. a dev harness passing a recruiting key) must
+  // not crash on an undefined schema.
+  return WELCOME_COPY[variant]?.find((f) => f.key === key)?.default ?? "";
 }
 
 const BIG = '"Big Shoulders Display", "Arial Black", system-ui, sans-serif';
@@ -85,33 +87,6 @@ const W = {
   white: "#ffffff",
   inkMuteCream: "#6c6354",
 } as const;
-
-// Deterministic confetti scatter (percent positions + size + color + rotation). Fixed so
-// the preview and the PNG export are identical (no Math.random).
-const CONFETTI: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  r: number;
-  c: string;
-}[] = [
-  { x: 8, y: 6, w: 26, h: 10, r: 18, c: W.gold },
-  { x: 22, y: 12, w: 12, h: 12, r: 0, c: W.coral },
-  { x: 40, y: 5, w: 22, h: 9, r: -22, c: W.mint },
-  { x: 58, y: 10, w: 14, h: 14, r: 14, c: W.violet },
-  { x: 74, y: 5, w: 24, h: 9, r: 26, c: W.gold },
-  { x: 90, y: 13, w: 12, h: 12, r: -10, c: W.coral },
-  { x: 5, y: 22, w: 14, h: 14, r: 30, c: W.mint },
-  { x: 93, y: 26, w: 22, h: 9, r: -28, c: W.violet },
-  { x: 12, y: 84, w: 22, h: 9, r: 20, c: W.coral },
-  { x: 30, y: 90, w: 13, h: 13, r: -16, c: W.gold },
-  { x: 50, y: 86, w: 24, h: 9, r: 10, c: W.mint },
-  { x: 68, y: 91, w: 12, h: 12, r: 24, c: W.violet },
-  { x: 86, y: 85, w: 24, h: 10, r: -20, c: W.coral },
-  { x: 4, y: 54, w: 11, h: 11, r: 12, c: W.gold },
-  { x: 95, y: 58, w: 13, h: 13, r: -24, c: W.mint },
-];
 
 // Big Shoulders Display is condensed → scale the hero name by character count so it stays
 // on one line. Deterministic → identical in the live preview and the screenshot export.
@@ -533,34 +508,27 @@ export function NewAgentCard({
   }
 
   // ════════════════════════════════════════════════════════════════════════
-  // CELEBRATION — festive dark stage, confetti, glowing round portrait (default)
+  // CELEBRATION — elegant dark stage, gold hairline frame, glowing portrait (default)
   // ════════════════════════════════════════════════════════════════════════
   return (
     <div
       style={{
         ...base,
-        background: `radial-gradient(120% 80% at 50% -10%, ${W.plum}, ${W.night} 60%)`,
+        background: `radial-gradient(95% 65% at 50% 22%, #232b40 0%, #161b29 52%, #0d111b 100%)`,
         color: W.white,
         fontFamily: SANS,
       }}
     >
-      {/* confetti layer */}
-      {CONFETTI.map((p, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.w,
-            height: p.h,
-            background: p.c,
-            borderRadius: p.w === p.h ? "50%" : 2,
-            transform: `rotate(${p.r}deg)`,
-            opacity: 0.92,
-          }}
-        />
-      ))}
+      {/* thin gold hairline frame — premium, not festive */}
+      <div
+        style={{
+          position: "absolute",
+          inset: format === "square" ? 34 : 44,
+          border: `1.5px solid rgba(240,185,78,0.34)`,
+          borderRadius: 4,
+          pointerEvents: "none",
+        }}
+      />
 
       <div
         style={{
@@ -569,7 +537,7 @@ export function NewAgentCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: format === "square" ? "70px 80px" : "84px 80px",
+          padding: format === "square" ? "82px 90px" : "100px 96px",
           boxSizing: "border-box",
         }}
       >
@@ -577,8 +545,8 @@ export function NewAgentCard({
           style={{
             flex: "none",
             textAlign: "center",
-            font: `700 18px ${SANS}`,
-            letterSpacing: "0.34em",
+            font: `600 15px ${SANS}`,
+            letterSpacing: "0.4em",
             textTransform: "uppercase",
             color: W.gold,
           }}
@@ -593,7 +561,7 @@ export function NewAgentCard({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 32,
+            gap: 34,
             minHeight: 0,
           }}
         >
@@ -605,15 +573,16 @@ export function NewAgentCard({
             radius="50%"
             ring={W.goldSoft}
             style={{
-              boxShadow: `0 34px 80px rgba(0,0,0,0.55), 0 0 0 6px rgba(240,185,78,0.18), inset 0 0 0 3px ${W.gold}`,
+              border: `2px solid ${W.gold}`,
+              boxShadow: `0 30px 70px rgba(0,0,0,0.5), 0 0 72px rgba(240,185,78,0.16)`,
             }}
           />
           <div style={{ width: "100%", textAlign: "center" }}>
             <div
               style={{
-                font: `700 ${heroNamePx(agent.name, 96)}px/0.92 ${BIG}`,
+                font: `700 ${heroNamePx(agent.name, 100)}px/0.94 ${BIG}`,
                 color: W.white,
-                letterSpacing: "0.005em",
+                letterSpacing: "0.01em",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -621,16 +590,22 @@ export function NewAgentCard({
             >
               {agent.name}
             </div>
+            {/* thin gold rule, then the tagline in tracked caps — refined, no pill */}
             <div
               style={{
-                marginTop: 16,
-                display: "inline-block",
-                font: `700 16px ${SANS}`,
-                letterSpacing: "0.06em",
-                color: W.night,
-                background: `linear-gradient(90deg, ${W.gold}, ${W.goldSoft})`,
-                borderRadius: 999,
-                padding: "9px 22px",
+                width: 56,
+                height: 2,
+                background: W.gold,
+                opacity: 0.9,
+                margin: "22px auto 16px",
+              }}
+            />
+            <div
+              style={{
+                font: `600 17px ${SANS}`,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: W.goldSoft,
               }}
             >
               {t("joined")}
@@ -641,8 +616,8 @@ export function NewAgentCard({
         <Footer
           agencyName={agencyName}
           network={network}
-          color="rgba(255,255,255,0.6)"
-          line="rgba(255,255,255,0.14)"
+          color="rgba(255,255,255,0.55)"
+          line="rgba(255,255,255,0.12)"
           page={page}
         />
       </div>

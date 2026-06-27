@@ -14,6 +14,8 @@ export interface CaptionContext {
   /** For AOTW this is the spotlighted agent's OWN premium, not an agency total. */
   totalAP?: number;
   policies?: number;
+  /** Optional steer for the copy (e.g. the recruiting pitch for a recruiting post). */
+  tone?: string;
 }
 
 /**
