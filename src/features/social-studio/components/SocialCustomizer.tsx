@@ -21,8 +21,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CARD_THEMES, CARD_THEME_LABEL } from "@/features/social-cards";
-import type { RecruitingVariant } from "@/features/social-cards";
+import type {
+  RecruitingVariant,
+  WelcomeVariant,
+} from "@/features/social-cards";
 import type { SocialStudioConfig } from "../types";
+
+// The welcome designs for the New Agents view (own celebratory palette).
+const WELCOME_VARIANTS: { v: WelcomeVariant; label: string }[] = [
+  { v: "celebration", label: "Celebration" },
+  { v: "badge", label: "New-Agent Badge" },
+  { v: "marquee", label: "Big Welcome" },
+];
 
 // The recruiting template set (each a distinct design + its own palette). Order = the
 // picker order; labels are plain-English (no jargon).
@@ -283,7 +293,28 @@ export function SocialCustomizer({
         </>
       )}
 
-      {/* New Agents view: pick which agents to feature (one welcome card each). */}
+      {/* New Agents view: pick the welcome design + which agents to feature. */}
+      {isNewAgent && (
+        <Field label="Welcome design">
+          <div className="grid grid-cols-3 gap-1.5">
+            {WELCOME_VARIANTS.map((w) => {
+              const active = config.welcomeVariant === w.v;
+              return (
+                <Button
+                  key={w.v}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  className="text-[11px]"
+                  onClick={() => onChange({ welcomeVariant: w.v })}
+                >
+                  {w.label}
+                </Button>
+              );
+            })}
+          </div>
+        </Field>
+      )}
       {isNewAgent && newAgentPicker}
 
       {isAotw && (

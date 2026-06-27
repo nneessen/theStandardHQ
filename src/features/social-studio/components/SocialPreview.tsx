@@ -22,6 +22,7 @@ import {
   type CardPageInfo,
   type MarketingVariant,
   type RecruitingVariant,
+  type WelcomeVariant,
 } from "@/features/social-cards";
 import type { SocialFormat } from "../types";
 
@@ -71,6 +72,8 @@ export type PreviewData =
   | {
       kind: "newagent";
       agent: { name: string; photoUrl?: string | null };
+      /** Which welcome design renders (own palette). */
+      variant: WelcomeVariant;
       theme: CardTheme;
       page?: CardPageInfo;
     }
@@ -193,6 +196,7 @@ export function SocialCardSwitch({
           network={network}
           agent={data.agent}
           format={format}
+          variant={data.variant}
           theme={data.theme}
           page={data.page}
         />

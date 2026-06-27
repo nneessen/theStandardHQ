@@ -13,6 +13,7 @@ import {
   cardThemeWrapperClass,
   toLastInitial,
   type CardTheme,
+  type WelcomeVariant,
 } from "@/features/social-cards";
 import { SocialCardSwitch, type PreviewData } from "./SocialPreview";
 import { CardExportHost, type CardExportHandle } from "./CardExportHost";
@@ -32,10 +33,20 @@ export interface WelcomeQueuePanelProps {
   agencyName: string;
   network?: string;
   cardTheme: CardTheme;
+  /** Which welcome design the drafts render with (the owner can switch it here). */
+  welcomeVariant: WelcomeVariant;
+  onWelcomeVariantChange: (v: WelcomeVariant) => void;
   igConnected: boolean;
   selectedIntegration?: { id: string; instagram_username?: string | null };
   postsImoId: string | null;
 }
+
+// The welcome designs the owner can pick between (label = plain English).
+const WELCOME_VARIANTS: { v: WelcomeVariant; label: string }[] = [
+  { v: "celebration", label: "Celebration" },
+  { v: "badge", label: "New-Agent Badge" },
+  { v: "marquee", label: "Big Welcome" },
+];
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +65,7 @@ interface WelcomeDraftRowProps {
   agencyName: string;
   network?: string;
   cardTheme: CardTheme;
+  welcomeVariant: WelcomeVariant;
   igConnected: boolean;
   selectedIntegration?: { id: string; instagram_username?: string | null };
   postsImoId: string | null;
@@ -64,6 +76,7 @@ function WelcomeDraftRow({
   agencyName,
   network,
   cardTheme,
+  welcomeVariant,
   igConnected,
   selectedIntegration,
   postsImoId,
@@ -115,6 +128,7 @@ function WelcomeDraftRow({
       name: toLastInitial(draft.agentName),
       photoUrl: photoDataUrl ?? null,
     },
+    variant: welcomeVariant,
     theme: cardTheme,
   };
 
@@ -344,6 +358,8 @@ export function WelcomeQueuePanel({
   agencyName,
   network,
   cardTheme,
+  welcomeVariant,
+  onWelcomeVariantChange,
   igConnected,
   selectedIntegration,
   postsImoId,
@@ -355,9 +371,28 @@ export function WelcomeQueuePanel({
 
   return (
     <div className="rounded-xl border border-border bg-card/40 p-4">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Welcome posts to review ({drafts.length})
-      </h3>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Welcome posts to review ({drafts.length})
+        </h3>
+        {/* Design picker — change the welcome template for every draft below. */}
+        <div className="inline-flex rounded-lg border border-border bg-background p-0.5 text-[11px]">
+          {WELCOME_VARIANTS.map((w) => (
+            <button
+              key={w.v}
+              type="button"
+              onClick={() => onWelcomeVariantChange(w.v)}
+              className={`rounded-md px-2 py-1 font-medium transition-colors ${
+                welcomeVariant === w.v
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {w.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="space-y-2">
         {drafts.map((draft) => (
           <WelcomeDraftRow
@@ -366,6 +401,7 @@ export function WelcomeQueuePanel({
             agencyName={agencyName}
             network={network}
             cardTheme={cardTheme}
+            welcomeVariant={welcomeVariant}
             igConnected={igConnected}
             selectedIntegration={selectedIntegration}
             postsImoId={postsImoId}

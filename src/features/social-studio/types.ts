@@ -8,6 +8,7 @@ import type {
   CardTheme,
   SocialFormat,
   RecruitingVariant,
+  WelcomeVariant,
 } from "@/features/social-cards";
 export type { SocialFormat };
 
@@ -83,6 +84,10 @@ export interface SocialStudioConfig {
   /** Which recruiting template design renders. Its own self-contained palette/layout
    *  (independent of cardTheme). */
   recruitingVariant: RecruitingVariant;
+
+  /** Which "welcome new agent" design renders (newagent view + the welcome-post queue).
+   *  Its own celebratory palette, independent of cardTheme. */
+  welcomeVariant: WelcomeVariant;
 }
 
 export const DEFAULT_CONFIG: SocialStudioConfig = {
@@ -103,6 +108,7 @@ export const DEFAULT_CONFIG: SocialStudioConfig = {
   aowTitleScale: 1,
   aowAgencyScale: 1,
   recruitingVariant: "manifesto",
+  welcomeVariant: "celebration",
 };
 
 // Per-POST content that is never part of a reusable STYLE template: the uploaded

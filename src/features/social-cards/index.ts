@@ -11,7 +11,11 @@ export type {
   AowStyle,
 } from "./AgentOfWeekCard";
 
-export { NewAgentCard, type NewAgentCardProps } from "./NewAgentCard";
+export {
+  NewAgentCard,
+  type NewAgentCardProps,
+  type WelcomeVariant,
+} from "./NewAgentCard";
 export {
   RecruitingCard,
   type RecruitingCardProps,

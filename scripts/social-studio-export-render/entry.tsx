@@ -112,10 +112,14 @@ const config = {
   format,
   cardTheme,
   topN,
+  // The `variant` param drives recruitingVariant (recruiting view) AND welcomeVariant
+  // (newagent view) — they're independent fields, so setting both is harmless.
   ...(recruitingVariant
     ? {
         recruitingVariant:
           recruitingVariant as typeof DEFAULT_CONFIG.recruitingVariant,
+        welcomeVariant:
+          recruitingVariant as typeof DEFAULT_CONFIG.welcomeVariant,
       }
     : {}),
 };

@@ -742,6 +742,8 @@ export function SocialStudioPage() {
           agencyName={agencyName}
           network={network}
           cardTheme={config.cardTheme}
+          welcomeVariant={config.welcomeVariant}
+          onWelcomeVariantChange={(v) => patch({ welcomeVariant: v })}
           igConnected={igConnected}
           selectedIntegration={selectedIntegration}
           postsImoId={postsImoId}

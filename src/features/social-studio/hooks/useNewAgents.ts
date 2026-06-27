@@ -19,9 +19,11 @@ export const NEW_AGENT_KEYS = {
 };
 
 export function useNewAgents(imoId: string | null) {
+  // listNewAgents is auth-scoped (caller's downline); imoId only gates the fetch until the
+  // tenant context is ready and keys the cache across an acting-as switch.
   return useQuery({
     queryKey: NEW_AGENT_KEYS.list(imoId),
-    queryFn: () => listNewAgents(imoId as string),
+    queryFn: () => listNewAgents(),
     enabled: !!imoId,
   });
 }

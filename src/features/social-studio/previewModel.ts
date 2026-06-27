@@ -307,6 +307,7 @@ export function buildPreviewPages({
     return list.map((a, i) => ({
       kind: "newagent",
       agent: { name: a.name, photoUrl: a.photoUrl ?? null },
+      variant: config.welcomeVariant,
       theme,
       page: total > 1 ? { index: i + 1, total } : undefined,
     }));

@@ -1,9 +1,12 @@
 // src/services/social-studio/newAgentsService.ts
-// Lists the agency's agents for the Social Studio "New Agents" view (build/post a welcome
-// graphic on demand). Scoped by imo_id — the canonical tenant column (the welcome queue,
-// AgencyForm, and recruiting all scope users by imo_id; agency_id is an optional sub-unit).
-// The leaderboard hook can't be reused here: it lists only ranked PRODUCERS, so a brand-new
-// agent with no policies (exactly who you want to welcome) would never appear.
+// Lists the caller's DOWNLINE agents for the Social Studio "New Agents" view (build/post a
+// welcome graphic on demand). Scoped to the caller's own team — NOT the whole IMO: it
+// derives the caller's materialized hierarchy_path from auth.uid() and returns only agents
+// strictly below them in the tree (hierarchy_path LIKE '<my_path>.%'), the canonical downline
+// pattern used by get_my_team_leaderboard / HierarchyRepository. So you only ever see your
+// own team, never another upline's agents. (The leaderboard hook can't be reused: it lists
+// ranked PRODUCERS, so a brand-new agent with no policies — exactly who you welcome — would
+// never appear.)
 //
 // Each agent carries their rotation photo set (agent_photos, sort order) + rotation cursor
 // (user_profiles.photo_rotation_idx) so welcome graphics can cycle through photos. Those are
@@ -42,18 +45,36 @@ interface PhotoRow {
 }
 
 /**
- * Approved, non-archived agents in the given IMO, newest first, each with their rotation
- * photo set. Capped at 50 — the owner picks specific new hires to welcome, so the whole
- * roster is never needed.
+ * Approved, non-archived agents in the CALLER's downline (their team), newest first, each
+ * with their rotation photo set. Capped at 50 — the owner picks specific new hires to
+ * welcome, so the whole roster is never needed. Returns [] if the caller has no hierarchy
+ * position (can't resolve a team).
  */
-export async function listNewAgents(imoId: string): Promise<NewAgentRow[]> {
+export async function listNewAgents(): Promise<NewAgentRow[]> {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+  if (!uid) return [];
+
+  // The caller's own position in the tree. Their downline = paths strictly below this one.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: me, error: meErr } = await (supabase as any)
+    .from("user_profiles")
+    .select("hierarchy_path")
+    .eq("id", uid)
+    .maybeSingle();
+  if (meErr) throw meErr;
+  const path: string | null = me?.hierarchy_path ?? null;
+  if (!path) return [];
+
+  // Forward prefix match: everyone strictly below the caller (excludes the caller — you
+  // don't welcome yourself). `.` and `-` are literal in LIKE; UUIDs contain no `_`/`%`.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from("user_profiles")
     .select(
       "id, first_name, last_name, profile_photo_url, created_at, photo_rotation_idx",
     )
-    .eq("imo_id", imoId)
+    .like("hierarchy_path", `${path}.%`)
     .eq("approval_status", "approved")
     .is("archived_at", null)
     .order("created_at", { ascending: false })
