@@ -6,6 +6,13 @@ export { PolicyDashboard } from "./PolicyDashboard";
 export { PolicyDialog } from "./components/PolicyDialog";
 export { transformFormToCreateData } from "./utils/policyFormTransformer";
 
+// Export helpers (reused by Analytics for a labeled CSV export)
+export {
+  flattenPoliciesForExport,
+  exportPoliciesToCSV,
+} from "./utils/policyExport";
+export { selectPrimaryCommissionsByPolicy } from "./utils/policyCommissionSelection";
+
 // Hooks
 export * from "./hooks";
 

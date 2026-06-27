@@ -33,10 +33,10 @@ function getInitialCustomRange() {
 }
 
 export function AnalyticsDateProvider({ children }: { children: ReactNode }) {
-  // Default to YTD so the period-scoped panels (funnel, product mix, carriers,
-  // premium-by-state, segments, leaderboard, trend comparison) load with a
-  // meaningful window instead of just the current month's first few days.
-  const [timePeriod, setTimePeriod] = useState<AdvancedTimePeriod>("YTD");
+  // Default to Month-to-Date: the page should open on the current month so the
+  // period-scoped panels (funnel, product mix, carriers, premium-by-state,
+  // segments, leaderboard, trend comparison) reflect "where am I this month".
+  const [timePeriod, setTimePeriod] = useState<AdvancedTimePeriod>("MTD");
   const [customRange, setCustomRange] = useState<{
     startDate: Date;
     endDate: Date;

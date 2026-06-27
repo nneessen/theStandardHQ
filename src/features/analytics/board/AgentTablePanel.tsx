@@ -3,12 +3,21 @@ import { Users } from "lucide-react";
 import { format } from "date-fns";
 import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 import { useAgentLeaderboard } from "@/hooks/leaderboard";
+import { useMyDownlines } from "@/hooks/hierarchy";
+import { useCurrentUserProfile } from "@/hooks/admin";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { formatCurrency } from "@/lib/format";
 import { Board, Cap, FlapTile, EmptyState, T } from "@/components/board";
 
 export function AgentTablePanel() {
   const { dateRange } = useAnalyticsDateRange();
+
+  // Scope to THIS user's team: themselves + their entire downline subtree.
+  // useMyDownlines returns the full hierarchy-path subtree (not just direct
+  // reports), so this is the whole downward hierarchy.
+  const { data: currentUser, isLoading: userLoading } = useCurrentUserProfile();
+  const { data: downlines = [], isLoading: downlinesLoading } =
+    useMyDownlines();
 
   const filters: LeaderboardFilters = {
     timePeriod: "custom",
@@ -17,10 +26,14 @@ export function AgentTablePanel() {
     scope: "all",
   };
 
-  const { data, isLoading } = useAgentLeaderboard({
+  const { data, isLoading: leaderboardLoading } = useAgentLeaderboard({
     filters,
     staleTime: 60_000,
   });
+
+  // Hold the loading state until user + downlines are known too, so the table
+  // never flashes the unfiltered, whole-company leaderboard before scoping.
+  const isLoading = userLoading || downlinesLoading || leaderboardLoading;
 
   if (isLoading) {
     return (
@@ -54,10 +67,22 @@ export function AgentTablePanel() {
     );
   }
 
-  const entries = data?.entries ?? [];
-  const totals = data?.totals;
+  // Filter the global leaderboard down to the user's team, then re-rank and
+  // re-total over just those rows. Entries arrive sorted by rank_overall
+  // (IP desc), so a simple re-number keeps the team's own 1..N ordering.
+  const teamIds = new Set<string>(
+    currentUser ? [currentUser.id, ...downlines.map((d) => d.id)] : [],
+  );
+
+  const entries = (data?.entries ?? [])
+    .filter((entry) => teamIds.has(entry.agentId))
+    .map((entry, idx) => ({ ...entry, rankOverall: idx + 1 }));
+
+  const totalAgentCount = entries.length;
+  const totalPolicies = entries.reduce((sum, e) => sum + e.policyCount, 0);
+  const totalAp = entries.reduce((sum, e) => sum + e.apTotal, 0);
+  const totalIp = entries.reduce((sum, e) => sum + e.ipTotal, 0);
   const topAgent = entries[0];
-  const totalAgentCount = totals?.totalEntries ?? entries.length;
 
   return (
     <Board
@@ -82,7 +107,7 @@ export function AgentTablePanel() {
               marginTop: 4,
             }}
           >
-            {totalAgentCount} agents · top 10 shown
+            {totalAgentCount} on your team · top 10 shown
           </div>
         </div>
         {topAgent && (
@@ -118,8 +143,8 @@ export function AgentTablePanel() {
       {entries.length === 0 ? (
         <EmptyState
           icon={<Users size={22} />}
-          title="No agent data for this period"
-          hint="Leaderboard fills in as policies are written."
+          title="No team production this period"
+          hint="Your team's results appear here as policies are written."
           pad={40}
           style={{ flex: 1 }}
         />
@@ -234,36 +259,34 @@ export function AgentTablePanel() {
             </table>
           </div>
 
-          {/* Footer FlapTiles */}
-          {totals && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 10,
-                marginTop: 16,
-              }}
-            >
-              <FlapTile
-                label="Total Policies"
-                value={String(totals.totalPolicies)}
-                tone="default"
-                sm
-              />
-              <FlapTile
-                label="Total AP"
-                value={formatCurrency(totals.totalAp)}
-                tone="default"
-                sm
-              />
-              <FlapTile
-                label="Total IP"
-                value={formatCurrency(totals.totalIp)}
-                tone="green"
-                sm
-              />
-            </div>
-          )}
+          {/* Footer FlapTiles — totals across the team */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 10,
+              marginTop: 16,
+            }}
+          >
+            <FlapTile
+              label="Total Policies"
+              value={String(totalPolicies)}
+              tone="default"
+              sm
+            />
+            <FlapTile
+              label="Total AP"
+              value={formatCurrency(totalAp)}
+              tone="default"
+              sm
+            />
+            <FlapTile
+              label="Total IP"
+              value={formatCurrency(totalIp)}
+              tone="green"
+              sm
+            />
+          </div>
         </>
       )}
     </Board>

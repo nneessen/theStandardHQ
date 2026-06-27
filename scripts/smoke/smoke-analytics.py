@@ -7,11 +7,15 @@ Coaching) replaces the old long scroll + the standalone /kpi page.
 Logs in as the throwaway epiclife-demo manager (NOT a real account) and asserts:
   1. no JS/console errors throughout
   2. all five tabs render; Overview is active by default
-  3. clicking "Inbound Calls" sets ?tab=inbound and renders the call KPIs
+  3. the default period is Month-to-Date (MTD), not YTD
+  4. Overview persistency is the agent's OWN book (never "Team Persistency")
+  5. the Team tab persistency band (when present) is team-scoped, and the agent
+     table reads as the user's team ("N on your team"), not the whole IMO
+  6. clicking "Inbound Calls" sets ?tab=inbound and renders the call KPIs
      (Performance / Close Rate) + the "Log day" control
-  4. clicking "Coaching" renders Word Tracks + the "Open Sales Scripts" link
-  5. deep-link /analytics?tab=inbound opens directly on the Inbound tab
-  6. the retired /kpi route redirects to /analytics?tab=inbound
+  7. clicking "Coaching" renders Word Tracks + the "Open Sales Scripts" link
+  8. deep-link /analytics?tab=inbound opens directly on the Inbound tab
+  9. the retired /kpi route redirects to /analytics?tab=inbound
 
 Prereqs:
     npm run dev                                      # vite on :3000
@@ -79,8 +83,44 @@ def main() -> int:
         for label in TABS:
             if page.get_by_role("button", name=label, exact=True).count() == 0:
                 failures.append(f"tab button '{label}' not found")
+
+        # MTD is the default period (was YTD before this change). The active
+        # segmented-control button carries the "bg-v2-card" surface class.
+        active_period = page.evaluate(
+            "() => { const labels=['MTD','YTD','30D','60D','90D','12M','Custom'];"
+            " const btns=[...document.querySelectorAll('button')]"
+            ".filter(b=>labels.includes((b.textContent||'').trim()));"
+            " const a=btns.find(b=>b.className.includes('bg-v2-card'));"
+            " return a?(a.textContent||'').trim():''; }"
+        )
+        if active_period != "MTD":
+            failures.append(f"default period is {active_period!r}, expected 'MTD'")
+
+        # Overview persistency must be the agent's OWN book, never the team's.
+        ov_low = page.inner_text("body").lower()
+        if "team persistency" in ov_low:
+            failures.append("Overview shows TEAM persistency (should be individual)")
+
         page.screenshot(path=str(OUT / "analytics-tab-overview.png"), full_page=True)
         print("  · Overview →", OUT / "analytics-tab-overview.png")
+
+        # ── Team tab: team persistency band + team-scoped agent table ────────
+        page.get_by_role("button", name="Team", exact=True).first.click()
+        page.wait_for_timeout(3500)
+        if "tab=team" not in page.url:
+            failures.append(f"Team tab did not set ?tab=team (url={page.url})")
+        team_low = page.inner_text("body").lower()
+        # When the persistency band renders here it must be the team-scoped one.
+        if (
+            "persistency · policies still active" in team_low
+            and "team persistency" not in team_low
+        ):
+            failures.append("Team tab persistency is not team-scoped")
+        # When the agent table renders it reads as the user's team, not the IMO.
+        if "agent performance" in team_low and "on your team" not in team_low:
+            failures.append("Team agent table not scoped to 'on your team'")
+        page.screenshot(path=str(OUT / "analytics-tab-team.png"), full_page=True)
+        print("  · Team →", OUT / "analytics-tab-team.png")
 
         # ── 2. Inbound Calls tab ─────────────────────────────────────────────
         page.get_by_role("button", name="Inbound Calls", exact=True).first.click()
