@@ -50,6 +50,7 @@ import { CallAnalysisPanel } from "./CallAnalysisPanel";
 import { CallScriptPanel } from "./CallScriptPanel";
 import { TranscriptionProgress } from "./TranscriptionProgress";
 import { SpeakerRoleEditor } from "./SpeakerRoleEditor";
+import { ReviewPanel } from "./ReviewPanel";
 
 const OUTCOME_LABEL = new Map<string, string>(
   CALL_OUTCOME_OPTIONS.map((o) => [o.value, o.label]),
@@ -320,7 +321,14 @@ export function CallReviewDetailPage({
         retrying={retryMutation.isPending}
         onReanalyze={() => redetectSpeakers.mutate(recordingId)}
         reanalyzing={redetectSpeakers.isPending}
+        canRetranscribe={
+          recording.redaction_status !== "approved" &&
+          !recording.raw_audio_purged_at
+        }
       />
+
+      {/* Admin-only PII review controls (Phase 3) */}
+      <ReviewPanel recording={recording} />
 
       {/* Body: tabs (left) + markers (right) */}
       <div className="grid lg:grid-cols-[1fr_340px] gap-4 items-start">

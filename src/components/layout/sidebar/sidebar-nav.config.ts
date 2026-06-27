@@ -15,7 +15,7 @@ import {
   ClipboardList,
   Mail,
   Workflow,
-  // ShieldCheck,
+  ShieldCheck,
   // Calculator,
   Trophy,
   Wallet,
@@ -157,6 +157,14 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         // transcript + AI analysis + markers). Open to every approved agent;
         // recruits are excluded at the route. Data is IMO-scoped via RLS.
         public: true,
+      },
+      {
+        icon: ShieldCheck,
+        label: "Review Queue",
+        href: "/call-reviews/review-queue",
+        // Admin-only PII review of recordings before they're shared IMO-wide
+        // (redaction Phase 3). Approving deletes the raw original.
+        permission: "nav.user_management",
       },
       {
         icon: ScrollText,

@@ -299,6 +299,12 @@ verify_jwt = false
 [functions.set-account-password]
 verify_jwt = false
 
+# Privileged one-shot PII backfill orchestrator (Call Reviews redaction Phase 3).
+# Authenticates via a shared X-Backfill-Secret (BACKFILL_SECRET), not a user JWT,
+# so the gateway JWT check MUST be off. Re-runnable; targets only pending/failed rows.
+[functions.backfill-call-redaction]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

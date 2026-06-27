@@ -61,15 +61,24 @@ serve(async (req) => {
   if (!authHeader) return json({ error: "Missing Authorization header" }, 401);
   const db = createSupabaseClient(authHeader);
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  const { data: userData, error: userErr } = await db.auth.getUser(token);
-  if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
-  const userId = userData.user.id;
+  // Privileged backfill path: transcribe (itself in backfill mode) fires us with
+  // the service-role key as bearer. Skip getUser + the AI gate; the service-role
+  // bearer makes `db` run as service_role so the claim/load bypass RLS. Triggers
+  // ONLY for the exact current service-role key (already god-mode).
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const isBackfill = serviceRoleKey.length > 20 && token === serviceRoleKey;
+  let userId = "00000000-0000-0000-0000-000000000000";
+  if (!isBackfill) {
+    const { data: userData, error: userErr } = await db.auth.getUser(token);
+    if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
+    userId = userData.user.id;
+  }
 
   // ── 3. Load under USER client → RLS decides visibility ───────────────────
   const { data: recording, error: loadErr } = await db
     .from("kpi_call_recordings")
     .select(
-      "id, imo_id, agent_id, storage_bucket, storage_path, transcription_status, redaction_spans, audio_redaction_status",
+      "id, imo_id, agent_id, storage_bucket, storage_path, transcription_status, redaction_spans, audio_redaction_status, spans_version",
     )
     .eq("id", recordingId)
     .maybeSingle();
@@ -84,7 +93,7 @@ serve(async (req) => {
   const { data: isEpic } = await adminClient.rpc("is_epic_life_imo", {
     p_imo_id: recording.imo_id,
   });
-  if (isEpic !== true) {
+  if (!isBackfill && isEpic !== true) {
     const aiFacts = await resolveAiAccessFacts(adminClient, userId);
     if (
       !aiFacts.isSuperAdmin &&
@@ -171,6 +180,10 @@ serve(async (req) => {
       storage_path: recording.storage_path,
       out_path: outPath,
       spans,
+      // The version of redaction_spans the worker is muting. It echoes this back
+      // as muted_spans_version so Phase 3 approve can prove "muting is current"
+      // (muted_spans_version = spans_version) without any wall-clock comparison.
+      spans_version: recording.spans_version ?? 0,
     }),
   })
     .then(async (r) => {

@@ -3,6 +3,8 @@
 
 export const callReviewKeys = {
   all: ["call-reviews"] as const,
+  reviewQueue: (imoId: string) =>
+    [...callReviewKeys.all, "review-queue", imoId] as const,
   library: (imoId: string) =>
     [...callReviewKeys.all, "library", imoId] as const,
   libraryPaged: (imoId: string, filters: unknown) =>

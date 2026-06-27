@@ -160,9 +160,18 @@ serve(async (req) => {
   if (!authHeader) return json({ error: "Missing Authorization header" }, 401);
   const db = createSupabaseClient(authHeader);
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  const { data: userData, error: userErr } = await db.auth.getUser(token);
-  if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
-  const userId = userData.user.id;
+  // Privileged backfill path: the orchestrator (backfill-call-redaction) re-runs
+  // analysis on re-redacted transcripts with the service-role bearer. Skip getUser
+  // + the AI gate; service-role bearer makes `db` run as service_role (RLS off).
+  // Triggers ONLY for the exact current service-role key (already god-mode).
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const isBackfill = serviceRoleKey.length > 20 && token === serviceRoleKey;
+  let userId = "00000000-0000-0000-0000-000000000000";
+  if (!isBackfill) {
+    const { data: userData, error: userErr } = await db.auth.getUser(token);
+    if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
+    userId = userData.user.id;
+  }
 
   // ── 3. Load recording under USER client (RLS decides visibility) ────────────
   const { data: rec, error: loadErr } = await db
@@ -187,7 +196,7 @@ serve(async (req) => {
   });
   // Team recordings (Epic Life) pass free with no further lookups (the dominant
   // path); otherwise super-admin / free_all_features IMO / ai_assistant add-on.
-  if (isEpic !== true) {
+  if (!isBackfill && isEpic !== true) {
     const aiFacts = await resolveAiAccessFacts(adminClient, userId);
     if (
       !aiFacts.isSuperAdmin &&
@@ -202,13 +211,17 @@ serve(async (req) => {
   }
 
   // ── 5. AI rate limits (shared budget) ───────────────────────────────────────
-  const limited = await enforceAiRateLimits(
-    adminClient,
-    "analyze-call-transcript",
-    userId,
-    cors,
-  );
-  if (limited) return limited;
+  // The privileged backfill batch bypasses the shared limiter (otherwise the 34
+  // concurrent re-analyses under one synthetic user would throttle each other).
+  if (!isBackfill) {
+    const limited = await enforceAiRateLimits(
+      adminClient,
+      "analyze-call-transcript",
+      userId,
+      cors,
+    );
+    if (limited) return limited;
+  }
 
   // ── 6. Idempotency / preconditions ──────────────────────────────────────────
   // A completed analysis is only re-run on an explicit force (e.g. after the

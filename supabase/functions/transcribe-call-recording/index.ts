@@ -162,17 +162,30 @@ serve(async (req) => {
   }
   const db = createSupabaseClient(authHeader); // user-scoped (RLS enforced)
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  const { data: userData, error: userErr } = await db.auth.getUser(token);
-  if (userErr || !userData?.user) {
-    return json({ error: "Unauthorized" }, 401);
+  // Privileged backfill path: the internal orchestrator (backfill-call-redaction)
+  // calls us with the service-role key as the bearer to re-process pre-Phase-1
+  // recordings in bulk. The service-role bearer makes `db` run as service_role
+  // (RLS off, any recording loads); we also skip the AI gate + the per-user
+  // limiter below. Triggers ONLY for the exact current service-role key (already
+  // god-mode — no privilege escalation), never for a user JWT.
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const isBackfill = serviceRoleKey.length > 20 && token === serviceRoleKey;
+  let userId: string;
+  if (isBackfill) {
+    userId = "00000000-0000-0000-0000-000000000000"; // system (no human reviewer)
+  } else {
+    const { data: userData, error: userErr } = await db.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+    userId = userData.user.id;
   }
-  const userId = userData.user.id;
 
   // ── 3. Load the recording under the USER client → RLS decides visibility ────
   const { data: recording, error: loadErr } = await db
     .from("kpi_call_recordings")
     .select(
-      "id, imo_id, agent_id, storage_bucket, storage_path, original_filename, mime_type, file_size_bytes, transcription_status",
+      "id, imo_id, agent_id, storage_bucket, storage_path, original_filename, mime_type, file_size_bytes, transcription_status, audio_deleted_at, raw_audio_purged_at",
     )
     .eq("id", recordingId)
     .maybeSingle();
@@ -199,7 +212,7 @@ serve(async (req) => {
   // Team recordings (Epic Life) pass free with no further lookups (the dominant
   // path); otherwise the caller needs super-admin, a free_all_features IMO, or the
   // ai_assistant ("AI Suite") add-on. Mirrors useAiAccess. Fail closed.
-  if (isEpic !== true) {
+  if (!isBackfill && isEpic !== true) {
     const aiFacts = await resolveAiAccessFacts(adminClient, userId);
     if (
       !aiFacts.isSuperAdmin &&
@@ -214,16 +227,20 @@ serve(async (req) => {
   }
 
   // ── 5. Rate limit: ~10/hr/user (request axis only — Deepgram, not Anthropic) ─
-  const limited = await enforceRateLimit(
-    adminClient,
-    {
-      key: `ratelimit:req:transcribe-call-recording:${userId}`,
-      maxRequests: 10,
-      windowSeconds: 3600,
-    },
-    cors,
-  );
-  if (limited) return limited;
+  // The privileged backfill batch bypasses the per-user limiter (it re-processes
+  // the small fixed set of pre-Phase-1 recordings; the orchestrator paces them).
+  if (!isBackfill) {
+    const limited = await enforceRateLimit(
+      adminClient,
+      {
+        key: `ratelimit:req:transcribe-call-recording:${userId}`,
+        maxRequests: 10,
+        windowSeconds: 3600,
+      },
+      cors,
+    );
+    if (limited) return limited;
+  }
 
   // ── 6. Idempotency: never re-transcribe a completed/in-flight recording ─────
   const status = recording.transcription_status;
@@ -269,6 +286,30 @@ serve(async (req) => {
     return json(
       { error: "You don't have permission to transcribe this recording." },
       403,
+    );
+  }
+
+  // ── 6c. Missing-raw guard (S7) ──────────────────────────────────────────────
+  // The raw audio is the only Deepgram source. If it's gone — retention purge
+  // (audio_deleted_at) or Phase-3 post-approval purge (raw_audio_purged_at) — a
+  // re-transcribe is impossible. The claim above already dropped this row out of
+  // any shared state (redaction_status → 'detecting'); mark it cleanly 'failed'
+  // (so it can't be shared while broken) instead of wasting a Deepgram call and
+  // surfacing a confusing 404. Transcript-only re-redaction of such rows is a
+  // separate backfill path, not this function.
+  if (recording.audio_deleted_at || recording.raw_audio_purged_at) {
+    await adminClient
+      .from("kpi_call_recordings")
+      .update({
+        transcription_status: "failed",
+        transcription_error:
+          "Original audio has been deleted; it cannot be re-transcribed.",
+        redaction_status: "failed",
+      })
+      .eq("id", recording.id);
+    return json(
+      { ok: false, recording_id: recording.id, status: "audio_deleted" },
+      409,
     );
   }
 

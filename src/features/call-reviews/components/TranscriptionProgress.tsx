@@ -55,6 +55,10 @@ interface Props {
    *  the status banners still show but the action buttons are hidden (they would
    *  403 server-side — AI is team-free or the ai_assistant add-on). */
   canUseAi?: boolean;
+  /** Whether re-transcribe is allowed. False once a recording is approved/purged:
+   *  re-transcribe needs the raw audio (gone after approval), so only the re-analyze
+   *  action stays available. Re-analyze runs on the already-redacted transcript. */
+  canRetranscribe?: boolean;
 }
 
 export function TranscriptionProgress({
@@ -64,6 +68,7 @@ export function TranscriptionProgress({
   onReanalyze,
   reanalyzing,
   canUseAi = true,
+  canRetranscribe = true,
 }: Props) {
   const t = recording.transcription_status;
   const a = recording.analysis_status;
@@ -110,7 +115,7 @@ export function TranscriptionProgress({
             )}
           </div>
         </div>
-        {canUseAi && (
+        {canUseAi && canRetranscribe && (
           <Button
             size="sm"
             variant="outline"
@@ -138,7 +143,7 @@ export function TranscriptionProgress({
             Transcription hasn’t started yet.
           </p>
         </div>
-        {canUseAi && (
+        {canUseAi && canRetranscribe && (
           <Button
             size="sm"
             variant="outline"

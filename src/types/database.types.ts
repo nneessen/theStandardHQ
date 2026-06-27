@@ -6179,6 +6179,11 @@ export type Database = {
           redaction_detector: string | null;
           redaction_spans: Json | null;
           redaction_status: string;
+          pii_reviewed_at: string | null;
+          pii_reviewed_by: string | null;
+          raw_audio_purged_at: string | null;
+          spans_version: number;
+          muted_spans_version: number;
           updated_at: string;
           uploader_id: string | null;
         };
@@ -6242,6 +6247,11 @@ export type Database = {
           redaction_detector?: string | null;
           redaction_spans?: Json | null;
           redaction_status?: string;
+          pii_reviewed_at?: string | null;
+          pii_reviewed_by?: string | null;
+          raw_audio_purged_at?: string | null;
+          spans_version?: number;
+          muted_spans_version?: number;
           updated_at?: string;
           uploader_id?: string | null;
         };
@@ -6305,6 +6315,11 @@ export type Database = {
           redaction_detector?: string | null;
           redaction_spans?: Json | null;
           redaction_status?: string;
+          pii_reviewed_at?: string | null;
+          pii_reviewed_by?: string | null;
+          raw_audio_purged_at?: string | null;
+          spans_version?: number;
+          muted_spans_version?: number;
           updated_at?: string;
           uploader_id?: string | null;
         };

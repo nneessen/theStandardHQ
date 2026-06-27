@@ -71,6 +71,10 @@ class MuteRequest(BaseModel):
     storage_path: str  # in-bucket path within call-recordings (raw)
     out_path: str  # in-bucket path within call-recordings-redacted (muted)
     spans: list[Span] = []
+    # The spans_version the edge fn asked us to mute. We echo it back as
+    # muted_spans_version so Phase 3 approve can prove the muted file reflects the
+    # current span set (muted_spans_version == spans_version) with no wall clocks.
+    spans_version: int = 0
 
 
 # ── Pure helpers (unit-tested) ──────────────────────────────────────────────
@@ -215,6 +219,7 @@ def mute_audio(req: MuteRequest, _auth=Depends(verify_api_key)):
                     "audio_redacted_at": datetime.now(timezone.utc).isoformat(),
                     "audio_redaction_status": "done",
                     "audio_redaction_error": None,
+                    "muted_spans_version": req.spans_version,
                 },
             )
             logger.info("muted recording %s (%d spans)", req.recording_id, len(req.spans))

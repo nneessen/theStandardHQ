@@ -3,6 +3,7 @@
 
 export { CallReviewsPage } from "./components/CallReviewsPage";
 export { CallReviewDetailPage } from "./components/CallReviewDetailPage";
+export { ReviewQueuePage } from "./components/ReviewQueuePage";
 export { ScriptsLibraryPage, ScriptDetailPage } from "./components/scripts";
 
 // ─── Word Tracks ↔ Sales Scripts cross-link (consumed by the Analytics

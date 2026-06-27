@@ -99,6 +99,11 @@ const CallReviewDetailPage = lazy(() =>
     default: m.CallReviewDetailPage,
   })),
 );
+const ReviewQueuePage = lazy(() =>
+  import("./features/call-reviews").then((m) => ({
+    default: m.ReviewQueuePage,
+  })),
+);
 const ScriptsLibraryPage = lazy(() =>
   import("./features/call-reviews").then((m) => ({
     default: m.ScriptsLibraryPage,
@@ -775,6 +780,17 @@ const callReviewsRoute = createRoute({
     </RouteGuard>
   ),
 });
+// Admin-only PII review queue (Call Reviews redaction Phase 3). Static path
+// outranks the dynamic "$recordingId" sibling. Page also self-gates to admins.
+const callReviewQueueRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "call-reviews/review-queue",
+  component: () => (
+    <RouteGuard permission="nav.user_management" noRecruits>
+      <ReviewQueuePage />
+    </RouteGuard>
+  ),
+});
 // Sales Scripts library — AI-generated master scripts per call type. Static path
 // ("scripts") outranks the dynamic "$recordingId" sibling, so no route ambiguity.
 const callReviewScriptsRoute = createRoute({
@@ -1350,6 +1366,7 @@ const routeTree = rootRoute.addChildren([
   closeKpiRoute,
   kpiRoute,
   callReviewsRoute,
+  callReviewQueueRoute,
   callReviewScriptsRoute,
   callReviewScriptDetailRoute,
   callReviewDetailRoute,
