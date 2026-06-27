@@ -31,7 +31,13 @@ export type RecruitingVariant =
   | "hours"
   | "seal"
   | "lifeback"
-  | "compare";
+  | "compare"
+  | "bigstat"
+  | "ticket"
+  | "checklist"
+  | "poster"
+  | "neon"
+  | "clock";
 
 export interface RecruitingCardProps {
   agencyName: string;
@@ -57,6 +63,13 @@ const C = {
   emeraldDk: "#123a30",
   red: "#df5b54",
   inkMuteOnCream: "#6b6256",
+  // Extended accents for the broader template set.
+  navy: "#1c2c4d",
+  navyDk: "#0e1830",
+  lime: "#c7e85a",
+  neon: "#5fe3c0",
+  coral: "#e8745c",
+  white: "#ffffff",
 } as const;
 
 const BIG = '"Big Shoulders Display","Arial Narrow",system-ui,sans-serif';
@@ -147,6 +160,82 @@ export const RECRUITING_COPY: Record<RecruitingVariant, CopyField[]> = {
         "100% inbound calls\nMon–Fri · 10–5 ET\nFresh leads only\nQuality of life",
     },
   ],
+  bigstat: [
+    { key: "eyebrow", label: "Eyebrow", default: "The math is simple" },
+    { key: "stat", label: "Big number", default: "0" },
+    {
+      key: "statLabel",
+      label: "Under the number",
+      default: "cold calls. ever.",
+    },
+    {
+      key: "sub",
+      label: "Supporting line",
+      multiline: true,
+      default: "100% inbound. Monday–Friday. Off at five.",
+    },
+  ],
+  ticket: [
+    { key: "eyebrow", label: "Eyebrow", default: "Boarding pass" },
+    { key: "title", label: "Title", default: "One-way out of the grind" },
+    { key: "from", label: "From", default: "The grind" },
+    { key: "to", label: "To", default: "Quality of life" },
+    {
+      key: "rows",
+      label: "Detail rows (Label — Value, one per line)",
+      list: true,
+      default:
+        "Carrier — Inbound only\nHours — Mon–Fri · 10–5 ET\nWeekends — All yours\nCold calls — None",
+    },
+    { key: "stamp", label: "Stamp", default: "Now boarding" },
+  ],
+  checklist: [
+    { key: "eyebrow", label: "Eyebrow", default: "Here's the deal" },
+    { key: "headline", label: "Headline", default: "Everything you get" },
+    {
+      key: "items",
+      label: "Checklist (one per line)",
+      list: true,
+      default:
+        "100% inbound calls\nMonday–Friday, 10–5 ET\nWeekends off, always\nFresh leads only\nNo cold calling, ever\nA life outside of work",
+    },
+  ],
+  poster: [
+    { key: "eyebrow", label: "Eyebrow", default: "Now hiring inbound agents" },
+    {
+      key: "words",
+      label: "Stacked words (one per line)",
+      list: true,
+      default: "GET\nYOUR\nLIFE\nBACK",
+    },
+    {
+      key: "sub",
+      label: "Supporting line",
+      multiline: true,
+      default: "Inbound only · Mon–Fri 10–5 · No weekends",
+    },
+  ],
+  neon: [
+    { key: "eyebrow", label: "Eyebrow", default: "Vacancy" },
+    { key: "sign", label: "Neon sign text", default: "Now Hiring" },
+    { key: "sub", label: "Tagline", default: "Inbound only. No cold calls." },
+    {
+      key: "rule",
+      label: "Bottom rule",
+      default: "Monday–Friday · 10–5 · Weekends off",
+    },
+  ],
+  clock: [
+    { key: "eyebrow", label: "Eyebrow", default: "Every single day" },
+    { key: "headline", label: "Headline", default: "We're done at five." },
+    {
+      key: "sub",
+      label: "Supporting line",
+      multiline: true,
+      default:
+        "Inbound-only sales, Monday to Friday. When the clock hits five, you're off.",
+    },
+  ],
 };
 
 function defaultsFor(variant: RecruitingVariant, key: string): string {
@@ -228,6 +317,13 @@ export function RecruitingCard({
 }: RecruitingCardProps) {
   const { w: W, h: H } = FORMAT_DIMS[format];
   const pad = format === "square" ? 70 : 88;
+  // Instagram Stories cover the top + bottom ~13% with their own UI (username/progress bar
+  // up top, reply/"seen by" bar at the bottom). Inset Story content with extra top/bottom
+  // padding so eyebrows, headlines and footers never sit behind that overlay. Feed posts
+  // (4:5, 1:1) show edge-to-edge, so they keep the base padding. `padBox` is the root
+  // padding string; horizontal stays `pad` (so the `W - 2*pad` fit math is unchanged).
+  const padY = format === "story" ? pad + 160 : pad;
+  const padBox = `${padY}px ${pad}px`;
   // Resolve a text/list slot: override if non-blank, else the variant's default.
   const t = (key: string) => copyText(copy, key, defaultsFor(variant, key));
   const l = (key: string) =>
@@ -265,7 +361,7 @@ export function RecruitingCard({
       <div
         style={{
           ...base,
-          padding: pad,
+          padding: padBox,
           background: `radial-gradient(120% 80% at 100% 0%, ${C.ink2}, ${C.ink} 60%)`,
           color: "#fff",
           fontFamily: SANS,
@@ -335,7 +431,7 @@ export function RecruitingCard({
       <div
         style={{
           ...base,
-          padding: pad,
+          padding: padBox,
           background: C.cream,
           color: C.ink,
           fontFamily: GROTESK,
@@ -493,7 +589,7 @@ export function RecruitingCard({
       <div
         style={{
           ...base,
-          padding: pad,
+          padding: padBox,
           background: `radial-gradient(110% 70% at 50% 0%, ${C.emerald} -10%, ${C.emeraldDk} 55%, #0c2620 100%)`,
           color: "#fff",
           fontFamily: SANS,
@@ -602,7 +698,7 @@ export function RecruitingCard({
       <div
         style={{
           ...base,
-          padding: pad,
+          padding: padBox,
           background: `linear-gradient(160deg, ${C.cream} 0%, ${C.cream2} 55%, ${C.amberSoft} 130%)`,
           color: C.ink,
           fontFamily: SANS,
@@ -673,6 +769,359 @@ export function RecruitingCard({
   }
 
   // ════════════════════════════════════════════════════════════════════════
+  // BIGSTAT — one oversized number does the talking
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "bigstat") {
+    const statPx = fitFontPx(
+      t("stat"),
+      format === "square" ? 600 : 700,
+      W - 2 * pad,
+      0.62,
+    );
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: `radial-gradient(120% 90% at 50% 38%, ${C.ink2}, ${C.ink} 70%)`,
+          color: "#fff",
+          fontFamily: SANS,
+        }}
+      >
+        <div style={{ flex: "none" }}>
+          <Eyebrow color={C.amber}>{t("eyebrow")}</Eyebrow>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <div
+            style={{
+              font: `800 ${statPx}px/0.8 ${BIG}`,
+              color: C.amber,
+              letterSpacing: "-0.03em",
+            }}
+          >
+            {t("stat")}
+          </div>
+          <div
+            style={{
+              marginTop: 4,
+              font: `800 ${format === "square" ? 60 : 74}px/0.96 ${BIG}`,
+              textTransform: "uppercase",
+              textAlign: "center",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {t("statLabel")}
+          </div>
+        </div>
+        <div style={{ flex: "none" }}>
+          <div
+            style={{
+              font: `500 ${format === "square" ? 26 : 30}px/1.3 ${SANS}`,
+              color: "rgba(255,255,255,0.7)",
+              marginBottom: 8,
+            }}
+          >
+            {t("sub")}
+          </div>
+          <Footer
+            agencyName={agencyName}
+            network={network}
+            onDark
+            page={page}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // TICKET — a one-way boarding pass out of the grind
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "ticket") {
+    const rows = l("rows").map((r) => {
+      const idx = r.indexOf("—");
+      return idx === -1
+        ? { k: r.trim(), v: "" }
+        : { k: r.slice(0, idx).trim(), v: r.slice(idx + 1).trim() };
+    });
+    const fieldLabel: CSSProperties = {
+      font: `700 13px ${SANS}`,
+      letterSpacing: "0.18em",
+      textTransform: "uppercase",
+      color: C.inkMuteOnCream,
+    };
+    return (
+      <div
+        style={{
+          ...base,
+          padding: format === "square" ? 56 : 70,
+          background: C.ink,
+          fontFamily: SANS,
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            background: C.cream,
+            borderRadius: 20,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            color: C.ink,
+          }}
+        >
+          {/* header strip */}
+          <div
+            style={{
+              background: C.ink,
+              color: C.cream,
+              padding: "26px 40px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                font: `800 22px ${SANS}`,
+                letterSpacing: "0.24em",
+                textTransform: "uppercase",
+              }}
+            >
+              {t("eyebrow")}
+            </span>
+            <span
+              style={{
+                font: `700 16px ${SANS}`,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: C.amber,
+              }}
+            >
+              {network || agencyName}
+            </span>
+          </div>
+
+          {/* body */}
+          <div
+            style={{
+              flex: 1,
+              padding: "38px 40px 30px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                font: `400 ${fitFontPx(t("title"), format === "square" ? 56 : 64, W - 280, 0.5)}px/1.0 ${SERIF}`,
+              }}
+            >
+              {t("title")}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 22,
+                margin: "32px 0",
+              }}
+            >
+              <div>
+                <div style={fieldLabel}>From</div>
+                <div
+                  style={{
+                    font: `800 ${format === "square" ? 38 : 46}px ${BIG}`,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t("from")}
+                </div>
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  background: C.creamLine,
+                  position: "relative",
+                  marginBottom: 16,
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    right: -4,
+                    top: -19,
+                    color: C.amber,
+                    fontSize: 30,
+                  }}
+                >
+                  ✈
+                </span>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={fieldLabel}>To</div>
+                <div
+                  style={{
+                    font: `800 ${format === "square" ? 38 : 46}px ${BIG}`,
+                    textTransform: "uppercase",
+                    color: C.emerald,
+                  }}
+                >
+                  {t("to")}
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "16px 30px",
+                marginTop: "auto",
+              }}
+            >
+              {rows.slice(0, 4).map((r, i) => (
+                <div key={i}>
+                  <div style={fieldLabel}>{r.k}</div>
+                  <div
+                    style={{
+                      font: `700 ${format === "square" ? 24 : 28}px ${SANS}`,
+                      marginTop: 2,
+                    }}
+                  >
+                    {r.v}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* perforated stub */}
+          <div
+            style={{
+              borderTop: `2px dashed rgba(13,15,20,0.22)`,
+              background: C.amber,
+              color: C.ink,
+              padding: "20px 40px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                font: `800 26px ${BIG}`,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              {t("stamp")}
+            </span>
+            <span
+              style={{
+                font: `700 14px ${SANS}`,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+              }}
+            >
+              {network ? `${agencyName} · ${network}` : agencyName}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // CHECKLIST — everything you get, with satisfying green checks
+  // ════════════════════════════════════════════════════════════════════════
+  if (variant === "checklist") {
+    const items = l("items");
+    return (
+      <div
+        style={{
+          ...base,
+          padding: padBox,
+          background: C.cream,
+          color: C.ink,
+          fontFamily: SANS,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ flex: "none" }}>
+          <Eyebrow color={C.emerald}>{t("eyebrow")}</Eyebrow>
+          <div
+            style={{
+              marginTop: 16,
+              font: `700 ${format === "square" ? 62 : 76}px/1.0 ${GROTESK}`,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {t("headline")}
+          </div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: format === "square" ? 14 : 20,
+            minHeight: 0,
+          }}
+        >
+          {items.map((it, i) => (
+            <div
+              key={i}
+              style={{ display: "flex", alignItems: "center", gap: 22 }}
+            >
+              <span
+                style={{
+                  flex: "none",
+                  width: 46,
+                  height: 46,
+                  borderRadius: "50%",
+                  background: C.emerald,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  font: `800 24px ${SANS}`,
+                }}
+              >
+                ✓
+              </span>
+              <span
+                style={{
+                  font: `600 ${format === "square" ? 32 : 39}px/1.1 ${SANS}`,
+                  color: C.ink,
+                }}
+              >
+                {it}
+              </span>
+            </div>
+          ))}
+        </div>
+        <Footer
+          agencyName={agencyName}
+          network={network}
+          onDark={false}
+          page={page}
+        />
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
   // COMPARE — "most agencies" vs "The Standard"
   // ════════════════════════════════════════════════════════════════════════
   const colHead = (accent: string, onDark: boolean): CSSProperties => ({
@@ -725,7 +1174,7 @@ export function RecruitingCard({
       <div
         style={{
           flex: "none",
-          padding: `${pad * 0.7}px ${pad}px ${pad * 0.42}px`,
+          padding: `${format === "story" ? pad + 130 : pad * 0.7}px ${pad}px ${pad * 0.42}px`,
           background: C.ink,
         }}
       >
@@ -798,7 +1247,7 @@ export function RecruitingCard({
       <div
         style={{
           flex: "none",
-          padding: `0 ${pad}px ${pad * 0.7}px`,
+          padding: `0 ${pad}px ${format === "story" ? pad + 130 : pad * 0.7}px`,
           background: C.ink,
         }}
       >

@@ -243,13 +243,16 @@ export function NewAgentCard({
   // ════════════════════════════════════════════════════════════════════════
   if (variant === "badge") {
     const inset = Math.round(W_ * 0.055);
+    // Stories cover the top/bottom ~13% with IG UI — inset the card there.
+    const insetBox =
+      format === "story" ? `${inset + 180}px ${inset}px` : `${inset}px`;
     return (
       <div
         style={{
           ...base,
           background: W.cream,
           fontFamily: SANS,
-          padding: inset,
+          padding: insetBox,
         }}
       >
         <div
@@ -400,6 +403,7 @@ export function NewAgentCard({
   // ════════════════════════════════════════════════════════════════════════
   if (variant === "marquee") {
     const pad = format === "square" ? 72 : 88;
+    const padBox = format === "story" ? `${pad + 160}px ${pad}px` : `${pad}px`;
     return (
       <div
         style={{
@@ -407,7 +411,7 @@ export function NewAgentCard({
           background: `radial-gradient(130% 90% at 0% 0%, ${W.ink2}, ${W.ink} 62%)`,
           color: W.white,
           fontFamily: SANS,
-          padding: pad,
+          padding: padBox,
           display: "flex",
           flexDirection: "column",
         }}
@@ -537,7 +541,12 @@ export function NewAgentCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: format === "square" ? "82px 90px" : "100px 96px",
+          padding:
+            format === "story"
+              ? "250px 96px"
+              : format === "square"
+                ? "82px 90px"
+                : "100px 96px",
           boxSizing: "border-box",
         }}
       >
