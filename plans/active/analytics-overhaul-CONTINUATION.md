@@ -1,5 +1,32 @@
 # Analytics Overhaul — Continuation Handoff (2026-06-27)
 
+## ✅ COMPLETED (2026-06-27, commit `5429a40d`)
+
+All three remaining items are done, verified, and committed on
+`feat/analytics-team-scope-mtd-exports` (NOT pushed):
+
+1. **Inbound tab → individual-only.** `useKpiCallAnalytics` now self-scopes to the
+   signed-in agent by default (opt out with `{ agentId: null }`); removed
+   `CallAgentLeaderboardPanel` (file deleted); Call Length is full-width.
+2. **Team Inbound Economics** replaced the "Smart Moves · Flags" feed
+   (`ActionFeedPanel` deleted). Calls from `useTeamDailyMetrics`; **Sales +
+   Premium come from the same `useAgentLeaderboard` query the agent table uses**
+   (they reconcile — 120 / $305,232 in the demo); commission from the team RPC
+   for ROI. Shared `computeInboundEconomics` helper used by both panels.
+3. **Agent Performance export** — CSV / Excel / PDF (new
+   `AgentPerformanceReportDocument`).
+
+Verified: tsc 0 · eslint 0 · `npm run build` green · `smoke-analytics.py` passes
+(extended with the new assertions) · runtime click-test downloads all 3 formats.
+
+⚠️ **Worktree note:** done in a dedicated worktree at
+`/Users/nickneessen/projects/ct-analytics` (the primary dir had been switched to
+`feat/carousel-design-overhaul` with uncommitted carousel work). The branch holds
+the commit; remove the worktree with `git worktree remove ../ct-analytics` once
+merged/done.
+
+---
+
 ## PROMPT FOR NEXT SESSION (paste this)
 
 > Continue the Analytics overhaul on branch `feat/analytics-team-scope-mtd-exports`.
