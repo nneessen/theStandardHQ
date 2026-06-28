@@ -1,13 +1,15 @@
 // src/features/analytics/board/AgentTablePanel.tsx
 import { useState } from "react";
-import { Users } from "lucide-react";
+import { Users, Download } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
 import { useAgentLeaderboard } from "@/hooks/leaderboard";
 import { useMyDownlines } from "@/hooks/hierarchy";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import type { LeaderboardFilters } from "@/types/leaderboard.types";
 import { formatCurrency } from "@/lib/format";
+import { downloadCSV } from "@/utils/exportHelpers";
 import { Board, Cap, FlapTile, EmptyState, T } from "@/components/board";
 
 type SortKey = "policies" | "ap" | "ip";
@@ -113,6 +115,125 @@ export function AgentTablePanel() {
   const totalAp = baseEntries.reduce((sum, e) => sum + e.apTotal, 0);
   const totalIp = baseEntries.reduce((sum, e) => sum + e.ipTotal, 0);
 
+  // ─── Export (CSV / Excel / PDF) ─────────────────────────────────────────────
+  // Exports the rows as currently shown (active sort), Rank/Agent/Policies/AP/IP.
+  const EXPORT_HEADERS = ["Rank", "Agent", "Policies", "AP", "IP"];
+  const periodLabel = `${format(dateRange.startDate, "MMM d, yyyy")} – ${format(
+    dateRange.endDate,
+    "MMM d, yyyy",
+  )}`;
+  const managerName =
+    [currentUser?.first_name, currentUser?.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser?.email ||
+    null;
+  const fileBase = `agent-performance_${format(new Date(), "yyyy-MM-dd")}`;
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Defer revoke so the download isn't cancelled before it starts.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  };
+
+  const handleExportCSV = () => {
+    const rows = entries.map((e) => ({
+      Rank: e.rowRank,
+      Agent: e.agentName,
+      Policies: e.policyCount,
+      AP: Math.round(e.apTotal * 100) / 100,
+      IP: Math.round(e.ipTotal * 100) / 100,
+    }));
+    downloadCSV(
+      rows as unknown as Record<string, unknown>[],
+      "agent-performance",
+      EXPORT_HEADERS,
+    );
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      const sheet = wb.addWorksheet("Agent Performance");
+      sheet.addRow(EXPORT_HEADERS);
+      sheet.getRow(1).font = { bold: true };
+      for (const e of entries) {
+        sheet.addRow([
+          e.rowRank,
+          e.agentName,
+          e.policyCount,
+          e.apTotal,
+          e.ipTotal,
+        ]);
+      }
+      sheet.addRow([]);
+      sheet.addRow(["", "Team total", totalPolicies, totalAp, totalIp]);
+      // Currency format on the AP/IP columns.
+      sheet.getColumn(4).numFmt = '"$"#,##0.00';
+      sheet.getColumn(5).numFmt = '"$"#,##0.00';
+      sheet.columns.forEach((col) => {
+        let max = 0;
+        col.eachCell?.({ includeEmpty: true }, (cell) => {
+          const len = cell.value ? String(cell.value).length : 0;
+          if (len > max) max = len;
+        });
+        col.width = Math.min(Math.max(max + 2, 10), 40);
+      });
+      const buffer = await wb.xlsx.writeBuffer();
+      triggerDownload(
+        new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }),
+        `${fileBase}.xlsx`,
+      );
+    } catch (err) {
+      console.error("[AgentTablePanel] Excel export failed:", err);
+      toast.error("Couldn’t generate the Excel file. Please try again.");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const [{ pdf }, { AgentPerformanceReportDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("../components/AgentPerformanceReportDocument"),
+      ]);
+      const blob = await pdf(
+        <AgentPerformanceReportDocument
+          data={{
+            periodLabel,
+            generatedAt: format(new Date(), "MMM d, yyyy"),
+            preparedFor: managerName,
+            rows: entries.map((e) => ({
+              rank: e.rowRank,
+              agent: e.agentName,
+              policies: e.policyCount,
+              ap: e.apTotal,
+              ip: e.ipTotal,
+            })),
+            totals: {
+              agents: totalAgentCount,
+              policies: totalPolicies,
+              ap: totalAp,
+              ip: totalIp,
+            },
+          }}
+        />,
+      ).toBlob();
+      triggerDownload(blob, `${fileBase}.pdf`);
+    } catch (err) {
+      console.error("[AgentTablePanel] PDF export failed:", err);
+      toast.error("Couldn’t generate the PDF report. Please try again.");
+    }
+  };
+
   const columns: {
     label: string;
     align: "left" | "right";
@@ -151,34 +272,74 @@ export function AgentTablePanel() {
             {totalAgentCount} on your team
           </div>
         </div>
-        {topAgent && (
-          <div style={{ textAlign: "right" }}>
-            <div
-              style={{
-                font: `800 24px ${T.disp}`,
-                color: T.ink,
-                lineHeight: 1.2,
-                maxWidth: 200,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {topAgent.agentName}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 12,
+          }}
+        >
+          {baseEntries.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Download size={13} style={{ color: T.mut2 }} />
+              {(
+                [
+                  ["CSV", handleExportCSV],
+                  ["Excel", handleExportExcel],
+                  ["PDF", handleExportPDF],
+                ] as const
+              ).map(([label, onClick]) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={onClick}
+                  title={`Export Agent Performance as ${label}`}
+                  style={{
+                    font: `600 11px ${T.mono}`,
+                    letterSpacing: "0.04em",
+                    color: T.mut,
+                    background: "transparent",
+                    border: `1px solid ${T.line2}`,
+                    borderRadius: 6,
+                    padding: "4px 9px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-            <div
-              style={{
-                font: `500 11px ${T.mono}`,
-                color: T.mut,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                marginTop: 3,
-              }}
-            >
-              top performer
+          )}
+          {topAgent && (
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  font: `800 24px ${T.disp}`,
+                  color: T.ink,
+                  lineHeight: 1.2,
+                  maxWidth: 200,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {topAgent.agentName}
+              </div>
+              <div
+                style={{
+                  font: `500 11px ${T.mono}`,
+                  color: T.mut,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase",
+                  marginTop: 3,
+                }}
+              >
+                top performer
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {baseEntries.length === 0 ? (

@@ -1,12 +1,12 @@
 // src/features/analytics/tabs/TeamTab.tsx
-// People-centric view: team retention, the smart-moves game plan, the agent
+// People-centric view: team retention, team inbound economics, the agent
 // performance table, and client segmentation.
 
 import { BoardPersistency } from "@/features/dashboard";
 import { useTeamPersistency } from "@/hooks/policies";
 import { ROW_1, ROW_3_WIDE } from "./grid";
 import {
-  ActionFeedPanel,
+  TeamInboundEconomicsPanel,
   AgentTablePanel,
   ClientSegmentsPanel,
   Cell,
@@ -27,10 +27,10 @@ export function TeamTab() {
         </div>
       )}
 
-      {/* Action feed | Agent table (2-wide) */}
+      {/* Team inbound economics | Agent table (2-wide) */}
       <div className={ROW_3_WIDE}>
-        <Cell section="game_plan" minHeight={420}>
-          <ActionFeedPanel />
+        <Cell section="agent_performance" minHeight={420}>
+          <TeamInboundEconomicsPanel />
         </Cell>
         <Cell section="agent_performance" span={2} minHeight={420}>
           <AgentTablePanel />

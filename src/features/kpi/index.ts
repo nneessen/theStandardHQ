@@ -43,6 +43,7 @@ export {
   useAgentKpiSummary,
   summarizeDailyMetrics,
 } from "./hooks/useDailyMetrics";
+export { useTeamDailyMetrics } from "./hooks/useTeamDailyMetrics";
 
 // ─── Call analytics aggregations (reused by the /analytics board) ────────────
 export {

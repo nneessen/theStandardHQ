@@ -7,6 +7,7 @@ export {
   summarizeDailyMetrics,
   type DailyMetricUpsertInput,
 } from "./useDailyMetrics";
+export { useTeamDailyMetrics } from "./useTeamDailyMetrics";
 export {
   useWordTracks,
   useUpsertWordTrack,

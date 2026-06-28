@@ -104,12 +104,37 @@ def main() -> int:
         page.screenshot(path=str(OUT / "analytics-tab-overview.png"), full_page=True)
         print("  · Overview →", OUT / "analytics-tab-overview.png")
 
+        # Widen the period so data-dependent panels (team economics, agent-table
+        # export controls) have rows to render before we assert on them.
+        page.evaluate(
+            "() => { const b=[...document.querySelectorAll('button')]"
+            ".find(x=>(x.textContent||'').trim()==='12M'); if(b) b.click(); }"
+        )
+        page.wait_for_timeout(2500)
+
         # ── Team tab: team persistency band + team-scoped agent table ────────
         page.get_by_role("button", name="Team", exact=True).first.click()
         page.wait_for_timeout(3500)
         if "tab=team" not in page.url:
             failures.append(f"Team tab did not set ?tab=team (url={page.url})")
         team_low = page.inner_text("body").lower()
+        # Team Inbound Economics replaces the old "Smart Moves · Flags" feed.
+        if "team inbound economics" not in team_low:
+            failures.append("Team tab: 'Team Inbound Economics' panel not rendered")
+        if "smart moves" in team_low:
+            failures.append("Team tab: old 'Smart Moves' feed still present")
+        # Agent-table export controls (CSV / Excel / PDF) — only when the table
+        # has rows (skip the assertion on an empty book).
+        if "no team production this period" not in team_low:
+            export_btns = page.evaluate(
+                "() => [...document.querySelectorAll('button')]"
+                ".filter(b=>(b.getAttribute('title')||'')"
+                ".includes('Export Agent Performance')).length"
+            )
+            if export_btns < 3:
+                failures.append(
+                    f"Team agent table: expected 3 export buttons, found {export_btns}"
+                )
         # When the persistency band renders here it must be the team-scoped one.
         if (
             "persistency · policies still active" in team_low
@@ -134,6 +159,9 @@ def main() -> int:
             failures.append("Inbound tab: 'Log day' control not rendered")
         if "close rate" not in low and "closing rate" not in low:
             failures.append("Inbound tab: close-rate KPI not rendered")
+        # The per-agent leaderboard moved off this tab (Inbound = my own perf).
+        if "agent leaderboard" in low:
+            failures.append("Inbound tab: agent leaderboard still present (removed)")
         page.screenshot(path=str(OUT / "analytics-tab-inbound.png"), full_page=True)
         print("  · Inbound →", OUT / "analytics-tab-inbound.png")
 
