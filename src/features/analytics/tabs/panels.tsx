@@ -29,8 +29,8 @@ export const ActionFeedPanel = lazy(() =>
 export const AgentTablePanel = lazy(() =>
   import("../board").then((m) => ({ default: m.AgentTablePanel })),
 );
-export const FunnelPanel = lazy(() =>
-  import("../board").then((m) => ({ default: m.FunnelPanel })),
+export const InboundEconomicsPanel = lazy(() =>
+  import("../board").then((m) => ({ default: m.InboundEconomicsPanel })),
 );
 export const ClientSegmentsPanel = lazy(() =>
   import("../board").then((m) => ({ default: m.ClientSegmentsPanel })),

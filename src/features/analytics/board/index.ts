@@ -7,7 +7,7 @@ export { TrendChartPanel } from "./TrendChartPanel";
 export { GrowthChartPanel } from "./GrowthChartPanel";
 export { ActionFeedPanel } from "./ActionFeedPanel";
 export { AgentTablePanel } from "./AgentTablePanel";
-export { FunnelPanel } from "./FunnelPanel";
+export { InboundEconomicsPanel } from "./InboundEconomicsPanel";
 export { ClientSegmentsPanel } from "./ClientSegmentsPanel";
 export { PipelinePanel } from "./PipelinePanel";
 export { TrendComparisonPanel } from "./TrendComparisonPanel";
