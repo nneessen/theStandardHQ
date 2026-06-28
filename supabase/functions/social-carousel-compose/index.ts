@@ -43,6 +43,7 @@ import {
   COPY_CAPS as CAPS,
   LIST_CAPS,
 } from "../_shared/social-copy.ts";
+import { getBrandContext, brandBlock } from "../_shared/brand-context.ts";
 
 const FN_NAME = "social-carousel-compose";
 // Headroom for a full 10-slide RICH deck (structured archetypes + arrays) + a ~2,200-char
@@ -125,11 +126,13 @@ export function readFacts(raw: unknown): KpiFacts | null {
   if (!raw || typeof raw !== "object") return null;
   const f = raw as KpiFacts;
   // Treat as present only if there's at least one real aggregate to cite.
+  // Require a number that factsBlock() will actually print, so hasFacts can never be true
+  // with an empty facts block (which would let the AI invent a stat).
   const hasAggregate =
     typeof f.totalAp === "number" ||
     typeof f.policyCount === "number" ||
     typeof f.agentCount === "number" ||
-    !!f.topAgent;
+    (!!f.topAgent?.name && typeof f.topAgent?.ap === "number");
   return hasAggregate ? f : null;
 }
 
@@ -563,12 +566,16 @@ serve(async (req) => {
       : mode === "enhance"
         ? ENHANCE_MAX_TOKENS
         : CAPTION_MAX_TOKENS;
-  const system =
+  // Inject the agency's stored brand context (positioning + hard messaging rules) ahead of
+  // every prompt so generations stay on-brand without the user re-typing it.
+  const brand = await getBrandContext(admin, userId);
+  const baseSystem =
     mode === "compose"
       ? composeSystemPrompt(allowRealAttribution, hasFacts)
       : mode === "enhance"
         ? ENHANCE_SYSTEM_PROMPT
         : CAPTION_SYSTEM_PROMPT;
+  const system = brandBlock(brand) + baseSystem;
   const userContent =
     mode === "compose"
       ? composeUserMessage(body, slideCount, facts)

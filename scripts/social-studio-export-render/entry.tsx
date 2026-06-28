@@ -230,17 +230,19 @@ const marketing: PreviewData[] = [
     theme: cardTheme,
     text: wantStress
       ? fill(COPY_CAPS.text)
-      : "Protect what matters most — your family's future starts with one honest conversation.",
-    attribution: wantStress ? fill(COPY_CAPS.attribution) : "The Standard",
+      : "I went from 500 dials a day to a full inbound calendar — same skills, a completely different life.",
+    attribution: wantStress ? fill(COPY_CAPS.attribution) : "",
   },
   {
     kind: "marketing",
     variant: "tip",
     theme: cardTheme,
-    headline: wantStress ? fill(COPY_CAPS.headline) : "Lead with the why",
+    headline: wantStress
+      ? fill(COPY_CAPS.headline)
+      : "Inbound changes everything",
     body: wantStress
       ? fill(COPY_CAPS.body)
-      : "Open every call by asking what they're protecting. The product follows the purpose, never the other way around.",
+      : "When the lead already raised their hand, you stop dialing and start helping. That is how experienced agents grow without the grind.",
   },
   {
     kind: "marketing",
@@ -249,7 +251,7 @@ const marketing: PreviewData[] = [
     headline: wantStress ? fill(COPY_CAPS.headline) : "Join our team",
     body: wantStress
       ? fill(COPY_CAPS.body)
-      : "We're growing across the region. Build a career helping families protect their future.",
+      : "Bring your skills to an all-inbound team — real hours, fresh leads, your life back.",
   },
   {
     kind: "marketing",
@@ -272,7 +274,7 @@ const marketing: PreviewData[] = [
       : "Stop trading nights and weekends for income",
     subheadline: wantStress
       ? fill(COPY_CAPS.subheadline)
-      : "There's a better way to build a six-figure book of business.",
+      : "All inbound. Real hours. The same skills, a far better life.",
   },
   {
     kind: "marketing",
@@ -280,13 +282,13 @@ const marketing: PreviewData[] = [
     theme: cardTheme,
     headline: wantStress
       ? fill(COPY_CAPS.headline)
-      : "5 ways to book more appointments",
+      : "5 reasons agents are switching to us",
     items: [
-      ["Audit your lead sources", "Know which channels actually convert"],
-      ["Call within five minutes", "Speed beats everything on inbound leads"],
-      ["Lead with the why", "People buy the outcome, not the policy"],
-      ["Follow up three times", "Most sales happen after the third touch"],
-      ["Track every metric", "What gets measured gets improved"],
+      ["No more cold calling", "100% inbound — leads that raised their hand"],
+      ["Home by five", "Monday to Friday, no nights or weekends"],
+      ["Fresh exclusive leads", "Never aged, shared, or over-called"],
+      ["Uncapped commission", "Your ceiling is effort, not a cap"],
+      ["Get your life back", "Same skills, a completely different life"],
     ].map(([label, detail]) => ({
       label: wantStress ? fill(COPY_CAPS.itemLabel) : label,
       detail: wantStress ? fill(COPY_CAPS.itemDetail) : detail,
