@@ -20,7 +20,14 @@ describe("MarketingCard archetypes", () => {
         subheadline="There's a better way."
       />,
     );
-    expect(screen.getByText("Stop trading nights for income")).toBeTruthy();
+    // The hook highlights the last word in its own span, so the headline text is split
+    // across elements; assert the parts that render whole + the highlighted last word.
+    expect(
+      screen.getByText(
+        (_t, el) => el?.textContent === "Stop trading nights for income",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText("income")).toBeTruthy();
     expect(screen.getByText("For ambitious agents")).toBeTruthy();
     expect(screen.getByText("There's a better way.")).toBeTruthy();
   });
@@ -115,8 +122,8 @@ describe("MarketingCard archetypes", () => {
           body="Some body copy"
         />,
       );
-      // agency masthead always present → component mounted without throwing
-      expect(screen.getAllByText("THE STANDARD").length).toBeGreaterThan(0);
+      // brand tag (network) always present → component mounted without throwing
+      expect(screen.getAllByText("EPIC LIFE").length).toBeGreaterThan(0);
       unmount();
     }
   });
