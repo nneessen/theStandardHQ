@@ -3,8 +3,10 @@
 // sources, kept legible by the provenance divider:
 //   • logged DAILY totals (Performance + Trend) — manual "Log day" entry
 //   • analyzed call RECORDINGS (overview, timing, demographics, geography,
-//     length, leaderboard) — RLS-scoped, board-skinned panels
-// Date range comes from the page-level selector via useInboundCallRange().
+//     length) — self-scoped to the signed-in agent, board-skinned panels
+// This tab is the agent's OWN inbound performance; the team leaderboard lives on
+// the Team tab. Date range comes from the page-level selector via
+// useInboundCallRange().
 
 import { Link } from "@tanstack/react-router";
 import { CalendarPlus, Headphones } from "lucide-react";
@@ -25,13 +27,12 @@ import {
   RecordingsProvenance,
 } from "@/features/kpi";
 import { useInboundCallRange } from "../board/inbound/utils";
-import { ROW_1, ROW_3, ROW_3_WIDE } from "./grid";
+import { ROW_1, ROW_3 } from "./grid";
 import {
   InboundCallsOverviewPanel,
   CallTimingPanel,
   CallDemographicsPanel,
   CallGeographyPanel,
-  CallAgentLeaderboardPanel,
   CallLengthPanel,
   PlainCell,
 } from "./panels";
@@ -98,11 +99,8 @@ export function InboundCallsTab() {
         </PlainCell>
       </div>
 
-      {/* Agent leaderboard (2-wide) | Call length */}
-      <div className={ROW_3_WIDE}>
-        <PlainCell span={2} minHeight={320}>
-          <CallAgentLeaderboardPanel />
-        </PlainCell>
+      {/* Call length distribution (full width) */}
+      <div className={ROW_1}>
         <PlainCell minHeight={320}>
           <CallLengthPanel />
         </PlainCell>

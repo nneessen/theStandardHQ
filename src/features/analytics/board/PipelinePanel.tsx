@@ -43,17 +43,20 @@ export function PipelinePanel() {
   }
 
   const now = new Date();
-  const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const next60 = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
-  const next90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+  const DAY = 24 * 60 * 60 * 1000;
+  const wk1 = new Date(now.getTime() + 7 * DAY);
+  const wk2 = new Date(now.getTime() + 14 * DAY);
+  const wk3 = new Date(now.getTime() + 21 * DAY);
+  const wk4 = new Date(now.getTime() + 28 * DAY);
 
   // Build policy map for O(1) lookups
   const policyMap = new Map(raw.policies.map((p) => [p.id, p]));
 
   let totalPending = 0;
-  let bucket30 = 0;
-  let bucket60 = 0;
-  let bucket90 = 0;
+  let bucket1 = 0;
+  let bucket2 = 0;
+  let bucket3 = 0;
+  let bucket4 = 0;
 
   raw.commissions.forEach((commission) => {
     if (commission.status !== "pending") return;
@@ -62,16 +65,18 @@ export function PipelinePanel() {
 
     const policy = policyMap.get(commission.policyId ?? "");
     if (policy?.effectiveDate) {
+      // Bucket by the policy's effective date within the next four weeks.
+      // Policies are never set 60-90 days out, so weekly granularity is the
+      // useful view; anything effective on/before this week lands in Week 1.
       const policyDate = parseLocalDate(policy.effectiveDate);
-      const estimatedPayDate = new Date(
-        policyDate.getTime() + 30 * 24 * 60 * 60 * 1000,
-      );
-      if (estimatedPayDate <= next30) {
-        bucket30 += amount;
-      } else if (estimatedPayDate <= next60) {
-        bucket60 += amount;
-      } else if (estimatedPayDate <= next90) {
-        bucket90 += amount;
+      if (policyDate <= wk1) {
+        bucket1 += amount;
+      } else if (policyDate <= wk2) {
+        bucket2 += amount;
+      } else if (policyDate <= wk3) {
+        bucket3 += amount;
+      } else if (policyDate <= wk4) {
+        bucket4 += amount;
       }
     }
   });
@@ -90,7 +95,8 @@ export function PipelinePanel() {
     })
     .reduce((sum, c) => sum + (c.amount ?? 0), 0);
 
-  const allBucketsEmpty = bucket30 === 0 && bucket60 === 0 && bucket90 === 0;
+  const allBucketsEmpty =
+    bucket1 === 0 && bucket2 === 0 && bucket3 === 0 && bucket4 === 0;
   const isEmpty = totalPending === 0 && allBucketsEmpty;
 
   const bookedPct =
@@ -106,9 +112,10 @@ export function PipelinePanel() {
     bookedPct >= 70 ? "Healthy" : bookedPct >= 40 ? "Moderate" : "Building";
 
   const buckets: { label: string; value: number }[] = [
-    { label: "Next 30 days", value: bucket30 },
-    { label: "Next 60 days", value: bucket60 },
-    { label: "Next 90 days", value: bucket90 },
+    { label: "Week 1", value: bucket1 },
+    { label: "Week 2", value: bucket2 },
+    { label: "Week 3", value: bucket3 },
+    { label: "Week 4", value: bucket4 },
   ];
 
   return (

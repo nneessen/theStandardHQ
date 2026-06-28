@@ -250,7 +250,7 @@ export function PredictiveAnalytics() {
         <div className="mt-4 p-2 bg-muted/20 rounded-lg">
           <p className="text-[10px] text-muted-foreground">
             <strong>*Note:</strong> Renewal revenue is an{" "}
-            <span className="text-warning">ESTIMATE</span> based on 25% of
+            <span className="text-warning">ESTIMATE</span> based on 2.5% of
             first-year commission rates. Actual renewal rates vary by carrier
             and product. Contact your carriers for accurate renewal commission
             schedules.

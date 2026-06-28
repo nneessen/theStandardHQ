@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { AnalyticsSectionGate } from "@/components/subscription";
 import { ROW_1, ROW_3, ROW_3_WIDE } from "./grid";
 import {
-  FunnelPanel,
+  InboundEconomicsPanel,
   PipelinePanel,
   GrowthChartPanel,
   TrendComparisonPanel,
@@ -24,7 +24,7 @@ export function ProductionTab() {
       {/* Funnel | Pipeline | AI growth */}
       <div className={ROW_3}>
         <Cell section="conversion_funnel" minHeight={300}>
-          <FunnelPanel />
+          <InboundEconomicsPanel />
         </Cell>
         <Cell section="commission_pipeline" minHeight={300}>
           <PipelinePanel />

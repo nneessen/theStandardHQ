@@ -37,6 +37,14 @@ export type {
   CallTypeUpdateForm,
 } from "./hooks/useCallTypes";
 
+// ─── Daily KPI metrics (manual "Log day" totals; reused by /analytics) ───────
+export {
+  useDailyMetrics,
+  useAgentKpiSummary,
+  summarizeDailyMetrics,
+} from "./hooks/useDailyMetrics";
+export { useTeamDailyMetrics } from "./hooks/useTeamDailyMetrics";
+
 // ─── Call analytics aggregations (reused by the /analytics board) ────────────
 export {
   useKpiCallAnalytics,

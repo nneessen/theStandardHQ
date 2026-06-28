@@ -17,6 +17,7 @@ import {
   getProductMixEvolution,
   calculateCarrierROI,
   getTopMovers,
+  getPolicyStatusSnapshot,
 } from "../../services/analytics";
 import { parseLocalDate } from "../../lib/date";
 
@@ -143,11 +144,16 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
     ),
   };
 
+  // Point-in-time status breakdown of the (period-filtered) book — reused by the
+  // PDF analytics report. Canonical bucketing lives in policyStatusService.
+  const policyStatus = getPolicyStatusSnapshot(policies);
+
   return {
     isLoading,
     segmentation: segmentationData,
     forecast: forecastData,
     attribution: attributionData,
+    policyStatus,
     // Raw data for custom calculations
     raw: {
       policies,

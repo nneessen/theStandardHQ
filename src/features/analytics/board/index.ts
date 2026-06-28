@@ -5,9 +5,9 @@
 export { AnalyticsHero } from "./AnalyticsHero";
 export { TrendChartPanel } from "./TrendChartPanel";
 export { GrowthChartPanel } from "./GrowthChartPanel";
-export { ActionFeedPanel } from "./ActionFeedPanel";
 export { AgentTablePanel } from "./AgentTablePanel";
-export { FunnelPanel } from "./FunnelPanel";
+export { InboundEconomicsPanel } from "./InboundEconomicsPanel";
+export { TeamInboundEconomicsPanel } from "./TeamInboundEconomicsPanel";
 export { ClientSegmentsPanel } from "./ClientSegmentsPanel";
 export { PipelinePanel } from "./PipelinePanel";
 export { TrendComparisonPanel } from "./TrendComparisonPanel";
@@ -21,5 +21,4 @@ export { CallTimingPanel } from "./inbound/CallTimingPanel";
 export { CallLengthPanel } from "./inbound/CallLengthPanel";
 export { CallDemographicsPanel } from "./inbound/CallDemographicsPanel";
 export { CallGeographyPanel } from "./inbound/CallGeographyPanel";
-export { CallAgentLeaderboardPanel } from "./inbound/CallAgentLeaderboardPanel";
 export { WordTrackEffectivenessPanel } from "./inbound/WordTrackEffectivenessPanel";

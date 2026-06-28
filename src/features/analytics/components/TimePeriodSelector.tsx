@@ -183,7 +183,7 @@ export function TimePeriodSelector({
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
+      <div className="flex items-center gap-1 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-lg p-1 overflow-x-auto">
         {periods.map(({ value, label }) => (
           <button
             key={value}
@@ -196,7 +196,7 @@ export function TimePeriodSelector({
               }
             }}
             className={cn(
-              "px-2 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
+              "h-7 px-3 text-xs font-semibold rounded-md transition-all whitespace-nowrap",
               selectedPeriod === value
                 ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
                 : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",

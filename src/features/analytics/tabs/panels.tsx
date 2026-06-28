@@ -23,14 +23,14 @@ export const TrendChartPanel = lazy(() =>
 export const GrowthChartPanel = lazy(() =>
   import("../board").then((m) => ({ default: m.GrowthChartPanel })),
 );
-export const ActionFeedPanel = lazy(() =>
-  import("../board").then((m) => ({ default: m.ActionFeedPanel })),
-);
 export const AgentTablePanel = lazy(() =>
   import("../board").then((m) => ({ default: m.AgentTablePanel })),
 );
-export const FunnelPanel = lazy(() =>
-  import("../board").then((m) => ({ default: m.FunnelPanel })),
+export const InboundEconomicsPanel = lazy(() =>
+  import("../board").then((m) => ({ default: m.InboundEconomicsPanel })),
+);
+export const TeamInboundEconomicsPanel = lazy(() =>
+  import("../board").then((m) => ({ default: m.TeamInboundEconomicsPanel })),
 );
 export const ClientSegmentsPanel = lazy(() =>
   import("../board").then((m) => ({ default: m.ClientSegmentsPanel })),
@@ -66,9 +66,6 @@ export const CallDemographicsPanel = lazy(() =>
 );
 export const CallGeographyPanel = lazy(() =>
   import("../board").then((m) => ({ default: m.CallGeographyPanel })),
-);
-export const CallAgentLeaderboardPanel = lazy(() =>
-  import("../board").then((m) => ({ default: m.CallAgentLeaderboardPanel })),
 );
 export const WordTrackEffectivenessPanel = lazy(() =>
   import("../board").then((m) => ({ default: m.WordTrackEffectivenessPanel })),

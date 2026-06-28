@@ -434,7 +434,7 @@ export function GrowthChartPanel() {
             }}
           >
             <strong style={{ color: T.mut }}>Note:</strong> Renewal revenue is
-            an <strong style={{ color: T.mut }}>estimate</strong> based on 25%
+            an <strong style={{ color: T.mut }}>estimate</strong> based on 2.5%
             of first-year commission rates. Actual renewal rates vary by carrier
             and product.
           </div>

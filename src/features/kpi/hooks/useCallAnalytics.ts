@@ -1,11 +1,12 @@
 // src/features/kpi/hooks/useCallAnalytics.ts
 // Aggregation hooks over kpi_call_recordings + kpi_word_track_detections.
 //
-// Scope: these power the team-aware analytical sections (states, time-of-day,
-// demographics, length, word-tracks, team leaderboard), so — unlike the
-// self-scoped daily-metric hooks — they intentionally do NOT pin agent_id and
-// let RLS return everything the caller may see (own + downline + IMO admin).
-// Aggregation is client-side via the pure helpers in lib/call-analytics.
+// Scope: `useKpiCallAnalytics` self-scopes to the signed-in agent by default —
+// every consumer lives on the Inbound tab, which is the agent's OWN inbound
+// performance (the recordings strip + per-call breakdowns sit under "your…"
+// headings). Pass `{ agentId: null }` to get the full RLS-visible set (own +
+// downline + IMO admin) for a team rollup. Aggregation is client-side via the
+// pure helpers in lib/call-analytics.
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
@@ -32,14 +33,20 @@ function callAtBounds(range: DateRange): { lo: string; hi: string } {
 
 // ─── Call analytics (recordings) ─────────────────────────────────────────────
 
-async function fetchCallAnalytics(range: DateRange): Promise<CallAnalytics> {
+async function fetchCallAnalytics(
+  range: DateRange,
+  agentId: string | null,
+): Promise<CallAnalytics> {
   const { lo, hi } = callAtBounds(range);
-  const { data, error } = await supabase
+  let query = supabase
     .from("kpi_call_recordings")
     .select(RECORDING_COLS)
     .gte("call_at", lo)
-    .lte("call_at", hi)
-    .order("call_at", { ascending: false });
+    .lte("call_at", hi);
+  // null → let RLS return the full visible set (team rollup); otherwise pin to
+  // the one agent.
+  if (agentId) query = query.eq("agent_id", agentId);
+  const { data, error } = await query.order("call_at", { ascending: false });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as AnalyticsRecording[];
 
@@ -61,11 +68,18 @@ async function fetchCallAnalytics(range: DateRange): Promise<CallAnalytics> {
   return aggregateCallAnalytics(rows, names);
 }
 
-export function useKpiCallAnalytics(range: DateRange) {
+export function useKpiCallAnalytics(
+  range: DateRange,
+  opts?: { agentId?: string | null },
+) {
   const { user } = useAuth();
+  // Default: the signed-in agent. Callers wanting a team rollup pass
+  // `{ agentId: null }` explicitly.
+  const agentId =
+    opts && "agentId" in opts ? (opts.agentId ?? null) : (user?.id ?? null);
   return useQuery({
-    queryKey: kpiKeys.callAnalytics(range),
-    queryFn: () => fetchCallAnalytics(range),
+    queryKey: kpiKeys.callAnalytics(range, agentId),
+    queryFn: () => fetchCallAnalytics(range, agentId),
     enabled: !!user?.id,
     staleTime: 60_000,
     gcTime: 10 * 60_000,

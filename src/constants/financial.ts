@@ -59,3 +59,9 @@ export const ANALYTICS_CONSTANTS = {
   MAX_GROWTH_RATE: 1.0, // Cap annual growth at 100%
   MIN_GROWTH_RATE: -0.5, // Cap decline at -50%
 } as const;
+
+// Inbound call economics
+// Flat per-call cost from the bid platform: every inbound call costs this much,
+// so spend = inbound calls × this. Used to derive CPA and commission-based ROI
+// for the inbound model (no per-record lead buying). Change here in one place.
+export const COST_PER_INBOUND_CALL = 42.5;

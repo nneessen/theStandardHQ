@@ -22,17 +22,29 @@ import {
   MessageSquareQuote,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
-import { TimePeriodSelector } from "./components/TimePeriodSelector";
+import {
+  TimePeriodSelector,
+  formatAdvancedDateRange,
+} from "./components/TimePeriodSelector";
 import { PillButton, SectionShell, SoftCard } from "@/components/v2";
 import { Cap, T } from "@/components/board";
 import { cn } from "@/lib/utils";
-import { downloadCSV, printAnalyticsToPDF } from "../../utils/exportHelpers";
+import {
+  flattenPoliciesForExport,
+  exportPoliciesToCSV,
+  selectPrimaryCommissionsByPolicy,
+} from "@/features/policies";
+import type { Commission } from "@/types/commission.types";
 import {
   AnalyticsDateProvider,
   useAnalyticsDateRange,
 } from "./context/AnalyticsDateContext";
 import { useAnalyticsData } from "@/hooks";
+import { usePersistency } from "@/hooks/policies";
+import { useCurrentUserProfile } from "@/hooks/admin";
 import { ChunkErrorBoundary } from "@/components/shared/ChunkErrorBoundary";
 import {
   useAccessibleAnalyticsSections,
@@ -77,6 +89,17 @@ function AnalyticsDashboardContent({ initialTab }: { initialTab?: string }) {
     endDate: dateRange.endDate,
   });
 
+  // Own-book persistency + the agent's name — both feed the PDF report (which is
+  // a page-level, own-book export, like the CSV).
+  const { data: persistency } = usePersistency();
+  const { data: currentUser } = useCurrentUserProfile();
+  const agentName =
+    [currentUser?.first_name, currentUser?.last_name]
+      .filter(Boolean)
+      .join(" ") ||
+    currentUser?.email ||
+    null;
+
   const { accessibleSections, lockedSections } =
     useAccessibleAnalyticsSections();
 
@@ -90,40 +113,97 @@ function AnalyticsDashboardContent({ initialTab }: { initialTab?: string }) {
   };
 
   const handleExportCSV = () => {
-    if (analyticsData.raw.policies.length > 0) {
-      downloadCSV(
-        analyticsData.raw.policies.map((p) => ({
-          policyNumber: p.policyNumber,
-          product: p.product,
-          status: p.status,
-          annualPremium: p.annualPremium,
-          effectiveDate: p.effectiveDate,
-        })),
-        "analytics_policies",
-      );
-    }
+    const { policies, carriers, commissions } = analyticsData.raw;
+    if (policies.length === 0) return;
+
+    // Reuse the canonical policy export: 23 human-readable, labeled columns with
+    // formatted currency/dates — instead of dumping raw camelCase fields.
+    const carrierMap: Record<string, string> = Object.fromEntries(
+      carriers.map((c) => [c.id, c.name]),
+    );
+    const commissionMap: Record<string, Commission> = Object.fromEntries(
+      selectPrimaryCommissionsByPolicy(commissions),
+    );
+    exportPoliciesToCSV(
+      flattenPoliciesForExport(policies, carrierMap, commissionMap),
+    );
   };
 
-  const handlePrintPDF = () => {
-    printAnalyticsToPDF("Analytics Report", [
-      {
-        title: "Overview",
-        content: `<p>Analytics report for ${timePeriod} period</p>`,
-      },
-      {
-        title: "Data Summary",
-        content: `
-          <div class="metric">
-            <div class="metric-label">Total Policies</div>
-            <div class="metric-value">${analyticsData.raw.policies.length}</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Total Commissions</div>
-            <div class="metric-value">${analyticsData.raw.commissions.length}</div>
-          </div>
-        `,
-      },
-    ]);
+  // Build a real, selectable-text PDF straight from the computed analytics —
+  // never the live DOM, so the app shell can't bleed in. The generator
+  // (@react-pdf/renderer) and the document component are pulled in on demand via
+  // dynamic import to stay out of the route bundle.
+  const handleDownloadPDF = async () => {
+    const { policies, commissions } = analyticsData.raw;
+    if (policies.length === 0) {
+      toast.error("No data in the selected period to report on.");
+      return;
+    }
+
+    try {
+      const totalAnnualPremium = policies.reduce(
+        (sum, p) => sum + (p.annualPremium || 0),
+        0,
+      );
+      const totalPolicies = policies.length;
+      const avgPremium = totalPolicies ? totalAnnualPremium / totalPolicies : 0;
+      const paidCommissions = commissions.filter((c) => c.status === "paid");
+      const commissionsPaid = paidCommissions.reduce(
+        (sum, c) => sum + (c.amount || 0),
+        0,
+      );
+
+      const [{ pdf }, { AnalyticsReportDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./components/AnalyticsReportDocument"),
+      ]);
+
+      const blob = await pdf(
+        <AnalyticsReportDocument
+          data={{
+            periodLabel: formatAdvancedDateRange(dateRange),
+            generatedAt: format(new Date(), "MMM d, yyyy"),
+            agentName,
+            totalPolicies,
+            totalAnnualPremium,
+            avgPremium,
+            commissionsPaid,
+            commissionsPaidCount: paidCommissions.length,
+            status: {
+              ...analyticsData.policyStatus,
+              // Reconcile the status table to the Summary policy count: every
+              // policy not in a named in-force bucket lands in "other".
+              total: totalPolicies,
+              other: totalPolicies - analyticsData.policyStatus.total,
+            },
+            persistency: persistency ?? [],
+          }}
+        />,
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analytics-report_${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Defer revoke: revoking synchronously after click() can cancel the
+      // download in some browsers before it has begun.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (err) {
+      console.error("[AnalyticsDashboard] Download PDF failed:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      const isChunkLoadError =
+        /dynamically imported module|error loading dynamically|failed to fetch|loading chunk|importing a module/i.test(
+          msg,
+        );
+      toast.error(
+        isChunkLoadError
+          ? "Couldn’t load the PDF generator — the app may have updated. Please refresh and try again."
+          : "Couldn’t generate the PDF report. Please try again.",
+      );
+    }
   };
 
   return (
@@ -194,10 +274,10 @@ function AnalyticsDashboardContent({ initialTab }: { initialTab?: string }) {
                 CSV
               </PillButton>
               <PillButton
-                onClick={handlePrintPDF}
+                onClick={handleDownloadPDF}
                 tone="ghost"
                 size="sm"
-                title="Print report to PDF"
+                title="Download analytics report as PDF"
               >
                 <FileText className="h-3.5 w-3.5" />
                 PDF

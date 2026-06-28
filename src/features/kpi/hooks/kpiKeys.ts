@@ -9,14 +9,30 @@ export const kpiKeys = {
   all: ["kpi"] as const,
   dailyMetrics: (agentId: string, range: DateRange) =>
     [...kpiKeys.all, "daily-metrics", agentId, range.from, range.to] as const,
+  teamDailyMetrics: (agentIds: string[], range: DateRange) =>
+    [
+      ...kpiKeys.all,
+      "team-daily-metrics",
+      [...agentIds].sort().join(","),
+      range.from,
+      range.to,
+    ] as const,
   summary: (agentId: string, range: DateRange) =>
     [...kpiKeys.all, "summary", agentId, range.from, range.to] as const,
   recordings: (agentId: string) =>
     [...kpiKeys.all, "recordings", agentId] as const,
   wordTracks: (ownerId: string) =>
     [...kpiKeys.all, "word-tracks", ownerId] as const,
-  callAnalytics: (range: DateRange) =>
-    [...kpiKeys.all, "call-analytics", range.from, range.to] as const,
+  // agentId scopes the cache: a specific id = that agent only; null = the full
+  // RLS-visible set (own + downline + admin).
+  callAnalytics: (range: DateRange, agentId: string | null) =>
+    [
+      ...kpiKeys.all,
+      "call-analytics",
+      agentId ?? "all",
+      range.from,
+      range.to,
+    ] as const,
   wordTrackEffectiveness: (range: DateRange) =>
     [...kpiKeys.all, "wt-effectiveness", range.from, range.to] as const,
 };
