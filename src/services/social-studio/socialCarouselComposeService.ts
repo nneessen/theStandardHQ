@@ -19,6 +19,27 @@ export type ComposeView = SocialView;
  *  numbers; marketing slide = AI-written copy). The AI never writes metrics or images. */
 export type ComposedSlide = DeckSlideSpec;
 
+/** Narrative framework the composer should follow. "auto" lets the AI pick the best fit. */
+export type CarouselFramework =
+  | "auto"
+  | "list"
+  | "problem-solution"
+  | "story"
+  | "recruiting";
+
+/** Compact, REAL agency KPIs (assembled client-side from already-loaded metrics) the AI may
+ *  cite — and may cite ONLY these. Omitted when the studio is showing sample data, so the AI
+ *  never presents fabricated sample numbers as real. */
+export interface AgencyKpiFacts {
+  periodLabel: string;
+  totalAp: number;
+  policyCount: number;
+  agentCount: number;
+  avgApPerAgent: number;
+  topAgent?: { name: string; ap: number; policies: number };
+  topFive?: Array<{ rank: number; name: string; ap: number; policies: number }>;
+}
+
 export interface ComposeCarouselRequest {
   /** What the carousel is about — the single steer the whole deck is built from. */
   idea: string;
@@ -32,6 +53,10 @@ export interface ComposeCarouselRequest {
   allowDataSlides?: boolean;
   /** Views that currently have data, so the AI won't pick an empty one. */
   availableViews?: ComposeView[];
+  /** Narrative framework to steer the deck arc (default "auto"). */
+  framework?: CarouselFramework;
+  /** Real agency KPIs the AI may cite (only when showing real, non-sample data). */
+  facts?: AgencyKpiFacts;
 }
 
 export interface ComposeCarouselResult {
@@ -73,6 +98,32 @@ export async function composeCarousel(
     slides,
     caption: typeof result?.caption === "string" ? result.caption : "",
   };
+}
+
+export interface EnhanceIdeaRequest {
+  /** The user's rough one-liner to refine into a fuller creative brief. */
+  idea: string;
+  agencyName?: string;
+  network?: string;
+  /** Optional facts so the refined brief can suggest data-driven angles. */
+  facts?: AgencyKpiFacts;
+}
+
+/**
+ * Ask the edge function to refine a rough idea into a tighter, more specific creative brief
+ * (angle, audience, a few concrete points) the composer can build a stronger deck from.
+ * Returns the enhanced text; throws on transport error or empty result.
+ */
+export async function enhanceIdea(req: EnhanceIdeaRequest): Promise<string> {
+  const { data, error } = await supabase.functions.invoke(
+    "social-carousel-compose",
+    { body: { mode: "enhance", ...req } },
+  );
+  if (error) throw error;
+  const enhanced = (data as { enhancedIdea?: string } | null)?.enhancedIdea;
+  if (typeof enhanced !== "string" || !enhanced.trim())
+    throw new Error("empty enhancement");
+  return enhanced.trim();
 }
 
 /**

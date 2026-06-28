@@ -7,15 +7,22 @@ import { useCallback } from "react";
 import {
   composeCarousel,
   generateCarouselCaption,
+  enhanceIdea,
   type ComposeCarouselRequest,
   type ComposeCarouselResult,
   type GenerateCarouselCaptionRequest,
+  type EnhanceIdeaRequest,
+  type CarouselFramework,
+  type AgencyKpiFacts,
 } from "@/services/social-studio";
 
 export type {
   ComposeCarouselRequest,
   ComposeCarouselResult,
   GenerateCarouselCaptionRequest,
+  EnhanceIdeaRequest,
+  CarouselFramework,
+  AgencyKpiFacts,
 };
 
 export function useComposeCarousel() {
@@ -29,5 +36,13 @@ export function useComposeCarousel() {
       generateCarouselCaption(req),
     [],
   );
-  return { composeCarousel: compose, generateCaption: caption };
+  const enhance = useCallback(
+    (req: EnhanceIdeaRequest): Promise<string> => enhanceIdea(req),
+    [],
+  );
+  return {
+    composeCarousel: compose,
+    generateCaption: caption,
+    enhanceIdea: enhance,
+  };
 }

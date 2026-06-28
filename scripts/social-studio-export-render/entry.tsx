@@ -261,6 +261,91 @@ const marketing: PreviewData[] = [
       : "Our biggest month yet — thank you to every producer who made it happen.",
     imageDataUrl: gradientDataUrl(),
   },
+  // ── richer layout archetypes (carousel builder rebuild) ──
+  {
+    kind: "marketing",
+    variant: "hook",
+    theme: cardTheme,
+    eyebrow: wantStress ? fill(COPY_CAPS.eyebrow) : "For ambitious agents",
+    headline: wantStress
+      ? fill(COPY_CAPS.headline)
+      : "Stop trading nights and weekends for income",
+    subheadline: wantStress
+      ? fill(COPY_CAPS.subheadline)
+      : "There's a better way to build a six-figure book of business.",
+  },
+  {
+    kind: "marketing",
+    variant: "list",
+    theme: cardTheme,
+    headline: wantStress
+      ? fill(COPY_CAPS.headline)
+      : "5 ways to book more appointments",
+    items: [
+      ["Audit your lead sources", "Know which channels actually convert"],
+      ["Call within five minutes", "Speed beats everything on inbound leads"],
+      ["Lead with the why", "People buy the outcome, not the policy"],
+      ["Follow up three times", "Most sales happen after the third touch"],
+      ["Track every metric", "What gets measured gets improved"],
+    ].map(([label, detail]) => ({
+      label: wantStress ? fill(COPY_CAPS.itemLabel) : label,
+      detail: wantStress ? fill(COPY_CAPS.itemDetail) : detail,
+    })),
+  },
+  {
+    kind: "marketing",
+    variant: "checklist",
+    theme: cardTheme,
+    headline: wantStress
+      ? fill(COPY_CAPS.headline)
+      : "Everything you get on day one",
+    bullets: [
+      "Fresh inbound leads, never recycled",
+      "No cold calling, ever",
+      "Monday to Friday, 10 to 5",
+      "Mentorship from real top producers",
+      "Uncapped commission",
+      "A team that has your back",
+    ].map((b) => (wantStress ? fill(COPY_CAPS.bullet) : b)),
+  },
+  {
+    kind: "marketing",
+    variant: "stat",
+    theme: cardTheme,
+    stat: wantStress ? fill(COPY_CAPS.stat) : "$1.2M",
+    statLabel: wantStress
+      ? fill(COPY_CAPS.statLabel)
+      : "In new annual premium this month",
+    body: wantStress
+      ? fill(COPY_CAPS.body)
+      : "Written by a team that clocks out at five.",
+  },
+  {
+    kind: "marketing",
+    variant: "compare",
+    theme: cardTheme,
+    headline: wantStress ? fill(COPY_CAPS.headline) : "Most agencies vs. us",
+    compare: {
+      left: {
+        title: wantStress ? fill(COPY_CAPS.compareTitle) : "Most agencies",
+        items: [
+          "Cold calls all day",
+          "Aged, shared leads",
+          "Nights and weekends",
+          "Capped earnings",
+        ].map((s) => (wantStress ? fill(COPY_CAPS.compareItem) : s)),
+      },
+      right: {
+        title: wantStress ? fill(COPY_CAPS.compareTitle) : "Us",
+        items: [
+          "100% inbound",
+          "Fresh exclusive leads",
+          "Bankers' hours",
+          "Uncapped upside",
+        ].map((s) => (wantStress ? fill(COPY_CAPS.compareItem) : s)),
+      },
+    },
+  },
 ];
 const pages: PreviewData[] = wantDeck
   ? [dataPages[0], ...marketing].map((p, i, arr) =>

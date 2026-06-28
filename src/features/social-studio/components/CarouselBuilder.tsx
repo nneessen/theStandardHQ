@@ -19,11 +19,20 @@ import {
   Loader2,
   ImagePlus,
   Sparkles,
+  Wand2,
   Save,
   FolderOpen,
   CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { PillNav } from "@/components/v2";
 import { useAiAccess } from "@/hooks/subscription";
 import {
@@ -32,6 +41,7 @@ import {
   CARD_THEME_LABEL,
   cardThemeWrapperClass,
   normalizeCardTheme,
+  toLastInitial,
   type MarketingVariant,
   type SocialFormat,
   type CardTheme,
@@ -50,7 +60,10 @@ import {
   type MarketingCopyRequest,
   type MarketingCopyResult,
 } from "../hooks/useMarketingCopyDraft";
-import { useComposeCarousel } from "../hooks/useComposeCarousel";
+import {
+  useComposeCarousel,
+  type CarouselFramework,
+} from "../hooks/useComposeCarousel";
 import {
   useSocialDecks,
   useSaveDeck,
@@ -60,7 +73,7 @@ import {
   type DeckSlideSpec,
 } from "../hooks/useSocialDecks";
 import type { SocialStudioConfig, SocialView } from "../types";
-import { MARKETING_COPY_CAPS } from "../marketingCopyCaps";
+import { MARKETING_COPY_CAPS, MARKETING_LIST_CAPS } from "../marketingCopyCaps";
 import { aiErrorMessage } from "../aiErrorMessage";
 import { toLocalInputValue } from "../datetimeLocal";
 import { toast } from "sonner";
@@ -117,11 +130,31 @@ const DATA_VIEWS: { view: SocialView; label: string }[] = [
 ];
 
 const MARKETING_TYPES: { variant: MarketingVariant; label: string }[] = [
+  { variant: "hook", label: "Hook" },
+  { variant: "list", label: "List" },
+  { variant: "checklist", label: "Checklist" },
+  { variant: "stat", label: "Stat" },
+  { variant: "compare", label: "Compare" },
   { variant: "quote", label: "Quote" },
   { variant: "tip", label: "Tip" },
   { variant: "cta", label: "Recruiting" },
   { variant: "custom", label: "Custom" },
 ];
+
+const FRAMEWORK_OPTIONS: { value: CarouselFramework; label: string }[] = [
+  { value: "auto", label: "Auto — let AI choose" },
+  { value: "list", label: "How-to / tips list" },
+  { value: "problem-solution", label: "Problem → Solution" },
+  { value: "story", label: "Story" },
+  { value: "recruiting", label: "Recruiting pitch" },
+];
+
+/** The legacy variants the single-slide marketing-copy drafter supports. */
+const LEGACY_COPY_VARIANTS = ["quote", "tip", "cta", "custom"] as const;
+type LegacyCopyVariant = (typeof LEGACY_COPY_VARIANTS)[number];
+function isLegacyCopyVariant(v: MarketingVariant): v is LegacyCopyVariant {
+  return (LEGACY_COPY_VARIANTS as readonly string[]).includes(v);
+}
 
 // A short human label for a deck row.
 function slideLabel(data: PreviewData): string {
@@ -134,9 +167,17 @@ function slideLabel(data: PreviewData): string {
       return "Monthly recap";
     case "marketing":
       return (
-        { quote: "Quote", tip: "Tip", cta: "Recruiting CTA", custom: "Custom" }[
-          data.variant
-        ] || "Marketing"
+        {
+          hook: "Hook",
+          list: "List",
+          checklist: "Checklist",
+          stat: "Stat",
+          compare: "Compare",
+          quote: "Quote",
+          tip: "Tip",
+          cta: "Recruiting CTA",
+          custom: "Custom",
+        }[data.variant] || "Marketing"
       );
     default:
       return "Slide";
@@ -194,18 +235,58 @@ export function CarouselBuilder({
   const [deckName, setDeckName] = useState("");
 
   // Build-with-AI (Phase 3C) — compose a whole deck from one idea + write a deck-aware caption.
-  const { composeCarousel: runCompose, generateCaption: runCaption } =
-    useComposeCarousel();
+  const {
+    composeCarousel: runCompose,
+    generateCaption: runCaption,
+    enhanceIdea: runEnhance,
+  } = useComposeCarousel();
   const [aiIdea, setAiIdea] = useState("");
   // Empty string while the user is mid-edit (cleared the field); normalized to a valid count
   // on blur / at use (review #8 — a plain number snapped back to 2 the moment it was cleared).
-  const [aiCount, setAiCount] = useState<number | "">(5);
+  const [aiCount, setAiCount] = useState<number | "">(7);
   const [aiRealQuotes, setAiRealQuotes] = useState(true);
   const [aiDataSlides, setAiDataSlides] = useState(true);
+  const [aiFramework, setAiFramework] = useState<CarouselFramework>("auto");
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [composing, setComposing] = useState(false);
   const composingRef = useRef(false);
+  const [enhancing, setEnhancing] = useState(false);
+  const enhancingRef = useRef(false);
   const [captioning, setCaptioning] = useState(false);
   const captioningRef = useRef(false);
+
+  // Real agency KPIs (assembled from already-loaded metrics) the AI may cite — and ONLY these.
+  // Omitted when showing sample data so fabricated sample numbers are never presented as real.
+  const factsAvailable = !isSample && producers.length > 0;
+  const buildFacts = useCallback(() => {
+    if (isSample || producers.length === 0) return undefined;
+    const polFor = (p: ProducerRow) => p.submittedPolicies ?? p.policyCount;
+    const ranked = [...producers].sort((a, b) => b.apTotal - a.apTotal);
+    const totalAp = ranked.reduce((s, e) => s + e.apTotal, 0);
+    const policyCount = ranked.reduce((s, e) => s + polFor(e), 0);
+    const agentCount = ranked.length;
+    const top = ranked[0];
+    return {
+      periodLabel: labels.monthLabel || labels.weekRange || labels.dateLabel,
+      totalAp,
+      policyCount,
+      agentCount,
+      avgApPerAgent: agentCount ? Math.round(totalAp / agentCount) : 0,
+      topAgent: top
+        ? {
+            name: toLastInitial(top.agentName),
+            ap: top.apTotal,
+            policies: polFor(top),
+          }
+        : undefined,
+      topFive: ranked.slice(0, 5).map((e, i) => ({
+        rank: i + 1,
+        name: toLastInitial(e.agentName),
+        ap: e.apTotal,
+        policies: polFor(e),
+      })),
+    };
+  }, [isSample, producers, labels]);
 
   // Instagram carousels are FEED posts (portrait 4:5 or square 1:1) — never 9:16 Story. If the
   // shared config carries "story" (set in single-card mode), treat the carousel as portrait for
@@ -322,10 +403,18 @@ export function CarouselBuilder({
         return {
           t: "marketing",
           variant: d.variant,
+          eyebrow: d.eyebrow,
           text: d.text,
           attribution: d.attribution,
           headline: d.headline,
+          subheadline: d.subheadline,
           body: d.body,
+          items: d.items,
+          bullets: d.bullets,
+          stat: d.stat,
+          statLabel: d.statLabel,
+          compare: d.compare,
+          ctaAction: d.ctaAction,
           imageDataUrl: d.imageDataUrl,
         };
       }
@@ -380,10 +469,18 @@ export function CarouselBuilder({
         kind: "marketing",
         variant: spec.variant,
         theme,
+        eyebrow: spec.eyebrow,
         text: spec.text,
         attribution: spec.attribution,
         headline: spec.headline,
+        subheadline: spec.subheadline,
         body: spec.body,
+        items: spec.items,
+        bullets: spec.bullets,
+        stat: spec.stat,
+        statLabel: spec.statLabel,
+        compare: spec.compare,
+        ctaAction: spec.ctaAction,
         imageDataUrl: spec.imageDataUrl,
       },
     };
@@ -427,27 +524,52 @@ export function CarouselBuilder({
 
   function addMarketing(variant: MarketingVariant) {
     const theme = config.cardTheme;
-    const data: PreviewData =
-      variant === "quote"
-        ? { kind: "marketing", variant, theme, text: "", attribution: "" }
-        : variant === "custom"
-          ? {
-              kind: "marketing",
-              variant,
-              theme,
-              headline: "",
-              body: "",
-              imageDataUrl: undefined,
-            }
-          : variant === "cta"
-            ? {
-                kind: "marketing",
-                variant,
-                theme,
-                headline: "Join our team",
-                body: "We're growing — DM us to learn about a career here.",
-              }
-            : { kind: "marketing", variant, theme, headline: "", body: "" };
+    const base = { kind: "marketing" as const, variant, theme };
+    let data: PreviewData;
+    switch (variant) {
+      case "quote":
+        data = { ...base, text: "", attribution: "" };
+        break;
+      case "hook":
+        data = { ...base, eyebrow: "", headline: "", subheadline: "" };
+        break;
+      case "list":
+        data = {
+          ...base,
+          headline: "",
+          items: [{ label: "" }, { label: "" }, { label: "" }],
+        };
+        break;
+      case "checklist":
+        data = { ...base, headline: "", bullets: ["", "", ""] };
+        break;
+      case "stat":
+        data = { ...base, stat: "", statLabel: "", body: "" };
+        break;
+      case "compare":
+        data = {
+          ...base,
+          headline: "",
+          compare: {
+            left: { title: "Most agencies", items: ["", ""] },
+            right: { title: "Us", items: ["", ""] },
+          },
+        };
+        break;
+      case "custom":
+        data = { ...base, headline: "", body: "", imageDataUrl: undefined };
+        break;
+      case "cta":
+        data = {
+          ...base,
+          headline: "Join our team",
+          body: "We're growing — DM us to learn about a career here.",
+          ctaAction: "DM us to apply",
+        };
+        break;
+      default:
+        data = { ...base, headline: "", body: "" };
+    }
     addSlide(data);
   }
 
@@ -467,13 +589,7 @@ export function CarouselBuilder({
 
   // Patch the SELECTED marketing slide's editable copy.
   function patchMarketing(
-    patch: Partial<{
-      text: string;
-      attribution: string;
-      headline: string;
-      body: string;
-      imageDataUrl?: string;
-    }>,
+    patch: Partial<Omit<Extract<PreviewData, { kind: "marketing" }>, "kind">>,
   ) {
     if (!selected) return;
     setDeck((d) =>
@@ -535,6 +651,8 @@ export function CarouselBuilder({
         allowRealAttribution: aiRealQuotes,
         allowDataSlides: aiDataSlides,
         availableViews,
+        framework: aiFramework,
+        facts: buildFacts(),
       });
       const next: DeckSlide[] = [];
       for (const spec of result.slides) {
@@ -550,6 +668,7 @@ export function CarouselBuilder({
       }
       setDeck(capped);
       setSelectedId(capped[0]?.id ?? null);
+      setAiDialogOpen(false);
       // The build owns the whole post: install its caption (or clear + warn if none came back,
       // rather than silently keeping the previous deck's caption — review #5).
       setCaption(result.caption);
@@ -591,6 +710,35 @@ export function CarouselBuilder({
     }
   }
 
+  // Refine the rough idea into a sharper creative brief BEFORE building. Seeds the idea
+  // field (still fully editable) so the user can review/tweak it, then Generate.
+  async function handleEnhance() {
+    if (enhancingRef.current || composingRef.current) return;
+    const idea = aiIdea.trim();
+    if (!idea) {
+      toast.error("Type a rough idea first.");
+      return;
+    }
+    enhancingRef.current = true;
+    setEnhancing(true);
+    try {
+      const enhanced = await runEnhance({
+        idea,
+        agencyName,
+        network,
+        facts: buildFacts(),
+      });
+      setAiIdea(enhanced);
+      toast.success("Sharpened your idea — tweak it or generate.");
+    } catch (e) {
+      console.error("Idea enhance failed:", e);
+      toast.error(aiErrorMessage(e, "carousel"));
+    } finally {
+      enhancingRef.current = false;
+      setEnhancing(false);
+    }
+  }
+
   // Write a deck-aware caption from the CURRENT slides (works on any deck, AI-built or not).
   async function buildCaption() {
     // Ref guard (not state) so a fast double-click can't double-fire before the re-render —
@@ -606,11 +754,19 @@ export function CarouselBuilder({
       const slides = deck.map((s) => {
         if (s.data.kind === "marketing") {
           const d = s.data;
+          // Give the caption writer a representative line for EVERY archetype (a stat /
+          // list / compare slide has no headline+body, so fall back to its own fields).
           return {
             variant: d.variant,
-            headline: d.headline,
+            headline:
+              d.headline || d.stat || d.compare?.left.title || undefined,
             text: d.text,
-            body: d.body,
+            body:
+              d.body ||
+              d.subheadline ||
+              d.items?.[0]?.label ||
+              d.bullets?.[0] ||
+              undefined,
           };
         }
         return { view: s.view ?? config.view };
@@ -1048,47 +1204,166 @@ export function CarouselBuilder({
             )}
           </label>
         </div>
-        {/* Build the whole carousel from one idea (Phase 3C) — gated on the AI entitlement. */}
+        {/* Build the whole carousel from one idea (Phase 3C) — opens a roomy composer dialog
+            with an AI "enhance" pass; gated on the AI entitlement. */}
         {hasAiAccess && (
           <div className="rounded-xl border border-accent/40 bg-accent/5 p-3">
-            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-accent" /> Build with AI
             </p>
-            <textarea
-              value={aiIdea}
-              onChange={(e) => setAiIdea(e.target.value)}
-              placeholder="Describe the carousel (e.g. 5 tips to help new agents sell more final expense)…"
-              rows={2}
+            <p className="mb-2 text-[11px] leading-snug text-muted-foreground">
+              Describe your idea and AI designs a full, varied carousel — a
+              scroll-stopping hook, value slides, and a strong call to action.
+            </p>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={() => setAiDialogOpen(true)}
               disabled={composing}
-              className="w-full resize-none rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
-            />
-            <div className="mt-1.5 flex items-center gap-2">
-              <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                Slides
-                <input
-                  type="number"
-                  min={2}
-                  max={IG_CAROUSEL_MAX}
-                  value={aiCount}
-                  onChange={(e) => {
-                    // Allow an empty field while editing; clamp the MAX as they type but defer
-                    // the MIN to onBlur so they can clear and retype (review #8).
-                    const v = e.target.value;
-                    if (v === "") return setAiCount("");
-                    const n = Number(v);
-                    if (Number.isInteger(n))
-                      setAiCount(Math.min(IG_CAROUSEL_MAX, Math.max(0, n)));
-                  }}
-                  onBlur={() => setAiCount(clampSlideCount(aiCount))}
-                  disabled={composing}
-                  className="w-14 rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Build a carousel with AI
+            </Button>
+          </div>
+        )}
+
+        {/* AI composer dialog — roomy idea field + enhance pass + framework / options. */}
+        <Dialog
+          open={aiDialogOpen}
+          onOpenChange={(o) => {
+            if (composing || enhancing) return;
+            setAiDialogOpen(o);
+          }}
+        >
+          <DialogContent size="lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent" /> Build a carousel
+                with AI
+              </DialogTitle>
+              <DialogDescription>
+                Describe what you want. AI plans the arc, varies the layouts,
+                and writes the copy.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-foreground">
+                  Your idea
+                </label>
+                <textarea
+                  value={aiIdea}
+                  onChange={(e) => setAiIdea(e.target.value)}
+                  placeholder="e.g. Why experienced agents are switching to our agency — the lifestyle, the inbound leads, and the income upside."
+                  rows={6}
+                  disabled={composing || enhancing}
+                  className="min-h-[150px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 />
-              </label>
+                <div className="mt-1.5 flex items-center justify-between gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleEnhance}
+                    disabled={enhancing || composing || !aiIdea.trim()}
+                    title="Let AI sharpen your idea into a stronger brief before building"
+                  >
+                    {enhancing ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="h-3.5 w-3.5" />
+                    )}
+                    {enhancing ? "Enhancing…" : "Enhance with AI"}
+                  </Button>
+                  <span className="text-[11px] text-muted-foreground">
+                    Sharpens a rough idea before building.
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-xs font-medium text-foreground">
+                  Framework
+                  <select
+                    value={aiFramework}
+                    onChange={(e) =>
+                      setAiFramework(e.target.value as CarouselFramework)
+                    }
+                    disabled={composing || enhancing}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+                  >
+                    {FRAMEWORK_OPTIONS.map((f) => (
+                      <option key={f.value} value={f.value}>
+                        {f.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-xs font-medium text-foreground">
+                  Slides
+                  <input
+                    type="number"
+                    min={2}
+                    max={IG_CAROUSEL_MAX}
+                    value={aiCount}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "") return setAiCount("");
+                      const n = Number(v);
+                      if (Number.isInteger(n))
+                        setAiCount(Math.min(IG_CAROUSEL_MAX, Math.max(0, n)));
+                    }}
+                    onBlur={() => setAiCount(clampSlideCount(aiCount))}
+                    disabled={composing || enhancing}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
+                  />
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={aiRealQuotes}
+                    onChange={(e) => setAiRealQuotes(e.target.checked)}
+                    disabled={composing || enhancing}
+                  />
+                  Real attributed quotes (verify names before posting)
+                </label>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={aiDataSlides}
+                    onChange={(e) => setAiDataSlides(e.target.checked)}
+                    disabled={composing || enhancing}
+                  />
+                  Let AI add leaderboard / Agent-of-Week slides
+                </label>
+                {factsAvailable ? (
+                  <p className="flex items-start gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-500">
+                    <span aria-hidden>✓</span>
+                    AI will weave in your agency's real numbers for this period
+                    (it never invents figures).
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    No live numbers yet — AI keeps the copy qualitative (no
+                    invented figures).
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <DialogFooter>
               <Button
-                size="sm"
-                className="ml-auto"
+                variant="outline"
+                onClick={() => setAiDialogOpen(false)}
+                disabled={composing || enhancing}
+              >
+                Cancel
+              </Button>
+              <Button
                 onClick={buildWithAI}
-                disabled={composing || captioning || !aiIdea.trim()}
+                disabled={composing || enhancing || !aiIdea.trim()}
                 title="Let AI build the whole carousel from your idea"
               >
                 {composing ? (
@@ -1096,31 +1371,11 @@ export function CarouselBuilder({
                 ) : (
                   <Sparkles className="h-3.5 w-3.5" />
                 )}
-                {composing ? "Building…" : "Generate"}
+                {composing ? "Building…" : "Generate carousel"}
               </Button>
-            </div>
-            <div className="mt-1.5 flex flex-col gap-1">
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={aiRealQuotes}
-                  onChange={(e) => setAiRealQuotes(e.target.checked)}
-                  disabled={composing}
-                />
-                Real attributed quotes (verify names before posting)
-              </label>
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={aiDataSlides}
-                  onChange={(e) => setAiDataSlides(e.target.checked)}
-                  disabled={composing}
-                />
-                Let AI add leaderboard / Agent-of-Week slides
-              </label>
-            </div>
-          </div>
-        )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="rounded-xl border border-border bg-card/40 p-3">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Add a slide {atCap ? "(max 10 reached)" : ""}
@@ -1305,13 +1560,9 @@ function MarketingEditor({
   network,
 }: {
   data: Extract<PreviewData, { kind: "marketing" }>;
-  onPatch: (p: {
-    text?: string;
-    attribution?: string;
-    headline?: string;
-    body?: string;
-    imageDataUrl?: string;
-  }) => void;
+  onPatch: (
+    p: Partial<Omit<Extract<PreviewData, { kind: "marketing" }>, "kind">>,
+  ) => void;
   onImage: (f: File) => void;
   hasAiAccess: boolean;
   draftMarketingCopy: (
@@ -1322,15 +1573,19 @@ function MarketingEditor({
 }) {
   const input =
     "w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground";
+  const caps = MARKETING_COPY_CAPS;
+  const listCaps = MARKETING_LIST_CAPS;
   const [topic, setTopic] = useState("");
   const [drafting, setDrafting] = useState(false);
+  // The single-slide AI drafter only supports the legacy copy variants.
+  const canDraft = hasAiAccess && isLegacyCopyVariant(data.variant);
 
   // "Draft with AI" only SEEDS the copy fields — they stay fully editable after. For a quote
   // we ask for a real attributed line (allowRealAttribution) and seed the text; we only seed
   // the attribution when the AI actually returned one, so a re-draft never wipes a name the
   // user typed themselves (review #4). The inline note reminds them to verify it.
   async function draft() {
-    if (drafting) return;
+    if (drafting || !isLegacyCopyVariant(data.variant)) return;
     setDrafting(true);
     try {
       const result = await draftMarketingCopy({
@@ -1343,7 +1598,6 @@ function MarketingEditor({
       if (data.variant === "quote") {
         onPatch({
           text: result.text ?? "",
-          // only overwrite attribution when the AI gave a non-empty one
           ...(result.attribution?.trim()
             ? { attribution: result.attribution }
             : {}),
@@ -1360,70 +1614,327 @@ function MarketingEditor({
     }
   }
 
+  // ── Array-field helpers (immutable patches) ──
+  const items = data.items ?? [];
+  const bullets = data.bullets ?? [];
+  const compare = data.compare ?? {
+    left: { title: "", items: [] },
+    right: { title: "", items: [] },
+  };
+  const patchCol = (
+    side: "left" | "right",
+    patch: Partial<{ title: string; items: string[] }>,
+  ) =>
+    onPatch({
+      compare: { ...compare, [side]: { ...compare[side], ...patch } },
+    });
+
+  const imageUpload = (
+    <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
+      <ImagePlus className="h-4 w-4" />
+      {data.imageDataUrl ? "Change background photo" : "Add background photo"}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onImage(f);
+        }}
+      />
+    </label>
+  );
+
+  const headlineInput = (placeholder: string) => (
+    <input
+      className={input}
+      maxLength={caps.headline}
+      placeholder={placeholder}
+      value={data.headline ?? ""}
+      onChange={(e) => onPatch({ headline: e.target.value })}
+    />
+  );
+
+  let fields: React.ReactNode = null;
+  if (data.variant === "quote") {
+    fields = (
+      <>
+        <textarea
+          className={`${input} resize-none`}
+          rows={3}
+          maxLength={caps.text}
+          placeholder="Quote text…"
+          value={data.text ?? ""}
+          onChange={(e) => onPatch({ text: e.target.value })}
+        />
+        <input
+          className={input}
+          maxLength={caps.attribution}
+          placeholder="Attribution (optional)"
+          value={data.attribution ?? ""}
+          onChange={(e) => onPatch({ attribution: e.target.value })}
+        />
+        {data.attribution?.trim() && (
+          <p className="text-[11px] text-amber-600 dark:text-amber-500">
+            Verify this attribution before posting.
+          </p>
+        )}
+      </>
+    );
+  } else if (data.variant === "hook") {
+    fields = (
+      <>
+        <input
+          className={input}
+          maxLength={caps.eyebrow}
+          placeholder="Eyebrow / kicker (optional)"
+          value={data.eyebrow ?? ""}
+          onChange={(e) => onPatch({ eyebrow: e.target.value })}
+        />
+        {headlineInput("Headline — the scroll-stopper")}
+        <textarea
+          className={`${input} resize-none`}
+          rows={2}
+          maxLength={caps.subheadline}
+          placeholder="Subheadline (optional)"
+          value={data.subheadline ?? ""}
+          onChange={(e) => onPatch({ subheadline: e.target.value })}
+        />
+        {imageUpload}
+      </>
+    );
+  } else if (data.variant === "list") {
+    fields = (
+      <>
+        {headlineInput("Headline — the promise")}
+        <div className="space-y-1.5">
+          {items.map((it, i) => (
+            <div
+              key={i}
+              className="rounded-md border border-border/60 bg-background/60 p-1.5"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-accent">
+                  {i + 1}.
+                </span>
+                <input
+                  className={`${input} flex-1`}
+                  maxLength={caps.itemLabel}
+                  placeholder="Step (verb-led, e.g. Audit your lead sources)"
+                  value={it.label}
+                  onChange={(e) =>
+                    onPatch({
+                      items: items.map((x, idx) =>
+                        idx === i ? { ...x, label: e.target.value } : x,
+                      ),
+                    })
+                  }
+                />
+                <button
+                  className="text-destructive/80 hover:text-destructive disabled:opacity-30"
+                  disabled={items.length <= 1}
+                  onClick={() =>
+                    onPatch({ items: items.filter((_, idx) => idx !== i) })
+                  }
+                  title="Remove step"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <input
+                className={`${input} mt-1`}
+                maxLength={caps.itemDetail}
+                placeholder="Detail (optional)"
+                value={it.detail ?? ""}
+                onChange={(e) =>
+                  onPatch({
+                    items: items.map((x, idx) =>
+                      idx === i ? { ...x, detail: e.target.value } : x,
+                    ),
+                  })
+                }
+              />
+            </div>
+          ))}
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          disabled={items.length >= listCaps.items}
+          onClick={() => onPatch({ items: [...items, { label: "" }] })}
+        >
+          <Plus className="h-3 w-3" /> Add step
+        </Button>
+      </>
+    );
+  } else if (data.variant === "checklist") {
+    fields = (
+      <>
+        {headlineInput("Headline — the promise")}
+        <div className="space-y-1.5">
+          {bullets.map((b, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-accent">✓</span>
+              <input
+                className={`${input} flex-1`}
+                maxLength={caps.bullet}
+                placeholder="Benefit / point"
+                value={b}
+                onChange={(e) =>
+                  onPatch({
+                    bullets: bullets.map((x, idx) =>
+                      idx === i ? e.target.value : x,
+                    ),
+                  })
+                }
+              />
+              <button
+                className="text-destructive/80 hover:text-destructive disabled:opacity-30"
+                disabled={bullets.length <= 1}
+                onClick={() =>
+                  onPatch({ bullets: bullets.filter((_, idx) => idx !== i) })
+                }
+                title="Remove line"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          disabled={bullets.length >= listCaps.bullets}
+          onClick={() => onPatch({ bullets: [...bullets, ""] })}
+        >
+          <Plus className="h-3 w-3" /> Add line
+        </Button>
+      </>
+    );
+  } else if (data.variant === "stat") {
+    fields = (
+      <>
+        <input
+          className={input}
+          maxLength={caps.stat}
+          placeholder="Big number (e.g. $1.2M, 65%, 340)"
+          value={data.stat ?? ""}
+          onChange={(e) => onPatch({ stat: e.target.value })}
+        />
+        <input
+          className={input}
+          maxLength={caps.statLabel}
+          placeholder="What it measures (e.g. in new annual premium)"
+          value={data.statLabel ?? ""}
+          onChange={(e) => onPatch({ statLabel: e.target.value })}
+        />
+        <textarea
+          className={`${input} resize-none`}
+          rows={2}
+          maxLength={caps.body}
+          placeholder="Context (optional)"
+          value={data.body ?? ""}
+          onChange={(e) => onPatch({ body: e.target.value })}
+        />
+      </>
+    );
+  } else if (data.variant === "compare") {
+    const colEditor = (side: "left" | "right", label: string) => {
+      const col = compare[side];
+      return (
+        <div className="space-y-1.5 rounded-md border border-border/60 bg-background/60 p-1.5">
+          <input
+            className={input}
+            maxLength={caps.compareTitle}
+            placeholder={label}
+            value={col.title}
+            onChange={(e) => patchCol(side, { title: e.target.value })}
+          />
+          {col.items.map((it, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <input
+                className={`${input} flex-1`}
+                maxLength={caps.compareItem}
+                placeholder="Line"
+                value={it}
+                onChange={(e) =>
+                  patchCol(side, {
+                    items: col.items.map((x, idx) =>
+                      idx === i ? e.target.value : x,
+                    ),
+                  })
+                }
+              />
+              <button
+                className="text-destructive/80 hover:text-destructive disabled:opacity-30"
+                disabled={col.items.length <= 1}
+                onClick={() =>
+                  patchCol(side, {
+                    items: col.items.filter((_, idx) => idx !== i),
+                  })
+                }
+                title="Remove line"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            disabled={col.items.length >= listCaps.compareItems}
+            onClick={() => patchCol(side, { items: [...col.items, ""] })}
+          >
+            <Plus className="h-3 w-3" /> Add line
+          </Button>
+        </div>
+      );
+    };
+    fields = (
+      <>
+        {headlineInput("Headline — the contrast")}
+        <div className="grid grid-cols-2 gap-1.5">
+          {colEditor("left", "Left title (e.g. Most agencies)")}
+          {colEditor("right", "Right title (e.g. Us)")}
+        </div>
+      </>
+    );
+  } else {
+    // tip | cta | custom
+    fields = (
+      <>
+        {headlineInput("Headline")}
+        <textarea
+          className={`${input} resize-none`}
+          rows={3}
+          maxLength={caps.body}
+          placeholder="Body text…"
+          value={data.body ?? ""}
+          onChange={(e) => onPatch({ body: e.target.value })}
+        />
+        {data.variant === "cta" && (
+          <input
+            className={input}
+            maxLength={caps.ctaAction}
+            placeholder="Action chip (e.g. Comment APPLY, DM us to apply)"
+            value={data.ctaAction ?? ""}
+            onChange={(e) => onPatch({ ctaAction: e.target.value })}
+          />
+        )}
+        {data.variant === "custom" && imageUpload}
+      </>
+    );
+  }
+
   return (
     <div className="w-full space-y-2 rounded-md border border-border bg-secondary/30 p-2">
-      {data.variant === "quote" ? (
-        <>
-          <textarea
-            className={`${input} resize-none`}
-            rows={3}
-            maxLength={MARKETING_COPY_CAPS.text}
-            placeholder="Quote text…"
-            value={data.text ?? ""}
-            onChange={(e) => onPatch({ text: e.target.value })}
-          />
-          <input
-            className={input}
-            maxLength={MARKETING_COPY_CAPS.attribution}
-            placeholder="Attribution (optional)"
-            value={data.attribution ?? ""}
-            onChange={(e) => onPatch({ attribution: e.target.value })}
-          />
-          {data.attribution?.trim() && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-500">
-              Verify this attribution before posting.
-            </p>
-          )}
-        </>
-      ) : (
-        <>
-          <input
-            className={input}
-            maxLength={MARKETING_COPY_CAPS.headline}
-            placeholder="Headline"
-            value={data.headline ?? ""}
-            onChange={(e) => onPatch({ headline: e.target.value })}
-          />
-          <textarea
-            className={`${input} resize-none`}
-            rows={3}
-            maxLength={MARKETING_COPY_CAPS.body}
-            placeholder="Body text…"
-            value={data.body ?? ""}
-            onChange={(e) => onPatch({ body: e.target.value })}
-          />
-          {data.variant === "custom" && (
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-              <ImagePlus className="h-4 w-4" />
-              {data.imageDataUrl
-                ? "Change background image"
-                : "Add background image"}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onImage(f);
-                }}
-              />
-            </label>
-          )}
-        </>
-      )}
+      {fields}
 
-      {/* Draft with AI — seeds the copy fields; gated on the AI entitlement. */}
-      {hasAiAccess && (
+      {/* Draft with AI — seeds the copy fields for the simple quote/tip/cta/custom slides. */}
+      {canDraft && (
         <div className="flex items-center gap-1.5 border-t border-border/60 pt-2">
           <input
             className={`${input} flex-1`}

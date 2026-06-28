@@ -8,6 +8,11 @@ import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
 export const MODEL_FAST = "claude-haiku-4-5-20251001";
 /** Smarter — used for structured sequence JSON where the schema is complex. */
 export const MODEL_SMART = "claude-sonnet-4-6";
+/** Best creative quality — used where copy quality + narrative arc matter most (the
+ *  Social Studio carousel composer). Heavier/slower; reserve for that path.
+ *  Verified live: id "claude-opus-4-8" accepted by the API and in-credit for this org
+ *  (per feedback_verify_anthropic_model_ids — curl-tested before wiring). */
+export const MODEL_BEST = "claude-opus-4-8";
 
 let _client: Anthropic | null = null;
 

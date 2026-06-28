@@ -5,12 +5,36 @@
 // One home so the two functions can never diverge on cleanup rules or caps (review #14).
 
 /** SERVER-AUTHORITATIVE per-field caps. Mirrors the frontend src/features/social-studio/
- *  marketingCopyCaps.ts (component maxLength + export harness) — keep the two in sync. */
+ *  marketingCopyCaps.ts (component maxLength + export harness) — keep the two in sync.
+ *
+ *  Raised from the original tight set (headline 40 / body 160) — those caused the AI's
+ *  "1–2 sentences" to be truncated mid-thought server-side, which read as the "incomplete
+ *  sentences" complaint. Copy is now written to FIT these by the model; the cap is only a
+ *  safety backstop, not the intended length. New fields below power the richer layout
+ *  archetypes (hook / list / checklist / stat / compare). */
 export const COPY_CAPS = {
-  text: 140,
-  attribution: 40,
-  headline: 40,
-  body: 160,
+  text: 180, // pull-quote line
+  attribution: 56,
+  headline: 64,
+  body: 240,
+  // ── richer-archetype fields ──
+  eyebrow: 28, // hook kicker / small label
+  subheadline: 130, // hook supporting line
+  itemLabel: 48, // numbered-list item title
+  itemDetail: 96, // numbered-list item supporting line
+  bullet: 72, // checklist line
+  stat: 14, // big-stat hero value (e.g. "$1.2M", "65%")
+  statLabel: 44, // big-stat caption
+  compareTitle: 28, // compare column header
+  compareItem: 44, // compare column line
+  ctaAction: 40, // closing-slide action phrase
+} as const;
+
+/** Count caps for array fields (clamped server-side after per-item length capping). */
+export const LIST_CAPS = {
+  items: 5, // numbered-list rows
+  bullets: 6, // checklist rows
+  compareItems: 4, // lines per compare column
 } as const;
 
 /** Instagram's caption limit. */
@@ -54,4 +78,27 @@ export function capWords(s: string, max: number): string {
   if (last >= 0xd800 && last <= 0xdbff) slice = slice.slice(0, -1); // drop lone high surrogate
   const lastSpace = slice.lastIndexOf(" ");
   return (lastSpace > max * 0.6 ? slice.slice(0, lastSpace) : slice).trim();
+}
+
+/** clean() + capWords() in one — the standard sanitize+truncate for a single slide field. */
+export function capLine(s: unknown, max: number): string {
+  return capWords(clean(s), max);
+}
+
+/** Sanitize + cap an array of short string lines (checklist / compare column): clean each,
+ *  drop empties, length-cap each to `maxLen`, then clamp the count to `maxItems`. Returns []
+ *  for any non-array input so a malformed field never throws. */
+export function cleanList(
+  raw: unknown,
+  maxItems: number,
+  maxLen: number,
+): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const v of raw) {
+    const line = capLine(v, maxLen);
+    if (line) out.push(line);
+    if (out.length >= maxItems) break;
+  }
+  return out;
 }

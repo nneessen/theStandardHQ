@@ -21,6 +21,8 @@ import {
   type CardTheme,
   type CardPageInfo,
   type MarketingVariant,
+  type SlideListItem,
+  type SlideCompare,
   type RecruitingVariant,
   type WelcomeVariant,
   type CopyMap,
@@ -59,17 +61,26 @@ export type PreviewData =
       MonthlyReportCardProps,
       "totalAp" | "stats" | "topPerformer" | "top" | "growthLabel"
     >)
-  // Marketing slide for the carousel builder (#8) — non-data copy (quote/tip/recruiting
-  // CTA/custom). One member with a `variant`; which content fields apply depends on it.
+  // Marketing slide for the carousel builder (#8) — non-data copy across a library of layout
+  // archetypes (hook/list/checklist/stat/compare/quote/tip/cta/custom). One member with a
+  // `variant`; which content fields apply depends on it.
   | {
       kind: "marketing";
       variant: MarketingVariant;
       theme: CardTheme;
       page?: CardPageInfo;
+      eyebrow?: string;
       text?: string;
       attribution?: string;
       headline?: string;
+      subheadline?: string;
       body?: string;
+      items?: SlideListItem[];
+      bullets?: string[];
+      stat?: string;
+      statLabel?: string;
+      compare?: SlideCompare;
+      ctaAction?: string;
       imageDataUrl?: string;
     }
   // "Welcome new agent" card — one agent + their profile photo. Used by the auto-generated
@@ -212,10 +223,18 @@ export function SocialCardSwitch({
           format={format}
           theme={data.theme}
           page={data.page}
+          eyebrow={data.eyebrow}
           text={data.text}
           attribution={data.attribution}
           headline={data.headline}
+          subheadline={data.subheadline}
           body={data.body}
+          items={data.items}
+          bullets={data.bullets}
+          stat={data.stat}
+          statLabel={data.statLabel}
+          compare={data.compare}
+          ctaAction={data.ctaAction}
           imageDataUrl={data.imageDataUrl}
         />
       );

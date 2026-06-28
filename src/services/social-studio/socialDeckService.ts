@@ -16,7 +16,11 @@ import { supabase } from "../base/supabase";
 import { uploadDeckImage, removeDeckImages } from "./spotlightAssetService";
 import type { Json } from "@/types/database.types";
 import type { SocialView } from "@/features/social-studio/types";
-import type { MarketingVariant } from "@/features/social-cards";
+import type {
+  MarketingVariant,
+  SlideListItem,
+  SlideCompare,
+} from "@/features/social-cards";
 
 /** One serialized slide. Data slides re-derive on load; marketing slides snapshot copy. */
 export type DeckSlideSpec =
@@ -24,15 +28,42 @@ export type DeckSlideSpec =
   | {
       t: "marketing";
       variant: MarketingVariant;
+      // ── shared copy ──
+      eyebrow?: string;
       text?: string;
       attribution?: string;
       headline?: string;
+      subheadline?: string;
       body?: string;
+      /** numbered-list rows */
+      items?: SlideListItem[];
+      /** checklist lines */
+      bullets?: string[];
+      /** big-stat hero value + caption */
+      stat?: string;
+      statLabel?: string;
+      /** two-column compare */
+      compare?: SlideCompare;
+      /** closing-slide action chip label */
+      ctaAction?: string;
       /** Persisted Storage URL for the slide photo (review #7). */
       imageUrl?: string;
       /** Legacy inline base64 (old decks) / the rehydrated render source on load. */
       imageDataUrl?: string;
     };
+
+/** Every marketing variant the deck validator accepts (richer archetypes + legacy keys). */
+const MARKETING_VARIANTS: readonly MarketingVariant[] = [
+  "hook",
+  "list",
+  "checklist",
+  "stat",
+  "compare",
+  "quote",
+  "tip",
+  "cta",
+  "custom",
+];
 
 /** Versioned deck payload stored in `slides` jsonb (v marker → format can evolve). */
 export interface DeckSpec {
@@ -99,7 +130,7 @@ function validateDeckSpec(raw: unknown): DeckSpec {
     } else if (slide?.t === "marketing") {
       if (
         typeof slide.variant !== "string" ||
-        !["quote", "tip", "cta", "custom"].includes(slide.variant)
+        !(MARKETING_VARIANTS as readonly string[]).includes(slide.variant)
       ) {
         throw new Error(
           "This deck has an unsupported marketing slide and can't be opened.",

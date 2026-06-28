@@ -42,13 +42,17 @@ export {
 export {
   composeCarousel,
   generateCarouselCaption,
+  enhanceIdea,
   type ComposedSlide,
   type ComposeVariant,
   type ComposeView,
   type ComposeCarouselRequest,
   type ComposeCarouselResult,
+  type CarouselFramework,
+  type AgencyKpiFacts,
   type CaptionSlideDescriptor,
   type GenerateCarouselCaptionRequest,
+  type EnhanceIdeaRequest,
 } from "./socialCarouselComposeService";
 export {
   socialDeckService,
