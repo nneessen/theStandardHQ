@@ -83,8 +83,9 @@ export function PerformanceBand({ range }: Props) {
       tone: "amber",
       tooltip: {
         title: "Cost per Acquisition",
-        description: "Total lead + marketing spend per client sold.",
-        formula: "(lead spend + marketing spend) ÷ clients sold",
+        description:
+          "Inbound call spend per client sold — every inbound call costs a flat $42.50.",
+        formula: "(inbound calls × $42.50) ÷ clients sold",
       },
     },
     {

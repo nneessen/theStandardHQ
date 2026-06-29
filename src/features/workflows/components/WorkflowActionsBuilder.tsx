@@ -870,17 +870,21 @@ export default function WorkflowActionsBuilder({
                               color: "var(--ink)",
                             }}
                           >
-                            {Object.entries(RECIPIENT_CATEGORIES).map(
-                              ([key, category]) => (
-                                <optgroup key={key} label={category.label}>
-                                  {category.types.map((type) => (
-                                    <option key={type} value={type}>
-                                      {RECIPIENT_TYPE_LABELS[type] || type}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              ),
-                            )}
+                            {/* In-app notifications target a user_id, so only the
+                                types the notification resolver actually supports are
+                                offered (unlike email, which can reach any address). */}
+                            {(
+                              [
+                                "eventuser",
+                                "currentuser",
+                                "all_agents",
+                                "all_trainers",
+                              ] as RecipientType[]
+                            ).map((type) => (
+                              <option key={type} value={type}>
+                                {RECIPIENT_TYPE_LABELS[type] || type}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div>

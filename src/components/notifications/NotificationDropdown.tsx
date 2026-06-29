@@ -37,9 +37,16 @@ export function NotificationDropdown({
     // Mark as read
     markAsRead.mutate(notificationId);
 
-    // Navigate if there's a link in metadata
+    // Navigate if there's a link in metadata. A stored link may include a query
+    // string (e.g. "/analytics?tab=inbound"); TanStack Router's `to` is matched as
+    // a pathname and does NOT parse an embedded query, so split it and pass the
+    // query as `search` or the deep-link (the tab) is silently dropped.
     if (metadata?.link) {
-      navigate({ to: metadata.link });
+      const [pathname, query] = metadata.link.split("?");
+      const search = query
+        ? Object.fromEntries(new URLSearchParams(query))
+        : undefined;
+      navigate({ to: pathname, search });
     }
   };
 

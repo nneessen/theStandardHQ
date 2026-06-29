@@ -1433,11 +1433,17 @@ async function resolveNotificationRecipientIds(
   }
 
   switch (recipientType) {
-    case "trigger_user": {
+    // The trigger's subject. The UI vocabulary is `eventuser` (+ legacy
+    // `triggeruser`); `trigger_user` is the edge-side name. All map to the same id.
+    case "trigger_user":
+    case "triggeruser":
+    case "eventuser": {
       const id = context.recipientId as string | undefined;
       return id ? [id] : [];
     }
+    // The workflow owner. UI says `currentuser`; edge says `current_user`.
     case "current_user":
+    case "currentuser":
       return ownerId ? [ownerId] : [];
 
     case "manager":
@@ -1450,7 +1456,17 @@ async function resolveNotificationRecipientIds(
         .eq("id", srcId)
         .eq("imo_id", ownerImoId)
         .single();
-      return src?.upline_id ? [src.upline_id as string] : [];
+      if (!src?.upline_id) return [];
+      // Re-verify the upline is in the same IMO before notifying (the admin client
+      // bypasses RLS; a cross-IMO upline_id would otherwise leak across tenants —
+      // mirrors the guard in executeSendEmail/executeSendSms).
+      const { data: mgr } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("id", src.upline_id as string)
+        .eq("imo_id", ownerImoId)
+        .maybeSingle();
+      return mgr?.id ? [mgr.id as string] : [];
     }
 
     case "all_agents": {
@@ -1525,10 +1541,22 @@ async function executeCreateNotification(
     };
   }
 
-  // Resolve recipients. trigger_user keeps the legacy single-recipient path;
-  // roster types (all_agents, etc.) fan out one notification per user.
+  // Resolve recipients. BACKWARD COMPAT: before this change create_notification
+  // ALWAYS notified context.recipientId regardless of recipientType. Event-triggered
+  // workflows rely on that, and their recipientType vocabulary is broad
+  // (eventuser/role/etc.). So: only the absolute roster types fan out; for anything
+  // else, if the trigger supplied a recipientId we use it (preserving old behavior);
+  // otherwise (e.g. a scheduled run) we resolve relative/absolute types via the
+  // resolver (current_user → owner, all_* handled above).
+  const ROSTER_TYPES = new Set(["all_agents", "all_trainers"]);
   let recipientIds: string[];
-  if (recipientType === "trigger_user" && context.recipientId) {
+  if (ROSTER_TYPES.has(recipientType)) {
+    recipientIds = await resolveNotificationRecipientIds(
+      action,
+      context,
+      supabase,
+    );
+  } else if (context.recipientId) {
     recipientIds = [context.recipientId as string];
   } else {
     recipientIds = await resolveNotificationRecipientIds(
@@ -1594,8 +1622,10 @@ async function executeCreateNotification(
     }
   }
 
-  // Fail the action only if EVERY insert failed (nothing delivered); partial
-  // success is reported so the run completes and retries pick up the rest.
+  // Fail the action only if EVERY insert failed (nothing delivered). On a partial
+  // failure we report success: the delivered rows stand, and each failed recipient
+  // had its claim released so a later re-run (manual re-run, or next scheduled fire,
+  // which is a fresh run) can retry it without double-notifying the delivered ones.
   if (created === 0 && failed.length > 0) {
     throw new Error(
       `Failed to create notifications for all ${failed.length} recipient(s)`,
