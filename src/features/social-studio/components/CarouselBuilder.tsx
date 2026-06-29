@@ -739,6 +739,57 @@ export function CarouselBuilder({
     }
   }
 
+  // The per-slide caption payload for the CURRENT deck (pure — no state writes). Shared by
+  // the manual "Generate caption" button and the auto-draft-on-publish path so both feed
+  // the edge fn the same representative line per archetype.
+  function buildCaptionSlides() {
+    return deck.map((s) => {
+      if (s.data.kind === "marketing") {
+        const d = s.data;
+        // Give the caption writer a representative line for EVERY archetype (a stat /
+        // list / compare slide has no headline+body, so fall back to its own fields).
+        return {
+          variant: d.variant,
+          headline: d.headline || d.stat || d.compare?.left.title || undefined,
+          text: d.text,
+          body:
+            d.body ||
+            d.subheadline ||
+            d.items?.[0]?.label ||
+            d.bullets?.[0] ||
+            undefined,
+        };
+      }
+      return { view: s.view ?? config.view };
+    });
+  }
+
+  // Auto-draft belt (caption parity for Post Now + Schedule): never publish/schedule a
+  // carousel with an empty caption box — draft one from the deck (when AI is enabled and
+  // it isn't a sample) and reflect it in the editor. Generation must NEVER block the
+  // post — on any failure we publish with whatever's there.
+  async function resolveCaption(): Promise<string> {
+    if (caption.trim()) return caption;
+    if (!hasAiAccess || sampleBlocksPost) return caption;
+    try {
+      // Cap at Instagram's 2200-char limit — the publish edge fn and the carousel
+      // schedule RPC both reject an overlong caption, so an unbounded AI draft would
+      // fail the post. An empty AI result stays "no caption" (don't store "").
+      const drafted = (
+        await runCaption({
+          agencyName,
+          network,
+          slides: buildCaptionSlides(),
+        })
+      ).slice(0, 2200);
+      if (drafted) setCaption(drafted);
+      return drafted;
+    } catch (e) {
+      console.error("Auto-caption on publish failed:", e);
+      return caption;
+    }
+  }
+
   // Write a deck-aware caption from the CURRENT slides (works on any deck, AI-built or not).
   async function buildCaption() {
     // Ref guard (not state) so a fast double-click can't double-fire before the re-render —
@@ -751,27 +802,11 @@ export function CarouselBuilder({
     captioningRef.current = true;
     setCaptioning(true);
     try {
-      const slides = deck.map((s) => {
-        if (s.data.kind === "marketing") {
-          const d = s.data;
-          // Give the caption writer a representative line for EVERY archetype (a stat /
-          // list / compare slide has no headline+body, so fall back to its own fields).
-          return {
-            variant: d.variant,
-            headline:
-              d.headline || d.stat || d.compare?.left.title || undefined,
-            text: d.text,
-            body:
-              d.body ||
-              d.subheadline ||
-              d.items?.[0]?.label ||
-              d.bullets?.[0] ||
-              undefined,
-          };
-        }
-        return { view: s.view ?? config.view };
+      const caption = await runCaption({
+        agencyName,
+        network,
+        slides: buildCaptionSlides(),
       });
-      const caption = await runCaption({ agencyName, network, slides });
       setCaption(caption);
       toast.success("Caption written — edit it to taste.");
     } catch (e) {
@@ -805,7 +840,9 @@ export function CarouselBuilder({
         throw new Error("The slides aren't ready yet.");
       const capped = slides.slice(0, IG_CAROUSEL_MAX);
       const urls = await uploadCarouselSlides(capped);
-      const { username } = await publishToInstagram(urls, caption, {
+      // Never let a carousel post go out captionless — auto-draft if the box is empty.
+      const cap = await resolveCaption();
+      const { username } = await publishToInstagram(urls, cap, {
         mediaType: "FEED",
         integrationId: selectedIntegration?.id,
       });
@@ -864,11 +901,13 @@ export function CarouselBuilder({
       if (!slides || slides.length === 0)
         throw new Error("The slides aren't ready yet.");
       const capped = slides.slice(0, IG_CAROUSEL_MAX);
+      // Never schedule a captionless carousel — auto-draft if the box is empty.
+      const cap = await resolveCaption();
       await scheduleCarouselMut.mutateAsync({
         postId: crypto.randomUUID(),
         integrationId: selectedIntegration?.id ?? null,
         dataUrls: capped,
-        caption,
+        caption: cap,
         view: config.view,
         cardTheme: config.cardTheme,
         scheduledFor: when,

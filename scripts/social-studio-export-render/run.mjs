@@ -66,7 +66,7 @@ for (const view of VIEWS) {
       const page = await browser.newPage({ deviceScaleFactor: 1 });
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${TOPN}&n=${N}&deck=${process.env.DECK || "0"}&stress=${process.env.STRESS || "0"}&variant=${variant}&copyJson=${encodeURIComponent(process.env.COPY_JSON || "")}&aowBg=${encodeURIComponent(process.env.AOW_BG || "")}&photo=${process.env.PHOTO || "0"}&photoPos=${encodeURIComponent(process.env.PHOTO_POS || "")}&photoScale=${process.env.PHOTO_SCALE || ""}`;
+      const qp = `view=${view}&format=${format}&theme=${THEME}&topN=${TOPN}&n=${N}&deck=${process.env.DECK || "0"}&stress=${process.env.STRESS || "0"}&variant=${variant}&copyJson=${encodeURIComponent(process.env.COPY_JSON || "")}&aowBg=${encodeURIComponent(process.env.AOW_BG || "")}&photo=${process.env.PHOTO || "0"}&photoPos=${encodeURIComponent(process.env.PHOTO_POS || "")}&photoScale=${process.env.PHOTO_SCALE || ""}&photoUrl=${encodeURIComponent(process.env.PHOTO_URL || "")}`;
       const url = `http://localhost:5197/scripts/social-studio-export-render/index.html?${qp}`;
       const tag = variant ? `${view}-${variant}` : view;
       try {
@@ -74,6 +74,27 @@ for (const view of VIEWS) {
         await page.waitForFunction(() => window.__READY__ === true, {
           timeout: 30000,
         });
+        // DIAG: did the card webfonts actually LOAD in this browser? If a family
+        // reports false, the headless run couldn't fetch Google Fonts (env/network),
+        // so any fallback-font clipping in the PNG is a HARNESS artifact, not a
+        // production export bug. If true but the PNG still shows fallback glyphs,
+        // modern-screenshot failed to EMBED the font into its SVG (a real bug).
+        const fontDiag = await page.evaluate(() => {
+          const fams = [
+            "Big Shoulders Display",
+            "Inter",
+            "Space Grotesk",
+            "Instrument Serif",
+          ];
+          return {
+            status: document.fonts.status,
+            count: document.fonts.size,
+            loaded: Object.fromEntries(
+              fams.map((f) => [f, document.fonts.check(`700 64px "${f}"`)]),
+            ),
+          };
+        });
+        console.log(`   🔤 FONT DIAG ${tag}: ${JSON.stringify(fontDiag)}`);
         const urls = await page.evaluate(() => window.__exportAll());
         const want = FORMAT_DIMS[format];
         for (let i = 0; i < urls.length; i++) {

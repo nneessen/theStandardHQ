@@ -105,6 +105,11 @@ const recruitingVariant = params.get("variant") || undefined;
 const withPhoto = params.get("photo") === "1";
 const photoPos = params.get("photoPos") || "50% 50%";
 const photoScaleParam = Number(params.get("photoScale") || "1");
+// ?photoUrl=<remote url> uses a REAL (cross-origin) photo instead of the data-URL
+// gradient — the only way to verify remote-image EMBED + object-fit/transform fidelity
+// in the export (a data URL always embeds and hides that failure class).
+const photoUrlParam = params.get("photoUrl") || "";
+const testPhoto = () => photoUrlParam || gradientDataUrl();
 
 // Strictly descending AP so ranks are unambiguous across page boundaries.
 const producers: ProducerRow[] = Array.from({ length: n }, (_, i) => ({
@@ -141,7 +146,7 @@ if (aowBgParam) config.aowBackground = decodeURIComponent(aowBgParam);
 config.photoTransforms = {
   aotw: { position: photoPos, scale: photoScaleParam },
 };
-if (withPhoto && view === "aotw") config.aowPhotoUrl = gradientDataUrl();
+if (withPhoto && view === "aotw") config.aowPhotoUrl = testPhoto();
 
 // ?copyJson=<url-encoded JSON> overrides config.templateCopy — lets us verify that long
 // custom wording auto-fits (shrinks) instead of clipping at the card edge.
@@ -170,7 +175,7 @@ const dataPages = buildPreviewPages({
       ? [
           {
             name: "Jordan A.",
-            photoUrl: withPhoto ? gradientDataUrl() : null,
+            photoUrl: withPhoto ? testPhoto() : null,
             photoPosition: photoPos,
             photoScale: photoScaleParam,
           },

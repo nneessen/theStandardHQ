@@ -45,6 +45,100 @@ async function ensureCardFontsLoaded(): Promise<void> {
   );
 }
 
+// EMBED belt (THE WI-2 fix): the cards' webfonts (Big Shoulders Display, Inter, Space
+// Grotesk, Instrument Serif) load via a CROSS-ORIGIN <link> to fonts.googleapis.com.
+// modern-screenshot rasterizes into an SVG <foreignObject>, and to render a webfont
+// there it must EMBED the @font-face into that SVG — but its auto-embed reads
+// document.styleSheets, and a cross-origin sheet throws on .cssRules, so the googleapis
+// @font-face rules are silently skipped. The browser still SHOWS the font (so the live
+// preview is correct), but the exported PNG falls back to a WIDE system font. Because
+// the hero-name sizing (heroNamePx) is deterministic and calibrated for the CONDENSED
+// Big Shoulders metrics, the fallback overflows `white-space:nowrap; overflow:hidden`
+// and the name CLIPS — "looks right in the app, mangled once posted."
+//
+// FIX: fetch the exact Google Fonts CSS ourselves (same-origin to us is irrelevant —
+// fetch() works cross-origin and gstatic sends CORS headers), inline every woff2 it
+// references as a data: URL, and hand the result to modern-screenshot via `font.cssText`
+// ("if specified, ONLY this CSS is embedded"). Now the real condensed fonts travel
+// INSIDE the screenshot SVG, so the PNG matches the preview byte-for-byte. Computed once
+// and cached for the session (the woff2 are already in the browser cache from the <link>).
+const CARD_FONT_CSS_URL =
+  "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+
+let cardFontEmbedCssPromise: Promise<string> | null = null;
+
+async function fetchAsDataUrl(url: string): Promise<string> {
+  const res = await fetch(url);
+  // A non-2xx must REJECT: otherwise res.blob() is the error-page body and we'd base64
+  // an HTML/JSON error INTO a font src — a corrupt @font-face the SVG silently drops,
+  // which is worse than leaving the URL untouched. The caller's per-URL catch handles it.
+  if (!res.ok) throw new Error(`font fetch ${res.status} for ${url}`);
+  const blob = await res.blob();
+  return await new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result as string);
+    fr.onerror = () => reject(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Build a SELF-CONTAINED @font-face CSS (every woff2 inlined as a data: URL). THROWS on a
+// total failure so the caller falls back to modern-screenshot's DEFAULT embedding rather
+// than pass partial/garbage CSS — critical because `font.cssText` is exclusive ("ONLY this
+// CSS is embedded"), so a non-empty-but-broken string would REPLACE the default and make
+// every font fall back (worse than not setting the option at all).
+async function buildCardFontEmbedCss(): Promise<string> {
+  if (typeof fetch !== "function" || typeof FileReader === "undefined")
+    return "";
+  // Ask Google for the woff2 form (the default for a modern UA) so the inlined glyphs are
+  // the same the browser rendered. A non-2xx (quota/CORS/outage) MUST throw — a 4xx/5xx
+  // body is not CSS, and returning it would defeat the whole fix.
+  const res = await fetch(CARD_FONT_CSS_URL);
+  if (!res.ok) throw new Error(`Google Fonts CSS ${res.status}`);
+  let css = await res.text();
+  // Capture gstatic URLs in both bare and quoted url() forms (Google emits bare today —
+  // don't be brittle if that ever changes, or we'd silently inline nothing).
+  const fontUrls = [
+    ...new Set(
+      [
+        ...css.matchAll(
+          /url\((['"]?)(https:\/\/fonts\.gstatic\.com\/[^)'"]+)\1\)/g,
+        ),
+      ].map((m) => m[2]),
+    ),
+  ];
+  // No inlinable URLs → the cssText would carry unresolved REMOTE urls an SVG foreignObject
+  // can't fetch at rasterize time. Throw so we fall back to the default embed, not pass it.
+  if (fontUrls.length === 0) throw new Error("no embeddable gstatic font URLs");
+  // Inline each woff2 as a data: URL so nothing is fetched at rasterize time. A single
+  // failed weight keeps its remote URL (only that weight may fall back) rather than failing
+  // the whole export — the other weights still embed.
+  const pairs = await Promise.all(
+    fontUrls.map(async (u) => {
+      try {
+        return [u, await fetchAsDataUrl(u)] as const;
+      } catch {
+        return [u, u] as const;
+      }
+    }),
+  );
+  for (const [u, dataUrl] of pairs) css = css.split(u).join(dataUrl);
+  return css;
+}
+
+function cardFontEmbedCss(): Promise<string> {
+  if (!cardFontEmbedCssPromise) {
+    // Cache the SUCCESSFUL embed for the session. A failure is NOT cached: clear the
+    // promise so the NEXT export retries instead of being stuck on fallback fonts for the
+    // whole session after one transient network blip.
+    cardFontEmbedCssPromise = buildCardFontEmbedCss().catch(() => {
+      cardFontEmbedCssPromise = null;
+      return "";
+    });
+  }
+  return cardFontEmbedCssPromise;
+}
+
 // Two animation frames → the off-screen node is guaranteed laid out (with the now-loaded
 // fonts) before modern-screenshot serializes it.
 function nextFrame(): Promise<void> {
@@ -64,10 +158,20 @@ export async function renderCardToPng(
   // 2. Await any still-in-flight font work.
   const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
   if (fonts?.ready) await fonts.ready;
-  // 3. Let the browser re-lay-out with the loaded fonts before serializing.
+  // 3. Build the self-contained @font-face CSS (woff2 inlined) so the condensed fonts
+  //    are embedded in the export SVG (see EMBED belt above). Runs in parallel-safe,
+  //    cached form; "" on failure → keep modern-screenshot's default embedding.
+  const fontCss = await cardFontEmbedCss();
+  // 4. Let the browser re-lay-out with the loaded fonts before serializing.
   await nextFrame();
   const { w, h } = FORMAT_DIMS[format];
   // scale:1 → native pixels; explicit width/height keep the canvas exactly the format
-  // dimensions even if the node ever ends up under a transform again.
-  return domToPng(node, { scale: 1, width: w, height: h });
+  // dimensions even if the node ever ends up under a transform again. `font.cssText`
+  // forces OUR inlined fonts into the rasterized SVG (the WYSIWYG-on-Instagram fix).
+  return domToPng(node, {
+    scale: 1,
+    width: w,
+    height: h,
+    ...(fontCss ? { font: { cssText: fontCss } } : {}),
+  });
 }

@@ -513,7 +513,7 @@ export function SocialStudioPage() {
   // "Post to Instagram" now opens a confirm-before-post dialog (after the sample /
   // connection guards) so the user previews the graphic in Instagram chrome and
   // confirms. The actual publish runs in doPost() on confirm.
-  function handlePostNow() {
+  async function handlePostNow() {
     if (isSample) {
       toast.error(
         "Switch off 'Preview with sample data' to post your real numbers.",
@@ -525,6 +525,18 @@ export function SocialStudioPage() {
         "Connect a Business Instagram account in Settings → Integrations first.",
       );
       return;
+    }
+    // Draft the caption (if the box is empty) BEFORE opening the confirm dialog so the
+    // user reviews the EXACT caption that will post — the dialog renders config.caption.
+    // Stories carry no caption, so skip. resolveCaptionForPublish patches state + caps
+    // length; doPost reuses the now-non-empty caption (no second AI call).
+    if (config.postType !== "story" && !config.caption?.trim()) {
+      setGeneratingCaption(true);
+      try {
+        await resolveCaptionForPublish();
+      } finally {
+        setGeneratingCaption(false);
+      }
     }
     setConfirmOpen(true);
   }
@@ -567,7 +579,9 @@ export function SocialStudioPage() {
           );
         }
         const urls = await uploadCarouselSlides(capped);
-        const { username } = await publishToInstagram(urls, config.caption, {
+        // Never let a template post go out captionless — auto-draft if the box is empty.
+        const caption = await resolveCaptionForPublish();
+        const { username } = await publishToInstagram(urls, caption, {
           mediaType: "FEED",
           integrationId,
         });
@@ -627,11 +641,13 @@ export function SocialStudioPage() {
     try {
       const dataUrl = await renderCardPng();
       if (!dataUrl) throw new Error("The card isn't ready yet.");
+      // Never schedule a captionless template post — auto-draft if the box is empty.
+      const caption = await resolveCaptionForPublish();
       await schedulePostMut.mutateAsync({
         postId: crypto.randomUUID(),
         integrationId: selectedIntegration?.id ?? null,
         dataUrl,
-        caption: config.caption,
+        caption,
         view: config.view,
         cardTheme: config.cardTheme,
         scheduledFor: when,
@@ -669,6 +685,97 @@ export function SocialStudioPage() {
     }
   }
 
+  // The AI caption CONTEXT for the currently-previewed card (pure — no state writes), so
+  // the manual "Generate caption" button AND the auto-draft-on-publish path feed the edge
+  // fn the same card-appropriate subject.
+  function buildCaptionContext() {
+    return previewData.kind === "report"
+      ? {
+          view: config.view,
+          agencyName,
+          network,
+          periodLabel: previewData.monthLabel,
+          topAgent: previewData.topPerformer.name,
+          totalAP: previewData.totalAp,
+        }
+      : previewData.kind === "aotw"
+        ? {
+            view: config.view,
+            agencyName,
+            network,
+            periodLabel: previewData.periodLabel,
+            topAgent: previewData.agent.name,
+            // The spotlighted agent's OWN premium/policies (the edge fn labels
+            // these as the agent's, not an agency total).
+            totalAP: previewData.agent.ap,
+            policies: previewData.agent.policies,
+          }
+        : previewData.kind === "leaderboard"
+          ? {
+              view: config.view,
+              agencyName,
+              network,
+              periodLabel: previewData.periodLabel,
+              topAgent: previewData.rows[0]?.name,
+              totalAP: previewData.totalAp,
+            }
+          : previewData.kind === "newagent"
+            ? {
+                // Welcome card — give the AI the new agent's name as the subject so
+                // a generated caption can welcome them by name.
+                view: config.view,
+                agencyName,
+                network,
+                periodLabel: "",
+                topAgent: previewData.agent.name,
+              }
+            : previewData.kind === "recruiting"
+              ? {
+                  // Recruiting post — pass the agency's pitch so the caption is on
+                  // message (the edge fn frames it as a "now hiring" post).
+                  view: config.view,
+                  agencyName,
+                  network,
+                  periodLabel: "",
+                  tone: "Inbound-only insurance sales: 100% inbound calls, no cold calling or outbound, Monday–Friday 10–5 Eastern, no weekends, no shared/aged/over-called leads — quality of life, get your life back.",
+                }
+              : {
+                  // Marketing slides carry no data context — they aren't produced by
+                  // buildPreviewPages in the single-card flow; defensive for the
+                  // broadened PreviewData union so the exhaustive types stay honest.
+                  view: config.view,
+                  agencyName,
+                  network,
+                  periodLabel: "",
+                };
+  }
+
+  // Auto-draft belt (caption parity for Post Now + Schedule): a template's on-card copy is
+  // NOT its Instagram caption, so a post sent/scheduled with an empty caption box used to
+  // publish captionless. When the box is blank we AI-draft one from the card (when AI is
+  // enabled and this isn't a sample preview) and reflect it back in the editor. Generation
+  // must NEVER block the post — on any failure we publish with whatever's there.
+  async function resolveCaptionForPublish(): Promise<string> {
+    if (config.caption?.trim()) return config.caption;
+    if (!hasAiAccess || isSample) return config.caption ?? "";
+    try {
+      // Cap at Instagram's 2200-char limit: the publish edge fn AND the schedule RPC
+      // both REJECT an overlong caption (the RPC RAISE EXCEPTIONs), so an unbounded AI
+      // draft would fail the post — the hand-typed path is capped in the editor, the
+      // auto path must match. An empty AI result is treated as "no caption" (don't
+      // poison state with "" so the editor still shows the box as empty).
+      const drafted = (await generateCaption(buildCaptionContext())).slice(
+        0,
+        2200,
+      );
+      if (drafted) patch({ caption: drafted });
+      return drafted;
+    } catch (e) {
+      console.error("Auto-caption on publish failed:", e);
+      return config.caption ?? "";
+    }
+  }
+
   async function handleGenerateCaption() {
     if (!hasAiAccess) {
       toast.error("AI features aren't enabled for this account.");
@@ -685,67 +792,7 @@ export function SocialStudioPage() {
     }
     setGeneratingCaption(true);
     try {
-      const ctx =
-        previewData.kind === "report"
-          ? {
-              view: config.view,
-              agencyName,
-              network,
-              periodLabel: previewData.monthLabel,
-              topAgent: previewData.topPerformer.name,
-              totalAP: previewData.totalAp,
-            }
-          : previewData.kind === "aotw"
-            ? {
-                view: config.view,
-                agencyName,
-                network,
-                periodLabel: previewData.periodLabel,
-                topAgent: previewData.agent.name,
-                // The spotlighted agent's OWN premium/policies (the edge fn labels
-                // these as the agent's, not an agency total).
-                totalAP: previewData.agent.ap,
-                policies: previewData.agent.policies,
-              }
-            : previewData.kind === "leaderboard"
-              ? {
-                  view: config.view,
-                  agencyName,
-                  network,
-                  periodLabel: previewData.periodLabel,
-                  topAgent: previewData.rows[0]?.name,
-                  totalAP: previewData.totalAp,
-                }
-              : previewData.kind === "newagent"
-                ? {
-                    // Welcome card — give the AI the new agent's name as the subject so
-                    // a generated caption can welcome them by name.
-                    view: config.view,
-                    agencyName,
-                    network,
-                    periodLabel: "",
-                    topAgent: previewData.agent.name,
-                  }
-                : previewData.kind === "recruiting"
-                  ? {
-                      // Recruiting post — pass the agency's pitch so the caption is on
-                      // message (the edge fn frames it as a "now hiring" post).
-                      view: config.view,
-                      agencyName,
-                      network,
-                      periodLabel: "",
-                      tone: "Inbound-only insurance sales: 100% inbound calls, no cold calling or outbound, Monday–Friday 10–5 Eastern, no weekends, no shared/aged/over-called leads — quality of life, get your life back.",
-                    }
-                  : {
-                      // Marketing slides carry no data context — they aren't produced by
-                      // buildPreviewPages in the single-card flow; defensive for the
-                      // broadened PreviewData union so the exhaustive types stay honest.
-                      view: config.view,
-                      agencyName,
-                      network,
-                      periodLabel: "",
-                    };
-      const caption = await generateCaption(ctx);
+      const caption = await generateCaption(buildCaptionContext());
       patch({ caption });
       toast.success("Caption generated");
     } catch (e) {
