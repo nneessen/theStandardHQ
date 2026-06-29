@@ -5,6 +5,8 @@
 // or a denominator is 0 — so the UI suppresses the tile instead of rendering
 // NaN / Infinity / a misleading dash. A real computed 0 is returned as 0.
 
+import { COST_PER_INBOUND_CALL } from "@/constants/financial";
+
 type Num = number | null | undefined;
 
 function isUsable(n: Num): n is number {
@@ -38,22 +40,18 @@ export function policiesPerClient(
 }
 
 /**
- * Cost per acquisition = (lead spend + marketing spend) / clients sold.
- * Spend inputs are treated independently: a null spend contributes nothing, but
- * the result is still null if BOTH spends are null (no cost data at all) or if
- * clients is null/0.
+ * Cost per acquisition for the inbound model = (inbound calls × flat per-call
+ * cost) / clients sold. Every inbound call costs COST_PER_INBOUND_CALL, so spend
+ * is derived from call volume rather than entered by hand — there is no per-record
+ * lead/marketing spend. Null when calls or clients is null, or clients is 0.
  */
 export function costPerAcquisition(
-  leadSpend: Num,
-  marketingSpend: Num,
+  totalInboundCalls: Num,
   clientsSold: Num,
 ): number | null {
-  if (!isUsable(clientsSold) || clientsSold === 0) return null;
-  const hasLead = isUsable(leadSpend);
-  const hasMarketing = isUsable(marketingSpend);
-  if (!hasLead && !hasMarketing) return null;
-  const spend = (hasLead ? leadSpend : 0) + (hasMarketing ? marketingSpend : 0);
-  return spend / clientsSold;
+  if (!isUsable(totalInboundCalls) || !isUsable(clientsSold)) return null;
+  if (clientsSold === 0) return null;
+  return (totalInboundCalls * COST_PER_INBOUND_CALL) / clientsSold;
 }
 
 /**

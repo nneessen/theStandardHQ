@@ -502,7 +502,7 @@ async function claimSend(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
   runId: string | undefined,
   actionOrder: number,
-  channel: "email" | "sms",
+  channel: "email" | "sms" | "notification",
   recipient: string,
 ): Promise<boolean> {
   if (!runId) return true; // no run context (legacy direct invoke) — can't dedupe
@@ -523,7 +523,7 @@ async function releaseSend(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
   runId: string | undefined,
   actionOrder: number,
-  channel: "email" | "sms",
+  channel: "email" | "sms" | "notification",
   recipient: string,
 ): Promise<void> {
   if (!runId) return;
@@ -549,7 +549,7 @@ async function filterUnclaimedRecipients(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
   runId: string | undefined,
   actionOrder: number,
-  channel: "email" | "sms",
+  channel: "email" | "sms" | "notification",
   recipients: string[],
 ): Promise<{ remaining: string[]; alreadyDone: number }> {
   if (!runId) return { remaining: recipients, alreadyDone: 0 };
@@ -599,7 +599,13 @@ async function executeAction(
       );
 
     case "create_notification":
-      return await executeCreateNotification(action, context, isTest, supabase);
+      return await executeCreateNotification(
+        action,
+        context,
+        isTest,
+        supabase,
+        runId,
+      );
 
     case "wait":
       // For immediate execution, we just log the wait
@@ -1389,11 +1395,113 @@ async function executeSendSms(
 /**
  * Create notification action
  */
+/**
+ * Resolve the set of user IDs an in-app notification should reach. Mirrors the
+ * IMO-scoped roster logic in executeSendEmail, but notifications key on user_id
+ * (not email) so this returns ids. Roster types (all_agents/all_trainers) load the
+ * owner's IMO from context.triggeredBy and scope to it — the admin client bypasses
+ * RLS, so the imo_id filter is MANDATORY or this leaks across tenants. Defaults to
+ * the single trigger recipient so legacy single-recipient behavior is preserved.
+ */
+async function resolveNotificationRecipientIds(
+  action: WorkflowAction,
+  context: Record<string, unknown>,
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+): Promise<string[]> {
+  const recipientType =
+    (action.config.recipientType as string) || "trigger_user";
+  const ownerId = context.triggeredBy as string | undefined;
+
+  // IMO scope (only needed for roster / relative types).
+  let ownerImoId: string | null = null;
+  if (
+    [
+      "all_agents",
+      "all_trainers",
+      "manager",
+      "direct_upline",
+      "specific_email",
+    ].includes(recipientType) &&
+    ownerId
+  ) {
+    const { data: owner } = await supabase
+      .from("user_profiles")
+      .select("imo_id")
+      .eq("id", ownerId)
+      .single();
+    ownerImoId = (owner?.imo_id as string) ?? null;
+  }
+
+  switch (recipientType) {
+    case "trigger_user": {
+      const id = context.recipientId as string | undefined;
+      return id ? [id] : [];
+    }
+    case "current_user":
+      return ownerId ? [ownerId] : [];
+
+    case "manager":
+    case "direct_upline": {
+      const srcId = context.recipientId as string | undefined;
+      if (!srcId || !ownerImoId) return [];
+      const { data: src } = await supabase
+        .from("user_profiles")
+        .select("upline_id")
+        .eq("id", srcId)
+        .eq("imo_id", ownerImoId)
+        .single();
+      return src?.upline_id ? [src.upline_id as string] : [];
+    }
+
+    case "all_agents": {
+      if (!ownerImoId) return [];
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("agent_status", "licensed")
+        .eq("imo_id", ownerImoId)
+        .is("archived_at", null);
+      return (data ?? []).map((r) => r.id as string);
+    }
+
+    case "all_trainers": {
+      if (!ownerImoId) return [];
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .contains("roles", ["trainer"])
+        .eq("imo_id", ownerImoId)
+        .is("archived_at", null);
+      return (data ?? []).map((r) => r.id as string);
+    }
+
+    case "specific_email": {
+      const email = action.config.recipientEmail as string | undefined;
+      if (!email || !ownerImoId) return [];
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("email", email)
+        .eq("imo_id", ownerImoId)
+        .limit(1);
+      return (data ?? []).map((r) => r.id as string);
+    }
+
+    default:
+      return [];
+  }
+}
+
+// Hard cap on in-app notifications per action — a safety rail against an unbounded
+// roster insert. An IMO roster is bounded, so this is set generously high.
+const MAX_NOTIFICATION_RECIPIENTS = 2000;
+
 async function executeCreateNotification(
   action: WorkflowAction,
   context: Record<string, unknown>,
   isTest: boolean,
   supabase: ReturnType<typeof createSupabaseAdminClient>,
+  runId: string | undefined,
 ): Promise<unknown> {
   const title = action.config.title as string;
   const message = action.config.message as string;
@@ -1402,37 +1510,99 @@ async function executeCreateNotification(
     throw new Error("Notification requires title and message");
   }
 
+  const recipientType =
+    (action.config.recipientType as string) || "trigger_user";
+  const link = (action.config.link as string) || undefined;
+
   if (isTest) {
     return {
       action: "create_notification",
       title,
       message,
-      wouldNotify: context.recipientId || "unknown",
+      recipientType,
+      wouldNotify: context.recipientId || "roster",
       isTest: true,
     };
   }
 
-  const recipientId = context.recipientId as string;
-  if (!recipientId) {
-    throw new Error("No recipient ID in context");
+  // Resolve recipients. trigger_user keeps the legacy single-recipient path;
+  // roster types (all_agents, etc.) fan out one notification per user.
+  let recipientIds: string[];
+  if (recipientType === "trigger_user" && context.recipientId) {
+    recipientIds = [context.recipientId as string];
+  } else {
+    recipientIds = await resolveNotificationRecipientIds(
+      action,
+      context,
+      supabase,
+    );
   }
 
-  // Create notification. NB: the column is `read` (boolean), not `is_read` —
-  // an `is_read` insert fails PostgREST schema-cache validation and the action
-  // errors out (verified against the live schema + database.types.ts).
-  const { error: notifError } = await supabase.from("notifications").insert({
-    user_id: recipientId,
-    type: "workflow",
-    title,
-    message,
-    read: false,
-  });
-
-  if (notifError) {
-    throw new Error(`Failed to create notification: ${notifError.message}`);
+  if (recipientIds.length === 0) {
+    throw new Error(`No notification recipients for type: ${recipientType}`);
   }
 
-  return { created: true, title };
+  if (recipientIds.length > MAX_NOTIFICATION_RECIPIENTS) {
+    console.warn(
+      `[create_notification] capping ${recipientIds.length} recipients to ${MAX_NOTIFICATION_RECIPIENTS}`,
+    );
+    recipientIds = recipientIds.slice(0, MAX_NOTIFICATION_RECIPIENTS);
+  }
+
+  // Idempotency: a reaper-requeued run must not re-notify ids it already handled.
+  const { remaining } = await filterUnclaimedRecipients(
+    supabase,
+    runId,
+    action.order,
+    "notification",
+    recipientIds,
+  );
+
+  // Notification rows. NB: the column is `read` (boolean), not `is_read` — an
+  // `is_read` insert fails PostgREST schema-cache validation (verified against the
+  // live schema + database.types.ts). Claim per recipient so concurrent workers /
+  // retries never double-insert; release on failure so the id stays retriable.
+  let created = 0;
+  const failed: string[] = [];
+  for (const userId of remaining) {
+    const claimed = await claimSend(
+      supabase,
+      runId,
+      action.order,
+      "notification",
+      userId,
+    );
+    if (!claimed) continue; // another attempt/worker already notified this id
+
+    const { error: notifError } = await supabase.from("notifications").insert({
+      user_id: userId,
+      type: "workflow",
+      title,
+      message,
+      read: false,
+      metadata: link ? { link } : null,
+    });
+
+    if (notifError) {
+      await releaseSend(supabase, runId, action.order, "notification", userId);
+      failed.push(userId);
+      console.error(
+        `[create_notification] insert failed for ${userId}: ${notifError.message}`,
+      );
+    } else {
+      created++;
+    }
+  }
+
+  // Fail the action only if EVERY insert failed (nothing delivered); partial
+  // success is reported so the run completes and retries pick up the rest.
+  if (created === 0 && failed.length > 0) {
+    throw new Error(
+      `Failed to create notifications for all ${failed.length} recipient(s)`,
+    );
+  }
+
+  return { created, recipientType, attempted: remaining.length };
 }
 
 /**

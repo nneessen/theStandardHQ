@@ -33,17 +33,18 @@ describe("policiesPerClient", () => {
 });
 
 describe("costPerAcquisition", () => {
-  it("sums lead + marketing spend over clients", () => {
-    expect(costPerAcquisition(800, 200, 10)).toBe(100);
+  // Inbound model: cost = inbound calls × $42.50 flat per-call cost, over clients.
+  it("derives spend from call volume over clients", () => {
+    expect(costPerAcquisition(10, 10)).toBe(42.5); // (10×42.5)/10
+    expect(costPerAcquisition(100, 5)).toBe(850); // (100×42.5)/5
   });
-  it("treats a single null spend as zero when the other is present", () => {
-    expect(costPerAcquisition(500, null, 10)).toBe(50);
-    expect(costPerAcquisition(null, 300, 10)).toBe(30);
+  it("keeps a real 0 when there are no calls but clients exist", () => {
+    expect(costPerAcquisition(0, 5)).toBe(0);
   });
-  it("suppresses when BOTH spends are null, or clients is null/0", () => {
-    expect(costPerAcquisition(null, null, 10)).toBeNull();
-    expect(costPerAcquisition(800, 200, 0)).toBeNull();
-    expect(costPerAcquisition(800, 200, null)).toBeNull();
+  it("suppresses when calls is null, or clients is null/0", () => {
+    expect(costPerAcquisition(null, 10)).toBeNull();
+    expect(costPerAcquisition(10, 0)).toBeNull();
+    expect(costPerAcquisition(10, null)).toBeNull();
   });
 });
 

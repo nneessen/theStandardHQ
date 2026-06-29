@@ -88,6 +88,7 @@ export interface WorkflowAction {
     title?: string;
     message?: string;
     notificationType?: string;
+    link?: string;
 
     // Assign user action
     userId?: string;

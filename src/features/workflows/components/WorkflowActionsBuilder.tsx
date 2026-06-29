@@ -848,6 +848,64 @@ export default function WorkflowActionsBuilder({
                             }
                           />
                         </div>
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--amber)" }}
+                          >
+                            Send To
+                          </label>
+                          <select
+                            value={currentRecipientType}
+                            onChange={(e) =>
+                              updateRecipientType(
+                                index,
+                                e.target.value as RecipientType,
+                              )
+                            }
+                            className="h-9 w-full cursor-pointer rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                          >
+                            {Object.entries(RECIPIENT_CATEGORIES).map(
+                              ([key, category]) => (
+                                <optgroup key={key} label={category.label}>
+                                  {category.types.map((type) => (
+                                    <option key={type} value={type}>
+                                      {RECIPIENT_TYPE_LABELS[type] || type}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ),
+                            )}
+                          </select>
+                        </div>
+                        <div>
+                          <label
+                            className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "var(--amber)" }}
+                          >
+                            Link (optional)
+                          </label>
+                          <input
+                            value={(action.config.link as string) || ""}
+                            onChange={(e) =>
+                              updateActionConfig(index, {
+                                link: e.target.value,
+                              })
+                            }
+                            placeholder="/analytics?tab=inbound"
+                            className="h-9 w-full rounded-[10px] px-3 font-sans text-[13px] outline-none transition-shadow placeholder:text-[var(--mut2)]"
+                            style={{
+                              background: "var(--surface-1)",
+                              border: "1px solid var(--line2)",
+                              color: "var(--ink)",
+                            }}
+                          />
+                        </div>
                       </div>
                     )}
 

@@ -1,6 +1,13 @@
 // src/features/kpi/components/ManualKpiEntryPanel.tsx
 // Form to upsert one kpi_daily_call_metrics row for a chosen date.
 // Prefills from the existing row for that date so the upsert edits in place.
+//
+// Inbound model: every inbound call is answered and costs a flat
+// COST_PER_INBOUND_CALL, so the form only collects the numbers an agent actually
+// controls (calls, clients, policies, premium). Call spend is auto-derived and
+// shown read-only — never entered or stored. Retired fields (answered, missed,
+// leads received, lead/marketing spend, talk time) are written null on save so
+// re-saving a day clears any legacy value.
 
 import React, { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -9,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getTodayString } from "@/lib/date";
+import { formatCurrency } from "@/lib/format";
+import { COST_PER_INBOUND_CALL } from "@/constants/financial";
 import {
   useDailyMetrics,
   useUpsertDailyMetrics,
@@ -16,41 +25,29 @@ import {
 } from "../hooks";
 
 // Integer count fields. `required` columns are NOT NULL with a DB default of 0,
-// so a blank input is stored as 0; nullable columns are stored as null.
+// so a blank input is stored as 0.
 const COUNT_FIELDS = [
   { key: "total_inbound_calls", label: "Inbound Calls", required: true },
-  { key: "answered_calls", label: "Answered", required: false },
-  { key: "missed_calls", label: "Missed", required: false },
-  { key: "leads_received", label: "Leads Received", required: false },
   { key: "clients_sold", label: "Clients Sold", required: true },
   { key: "policies_sold", label: "Policies Sold", required: true },
 ] as const;
 
 const CURRENCY_FIELDS = [
   { key: "premium_written", label: "Premium Written" },
-  { key: "lead_spend", label: "Lead Spend" },
-  { key: "marketing_spend", label: "Marketing Spend" },
 ] as const;
 
 type CountKey = (typeof COUNT_FIELDS)[number]["key"];
 type CurrencyKey = (typeof CURRENCY_FIELDS)[number]["key"];
 
 type FormState = Record<CountKey | CurrencyKey, string> & {
-  talkMinutes: string;
   notes: string;
 };
 
 const EMPTY_FORM: FormState = {
   total_inbound_calls: "",
-  answered_calls: "",
-  missed_calls: "",
-  leads_received: "",
   clients_sold: "",
   policies_sold: "",
   premium_written: "",
-  lead_spend: "",
-  marketing_spend: "",
-  talkMinutes: "",
   notes: "",
 };
 
@@ -79,18 +76,9 @@ export const ManualKpiEntryPanel: React.FC = () => {
     const str = (n: number | null) => (n == null ? "" : String(n));
     setForm({
       total_inbound_calls: str(row.total_inbound_calls),
-      answered_calls: str(row.answered_calls),
-      missed_calls: str(row.missed_calls),
-      leads_received: str(row.leads_received),
       clients_sold: str(row.clients_sold),
       policies_sold: str(row.policies_sold),
       premium_written: str(row.premium_written),
-      lead_spend: str(row.lead_spend),
-      marketing_spend: str(row.marketing_spend),
-      talkMinutes:
-        row.total_talk_time_seconds == null
-          ? ""
-          : String(Math.round((row.total_talk_time_seconds / 60) * 100) / 100),
       notes: row.notes ?? "",
     });
   }, [existingRows, date]);
@@ -98,24 +86,29 @@ export const ManualKpiEntryPanel: React.FC = () => {
   const setField = (key: keyof FormState, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  // Auto-derived inbound call spend (calls × flat per-call cost). Display-only.
+  const inboundCalls = toNumberOrNull(form.total_inbound_calls) ?? 0;
+  const estimatedSpend = inboundCalls * COST_PER_INBOUND_CALL;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const talk = toNumberOrNull(form.talkMinutes);
     const payload: DailyMetricUpsertInput = {
       metric_date: date,
       // NOT-NULL count columns default to 0 when blank.
       total_inbound_calls: toNumberOrNull(form.total_inbound_calls) ?? 0,
       clients_sold: toNumberOrNull(form.clients_sold) ?? 0,
       policies_sold: toNumberOrNull(form.policies_sold) ?? 0,
-      // Nullable columns: explicit null clears a previously-saved value.
-      answered_calls: toNumberOrNull(form.answered_calls),
-      missed_calls: toNumberOrNull(form.missed_calls),
-      leads_received: toNumberOrNull(form.leads_received),
       premium_written: toNumberOrNull(form.premium_written),
-      lead_spend: toNumberOrNull(form.lead_spend),
-      marketing_spend: toNumberOrNull(form.marketing_spend),
-      total_talk_time_seconds: talk == null ? null : Math.round(talk * 60),
       notes: form.notes.trim() === "" ? null : form.notes.trim(),
+      // Retired fields: written null so a re-save clears any legacy value. Cost is
+      // computed (calls × COST_PER_INBOUND_CALL), never stored; every call is
+      // answered, so answered/missed/leads are not tracked.
+      answered_calls: null,
+      missed_calls: null,
+      leads_received: null,
+      lead_spend: null,
+      marketing_spend: null,
+      total_talk_time_seconds: null,
     };
     upsert.mutate(payload);
   };
@@ -144,7 +137,7 @@ export const ManualKpiEntryPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {COUNT_FIELDS.map((f) => (
           <div key={f.key}>
             <Label className="text-[10px]">{f.label}</Label>
@@ -161,20 +154,6 @@ export const ManualKpiEntryPanel: React.FC = () => {
           </div>
         ))}
 
-        <div>
-          <Label className="text-[10px]">Talk Time (min)</Label>
-          <Input
-            type="number"
-            min="0"
-            step="0.1"
-            inputMode="decimal"
-            className="h-7 text-[11px]"
-            value={form.talkMinutes}
-            onChange={(e) => setField("talkMinutes", e.target.value)}
-            placeholder="—"
-          />
-        </div>
-
         {CURRENCY_FIELDS.map((f) => (
           <div key={f.key}>
             <Label className="text-[10px]">{f.label} ($)</Label>
@@ -190,6 +169,17 @@ export const ManualKpiEntryPanel: React.FC = () => {
             />
           </div>
         ))}
+      </div>
+
+      {/* Auto-computed call spend — flat per-call cost × inbound calls. Read-only. */}
+      <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-2.5 py-1.5">
+        <span className="text-[10px] text-muted-foreground">
+          Estimated call spend ({formatCurrency(COST_PER_INBOUND_CALL)} ×{" "}
+          {inboundCalls} call{inboundCalls === 1 ? "" : "s"})
+        </span>
+        <span className="text-[11px] font-semibold text-foreground">
+          {formatCurrency(estimatedSpend)}
+        </span>
       </div>
 
       <div>

@@ -15715,6 +15715,7 @@ export type Database = {
           max_runs_per_day: number | null;
           max_runs_per_recipient: number | null;
           name: string;
+          next_run_at: string | null;
           priority: number | null;
           status: string | null;
           trigger_event_name: string | null;
@@ -15737,6 +15738,7 @@ export type Database = {
           max_runs_per_day?: number | null;
           max_runs_per_recipient?: number | null;
           name: string;
+          next_run_at?: string | null;
           priority?: number | null;
           status?: string | null;
           trigger_event_name?: string | null;
@@ -15759,6 +15761,7 @@ export type Database = {
           max_runs_per_day?: number | null;
           max_runs_per_recipient?: number | null;
           name?: string;
+          next_run_at?: string | null;
           priority?: number | null;
           status?: string | null;
           trigger_event_name?: string | null;

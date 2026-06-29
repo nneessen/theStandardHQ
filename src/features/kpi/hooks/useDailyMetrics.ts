@@ -105,11 +105,9 @@ export function summarizeDailyMetrics(
     connectRate: connectRate(answeredCalls, totalInboundCalls),
     closingRate: closingRate(clientsSold, totalInboundCalls),
     policiesPerClient: policiesPerClient(policiesSold, clientsSold),
-    costPerAcquisition: costPerAcquisition(
-      leadSpend,
-      marketingSpend,
-      clientsSold,
-    ),
+    // Inbound model: spend is derived from call volume (calls × flat per-call
+    // cost), not from manually-entered lead/marketing spend.
+    costPerAcquisition: costPerAcquisition(totalInboundCalls, clientsSold),
   };
 }
 
