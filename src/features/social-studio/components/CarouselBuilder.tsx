@@ -253,6 +253,10 @@ export function CarouselBuilder({
   const [enhancing, setEnhancing] = useState(false);
   const enhancingRef = useRef(false);
   const [captioning, setCaptioning] = useState(false);
+  // Single "busy" flag: while ANY deck / caption / publish op is in flight, every action
+  // button is disabled (and postAll/scheduleAll also cross-guard on the refs) so a rapid
+  // double-click — or a post + schedule fired at once — can't double-publish.
+  const busy = posting || scheduling || composing || enhancing || captioning;
   const captioningRef = useRef(false);
 
   // Real agency KPIs (assembled from already-loaded metrics) the AI may cite — and ONLY these.
@@ -819,7 +823,16 @@ export function CarouselBuilder({
   }
 
   async function postAll() {
-    if (postingRef.current) return;
+    // Cross-guard against EVERY in-flight op (schedule / AI compose / enhance / caption)
+    // so a post can't race another action; the button is also disabled via `busy`.
+    if (
+      postingRef.current ||
+      schedulingRef.current ||
+      composingRef.current ||
+      enhancingRef.current ||
+      captioningRef.current
+    )
+      return;
     if (sampleBlocksPost) {
       toast.error("Switch off sample data to post your real numbers.");
       return;
@@ -865,7 +878,15 @@ export function CarouselBuilder({
   // Schedule the whole deck as a carousel for a future time. Uploads every slide under the
   // row's folder, then inserts the queue row via the carousel RPC; the cron worker fires it.
   async function scheduleAll() {
-    if (schedulingRef.current) return;
+    // Cross-guard against EVERY in-flight op so a schedule can't race a post or an AI op.
+    if (
+      postingRef.current ||
+      schedulingRef.current ||
+      composingRef.current ||
+      enhancingRef.current ||
+      captioningRef.current
+    )
+      return;
     if (sampleBlocksPost) {
       toast.error("Switch off sample data to schedule your real numbers.");
       return;
@@ -1045,7 +1066,7 @@ export function CarouselBuilder({
                     size="sm"
                     variant="outline"
                     onClick={buildCaption}
-                    disabled={captioning || composing || deck.length === 0}
+                    disabled={busy || deck.length === 0}
                     title="Write a caption from these slides with AI"
                   >
                     {captioning ? (
@@ -1070,7 +1091,7 @@ export function CarouselBuilder({
                 size="sm"
                 variant="outline"
                 onClick={downloadAll}
-                disabled={deck.length === 0}
+                disabled={busy || deck.length === 0}
                 title="Download every slide as a PNG"
               >
                 <Download className="h-4 w-4" /> Download
@@ -1079,12 +1100,7 @@ export function CarouselBuilder({
                 size="sm"
                 onClick={postAll}
                 disabled={
-                  sampleBlocksPost ||
-                  posting ||
-                  composing ||
-                  captioning ||
-                  !igConnected ||
-                  deck.length < 2
+                  sampleBlocksPost || busy || !igConnected || deck.length < 2
                 }
                 title={
                   sampleBlocksPost
@@ -1124,9 +1140,7 @@ export function CarouselBuilder({
                 onClick={scheduleAll}
                 disabled={
                   sampleBlocksPost ||
-                  scheduling ||
-                  composing ||
-                  captioning ||
+                  busy ||
                   !igConnected ||
                   deck.length < 2 ||
                   !scheduledFor

@@ -140,6 +140,11 @@ const config = {
 const aowBgParam = params.get("aowBg");
 if (aowBgParam) config.aowBackground = decodeURIComponent(aowBgParam);
 
+// ?aowFont=<css font-family> sets a custom display font (Style panel FONT_OPTIONS) so we
+// can verify a NON-default font actually embeds in the export (vs. silently falling back).
+const aowFontParam = params.get("aowFont");
+if (aowFontParam) config.aowFontDisplay = decodeURIComponent(aowFontParam);
+
 // Photo framing through the real config map (keyed "aotw"); inject the test photo for
 // the AOTW upload slot when requested. (newagent photo is injected via the newAgents
 // arg below, mirroring how the page feeds featuredAgents.)

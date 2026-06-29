@@ -62,8 +62,19 @@ async function ensureCardFontsLoaded(): Promise<void> {
 // ("if specified, ONLY this CSS is embedded"). Now the real condensed fonts travel
 // INSIDE the screenshot SVG, so the PNG matches the preview byte-for-byte. Computed once
 // and cached for the session (the woff2 are already in the browser cache from the <link>).
-const CARD_FONT_CSS_URL =
-  "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+// Sources whose @font-face cover EVERY font any card can render — the base families PLUS
+// every custom display font selectable in the Style panel (SocialCustomizer FONT_OPTIONS):
+//   • Google css2: Big Shoulders Display, Inter, Space Grotesk, Instrument Serif,
+//     Unbounded, Syne, Bricolage Grotesque
+//   • self-hosted (/public/fonts/fontshare.css): Clash Display, Satoshi, General Sans —
+//     Fontshare's CDN CSS isn't fetch-CORS-readable, so we serve it from our OWN origin so
+//     it can be inlined (it renders identically in the live preview via index.html).
+// Because `font.cssText` is exclusive, a picked font NOT covered here would silently fall
+// back in the export — so these sources and the picker (FONT_OPTIONS) must stay in sync.
+const CARD_FONT_CSS_SOURCES = [
+  "https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&family=Unbounded:wght@400;600;800;900&display=swap",
+  "/fonts/fontshare.css",
+];
 
 let cardFontEmbedCssPromise: Promise<string> | null = null;
 
@@ -90,33 +101,44 @@ async function fetchAsDataUrl(url: string): Promise<string> {
 async function buildCardFontEmbedCss(): Promise<string> {
   if (typeof fetch !== "function" || typeof FileReader === "undefined")
     return "";
-  // Ask Google for the woff2 form (the default for a modern UA) so the inlined glyphs are
-  // the same the browser rendered. A non-2xx (quota/CORS/outage) MUST throw — a 4xx/5xx
-  // body is not CSS, and returning it would defeat the whole fix.
-  const res = await fetch(CARD_FONT_CSS_URL);
-  if (!res.ok) throw new Error(`Google Fonts CSS ${res.status}`);
-  let css = await res.text();
-  // Capture gstatic URLs in both bare and quoted url() forms (Google emits bare today —
-  // don't be brittle if that ever changes, or we'd silently inline nothing).
+  // Concatenate every source's CSS. The FIRST (Google css2) is load-bearing — the base
+  // fonts — so a non-2xx there MUST throw (a 4xx/5xx body is not CSS; returning it would
+  // defeat the fix). A later self-hosted source that 404s is tolerated: only its fonts
+  // miss out, rather than breaking the whole export.
+  let css = "";
+  for (let i = 0; i < CARD_FONT_CSS_SOURCES.length; i++) {
+    const src = CARD_FONT_CSS_SOURCES[i];
+    try {
+      const res = await fetch(src);
+      if (!res.ok) throw new Error(String(res.status));
+      css += "\n" + (await res.text());
+    } catch (e) {
+      if (i === 0) throw e;
+      console.warn(`[exportCard] optional font source failed: ${src}`, e);
+    }
+  }
+  // Inline every font file the CSS references (gstatic absolute + same-origin /fonts/…) as a
+  // data: URL so nothing is fetched at rasterize time. Match bare/quoted url() font refs,
+  // skip anything already inlined, and resolve relative paths against the page origin.
   const fontUrls = [
     ...new Set(
-      [
-        ...css.matchAll(
-          /url\((['"]?)(https:\/\/fonts\.gstatic\.com\/[^)'"]+)\1\)/g,
-        ),
-      ].map((m) => m[2]),
+      [...css.matchAll(/url\((['"]?)([^)'"]+\.(?:woff2?|ttf|otf))\1\)/gi)]
+        .map((m) => m[2])
+        .filter((u) => !u.startsWith("data:")),
     ),
   ];
-  // No inlinable URLs → the cssText would carry unresolved REMOTE urls an SVG foreignObject
-  // can't fetch at rasterize time. Throw so we fall back to the default embed, not pass it.
-  if (fontUrls.length === 0) throw new Error("no embeddable gstatic font URLs");
-  // Inline each woff2 as a data: URL so nothing is fetched at rasterize time. A single
-  // failed weight keeps its remote URL (only that weight may fall back) rather than failing
-  // the whole export — the other weights still embed.
+  // No inlinable URLs → the cssText would carry unresolved urls an SVG foreignObject can't
+  // fetch at rasterize time. Throw so we fall back to the default embed, not pass it.
+  if (fontUrls.length === 0) throw new Error("no embeddable font URLs found");
+  // A single failed weight keeps its original URL (only that weight may fall back) rather
+  // than failing the whole export — the other weights still embed.
   const pairs = await Promise.all(
     fontUrls.map(async (u) => {
       try {
-        return [u, await fetchAsDataUrl(u)] as const;
+        return [
+          u,
+          await fetchAsDataUrl(new URL(u, location.href).href),
+        ] as const;
       } catch {
         return [u, u] as const;
       }

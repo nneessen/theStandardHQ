@@ -87,6 +87,7 @@ export function SocialStudioPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [scheduling, setScheduling] = useState(false);
   // "Confirm before you post" dialog (WI-5) — Post Now opens it; doPost runs on confirm.
   const [confirmOpen, setConfirmOpen] = useState(false);
   // Synchronous re-entrancy guard: a fast double-click can fire two handlers before
@@ -97,6 +98,11 @@ export function SocialStudioPage() {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
   const schedulingRef = useRef(false);
+  // Single "busy" flag for the publish actions: while ANY of post / schedule / caption
+  // generation is in flight, every action button is disabled — and the handlers cross-guard
+  // on the refs — so a rapid double-click, or a post + schedule fired at once, can't
+  // double-publish. (The refs block the sub-state-flush double-click; `busy` is the UI gate.)
+  const busy = posting || scheduling || generatingCaption;
   const exportHostRef = useRef<CardExportHandle>(null);
   const { hasAiAccess } = useAiAccess();
   const {
@@ -526,6 +532,8 @@ export function SocialStudioPage() {
       );
       return;
     }
+    // A publish/schedule already in flight? Ignore the click (the button is disabled too).
+    if (postingRef.current || schedulingRef.current) return;
     // Draft the caption (if the box is empty) BEFORE opening the confirm dialog so the
     // user reviews the EXACT caption that will post — the dialog renders config.caption.
     // Stories carry no caption, so skip. resolveCaptionForPublish patches state + caps
@@ -547,7 +555,8 @@ export function SocialStudioPage() {
   //   • Feed   → every slide; 1 slide = a single post, 2–10 = a carousel (IG caps at
   //              10, so we post the first 10 and tell the user to Download the rest).
   async function doPost() {
-    if (postingRef.current) return;
+    // Cross-guard: never publish while a schedule is mid-flight (and vice versa).
+    if (postingRef.current || schedulingRef.current) return;
     postingRef.current = true;
     setPosting(true);
     try {
@@ -636,8 +645,10 @@ export function SocialStudioPage() {
       toast.error("Pick a future date and time.");
       return;
     }
-    if (schedulingRef.current) return;
+    // Cross-guard: never schedule while a publish is mid-flight (and vice versa).
+    if (schedulingRef.current || postingRef.current) return;
     schedulingRef.current = true;
+    setScheduling(true);
     try {
       const dataUrl = await renderCardPng();
       if (!dataUrl) throw new Error("The card isn't ready yet.");
@@ -673,6 +684,7 @@ export function SocialStudioPage() {
       );
     } finally {
       schedulingRef.current = false;
+      setScheduling(false);
     }
   }
 
@@ -927,7 +939,7 @@ export function SocialStudioPage() {
                   <select
                     value={selectedIntegration?.id ?? ""}
                     onChange={(e) => setSelectedIntegrationId(e.target.value)}
-                    disabled={isSample || posting}
+                    disabled={isSample || busy}
                     className="h-8 max-w-[150px] truncate rounded-md border border-input bg-background px-2 text-xs text-foreground"
                     title="Which Instagram account to post from"
                     aria-label="Instagram account to post from"
@@ -942,7 +954,7 @@ export function SocialStudioPage() {
                 <Button
                   size="sm"
                   onClick={handlePostNow}
-                  disabled={isSample || posting || !igConnected}
+                  disabled={isSample || !igConnected || busy}
                   title={
                     isSample
                       ? "Switch to live data to post"
@@ -962,7 +974,7 @@ export function SocialStudioPage() {
                   size="sm"
                   variant="outline"
                   onClick={openSchedule}
-                  disabled={isSample || !igConnected}
+                  disabled={isSample || !igConnected || busy}
                   title={
                     isSample
                       ? "Switch to live data to schedule"
@@ -977,7 +989,7 @@ export function SocialStudioPage() {
                   size="sm"
                   variant="outline"
                   onClick={handleDownload}
-                  disabled={isSample}
+                  disabled={isSample || busy}
                   title={
                     isSample
                       ? "Sample preview can't be downloaded — switch to live data first"
@@ -1004,17 +1016,13 @@ export function SocialStudioPage() {
                   onChange={(e) => setScheduleAt(e.target.value)}
                   className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleSchedule}
-                  disabled={schedulePostMut.isPending}
-                >
-                  {schedulePostMut.isPending ? (
+                <Button size="sm" onClick={handleSchedule} disabled={busy}>
+                  {scheduling ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <CalendarClock className="h-4 w-4" />
                   )}
-                  {schedulePostMut.isPending ? "Scheduling…" : "Schedule post"}
+                  {scheduling ? "Scheduling…" : "Schedule post"}
                 </Button>
                 <Button
                   size="sm"

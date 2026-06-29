@@ -27,12 +27,11 @@
       href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap"
       rel="stylesheet"
     />
-    <!-- Fontshare families (Clash Display / Satoshi / General Sans) — same purpose. -->
-    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link
-      href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700,900&f[]=general-sans@400,500,600,700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fontshare families (Clash Display / Satoshi / General Sans) — SELF-HOSTED so they
+         render identically in the live preview AND embed in the Social Studio PNG export
+         (Fontshare's CDN CSS isn't fetch-CORS-readable, so it can't be inlined at export
+         time). Files + this CSS are generated into /public/fonts. -->
+    <link rel="stylesheet" href="/fonts/fontshare.css" />
     <title>The Standard HQ</title>
   </head>
   <body>
