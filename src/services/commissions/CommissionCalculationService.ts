@@ -466,6 +466,17 @@ class CommissionCalculationService {
         finalData.advanceMonths = 9;
       }
 
+      // Safety net: if none of the branches above set an amount (e.g. the premium
+      // was 0/blank at creation, so neither the manual-flat nor the auto-calc path
+      // ran), persist a $0 advance rather than inserting an undefined amount. A
+      // NULL amount hits a NOT NULL violation, which throws and ORPHANS the
+      // just-created policy (the policy row is inserted before this commission in
+      // PolicyService.create). A $0 row keeps the policy whole and lets the agent
+      // fill in the rate later via edit (see recalculateCommissionByPolicyId).
+      if (finalData.amount === undefined || finalData.amount === null) {
+        finalData.amount = 0;
+      }
+
       return commissionCRUDService.create(finalData);
     } catch (error) {
       throw this.handleError(error, "createWithAutoCalculation");
@@ -569,12 +580,46 @@ class CommissionCalculationService {
       const commissions = await commissionCRUDService.getByPolicyId(policyId);
 
       if (!commissions || commissions.length === 0) {
+        // The policy has NO commission row. This happens when the original advance
+        // failed to persist at create time, leaving the policy orphaned at $0 (the
+        // Policies table reads the advance straight from `commissions`). Editing a
+        // commission-affecting field is the documented "fill it in later" repair
+        // path, so CREATE the missing advance here instead of silently returning
+        // null — otherwise an orphaned policy can never recover its advance through
+        // the UI. Mirrors the creation in PolicyService.create.
         logger.warn(
           "CommissionCalculation",
-          "No commission found for policy",
+          "No commission found for policy — creating missing advance",
           `policyId: ${policyId}`,
         );
-        return null;
+
+        const { policyService } = await import("../index");
+        const orphanPolicy = await policyService.getById(policyId);
+        if (!orphanPolicy) {
+          throw new Error(`Policy not found: ${policyId}`);
+        }
+
+        return this.createWithAutoCalculation(
+          {
+            policyId: orphanPolicy.id,
+            userId: orphanPolicy.userId,
+            advanceMonths: 9,
+            status: "pending",
+            type: "advance",
+          },
+          {
+            carrierId: orphanPolicy.carrierId,
+            productId: orphanPolicy.productId,
+            product: orphanPolicy.product,
+            termLength: orphanPolicy.termLength ?? undefined,
+            annualPremium: newAnnualPremium,
+            monthlyPremium: newMonthlyPremium ?? newAnnualPremium / 12,
+            autoCalculate: true,
+            // Use the policy's stored, manually entered rate verbatim — no
+            // comp_guide lookup — matching the ADD path.
+            commissionRateOverride: orphanPolicy.commissionPercentage ?? 0,
+          },
+        );
       }
 
       // Pick the collectible commission (not a terminal charged_back/clawback/

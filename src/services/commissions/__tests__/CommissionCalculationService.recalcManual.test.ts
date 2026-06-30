@@ -19,6 +19,7 @@ const {
   mockPolicyGetById,
   mockCommissionGetByPolicyId,
   mockCommissionUpdate,
+  mockCommissionCreate,
 } = vi.hoisted(() => ({
   mockCarrierGetById: vi.fn(),
   mockGetCommissionRate: vi.fn(),
@@ -26,6 +27,7 @@ const {
   mockPolicyGetById: vi.fn(),
   mockCommissionGetByPolicyId: vi.fn(),
   mockCommissionUpdate: vi.fn(),
+  mockCommissionCreate: vi.fn(),
 }));
 
 // Services resolved via `await import("../index")` inside the service.
@@ -42,6 +44,7 @@ vi.mock("../CommissionCRUDService", () => ({
   commissionCRUDService: {
     getByPolicyId: mockCommissionGetByPolicyId,
     update: mockCommissionUpdate,
+    create: mockCommissionCreate,
   },
 }));
 
@@ -65,6 +68,12 @@ beforeEach(() => {
       advanceMonths: 9,
       ...(data as object),
     }),
+  );
+
+  // create() echoes the inserted row back (used by the orphan-heal path when a
+  // policy has no existing commission row).
+  mockCommissionCreate.mockImplementation((data: unknown) =>
+    Promise.resolve({ id: "comm-new", status: "pending", ...(data as object) }),
   );
 
   // Carrier with no advance cap (Epic Life's imported carriers).
@@ -157,5 +166,27 @@ describe("recalculateCommissionByPolicyId — manual commission (no comp guide)"
 
     // 250 × 9 × 0.5 = 1125
     expect(result?.amount).toBeCloseTo(1125, 2);
+  });
+
+  it("orphaned policy (no commission row): CREATES the missing advance instead of returning null", async () => {
+    // The policy has NO commission row — the orphan case that previously rendered
+    // $0 in the Policies table and could never be healed by editing (the old code
+    // returned null here). Editing now recreates the advance from the stored rate.
+    mockCommissionGetByPolicyId.mockResolvedValue([]);
+    mockPolicyGetById.mockResolvedValue(policy({ commissionPercentage: 0.8 }));
+    mockUserGetById.mockResolvedValue({ contract_level: 100 });
+
+    const result =
+      await commissionCalculationService.recalculateCommissionByPolicyId(
+        POLICY_ID,
+        2400,
+        200,
+        false,
+      );
+
+    // 200 × 9 × 0.80 = 1440 — created from the policy's stored manual rate.
+    expect(result?.amount).toBeCloseTo(1440, 2);
+    expect(mockCommissionCreate).toHaveBeenCalledTimes(1);
+    expect(mockCommissionUpdate).not.toHaveBeenCalled();
   });
 });
