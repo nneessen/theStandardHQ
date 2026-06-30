@@ -53,6 +53,8 @@ const MIN_PRODUCERS: Record<SocialView, number> = {
   newagent: 1,
   // recruiting: data-free templates — never sampled (the page forces isSample=false).
   recruiting: 1,
+  // reels: self-contained workflow — never uses the leaderboard sample state.
+  reels: 0,
 };
 
 export interface SampleStateInput {

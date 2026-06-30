@@ -47,6 +47,7 @@ const VIEW_LABEL: Record<SocialStudioConfig["view"], string> = {
   monthly: "Monthly",
   newagent: "New Agents",
   recruiting: "Recruiting",
+  reels: "Reels",
 };
 
 // The library = every card type × every brand theme, so an agency can browse the

@@ -42,6 +42,7 @@ import { SocialLibrary } from "./components/SocialLibrary";
 import { CarouselBuilder } from "./components/CarouselBuilder";
 import { WelcomeQueuePanel } from "./components/WelcomeQueuePanel";
 import { ScheduledPostsPanel } from "./components/ScheduledPostsPanel";
+import { ReelsPanel } from "./components/ReelsPanel";
 import {
   DEFAULT_CONFIG,
   DEFAULT_PHOTO_TRANSFORM,
@@ -851,6 +852,7 @@ export function SocialStudioPage() {
               { label: "Agent of Week", value: "aotw" },
               { label: "New Agents", value: "newagent" },
               { label: "Recruiting", value: "recruiting" },
+              { label: "Reels", value: "reels" },
             ]}
           />
         </div>
@@ -863,377 +865,389 @@ export function SocialStudioPage() {
           </div>
         )}
 
-        {/* Auto-generated "welcome new agent" posts awaiting the owner's review. Renders nothing
+        {/* Reels tab: self-contained workflow — bypasses the card/post machinery entirely. */}
+        {config.view === "reels" && <ReelsPanel imoId={imoId ?? undefined} />}
+
+        {config.view !== "reels" && (
+          <>
+            {/* Auto-generated "welcome new agent" posts awaiting the owner's review. Renders nothing
             when the queue is empty, so it only appears when there's something to approve. */}
-        <WelcomeQueuePanel
-          agencyName={agencyName}
-          network={network}
-          cardTheme={config.cardTheme}
-          welcomeVariant={config.welcomeVariant}
-          onWelcomeVariantChange={(v) => patch({ welcomeVariant: v })}
-          welcomeCopy={copyForVariant(
-            config.templateCopy,
-            config.welcomeVariant,
-          )}
-          igConnected={igConnected}
-          selectedIntegration={selectedIntegration}
-          postsImoId={postsImoId}
-        />
+            <WelcomeQueuePanel
+              agencyName={agencyName}
+              network={network}
+              cardTheme={config.cardTheme}
+              welcomeVariant={config.welcomeVariant}
+              onWelcomeVariantChange={(v) => patch({ welcomeVariant: v })}
+              welcomeCopy={copyForVariant(
+                config.templateCopy,
+                config.welcomeVariant,
+              )}
+              igConnected={igConnected}
+              selectedIntegration={selectedIntegration}
+              postsImoId={postsImoId}
+            />
 
-        {/* Mode toggle: a single card, or the multi-slide carousel builder. */}
-        <div className="mb-3 inline-flex rounded-lg border border-border bg-card/40 p-0.5 text-xs">
-          <button
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${
-              mode === "single"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            onClick={() => setMode("single")}
-          >
-            Single card
-          </button>
-          <button
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${
-              mode === "builder"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            onClick={() => setMode("builder")}
-          >
-            Carousel builder
-          </button>
-        </div>
+            {/* Mode toggle: a single card, or the multi-slide carousel builder. */}
+            <div className="mb-3 inline-flex rounded-lg border border-border bg-card/40 p-0.5 text-xs">
+              <button
+                className={`rounded-md px-3 py-1 font-medium transition-colors ${
+                  mode === "single"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setMode("single")}
+              >
+                Single card
+              </button>
+              <button
+                className={`rounded-md px-3 py-1 font-medium transition-colors ${
+                  mode === "builder"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setMode("builder")}
+              >
+                Carousel builder
+              </button>
+            </div>
 
-        {mode === "builder" && (
-          <CarouselBuilder
-            config={config}
-            onConfigChange={patch}
-            imoId={imoId}
-            postsImoId={postsImoId}
-            producers={producers}
-            isSample={isSample}
-            isLoading={isLoading}
-            sampleForced={sampleForced}
-            onSampleChange={setSampleOverride}
-            labels={labels}
-            agencyName={agencyName}
-            network={network}
-            igConnected={igConnected}
-            connectedIntegrations={connectedIntegrations}
-            selectedIntegration={selectedIntegration}
-            onSelectIntegration={setSelectedIntegrationId}
-          />
-        )}
+            {mode === "builder" && (
+              <CarouselBuilder
+                config={config}
+                onConfigChange={patch}
+                imoId={imoId}
+                postsImoId={postsImoId}
+                producers={producers}
+                isSample={isSample}
+                isLoading={isLoading}
+                sampleForced={sampleForced}
+                onSampleChange={setSampleOverride}
+                labels={labels}
+                agencyName={agencyName}
+                network={network}
+                igConnected={igConnected}
+                connectedIntegrations={connectedIntegrations}
+                selectedIntegration={selectedIntegration}
+                onSelectIntegration={setSelectedIntegrationId}
+              />
+            )}
 
-        {/* Body: preview + controls (single-card mode) */}
-        <div
-          className={`${mode === "single" ? "grid" : "hidden"} grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]`}
-        >
-          {/* Preview column */}
-          <Board pad={16} className="flex flex-col items-center gap-3">
-            <div className="flex w-full items-center justify-between">
-              <Cap>{VIEW_META[config.view].label}</Cap>
-              <div className="flex items-center gap-2">
-                {/* Account picker — only when the agency has 2+ connected accounts. */}
-                {connectedIntegrations.length > 1 && (
-                  <select
-                    value={selectedIntegration?.id ?? ""}
-                    onChange={(e) => setSelectedIntegrationId(e.target.value)}
-                    disabled={isSample || busy}
-                    className="h-8 max-w-[150px] truncate rounded-md border border-input bg-background px-2 text-xs text-foreground"
-                    title="Which Instagram account to post from"
-                    aria-label="Instagram account to post from"
-                  >
-                    {connectedIntegrations.map((i) => (
-                      <option key={i.id} value={i.id}>
-                        @{i.instagram_username}
-                      </option>
-                    ))}
-                  </select>
+            {/* Body: preview + controls (single-card mode) */}
+            <div
+              className={`${mode === "single" ? "grid" : "hidden"} grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]`}
+            >
+              {/* Preview column */}
+              <Board pad={16} className="flex flex-col items-center gap-3">
+                <div className="flex w-full items-center justify-between">
+                  <Cap>{VIEW_META[config.view].label}</Cap>
+                  <div className="flex items-center gap-2">
+                    {/* Account picker — only when the agency has 2+ connected accounts. */}
+                    {connectedIntegrations.length > 1 && (
+                      <select
+                        value={selectedIntegration?.id ?? ""}
+                        onChange={(e) =>
+                          setSelectedIntegrationId(e.target.value)
+                        }
+                        disabled={isSample || busy}
+                        className="h-8 max-w-[150px] truncate rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                        title="Which Instagram account to post from"
+                        aria-label="Instagram account to post from"
+                      >
+                        {connectedIntegrations.map((i) => (
+                          <option key={i.id} value={i.id}>
+                            @{i.instagram_username}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={handlePostNow}
+                      disabled={isSample || !igConnected || busy}
+                      title={
+                        isSample
+                          ? "Switch to live data to post"
+                          : !igConnected
+                            ? "Connect Instagram in Settings → Integrations"
+                            : "Publish this graphic to your Instagram feed"
+                      }
+                    >
+                      {posting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                      {posting ? "Posting…" : "Post to Instagram"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={openSchedule}
+                      disabled={isSample || !igConnected || busy}
+                      title={
+                        isSample
+                          ? "Switch to live data to schedule"
+                          : !igConnected
+                            ? "Connect Instagram in Settings → Integrations"
+                            : "Schedule this graphic to auto-post later"
+                      }
+                    >
+                      <CalendarClock className="h-4 w-4" /> Schedule
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleDownload}
+                      disabled={isSample || busy}
+                      title={
+                        isSample
+                          ? "Sample preview can't be downloaded — switch to live data first"
+                          : "Download a 1080px PNG"
+                      }
+                    >
+                      <Download className="h-4 w-4" /> Download PNG
+                    </Button>
+                  </div>
+                </div>
+                {scheduleOpen && (
+                  <div className="flex w-full flex-wrap items-center gap-2 rounded-md border border-border bg-secondary/40 p-2">
+                    <label
+                      htmlFor="scheduleAt"
+                      className="text-xs font-medium text-foreground"
+                    >
+                      Publish at
+                    </label>
+                    <input
+                      id="scheduleAt"
+                      type="datetime-local"
+                      value={scheduleAt}
+                      min={toLocalInputValue(new Date())}
+                      onChange={(e) => setScheduleAt(e.target.value)}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                    />
+                    <Button size="sm" onClick={handleSchedule} disabled={busy}>
+                      {scheduling ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CalendarClock className="h-4 w-4" />
+                      )}
+                      {scheduling ? "Scheduling…" : "Schedule post"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="px-2"
+                      onClick={() => setScheduleOpen(false)}
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <span className="text-[11px] text-muted-foreground">
+                      Your local time — it auto-posts to your connected account.
+                    </span>
+                  </div>
                 )}
-                <Button
-                  size="sm"
-                  onClick={handlePostNow}
-                  disabled={isSample || !igConnected || busy}
-                  title={
-                    isSample
-                      ? "Switch to live data to post"
-                      : !igConnected
-                        ? "Connect Instagram in Settings → Integrations"
-                        : "Publish this graphic to your Instagram feed"
+                <SocialPreview
+                  data={shownPage}
+                  format={config.format}
+                  agencyName={agencyName}
+                  network={network}
+                  isSample={isSample}
+                  isLoading={isLoading}
+                  showPolicies={config.showPolicies}
+                  repositionable={!!activePhotoKey && shownHasPhoto}
+                  photoPosition={activeTransform.position}
+                  photoScale={activeTransform.scale}
+                  onPhotoPositionChange={(pos) =>
+                    activePhotoKey &&
+                    setPhotoTransform(activePhotoKey, { position: pos })
                   }
-                >
-                  {posting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  onPhotoScaleChange={(scale) =>
+                    activePhotoKey &&
+                    setPhotoTransform(activePhotoKey, { scale })
+                  }
+                />
+                {/* Off-screen exporter — mounts EVERY slide at full 1080×H for Download/Post. */}
+                <CardExportHost
+                  ref={exportHostRef}
+                  pages={previewPages}
+                  format={config.format}
+                  agencyName={agencyName}
+                  network={network}
+                  showPolicies={config.showPolicies}
+                />
+                <PostConfirmDialog
+                  open={confirmOpen}
+                  onOpenChange={setConfirmOpen}
+                  postType={config.postType}
+                  format={config.format}
+                  data={shownPage}
+                  agencyName={agencyName}
+                  network={network}
+                  showPolicies={config.showPolicies}
+                  handle={selectedIntegration?.instagram_username ?? undefined}
+                  caption={config.caption}
+                  slideCount={pageCount}
+                  posting={posting}
+                  onConfirm={doPost}
+                />
+                {/* Carousel slide navigation — only when the roster spans multiple cards. */}
+                {pageCount > 1 && (
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={shownIndex === 0}
+                      onClick={() => setPageIndex(Math.max(0, shownIndex - 1))}
+                      title="Previous slide"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Prev
+                    </Button>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Slide {shownIndex + 1} of {pageCount}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={shownIndex === pageCount - 1}
+                      onClick={() =>
+                        setPageIndex(Math.min(pageCount - 1, shownIndex + 1))
+                      }
+                      title="Next slide"
+                    >
+                      Next <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                {isSample && !isLoading && (
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    {hasLive
+                      ? `Showing a sample layout — your agency has ${producers.length} producer${producers.length === 1 ? "" : "s"} so far. Turn off "Preview with sample data" to see live numbers.`
+                      : "No live metrics yet — showing a sample layout. Real numbers appear automatically once policies are logged."}
+                  </p>
+                )}
+              </Board>
+
+              {/* Controls column */}
+              <div className="space-y-4">
+                <Board pad={16}>
+                  <Cap style={{ marginBottom: 12 }}>Customize</Cap>
+                  <SocialCustomizer
+                    config={config}
+                    onChange={patch}
+                    onCopyCaption={handleCopyCaption}
+                    onGenerateCaption={handleGenerateCaption}
+                    generatingCaption={generatingCaption}
+                    canUseAi={hasAiAccess}
+                    samplePreview={isSample}
+                    sampleForced={sampleForced}
+                    onSamplePreviewChange={setSampleOverride}
+                    onUploadPhoto={handleUploadPhoto}
+                    onRemovePhoto={handleRemovePhoto}
+                    uploadingPhoto={uploadingPhoto}
+                    onUploadBgImage={handleUploadBgImage}
+                    uploadingBg={uploadingBg}
+                    newAgentPicker={
+                      <NewAgentsSection
+                        agents={newAgents.map((a) => ({
+                          id: a.id,
+                          name: a.name,
+                          photoUrl: a.photoUrl,
+                          createdAt: a.createdAt,
+                          photoCount: a.photos.length,
+                        }))}
+                        featuredIds={featuredAgentIds}
+                        onToggle={toggleFeaturedAgent}
+                        loading={newAgentsLoading}
+                        imoId={imoId}
+                      />
+                    }
+                  />
+                </Board>
+
+                <Board pad={16}>
+                  <Cap style={{ marginBottom: 10 }}>Quick posts</Cap>
+                  <QuickPostsPanel onApply={patch} />
+                </Board>
+
+                <Board pad={16}>
+                  <Cap style={{ marginBottom: 6 }}>Instagram</Cap>
+                  {igConnected ? (
+                    <>
+                      <p className="text-[11px] leading-snug text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {connectedIntegrations.length > 1
+                            ? `${connectedIntegrations.length} accounts connected`
+                            : "Connected"}
+                          {selectedIntegration?.instagram_username
+                            ? ` · posting as @${selectedIntegration.instagram_username}`
+                            : "."}
+                        </span>{" "}
+                        <span className="font-medium text-foreground">
+                          Post
+                        </span>{" "}
+                        publishes now;{" "}
+                        <span className="font-medium text-foreground">
+                          Schedule
+                        </span>{" "}
+                        queues this graphic to auto-post at a time you pick.
+                        {connectedIntegrations.length > 1
+                          ? " Pick which account with the selector by Post."
+                          : ""}
+                      </p>
+                      <div className="mt-3 border-t border-border pt-3">
+                        <Cap style={{ marginBottom: 8 }}>Scheduled posts</Cap>
+                        <ScheduledPostsPanel imoId={postsImoId} />
+                      </div>
+                    </>
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <p className="text-[11px] leading-snug text-muted-foreground">
+                      Connect a{" "}
+                      <span className="font-medium text-foreground">
+                        Business or Creator
+                      </span>{" "}
+                      Instagram account in{" "}
+                      <a
+                        href="/settings?tab=integrations"
+                        className="font-medium text-accent underline"
+                      >
+                        Settings → Integrations
+                      </a>{" "}
+                      to publish or schedule straight from here — a personal
+                      account can't post via the Instagram API.
+                    </p>
                   )}
-                  {posting ? "Posting…" : "Post to Instagram"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={openSchedule}
-                  disabled={isSample || !igConnected || busy}
-                  title={
-                    isSample
-                      ? "Switch to live data to schedule"
-                      : !igConnected
-                        ? "Connect Instagram in Settings → Integrations"
-                        : "Schedule this graphic to auto-post later"
-                  }
-                >
-                  <CalendarClock className="h-4 w-4" /> Schedule
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDownload}
-                  disabled={isSample || busy}
-                  title={
-                    isSample
-                      ? "Sample preview can't be downloaded — switch to live data first"
-                      : "Download a 1080px PNG"
-                  }
-                >
-                  <Download className="h-4 w-4" /> Download PNG
-                </Button>
+                </Board>
               </div>
             </div>
-            {scheduleOpen && (
-              <div className="flex w-full flex-wrap items-center gap-2 rounded-md border border-border bg-secondary/40 p-2">
-                <label
-                  htmlFor="scheduleAt"
-                  className="text-xs font-medium text-foreground"
-                >
-                  Publish at
-                </label>
-                <input
-                  id="scheduleAt"
-                  type="datetime-local"
-                  value={scheduleAt}
-                  min={toLocalInputValue(new Date())}
-                  onChange={(e) => setScheduleAt(e.target.value)}
-                  className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground"
-                />
-                <Button size="sm" onClick={handleSchedule} disabled={busy}>
-                  {scheduling ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <CalendarClock className="h-4 w-4" />
-                  )}
-                  {scheduling ? "Scheduling…" : "Schedule post"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="px-2"
-                  onClick={() => setScheduleOpen(false)}
-                  title="Close"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <span className="text-[11px] text-muted-foreground">
-                  Your local time — it auto-posts to your connected account.
-                </span>
-              </div>
-            )}
-            <SocialPreview
-              data={shownPage}
-              format={config.format}
-              agencyName={agencyName}
-              network={network}
-              isSample={isSample}
-              isLoading={isLoading}
-              showPolicies={config.showPolicies}
-              repositionable={!!activePhotoKey && shownHasPhoto}
-              photoPosition={activeTransform.position}
-              photoScale={activeTransform.scale}
-              onPhotoPositionChange={(pos) =>
-                activePhotoKey &&
-                setPhotoTransform(activePhotoKey, { position: pos })
-              }
-              onPhotoScaleChange={(scale) =>
-                activePhotoKey && setPhotoTransform(activePhotoKey, { scale })
-              }
-            />
-            {/* Off-screen exporter — mounts EVERY slide at full 1080×H for Download/Post. */}
-            <CardExportHost
-              ref={exportHostRef}
-              pages={previewPages}
-              format={config.format}
-              agencyName={agencyName}
-              network={network}
-              showPolicies={config.showPolicies}
-            />
-            <PostConfirmDialog
-              open={confirmOpen}
-              onOpenChange={setConfirmOpen}
-              postType={config.postType}
-              format={config.format}
-              data={shownPage}
-              agencyName={agencyName}
-              network={network}
-              showPolicies={config.showPolicies}
-              handle={selectedIntegration?.instagram_username ?? undefined}
-              caption={config.caption}
-              slideCount={pageCount}
-              posting={posting}
-              onConfirm={doPost}
-            />
-            {/* Carousel slide navigation — only when the roster spans multiple cards. */}
-            {pageCount > 1 && (
-              <div className="flex items-center justify-center gap-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={shownIndex === 0}
-                  onClick={() => setPageIndex(Math.max(0, shownIndex - 1))}
-                  title="Previous slide"
-                >
-                  <ChevronLeft className="h-4 w-4" /> Prev
-                </Button>
-                <span className="text-xs font-medium text-muted-foreground">
-                  Slide {shownIndex + 1} of {pageCount}
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={shownIndex === pageCount - 1}
-                  onClick={() =>
-                    setPageIndex(Math.min(pageCount - 1, shownIndex + 1))
-                  }
-                  title="Next slide"
-                >
-                  Next <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            {isSample && !isLoading && (
-              <p className="text-center text-[11px] text-muted-foreground">
-                {hasLive
-                  ? `Showing a sample layout — your agency has ${producers.length} producer${producers.length === 1 ? "" : "s"} so far. Turn off "Preview with sample data" to see live numbers.`
-                  : "No live metrics yet — showing a sample layout. Real numbers appear automatically once policies are logged."}
-              </p>
-            )}
-          </Board>
 
-          {/* Controls column */}
-          <div className="space-y-4">
-            <Board pad={16}>
-              <Cap style={{ marginBottom: 12 }}>Customize</Cap>
-              <SocialCustomizer
+            {/* Template library — save the current style, pick a starter or saved one. */}
+            <Board pad={16} className="mt-4">
+              <Cap style={{ marginBottom: 12 }}>Template library</Cap>
+              <SocialLibrary
                 config={config}
-                onChange={patch}
-                onCopyCaption={handleCopyCaption}
-                onGenerateCaption={handleGenerateCaption}
-                generatingCaption={generatingCaption}
-                canUseAi={hasAiAccess}
-                samplePreview={isSample}
-                sampleForced={sampleForced}
-                onSamplePreviewChange={setSampleOverride}
-                onUploadPhoto={handleUploadPhoto}
-                onRemovePhoto={handleRemovePhoto}
-                uploadingPhoto={uploadingPhoto}
-                onUploadBgImage={handleUploadBgImage}
-                uploadingBg={uploadingBg}
-                newAgentPicker={
-                  <NewAgentsSection
-                    agents={newAgents.map((a) => ({
-                      id: a.id,
-                      name: a.name,
-                      photoUrl: a.photoUrl,
-                      createdAt: a.createdAt,
-                      photoCount: a.photos.length,
-                    }))}
-                    featuredIds={featuredAgentIds}
-                    onToggle={toggleFeaturedAgent}
-                    loading={newAgentsLoading}
-                    imoId={imoId}
-                  />
+                // Pre-clear per-post fields so applying a template that lacks them resets
+                // a stale value (background image + leaderboard headline); the spread then
+                // restores whatever the template DOES specify. Caption is left untouched
+                // (it's stripped from templates entirely — never per-post-clobbered).
+                onApply={(c) =>
+                  patch({
+                    aowBgImageUrl: null,
+                    title: undefined,
+                    ...c,
+                    // Migrate legacy templates (aowDesign/theme) → cardTheme on apply so an
+                    // old saved template restores its look instead of keeping the current one.
+                    cardTheme: resolveTemplateTheme(c),
+                  })
                 }
+                agencyName={agencyName}
+                network={network}
+                imoId={imoId}
+                agencyId={agencyId}
               />
             </Board>
-
-            <Board pad={16}>
-              <Cap style={{ marginBottom: 10 }}>Quick posts</Cap>
-              <QuickPostsPanel onApply={patch} />
-            </Board>
-
-            <Board pad={16}>
-              <Cap style={{ marginBottom: 6 }}>Instagram</Cap>
-              {igConnected ? (
-                <>
-                  <p className="text-[11px] leading-snug text-muted-foreground">
-                    <span className="font-medium text-foreground">
-                      {connectedIntegrations.length > 1
-                        ? `${connectedIntegrations.length} accounts connected`
-                        : "Connected"}
-                      {selectedIntegration?.instagram_username
-                        ? ` · posting as @${selectedIntegration.instagram_username}`
-                        : "."}
-                    </span>{" "}
-                    <span className="font-medium text-foreground">Post</span>{" "}
-                    publishes now;{" "}
-                    <span className="font-medium text-foreground">
-                      Schedule
-                    </span>{" "}
-                    queues this graphic to auto-post at a time you pick.
-                    {connectedIntegrations.length > 1
-                      ? " Pick which account with the selector by Post."
-                      : ""}
-                  </p>
-                  <div className="mt-3 border-t border-border pt-3">
-                    <Cap style={{ marginBottom: 8 }}>Scheduled posts</Cap>
-                    <ScheduledPostsPanel imoId={postsImoId} />
-                  </div>
-                </>
-              ) : (
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  Connect a{" "}
-                  <span className="font-medium text-foreground">
-                    Business or Creator
-                  </span>{" "}
-                  Instagram account in{" "}
-                  <a
-                    href="/settings?tab=integrations"
-                    className="font-medium text-accent underline"
-                  >
-                    Settings → Integrations
-                  </a>{" "}
-                  to publish or schedule straight from here — a personal account
-                  can't post via the Instagram API.
-                </p>
-              )}
-            </Board>
-          </div>
-        </div>
-
-        {/* Template library — save the current style, pick a starter or saved one. */}
-        <Board pad={16} className="mt-4">
-          <Cap style={{ marginBottom: 12 }}>Template library</Cap>
-          <SocialLibrary
-            config={config}
-            // Pre-clear per-post fields so applying a template that lacks them resets
-            // a stale value (background image + leaderboard headline); the spread then
-            // restores whatever the template DOES specify. Caption is left untouched
-            // (it's stripped from templates entirely — never per-post-clobbered).
-            onApply={(c) =>
-              patch({
-                aowBgImageUrl: null,
-                title: undefined,
-                ...c,
-                // Migrate legacy templates (aowDesign/theme) → cardTheme on apply so an
-                // old saved template restores its look instead of keeping the current one.
-                cardTheme: resolveTemplateTheme(c),
-              })
-            }
-            agencyName={agencyName}
-            network={network}
-            imoId={imoId}
-            agencyId={agencyId}
-          />
-        </Board>
+          </>
+        )}
       </div>
     </SectionShell>
   );

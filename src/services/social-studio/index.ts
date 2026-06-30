@@ -71,6 +71,12 @@ export {
 } from "./agentWelcomeService";
 export { listNewAgents, type NewAgentRow } from "./newAgentsService";
 export {
+  createReelJob,
+  getReelJobs,
+  getReelClips,
+  downloadReelClip,
+} from "./reelService";
+export {
   listAgentPhotos,
   addAgentPhoto,
   removeAgentPhoto as removeAgentPhotoRow,

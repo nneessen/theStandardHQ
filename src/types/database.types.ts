@@ -10208,6 +10208,112 @@ export type Database = {
           },
         ];
       };
+      reel_clips: {
+        Row: {
+          created_at: string;
+          duration_ms: number | null;
+          id: string;
+          job_id: string;
+          source_url: string | null;
+          stored_url: string | null;
+          title: string | null;
+          transcript: string | null;
+          viral_reason: string | null;
+          viral_score: number | null;
+          vizard_video_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          duration_ms?: number | null;
+          id?: string;
+          job_id: string;
+          source_url?: string | null;
+          stored_url?: string | null;
+          title?: string | null;
+          transcript?: string | null;
+          viral_reason?: string | null;
+          viral_score?: number | null;
+          vizard_video_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          duration_ms?: number | null;
+          id?: string;
+          job_id?: string;
+          source_url?: string | null;
+          stored_url?: string | null;
+          title?: string | null;
+          transcript?: string | null;
+          viral_reason?: string | null;
+          viral_score?: number | null;
+          vizard_video_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reel_clips_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "reel_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reel_jobs: {
+        Row: {
+          claim_token: string | null;
+          claimed_at: string | null;
+          clip_count: number;
+          created_at: string;
+          created_by: string;
+          error: string | null;
+          id: string;
+          imo_id: string;
+          params: Json;
+          source_url: string;
+          status: string;
+          updated_at: string;
+          vizard_project_id: string | null;
+        };
+        Insert: {
+          claim_token?: string | null;
+          claimed_at?: string | null;
+          clip_count?: number;
+          created_at?: string;
+          created_by: string;
+          error?: string | null;
+          id?: string;
+          imo_id: string;
+          params?: Json;
+          source_url: string;
+          status?: string;
+          updated_at?: string;
+          vizard_project_id?: string | null;
+        };
+        Update: {
+          claim_token?: string | null;
+          claimed_at?: string | null;
+          clip_count?: number;
+          created_at?: string;
+          created_by?: string;
+          error?: string | null;
+          id?: string;
+          imo_id?: string;
+          params?: Json;
+          source_url?: string;
+          status?: string;
+          updated_at?: string;
+          vizard_project_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reel_jobs_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       roadmap_item_progress: {
         Row: {
           agency_id: string;

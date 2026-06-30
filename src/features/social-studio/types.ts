@@ -18,7 +18,8 @@ export type SocialView =
   | "monthly"
   | "aotw"
   | "newagent"
-  | "recruiting";
+  | "recruiting"
+  | "reels";
 
 /** The welcome-card designs + their picker labels — the single source shared by the
  *  customizer and the welcome-review queue (no per-file drift). */
@@ -224,6 +225,11 @@ export const VIEW_META: Record<
   recruiting: {
     label: "Recruiting",
     blurb: "Attract agents — quality-of-life templates",
+    period: "weekly",
+  },
+  reels: {
+    label: "Reels",
+    blurb: "Turn a YouTube video into vertical highlight clips",
     period: "weekly",
   },
 };
