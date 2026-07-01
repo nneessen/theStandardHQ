@@ -26,6 +26,17 @@ export async function createReelJob(input: {
   return { jobId: data.jobId };
 }
 
+/**
+ * Cancel/dismiss a reel job (and its clips, via FK cascade) through the
+ * cancel-reel edge function. Works whether the job is processing, ready, or failed.
+ */
+export async function cancelReelJob(jobId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke("cancel-reel", {
+    body: { jobId },
+  });
+  if (error) throw new Error(error.message || "Couldn't cancel the job.");
+}
+
 /** All reel jobs for this agency, newest first. RLS-scoped by imo_id. */
 export async function getReelJobs(imoId: string): Promise<ReelJob[]> {
   const { data, error } = await supabase
