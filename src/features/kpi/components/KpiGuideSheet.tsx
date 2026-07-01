@@ -41,7 +41,7 @@ const SECTIONS: GuideItem[] = [
   },
   {
     title: "Call Length Distribution",
-    body: "How long calls run (0–2m / 2–5m / 5–10m / 10m+) and the closing rate within each bucket, so you can see whether longer conversations close.",
+    body: "How long calls run (< 30m / 30–45m / 45–60m / 60m+) and the closing rate within each bucket, so you can see whether longer conversations close.",
   },
   {
     title: "Word-Track Effectiveness",

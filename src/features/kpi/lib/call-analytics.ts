@@ -177,10 +177,10 @@ const OUTCOME_ORDER = CALL_OUTCOME_OPTIONS.map((o) => o.value as string);
 
 /** Length buckets, in display order. Upper bound is exclusive (seconds). */
 export const LENGTH_BUCKETS: ReadonlyArray<{ label: string; max: number }> = [
-  { label: "0–2m", max: 120 },
-  { label: "2–5m", max: 300 },
-  { label: "5–10m", max: 600 },
-  { label: "10m+", max: Infinity },
+  { label: "< 30m", max: 1800 },
+  { label: "30–45m", max: 2700 },
+  { label: "45–60m", max: 3600 },
+  { label: "60m+", max: Infinity },
 ];
 
 export function rate(sold: number, calls: number): number {

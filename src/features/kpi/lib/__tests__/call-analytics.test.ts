@@ -172,17 +172,41 @@ describe("aggregateCallAnalytics", () => {
 
   it("byLengthBucket always returns the 4 buckets, bucketed by duration", () => {
     expect(a.byLengthBucket.map((b) => b.label)).toEqual([
-      "0–2m",
-      "2–5m",
-      "5–10m",
-      "10m+",
+      "< 30m",
+      "30–45m",
+      "45–60m",
+      "60m+",
     ]);
     const byLabel = Object.fromEntries(
       a.byLengthBucket.map((b) => [b.label, b]),
     );
-    expect(byLabel["0–2m"]).toMatchObject({ count: 2, sold: 1 }); // r1(100), r6(90)
-    expect(byLabel["5–10m"]).toMatchObject({ count: 1, sold: 1 }); // r3(400)
-    expect(byLabel["10m+"]).toMatchObject({ count: 1, sold: 1 }); // r4(700)
+    // Every fixture call (90–700s) is under 30m, so all land in the first bucket.
+    expect(byLabel["< 30m"]).toMatchObject({ count: 5, sold: 3 }); // r1,r2,r3,r4,r6
+    expect(byLabel["30–45m"]).toMatchObject({ count: 0, sold: 0 });
+    expect(byLabel["45–60m"]).toMatchObject({ count: 0, sold: 0 });
+    expect(byLabel["60m+"]).toMatchObject({ count: 0, sold: 0 });
+  });
+
+  it("byLengthBucket splits on the 30/45/60-minute boundaries (upper bound exclusive)", () => {
+    const rows = [
+      rec({ id: "b1", duration_seconds: 1799, outcome: "sold" }), // < 30m
+      rec({ id: "b2", duration_seconds: 1800 }), // 30–45m (upper bound exclusive)
+      rec({ id: "b3", duration_seconds: 2699 }), // 30–45m
+      rec({ id: "b4", duration_seconds: 2700 }), // 45–60m
+      rec({ id: "b5", duration_seconds: 3599 }), // 45–60m
+      rec({ id: "b6", duration_seconds: 3600 }), // 60m+
+      rec({ id: "b7", duration_seconds: 5400 }), // 60m+
+    ];
+    const byLabel = Object.fromEntries(
+      aggregateCallAnalytics(rows, new Map()).byLengthBucket.map((b) => [
+        b.label,
+        b,
+      ]),
+    );
+    expect(byLabel["< 30m"]).toMatchObject({ count: 1, sold: 1 });
+    expect(byLabel["30–45m"]).toMatchObject({ count: 2 });
+    expect(byLabel["45–60m"]).toMatchObject({ count: 2 });
+    expect(byLabel["60m+"]).toMatchObject({ count: 2 });
   });
 
   it("byAgent is ranked by closing rate, sums policies/premium, resolves names + fallback", () => {
