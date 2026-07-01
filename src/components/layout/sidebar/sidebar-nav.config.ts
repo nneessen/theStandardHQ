@@ -178,7 +178,7 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
       },
       {
         icon: FileCheck,
-        label: "Underwriting Guides",
+        label: "Guides",
         href: "/underwriting/guides",
         // Shared per-carrier library of underwriting guide PDFs. Open to every
         // approved agent (view); admins upload. IMO-scoped via RLS; recruits
