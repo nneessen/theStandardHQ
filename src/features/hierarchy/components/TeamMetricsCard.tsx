@@ -97,9 +97,6 @@ export function TeamMetricsCard({
   const teamAPTotal = stats?.team_ap_total || 0;
   const teamIPTotal = stats?.team_ip_total || 0;
   const teamPoliciesMTD = stats?.team_policies_count || 0;
-  const avgPremiumPerAgent = stats?.avg_premium_per_agent || 0;
-  const _topPerformerName = stats?.top_performer_name || "No data";
-  const topPerformerAmount = stats?.top_performer_ap || 0;
   const recruitmentRate = stats?.recruitment_rate || 0;
   const retentionRate = stats?.retention_rate || 0;
   const _avgContractLevel = stats?.avg_contract_level || 0;
@@ -125,41 +122,43 @@ export function TeamMetricsCard({
   const teamYearlyProjected = stats?.team_yearly_projected || 0;
 
   return (
-    <Board pad={20}>
-      <Cap style={{ marginBottom: 14 }}>Team Metrics</Cap>
+    <Board pad={16}>
+      <Cap style={{ marginBottom: 12 }}>Team Metrics</Cap>
+      {/* Compact vertical rail — one metric per row, sized for the ~20rem
+          side column next to the team table. */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 150px), 1fr))",
-          gap: 10,
+          gridTemplateColumns: "1fr",
+          gap: 8,
         }}
       >
         <FlapTile
+          sm
           label={`Team AP ${periodSuffix}`}
           value={formatCurrency(teamAPTotal)}
           tone="blue"
         />
         <FlapTile
+          sm
           label="Team IP"
           value={formatCurrency(teamIPTotal)}
           tone="blue"
         />
         <FlapTile
+          sm
           label={`Policies ${periodSuffix}`}
           value={String(teamPoliciesMTD)}
         />
         <FlapTile
-          label="Avg Premium/Agent"
-          value={formatCurrency(avgPremiumPerAgent)}
-        />
-        <FlapTile
+          sm
           label="Pending AP"
           value={formatCurrency(teamPendingAP)}
           tone="amber"
         />
-        <FlapTile label="QTD Override" value={formatCurrency(qtdOverride)} />
+        <FlapTile sm label="QTD Override" value={formatCurrency(qtdOverride)} />
         <FlapTile
+          sm
           label="Retention"
           value={formatPercent(retentionRate)}
           tone={
@@ -167,6 +166,7 @@ export function TeamMetricsCard({
           }
         />
         <FlapTile
+          sm
           label="Recruitment"
           value={formatPercent(recruitmentRate)}
           tone={
@@ -177,12 +177,7 @@ export function TeamMetricsCard({
                 : "red"
           }
         />
-        <FlapTile
-          label="Top Performer AP"
-          value={formatCurrency(topPerformerAmount)}
-          tone="green"
-        />
-        <FlapTile label="Active Agents" value={String(agentCount)} />
+        <FlapTile sm label="Active Agents" value={String(agentCount)} />
       </div>
 
       {/* Team Pace Section - Monthly & Yearly */}
@@ -194,8 +189,8 @@ export function TeamMetricsCard({
               <div className="text-[12px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                 Monthly Pace
               </div>
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-4 text-[12px]">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1 text-[12px]">
                   <div title="Sum of all team members' monthly AP targets (yearly target ÷ 12)">
                     <span className="text-v2-ink-muted">Target: </span>
                     <span className="font-mono font-semibold text-v2-ink">
@@ -247,8 +242,8 @@ export function TeamMetricsCard({
               <div className="text-[12px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                 Yearly Pace
               </div>
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-4 text-[12px]">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1 text-[12px]">
                   <div title="Sum of all team members' yearly AP targets (policies/yr × avg premium)">
                     <span className="text-v2-ink-muted">Target: </span>
                     <span className="font-mono font-semibold text-v2-ink">

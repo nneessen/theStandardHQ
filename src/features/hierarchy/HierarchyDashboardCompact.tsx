@@ -266,7 +266,7 @@ export function HierarchyDashboardCompact() {
               className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 overflow-x-auto"
             >
               <div className="text-[11px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] shrink-0">
-                Team metrics
+                Timeframe
               </div>
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
                 <TimePeriodSwitcher
@@ -286,55 +286,64 @@ export function HierarchyDashboardCompact() {
               </div>
             </SoftCard>
 
-            {/* Team Metrics Card */}
-            <TeamMetricsCard
-              stats={stats}
-              agentCount={downlines.length}
-              isLoading={isLoading}
-              isError={hasError}
-              onRetry={refetchStats}
-              timePeriod={timePeriod}
-            />
+            {/* Team production + metrics — the table is the primary focus on
+                the LEFT; team metrics become a compact rail on the RIGHT.
+                Stacks to table-on-top on narrow (<lg) screens. */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem] gap-3 items-start">
+              {/* LEFT — production toggle + table (ONE table at a time: AP
+                  submissions vs IP issued, toggled) */}
+              <div className="flex flex-col gap-2 min-w-0">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
+                    <Cap>Team Production</Cap>
+                    <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
+                      {teamTableView === "submissions"
+                        ? "All submissions by submit date · Annual Premium"
+                        : "Active issued policies only · Issued Premium"}
+                    </span>
+                  </div>
+                  <PillNav
+                    size="sm"
+                    activeValue={teamTableView}
+                    onChange={(v) =>
+                      setTeamTableView(v as "submissions" | "issued")
+                    }
+                    items={[
+                      { label: "Submissions · AP", value: "submissions" },
+                      { label: "Issued · IP", value: "issued" },
+                    ]}
+                  />
+                </div>
 
-            {/* Team production — ONE table at a time (AP submissions vs IP
-                issued), toggled, so they don't stack as confusing duplicates. */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Cap>Team Production</Cap>
-                <span style={{ font: `500 12px ${T.data}`, color: T.mut }}>
-                  {teamTableView === "submissions"
-                    ? "All submissions by submit date · Annual Premium"
-                    : "Active issued policies only · Issued Premium"}
-                </span>
+                {teamTableView === "submissions" ? (
+                  <AgentTable
+                    agents={downlines}
+                    owner={owner}
+                    isLoading={isLoading}
+                    dateRange={{ start: startDate, end: endDate }}
+                  />
+                ) : (
+                  <IssuedPremiumTable
+                    agents={downlines}
+                    owner={owner}
+                    isLoading={isLoading}
+                    dateRange={{ start: startDate, end: endDate }}
+                  />
+                )}
               </div>
-              <PillNav
-                size="sm"
-                activeValue={teamTableView}
-                onChange={(v) =>
-                  setTeamTableView(v as "submissions" | "issued")
-                }
-                items={[
-                  { label: "Submissions · AP", value: "submissions" },
-                  { label: "Issued · IP", value: "issued" },
-                ]}
+
+              {/* RIGHT — compact team-metrics rail */}
+              <TeamMetricsCard
+                stats={stats}
+                agentCount={downlines.length}
+                isLoading={isLoading}
+                isError={hasError}
+                onRetry={refetchStats}
+                timePeriod={timePeriod}
               />
             </div>
-
-            {teamTableView === "submissions" ? (
-              <AgentTable
-                agents={downlines}
-                owner={owner}
-                isLoading={isLoading}
-                dateRange={{ start: startDate, end: endDate }}
-              />
-            ) : (
-              <IssuedPremiumTable
-                agents={downlines}
-                owner={owner}
-                isLoading={isLoading}
-                dateRange={{ start: startDate, end: endDate }}
-              />
-            )}
 
             {/* Team Analytics Dashboard - Premium Feature (Team tier or Owner) */}
             {downlines.length > 0 && canViewTeamAnalytics && (

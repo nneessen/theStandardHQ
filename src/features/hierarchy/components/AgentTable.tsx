@@ -19,7 +19,6 @@ import {
   RotateCcw,
   KeyRound,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -216,7 +215,6 @@ function AgentRow({
   isExpanded,
   onToggle,
   hasChildren,
-  uplineContractLevel,
   onRemove,
   onDelete,
   onEdit,
@@ -232,7 +230,6 @@ function AgentRow({
   isExpanded: boolean;
   onToggle: () => void;
   hasChildren: boolean;
-  uplineContractLevel: number | null;
   onRemove: (agent: AgentWithMetrics) => void;
   onDelete: (agent: AgentWithMetrics) => void;
   onEdit: (agent: AgentWithMetrics) => void;
@@ -261,54 +258,6 @@ function AgentRow({
     override_pending: 0,
   };
 
-  // Calculate real override spread
-  // If viewing from upline's perspective: spread = upline level - agent level
-  // For the agent row, we're showing what the upline earns from this agent
-  const agentContractLevel = agent.contract_level || 100; // Default to 100%
-
-  // Only calculate override if we have the viewer's contract level
-  // If uplineContractLevel is null/undefined, we can't calculate a valid override
-  const overrideSpread = !uplineContractLevel
-    ? 0
-    : uplineContractLevel > agentContractLevel
-      ? uplineContractLevel - agentContractLevel
-      : 0;
-
-  // Determine status display based on actual fields
-  const getStatusDisplay = () => {
-    // Approved agents always show their contract level, regardless of onboarding phase
-    if (agent.approval_status === "approved") {
-      return {
-        label: `Level ${agent.contract_level || 100}`,
-        className: "bg-success/10 text-success",
-      };
-    }
-    // Non-approved: show onboarding phase if available
-    if (agent.current_onboarding_phase) {
-      return {
-        label: agent.current_onboarding_phase,
-        className: "bg-info/10 text-info",
-      };
-    }
-    switch (agent.approval_status) {
-      case "pending":
-        return {
-          label: "Pending Approval",
-          className: "bg-warning/10 text-warning",
-        };
-      case "denied":
-        return {
-          label: "Denied",
-          className: "bg-destructive/10 text-destructive",
-        };
-      default:
-        return {
-          label: agent.onboarding_status || "Unknown",
-          className: "bg-muted/10 text-muted-foreground",
-        };
-    }
-  };
-
   const handleViewDetails = () => {
     navigate({
       to: "/hierarchy/agent/$agentId",
@@ -325,10 +274,8 @@ function AgentRow({
     toast.success("Message functionality coming soon");
   };
 
-  const statusDisplay = getStatusDisplay();
-
   return (
-    <tr className="h-9 transition-colors hover:bg-background border-b border-border/60">
+    <tr className="h-9 transition-colors even:bg-muted/20 hover:bg-background">
       {/* Agent Name with Hierarchy */}
       <td className="px-2 py-1.5 text-[12px] text-foreground">
         <div
@@ -373,18 +320,6 @@ function AgentRow({
         </div>
       </td>
 
-      {/* Phase/Status */}
-      <td className="px-2 py-1.5 text-[12px]">
-        <span
-          className={cn(
-            "inline-block px-1.5 py-0.5 rounded text-[11px] font-medium",
-            statusDisplay.className,
-          )}
-        >
-          {statusDisplay.label}
-        </span>
-      </td>
-
       {/* Total AP (All Submissions) */}
       <td className="px-2 py-1.5 text-right text-[12px] font-mono">
         {total_ap > 0 ? (
@@ -413,15 +348,6 @@ function AgentRow({
           <span className="font-semibold text-foreground">{mtd_policies}</span>
         ) : (
           <span className="text-muted-foreground">0</span>
-        )}
-      </td>
-
-      {/* Override Spread % */}
-      <td className="px-2 py-1.5 text-center text-[12px] font-mono">
-        {overrideSpread > 0 ? (
-          <span className="font-medium text-success">{overrideSpread}%</span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
         )}
       </td>
 
@@ -565,7 +491,7 @@ export function AgentTable({
   const setMemberAccess = useSetMemberAccess();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // BATCH METRICS: State for all agent metrics (fetched once for all agents)
   const [metricsMap, setMetricsMap] = useState<Map<string, AgentMetrics>>(
@@ -575,7 +501,6 @@ export function AgentTable({
 
   // Get current user's contract level for override calculation using standard hook
   const { data: currentUserProfile } = useCurrentUserProfile();
-  const viewerContractLevel = currentUserProfile?.contract_level ?? null;
   const viewerId = currentUserProfile?.id;
 
   // Agent IDs for batch fetching (include owner if present)
@@ -787,18 +712,15 @@ export function AgentTable({
   };
 
   // Recursively render agents with their children
-  // Pass parent's contract level through hierarchy for correct spread calculation
   const renderAgentRows = (
     agentList: AgentWithMetrics[],
     depth = 0,
-    parentContractLevel: number | null = viewerContractLevel,
   ): React.ReactElement[] => {
     const rows: React.ReactElement[] = [];
 
     agentList.forEach((agent) => {
       const children = childrenMap.get(agent.id) || [];
       const isExpanded = expandedAgents.has(agent.id);
-      const agentContractLevel = agent.contract_level || 100;
 
       rows.push(
         <AgentRow
@@ -808,7 +730,6 @@ export function AgentTable({
           isExpanded={isExpanded}
           onToggle={() => toggleExpanded(agent.id)}
           hasChildren={children.length > 0}
-          uplineContractLevel={parentContractLevel}
           onRemove={setAgentToRemove}
           onDelete={setAgentToDelete}
           onEdit={setAgentToEdit}
@@ -822,8 +743,7 @@ export function AgentTable({
       );
 
       if (isExpanded && children.length > 0) {
-        // Pass THIS agent's contract level to their children
-        rows.push(...renderAgentRows(children, depth + 1, agentContractLevel));
+        rows.push(...renderAgentRows(children, depth + 1));
       }
     });
 
@@ -840,9 +760,6 @@ export function AgentTable({
                 <th className="px-2 py-1.5 text-left text-[12px] font-semibold text-muted-foreground">
                   Agent
                 </th>
-                <th className="px-2 py-1.5 text-left text-[12px] font-semibold text-muted-foreground">
-                  Status
-                </th>
                 <th className="px-2 py-1.5 text-right text-[12px] font-semibold text-muted-foreground">
                   Total AP
                 </th>
@@ -852,9 +769,6 @@ export function AgentTable({
                 <th className="px-2 py-1.5 text-center text-[12px] font-semibold text-muted-foreground">
                   Policies
                 </th>
-                <th className="px-2 py-1.5 text-center text-[12px] font-semibold text-muted-foreground">
-                  Spread
-                </th>
                 <th className="px-2 py-1.5 text-right text-[12px] font-semibold text-muted-foreground">
                   Override
                 </th>
@@ -863,10 +777,10 @@ export function AgentTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/60">
+            <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8">
+                  <td colSpan={6} className="text-center py-8">
                     <div className="text-[12px] text-muted-foreground">
                       Loading team members...
                     </div>
@@ -874,7 +788,7 @@ export function AgentTable({
                 </tr>
               ) : agentsToDisplay.length === 0 && !owner ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8">
+                  <td colSpan={6} className="text-center py-8">
                     <div className="flex flex-col items-center gap-1">
                       <UserX className="h-6 w-6 text-muted-foreground" />
                       <span className="text-[12px] text-muted-foreground">
@@ -897,7 +811,6 @@ export function AgentTable({
                       isExpanded={false}
                       onToggle={() => {}}
                       hasChildren={false}
-                      uplineContractLevel={null}
                       onRemove={() => {}}
                       onDelete={() => {}}
                       onEdit={() => {}}

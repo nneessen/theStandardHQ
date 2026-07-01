@@ -135,7 +135,7 @@ function IPRow({
   };
 
   return (
-    <tr className="h-9 transition-colors hover:bg-background border-b border-border/60">
+    <tr className="h-9 transition-colors even:bg-muted/20 hover:bg-background">
       {/* Agent Name with Hierarchy */}
       <td className="px-2 py-1.5 text-[12px] text-foreground">
         <div
@@ -220,7 +220,7 @@ export function IssuedPremiumTable({
     new Map(),
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { data: currentUserProfile } = useCurrentUserProfile();
   const viewerId = currentUserProfile?.id;
@@ -368,7 +368,7 @@ export function IssuedPremiumTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/60">
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-8">
