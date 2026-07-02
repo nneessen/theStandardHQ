@@ -105,7 +105,11 @@ export function CompTable({ data, isLoading, error }: CompTableProps) {
   };
 
   const formatCommissionRate = (rate: number) => {
-    return `${rate.toFixed(2)}%`;
+    // comp_guide.commission_percentage is stored as a FRACTION (0.80 = 80%),
+    // same as RateEditDialog / usePolicyCommission which multiply by 100 for
+    // display. Rendering it raw showed a seeded 0.80 as "0.80%" (looks empty).
+    const pct = Math.round(rate * 100 * 100) / 100;
+    return `${Number.isInteger(pct) ? pct : pct.toFixed(2)}%`;
   };
 
   const renderPagination = () => {
