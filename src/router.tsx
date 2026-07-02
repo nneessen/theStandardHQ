@@ -428,32 +428,49 @@ const botHealthRoute = createRoute({
 const hierarchyIndexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "hierarchy",
-  component: () => (
+  // Optional ?tab= deep-links the Team page (production | analytics | members).
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
+  component: HierarchyIndexRouteComponent,
+});
+
+function HierarchyIndexRouteComponent() {
+  const { tab } = hierarchyIndexRoute.useSearch();
+  return (
     <RouteGuard
       permission="nav.team_dashboard"
       noRecruits
       noStaffRoles
       subscriptionFeature="hierarchy"
     >
-      <HierarchyDashboardCompact />
+      <HierarchyDashboardCompact initialTab={tab} />
     </RouteGuard>
-  ),
-});
+  );
+}
 
 const hierarchyTreeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "hierarchy/tree",
-  component: () => (
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
+  component: HierarchyTreeRouteComponent,
+});
+
+function HierarchyTreeRouteComponent() {
+  const { tab } = hierarchyTreeRoute.useSearch();
+  return (
     <RouteGuard
       permission="nav.team_dashboard"
       noRecruits
       noStaffRoles
       subscriptionFeature="hierarchy"
     >
-      <HierarchyDashboardCompact />
+      <HierarchyDashboardCompact initialTab={tab} />
     </RouteGuard>
-  ),
-});
+  );
+}
 
 const hierarchyOverridesRoute = createRoute({
   getParentRoute: () => rootRoute,

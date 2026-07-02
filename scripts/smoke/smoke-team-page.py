@@ -2,19 +2,23 @@
 """
 Render + layout smoke for the Team page (/hierarchy). READ-ONLY: logs in with
 the .env.local creds, loads the page, captures console + page errors, asserts
-the reorganized layout, and screenshots. Does NOT create/modify any data or
+the redesigned layout, and screenshots. Does NOT create/modify any data or
 touch the auth account.
 
-Context: the Team page was reorganized (table-first, two-column):
-  1. The production table moved into a LEFT column; Team Metrics became a
-     compact rail on the RIGHT (grid-cols-[minmax(0,1fr)_20rem], stacks <lg).
-  2. AgentTable (Submissions · AP) dropped the "Status" and "Spread" columns —
-     remaining headers: Agent, Total AP, Pending, Policies, Override, Actions.
-  3. Both tables default to 10 rows per page (was 5) and are borderless
-     (no horizontal row lines; soft even-row zebra instead).
+Context: the Team page was redesigned (pace-hero + KPI strip + tabbed content):
+  1. A full-width TEAM PACE hero sits at the top, ALWAYS visible — Monthly +
+     Yearly pace panels ("MONTHLY PACE"/"YEARLY PACE").
+  2. Below it a horizontal KPI strip (8 tiles) replaces the old vertical rail —
+     includes real "Override MTD" and "Avg Premium / Agent" (the old rail's fake
+     "QTD Override" is gone).
+  3. The heavy sections live behind an underline tab bar (Production /
+     Analytics / Members & Activity); the active tab is mirrored to ?tab=.
+  4. Production tab: AgentTable (Submissions · AP) still drops "Status"/"Spread"
+     (headers: Agent, Total AP, Pending, Policies, Override, Actions), defaults
+     to 10 rows, and is borderless. Submissions↔Issued toggle preserved.
 
-This smoke proves the page still renders with zero JS errors AND that the new
-layout/columns are actually in the DOM (tsc/build can't see rendered layout).
+This smoke proves the page renders with zero JS errors AND that the new
+layout/tabs are actually in the DOM (tsc/build can't see rendered layout).
 
 Usage:
     set -a; source .env.local; set +a
@@ -112,7 +116,7 @@ def main() -> int:
             page.goto(
                 f"{BASE}/hierarchy", wait_until="networkidle", timeout=30_000
             )
-            page.wait_for_selector("text=Team Production", timeout=20_000)
+            page.wait_for_selector("text=Team Pace", timeout=20_000)
             page.wait_for_timeout(2500)  # let /hierarchy data settle
             if not page.url.rstrip("/").endswith("/hierarchy"):
                 problems.append(f"redirected away from /hierarchy → {page.url}")
@@ -120,10 +124,40 @@ def main() -> int:
             # test from here on.
             errors.clear()
 
-            # ── AP table headers: Status + Spread gone, expected set present ─
-            ap_table = page.locator(
-                'table:has(th:has-text("Total AP"))'
-            ).first
+            # ── Pace hero: Monthly + Yearly pace present, always on top ──────
+            pace_missing = [
+                lbl
+                for lbl in ("MONTHLY PACE", "YEARLY PACE")
+                if page.get_by_text(lbl, exact=False).count() == 0
+            ]
+            for lbl in pace_missing:
+                problems.append(f"pace hero missing '{lbl}' panel")
+            if not pace_missing:
+                print("  ✓ pace hero shows Monthly + Yearly pace")
+
+            # ── KPI strip: real Override MTD + Avg Premium / Agent tiles ─────
+            strip_missing = [
+                tile
+                for tile in ("Override MTD", "Avg Premium / Agent")
+                if page.get_by_text(tile, exact=False).count() == 0
+            ]
+            for tile in strip_missing:
+                problems.append(f"KPI strip missing '{tile}' tile")
+            if not strip_missing:
+                print("  ✓ KPI strip present (Override MTD, Avg Premium/Agent)")
+
+            # ── Tab bar: Production + Members & Activity destinations ────────
+            prod_btn = page.get_by_role("button", name=re.compile("Production"))
+            members_btn = page.get_by_role("button", name=re.compile("Members"))
+            if prod_btn.count() == 0:
+                problems.append("Production tab button not found")
+            if members_btn.count() == 0:
+                problems.append("Members & Activity tab button not found")
+            if prod_btn.count() and members_btn.count():
+                print("  ✓ tab bar present (Production · Members & Activity)")
+
+            # ── Production tab (default): AP table shape ─────────────────────
+            ap_table = page.locator('table:has(th:has-text("Total AP"))').first
             if ap_table.count() == 0:
                 problems.append("could not find the Submissions · AP table")
             else:
@@ -181,22 +215,6 @@ def main() -> int:
                     else:
                         print("  ✓ AP rows are borderless (border-bottom = 0px)")
 
-            # ── Two-column: metrics rail to the RIGHT of the table (desktop) ─
-            rail = page.get_by_text("Team Metrics", exact=True).first
-            if rail.count() == 0:
-                problems.append("Team Metrics rail heading not found")
-            elif ap_table.count() > 0:
-                rb = rail.bounding_box()
-                tb = ap_table.bounding_box()
-                if rb and tb:
-                    if rb["x"] > tb["x"] + tb["width"] * 0.5:
-                        print("  ✓ metrics rail sits to the RIGHT of the table")
-                    else:
-                        problems.append(
-                            f"metrics rail not right of table "
-                            f"(rail.x={rb['x']:.0f}, table.x={tb['x']:.0f}, "
-                            f"table.w={tb['width']:.0f})"
-                        )
             page.screenshot(path=str(OUT / "team-desktop-ap.png"), full_page=True)
             print(f"  · screenshot → {OUT / 'team-desktop-ap.png'}")
 
@@ -215,22 +233,48 @@ def main() -> int:
                 ]
                 print(f"  ✓ IP table rendered (headers={ip_headers})")
             page.screenshot(path=str(OUT / "team-desktop-ip.png"), full_page=True)
-
-            # ── Narrow viewport → columns stack (rail BELOW the table) ──────
-            page.set_viewport_size({"width": 900, "height": 1100})
+            # Toggle back to Submissions · AP for the tab-switch checks.
             page.get_by_text("Submissions · AP", exact=False).first.click()
+            page.wait_for_timeout(800)
+
+            # ── Tab switch: Members & Activity swaps the body + sets ?tab= ───
+            members_btn.first.click()
             page.wait_for_timeout(1200)
-            ap_table2 = page.locator('table:has(th:has-text("Total AP"))').first
-            rail2 = page.get_by_text("Team Metrics", exact=True).first
-            if ap_table2.count() > 0 and rail2.count() > 0:
-                tb2 = ap_table2.bounding_box()
-                rb2 = rail2.bounding_box()
-                if tb2 and rb2 and rb2["y"] > tb2["y"]:
-                    print("  ✓ narrow view: metrics rail stacks BELOW the table")
-                else:
-                    problems.append(
-                        "narrow view: rail did not stack below the table"
-                    )
+            if "tab=members" not in page.url:
+                problems.append(
+                    f"Members tab did not sync ?tab=members (url={page.url})"
+                )
+            if page.locator('table:has(th:has-text("Total AP"))').count() != 0:
+                problems.append(
+                    "AP production table still present on the Members tab"
+                )
+            if "tab=members" in page.url and page.locator(
+                'table:has(th:has-text("Total AP"))'
+            ).count() == 0:
+                print("  ✓ Members tab swaps body + syncs ?tab=members")
+            page.screenshot(path=str(OUT / "team-tab-members.png"), full_page=True)
+
+            # ── Back to Production tab: AP table returns + ?tab=production ───
+            prod_btn.first.click()
+            page.wait_for_timeout(1200)
+            if "tab=production" not in page.url:
+                problems.append(
+                    f"Production tab did not sync ?tab=production (url={page.url})"
+                )
+            if page.locator('table:has(th:has-text("Total AP"))').count() == 0:
+                problems.append("AP table did not return on the Production tab")
+            else:
+                print("  ✓ Production tab restores the AP table + ?tab=production")
+
+            # ── Narrow viewport → still renders (pace stacks, no rail) ───────
+            page.set_viewport_size({"width": 900, "height": 1100})
+            page.wait_for_timeout(1000)
+            if page.get_by_text("MONTHLY PACE", exact=False).count() == 0:
+                problems.append("narrow view: pace hero not rendered")
+            if page.locator('table:has(th:has-text("Total AP"))').count() == 0:
+                problems.append("narrow view: AP table not rendered")
+            if not any("narrow view" in pr for pr in problems):
+                print("  ✓ narrow view renders (pace hero + AP table, no rail)")
             page.screenshot(path=str(OUT / "team-narrow.png"), full_page=True)
         finally:
             browser.close()
@@ -247,9 +291,10 @@ def main() -> int:
         return 1
 
     print(
-        "\n✓ Team page: table-first two-column layout renders with no JS errors; "
-        "AP table dropped Status/Spread, defaults to 10 rows, is borderless; "
-        "metrics rail sits right (desktop) / below (narrow); IP toggle works."
+        "\n✓ Team page: pace-hero + KPI strip + tabbed layout renders with no JS "
+        "errors; pace hero shows Monthly/Yearly; KPI strip has Override MTD + Avg "
+        "Premium/Agent; tabs swap the body and sync ?tab=; Production AP table "
+        "dropped Status/Spread, defaults to 10 rows, is borderless; IP toggle works."
     )
     return 0
 
